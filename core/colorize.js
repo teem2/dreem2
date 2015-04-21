@@ -1,5 +1,5 @@
 /*
- The MIT License (MIT) (see LICENSE)
+ The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 
  Create a colorization function (ANSI output) use ~rb~ to set color in string

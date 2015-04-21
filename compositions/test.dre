@@ -1,0 +1,20 @@
+<composition>
+	<classes>
+		<class name='MyClass'>
+			
+		</class>
+	</classes>
+	<arduino id='ard' port='com1'>
+		<handler name='connect'>
+			this.slider = 10
+		</handler>
+	</arduino>
+	<webbrowser id='myview'>
+		<view>
+			<rect color='{ard.slider}'>
+			</rect>
+		</view>
+	</webbrowser>
+	<dali id='mydali'>
+	</dali>
+</composition>

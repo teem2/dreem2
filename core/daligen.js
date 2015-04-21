@@ -1,5 +1,5 @@
 /*
- The MIT License (MIT) (see LICENSE)
+ The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 */
 
@@ -11,7 +11,7 @@
 define(function(require, exports, module){
 	module.exports = DaliGen
 	
-	var Composition = require('./Composition')
+	var Composition = require('./composition')
 
 	// lets monitor all our dependencies and terminate if they change
 	function DaliGen(args){

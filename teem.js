@@ -5,16 +5,19 @@
  TEEM ES6 server
 */
 
-require('./define') // support define.js modules
+require = require('./define') // support define.js modules
+
+if(process.argv.indexOf('-nomoni') != -1){
+	define.onRequire = function(filename){
+		process.stderr.write('\x0F'+filename+'\n', function(){})
+	}
+}
 
 var fs = require('fs')
 var path = require('path')
 
 // ok now we can require components
-var RunMonitor = require('./lib/RunMonitor')
-var TeemServer = require('./lib/TeemServer')
-var DaliGen = require('./lib/DaliGen')
-var colorize = require('./lib/colorize')
+var colorize = require('./core/colorize')
 
 console.color = colorize(function(v){
 	process.stdout.write(v)
@@ -58,13 +61,16 @@ function main(){
 
 	if(args['-nomoni']){
 		if(args['-dali']){
+			var DaliGen = require('./core/daligen')
 			new DaliGen(args)
 		}
 		else{
-			new TeemServer(args)
+			var TeemServer = require('./core/teemserver')
+			new TeemServer(args, define.filePath(module.filename))
 		}
 	}
 	else{
+		var RunMonitor = require('./core/runmonitor')
 		new RunMonitor(args)
 	}
 }

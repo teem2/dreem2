@@ -18,6 +18,9 @@
 		// continue calling
 		if(define.define) define.define(factory)
 	}
+	
+	// prototyping
+	define.amd = true
 
 	// default config variables
 	define.ROOT = '/'
@@ -25,29 +28,6 @@
 	define.DEFAULT_DIR = '$ROOT/lib/'
 	define.LIB_DIR = '$ROOT/lib/'
 	define.FILE_BASE = ''
-
-	define.inherit = function(base_class, sub_class){
-		var proto = sub_class.prototype = Object.create(base_class.prototype)
-		proto.constructor = sub_class
-		// copy mixins
-		if(arguments.length > 2){
-			for(var i = 2; i < arguments.length; i++){
-				var obj = arguments[i]
-				if(typeof obj == 'function') obj = obj.prototype
-				for(var key in obj){
-					// copy over getters and setters
-					if(obj.__lookupGetter__(key) || obj.__lookupSetter__(key)){
-
-					}
-					else{
-						// other
-						proto[key] = obj[key]
-					}
-				}
-			}
-		}
-		return proto
-	}
 
 	define.filePath = function(file){
 		if(!file) return ''
@@ -60,7 +40,7 @@
 		return path.replace(/^\/+/,'/').replace(/([^:])\/+/g,'$1/')
 	}
 
-	define.absPath = function(base, relative){
+	define.joinPath = function(base, relative){
 		if(relative.charAt(0) != '.'){ // relative is already absolute
 			var path = this.FILE_BASE + (relative.charAt(0) == '/'? relative: '/' + relative) 
 			return cleanPath(path)
@@ -99,21 +79,22 @@
 		// the require function passed into the factory is local
 		function localRequire(base_path){
 			function require(dep_path){
-				abs_path = absPath(base_path, define.expandVariables(dep_path))
+				abs_path = define.joinPath(base_path, define.expandVariables(dep_path))
 				// lets look it up
 				var module = define.module[abs_path]
 				if(module) return module.exports
 
 				// otherwise lets initialize the module
 				var factory = define.factory[abs_path]
-				module = {exports:{}}
+				module = {exports:{}, id:abs_path, filename:abs_path}
 				define.module[abs_path] = module
 
 				if(factory === null) return null // its not an AMD module, but accept that
 				if(!factory) throw new Error("Cannot find factory for module:" + abs_path)
 
 				// call the factory
-				factory(localRequire(define.filePath(abs_path)), module.exports, module)
+				var ret = factory.call(module.exports, localRequire(define.filePath(abs_path)), module.exports, module)
+				if(ret !== undefined) module.exports = ret
 				return module.exports
 			}
 			return require
@@ -123,12 +104,12 @@
 
 		function startMain(){
 			// lets find our main and execute the factory
-			var main_mod = absPath(app_root, define.MAIN)
+			var main_mod = define.joinPath(app_root, define.MAIN)
 			var factory = define.factory[main_mod]
 			if(!factory) throw new Error("Cannot find main: " + main_mod)
 
 			// lets boot up
-			var module = {exports:{}}
+			var module = {exports:{}, id:main_mod, filename:main_mod}
 			define.module[main_mod] = module
 			factory(localRequire(define.filePath(main_mod)), module.exports, module)
 		}
@@ -153,7 +134,7 @@
 				// parse the function for other requires
 				if(factory) factory.toString().replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path){
 					// Make path absolute and process variables
-					var dep_path = absPath(base_path, define.expandVariables(path))
+					var dep_path = define.joinPath(base_path, define.expandVariables(path))
 					// automatic .js appending if not given
 					if(dep_path.indexOf(".js") != dep_path.length -3) dep_path += '.js'
 					// load it
@@ -174,7 +155,7 @@
 
 		// boot up using the MAIN property
 		if(define.MAIN){
-			insertScriptTag(absPath(app_root, define.expandVariables(define.MAIN)), window.location.href)
+			insertScriptTag(define.joinPath(app_root, define.expandVariables(define.MAIN)), window.location.href)
 		}
 	})()
 	else (function(){ // nodeJS implementation
@@ -213,16 +194,25 @@
 				var full_name = Module._resolveFilename(name, module)
 				if (full_name instanceof Array) full_name = full_name[0]
 
+				if(define.onRequire && full_name.charAt(0) == '/'){
+					define.onRequire(full_name)
+				}
+
 				return require(full_name)
 			}
 
 			if (typeof factory !== "function") return module.exports = factory
 						
-			factory(localRequire, module.exports, module)
+			var ret = factory.call(module.exports, localRequire, module.exports, module)
+			if(ret !== undefined) module.exports = ret
 		}
 
 		global.define.require = require
 		global.define.module = {}
 		global.define.factory = {}
+		// fetch a new require for the main module and return that
+		define.define(function(require){
+			module.exports = require
+		})
 	})()
 })()
