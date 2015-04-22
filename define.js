@@ -43,7 +43,7 @@
 	define.joinPath = function(base, relative){
 		if(relative.charAt(0) != '.'){ // relative is already absolute
 			var path = this.FILE_BASE + (relative.charAt(0) == '/'? relative: '/' + relative) 
-			return cleanPath(path)
+			return define.cleanPath(path)
 		}
 		base = base.split(/\//)
 		relative = relative.replace(/\.\.\//g,function(){ base.pop(); return ''}).replace(/\.\//g, '')
@@ -80,6 +80,7 @@
 		function localRequire(base_path){
 			function require(dep_path){
 				abs_path = define.joinPath(base_path, define.expandVariables(dep_path))
+				if(abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js'
 				// lets look it up
 				var module = define.module[abs_path]
 				if(module) return module.exports
@@ -157,6 +158,48 @@
 		if(define.MAIN){
 			insertScriptTag(define.joinPath(app_root, define.expandVariables(define.MAIN)), window.location.href)
 		}
+
+		define.autoreloadConnect = function(){
+			var backoff = 1
+			if(this.socket){
+				this.socket.onclose = undefined
+				this.socket.onerror = undefined
+				this.socket.onmessage = undefined
+				this.socket.onopen = undefined
+				this.socket.close()
+				this.socket = undefined
+			}
+			this.socket = new WebSocket('ws://' + location.host)
+
+			this.socket.onopen = function(){
+				backoff = 1
+			}
+
+			this.socket.onerror = function(){
+			}
+
+			this.socket.onclose = function(){
+				if((backoff*=2) > 1000) backoff = 1000
+				setTimeout(function(){ define.autoreloadConnect() }, backoff)
+			}
+
+			this.socket.onmessage = function(event){
+				var msg = JSON.parse(event.data)
+				if (msg.type === 'filechange') {
+					location.href = location.href  // reload on filechange
+				}
+				else if (msg.type === 'close') {
+					window.close() // close the window
+				} 
+				else if (msg.type === 'delay') { // a delay refresh message
+					console.log('Got delay refresh from server!');
+					setTimeout(function() {
+						location.href = location.href
+					}, 1500)
+				}
+			}
+		}
+		define.autoreloadConnect()
 	})()
 	else (function(){ // nodeJS implementation
 		module.exports = global.define = define
@@ -205,7 +248,6 @@
 			localRequire.clearCache = function(name){
 				Module._cache = {}
 			}
-
 			if (typeof factory !== "function") return module.exports = factory
 						
 			var ret = factory.call(module.exports, localRequire, module.exports, module)

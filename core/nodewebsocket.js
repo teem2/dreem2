@@ -10,7 +10,7 @@
 
 define(function(require, exports, module){
 	module.exports = NodeWebSocket
-
+	var crypto = require('crypto')
 	/** 
 	  * @constructor 
 	  * @param {Request} req The node request object to construct from

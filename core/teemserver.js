@@ -21,7 +21,7 @@ define(function(require, exports, module){
 	var ExternalApps = require('./externalapps')
 	var BusServer = require('./busserver')
 	var CompositionServer = require('./compositionserver')
-	var NodeWebSocket = require('./nodewebsocket')	
+	var NodeWebSocket = require('./nodewebsocket')
 	var mimeFromFile = require('./mimefromfile')
 
 	/**
@@ -113,8 +113,9 @@ define(function(require, exports, module){
 		this.getComposition = function(url){
 			if(url.indexOf('.')!== -1) return
 			var path = url.split('/')
-			var name = path[0] || this.default_composition
-			if(!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, this.file_root, this.COMP_DIR + '/' + name)
+			var name = path[1] || this.default_composition
+			if(!name) return
+			if(!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, this.file_root, this.COMP_DIR + '/' + name, this)
 			return this.compositions[name]
 		}
 
@@ -163,10 +164,19 @@ define(function(require, exports, module){
 					console.color('~br~Error~y~ '+file+'~~ File not found, returning 403\n')
 					return
 				}
+
 				var header = {
 					"Cache-control":"max-age=0",
 					"Content-Type": mimeFromFile(file),
+					"ETag": stat.mtime.getTime()+'_'+stat.ctime.getTime()+'_'+stat.size
 				}
+		
+				if( req.headers['if-none-match'] == header.ETag){
+					res.writeHead(304,header)
+					res.end()
+					return 
+				}
+
 				var stream = fs.createReadStream(file)
 				res.writeHead(200, header)
 				stream.pipe(res)

@@ -139,7 +139,7 @@ define(function(require, exports, module){
 					body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n'
 				}
 			}
-			else{ // its our render-node
+			else if(child.tag.charAt(0) != '$'){ // its our render-node
 				var inst = this.compileInstance(child, errors, '\t\t\t')
 				for(var key in inst.deps) deps[key] = 1
 				body += '\t\tthis.render = function(){\n'

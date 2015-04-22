@@ -62,25 +62,11 @@ define(function(require, exports, module){
 		this.types = types
 
 		/** 
-		  * @method fromXML
-		  * Populates the node from XML
-		  * @param {Object} xmlnode
+		  * @method render
+		  * render this node
 		  */
-		this.mixin = function(){
-			for(var i = 0; i < arguments.length; i++){
-				var obj = arguments[i]
-				if(typeof obj == 'function') obj = obj.prototype
-				for(var key in obj){
-					// copy over getters and setters
-					if(obj.__lookupGetter__(key) || obj.__lookupSetter__(key)){
-
-					}
-					else{
-						// other
-						proto[key] = obj[key]
-					}
-				}
-			}	
+		this.render = function(){
+			return this
 		}
 
 		/** 

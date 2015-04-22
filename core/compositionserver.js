@@ -28,7 +28,8 @@ define(function(require, exports, module){
 	  * @param {String} file_root File server root
 	  * @param {String} name Name of the composition .dre
 	  */
-	function CompositionServer(args, file_root, name){
+	function CompositionServer(args, file_root, name, teemserver){
+		this.teemserver = teemserver
 	 	this.args = args
 		this.name = name
 		this.file_root = file_root
@@ -87,8 +88,9 @@ define(function(require, exports, module){
 				ExternalApps.notify('Exception',errors[w].message)
 			}
 			if(this.args['-edit']){
-				if(fs.existsSync(errors[w].path))
+				if(fs.existsSync(errors[w].path)){
 					ExternalApps.editor(errors[w].path, errors[w].line, errors[w].col - 1)
+				}
 			}
 		}
 
@@ -145,24 +147,33 @@ define(function(require, exports, module){
 	    	var out = ''
 	    	for(var key in deps){
 				var incpath
-				if(compfile && key in this.local_classes) incpath = './' + compfile + '.dre.' + key + '.js'
+				if(compfile && key in this.local_classes) incpath = '../' + compfile + '.dre.' + key + '.js'
 				else{
 					// lets check if the file has a .dre file, ifso lets compile it sync.
 					var base = this.file_root + '/classes/' 
 					var drefile = base + key + '.dre'
 					var jsfile =  base + key + '.js'
 
-					if(fs.existsSync(drefile) && !this.compile_once[drefile]){
-						this.compile_once[drefile] = 1
-						// lets parse and compile this dre file
-						var local_err = []
-						var jsxml = this.parseDreSync(drefile, local_err)
-						if(jsxml && jsxml.child[0]){ // lets output this class
-							this.compileAndWriteDre(jsxml.child[0], base, null, local_err)
+					if(fs.existsSync(drefile)){
+						if(!this.compile_once[drefile]){
+							this.compile_once[drefile] = 1
+							// lets parse and compile this dre file
+							var local_err = []
+							var dre = this.parseDreSync(drefile, local_err)
+							var root
+							for(var i = 0;i<dre.child.length; i++){
+								if(dre.child[i].tag == 'class') root = dre.child[i]
+							}
+							if(root && root.tag == 'class'){ // lets output this class
+								this.compileAndWriteDre(root, base, null, local_err)
+							}
+							if(local_err.length){
+								this.showErrors(local_err, drefile, jsxml.source)
+							}
 						}
-						if(local_err.length){
-							this.showErrors(local_err, drefile, jsxml.source)
-						}
+					}
+					else if(!fs.existsSync(jsfile)){
+						errors.push(new DreemError('Cannot find file '+jsfile))
 					}
 					incpath = '../classes/' + key 
 				}
@@ -189,6 +200,11 @@ define(function(require, exports, module){
 			return js.name
 	    }
 
+	    /* Internal, packages and writes a dali application */
+	    this.packageDali = function(file){
+	    	
+	    }
+
 		/* Internal, reloads the composition */
 	    this.reload = function(){
 			this.destroy()
@@ -206,8 +222,12 @@ define(function(require, exports, module){
 			if(errors.length) return this.showErrors(errors, filepath, dre && dre.source)
 
 			// lets walk the XML and spawn up our composition objects.
-			var root = dre.child[0]
-			if(root.tag != 'composition') return this.showErrors(new DreemError('Root tag is not composition', root.pos), filepath, dre.source)
+			var root
+			for(var i = 0;i<dre.child.length; i++){
+				if(dre.child[i].tag == 'composition') root = dre.child[i]
+			}
+			
+			if(!root || root.tag != 'composition') return this.showErrors(new DreemError('Root tag is not composition', root.pos), filepath, dre.source)
 
 			for(var i = 0, children = root.child, len = children.length; i<len; i++){
 				var child = children[i]
@@ -234,7 +254,11 @@ define(function(require, exports, module){
 				fs.writeFileSync(component, out)
 
 				if(js.tag == 'device'){
-					this.devices[js.id] = component
+					if(child.attr && child.attr.type == 'dali'){
+						// lets package up a dali application
+						this.packageDali(component, this.file_root + "/dali_gen.js")
+					}
+					this.devices[js.id] = child
 				}
 				else{ // load it up in the server env
 					var render = require(component)
@@ -247,6 +271,22 @@ define(function(require, exports, module){
 			}
 		}
 
+		this.loadHTML = function(title, boot){
+			return '<html lang="en">\n'+
+				' <head>\n'+
+				'  <title>'+title+'</title>\n'+
+				'  <script type"text/javascript">\n'+
+				'    window.define = {\n'+
+				'      MAIN:"' + boot + '"\n'+
+				'    }\n'+
+				'  </script>\n'+
+				'  <script type="text/javascript" src="define.js"></script>\n'+
+				' </head>\n'+
+				' <body>\n'+
+				' </body>\n'+
+				'</html>\n'
+		}
+
 	    /**
 	      * @method request
 	      * Handle server request for this Composition
@@ -254,11 +294,25 @@ define(function(require, exports, module){
 		  * @param {Response} res
 	      */
 		this.request = function(req, res){
-			var app = req.url.split('/')[1] || 'default'
-
+			var app = req.url.split('/')[2] || 'default'
 			// ok lets serve our Composition device 
-			
 
+			var device = this.devices[app]
+			if(!device){
+				res.writeHead(404)
+				res.end()
+				return
+			}
+
+			var html = this.loadHTML(device.attr && device.attr.title || this.name, this.name + '.dre.device.' + app + '.js')
+
+			var header = {
+				"Cache-control":"max-age=0",
+				"Content-Type": "text/html"
+			}
+
+			res.writeHead(200, header)
+			res.write(html)
 			res.end()
 		}
 	}
