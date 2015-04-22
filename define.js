@@ -192,6 +192,7 @@
 
 				name = define.expandVariables(name)
 				var full_name = Module._resolveFilename(name, module)
+
 				if (full_name instanceof Array) full_name = full_name[0]
 
 				if(define.onRequire && full_name.charAt(0) == '/'){
@@ -199,6 +200,10 @@
 				}
 
 				return require(full_name)
+			}
+
+			localRequire.clearCache = function(name){
+				Module._cache = {}
 			}
 
 			if (typeof factory !== "function") return module.exports = factory

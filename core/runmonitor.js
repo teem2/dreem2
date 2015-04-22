@@ -28,7 +28,6 @@ define(function(require, exports, module){
 
 		this.watcher = new FileWatcher()
 		this.watcher.onChange = function(file){
-			console.log(file)
 			//if(args['-nodreem'] && file.indexOf('dreem.js') != -1) return
 			console.color('~g~Got filechange: ~y~'+file+'~~ restarting server\n')
 			// lets restart this.child

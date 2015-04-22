@@ -1,0 +1,5 @@
+<class name='arduino'>
+	<method name = 'test'>
+		console.log('i iz live now on server')
+	</method>
+</class>

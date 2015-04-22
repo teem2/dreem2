@@ -1,7 +1,10 @@
 <composition>
 	<classes>
-		<class name='MyClass'>
-			
+		<class name='bla'></class>
+		<class name='mytest'>
+			<bla id='test'></bla>
+			<method name='whee'>
+			</method>
 		</class>
 	</classes>
 	<arduino id='ard' port='com1'>
@@ -9,12 +12,15 @@
 			this.slider = 10
 		</handler>
 	</arduino>
-	<webbrowser id='myview'>
+	<device id='default' type='browser'>
 		<view>
+			<mydiv/>
 			<rect color='{ard.slider}'>
 			</rect>
+			<rect/>
 		</view>
-	</webbrowser>
-	<dali id='mydali'>
-	</dali>
+		<view></view>
+	</device>
+	<device id='mydali' type='dali'>
+	</device>
 </composition>

@@ -63,22 +63,6 @@ define(function(require, exports, module){
 		return ret
 	}
 
-	/**
-	 * @method offsetToLineCol
-	 * converts character offset to line/column
-	 * @param {String} source String to look up
-	 * @param {Number} offset The offset to find
-	 * @return {line:line, col:col}
-	 */
-	HTMLParser.offsetToLineCol = function(source, offset){
-		var col = 0
-		var line = 0
-		for(var i = 0; i < source.length && i<offset; i++, col++){
-			if(source.charCodeAt(i) == 10) line++, col = 0
-		}
-		return {line:line, col:col}
-	}
-
 	function body(){
 		/* Internal append a childnode */
 		this.appendChild = function(node, value){
@@ -89,7 +73,7 @@ define(function(require, exports, module){
 
 		/* Internal create a node */
 		this.createNode = function(tag, charpos){
-			return {tag:tag, _: charpos}
+			return {tag:tag, pos: charpos}
 		} 
 
 		/* Internal append an error message*/
@@ -102,7 +86,7 @@ define(function(require, exports, module){
 		/* Internal Called when encountering a textnode*/
 		this.onText = function(value, start){
 			if(!value.match(isempty)){
-				var node = this.createNode('$text')
+				var node = this.createNode('$text', start)
 				node.value = this.processEntities(value, start)
 				this.appendChild(this.node,node)
 			}
