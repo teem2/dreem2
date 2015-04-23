@@ -4,8 +4,6 @@
 
  TEEM ES6 server
 */
-var Module = require("module")
-
 require = require('./define') // support define.js modules
 
 if(process.argv.indexOf('-nomoni') != -1){

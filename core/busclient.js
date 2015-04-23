@@ -13,7 +13,7 @@ define(function(require, exports, module){
 	module.exports = BusClient
 
 	function BusClient(url){
-		this.url = url
+		this.url = url || ''
 		this.backoff = 1
 		this.reconnect()
 	}
@@ -40,7 +40,7 @@ define(function(require, exports, module){
 			this.disconnect()
 			if(!this.queue) this.queue = []
 
-			this.socket = new WebSocket('ws://'+location.host)
+			this.socket = new WebSocket('ws://'+location.host+this.url)
 
 			this.socket.onopen = function(){
 				this.backoff = 1

@@ -1,26 +1,63 @@
 <composition>
 	<classes>
 		<class name='bla'></class>
-		<class name='mytest'>
-			<bla id='test'></bla>
+		<class name='mydiv'>
+			<bla name=name'test'></bla>
 			<method name='whee'>
 			</method>
 		</class>
 	</classes>
-	<arduino id='ard' port='com1'>
+	<screens>
+		<handler event='connect'>
+			// some screen is connecting!
+			console.color('~bb~Teem~~ init called!\n')
+		</handler>
+		<screen name='default' title='wooo' type='browser'>
+			<attribute name='mysld' value='{myslider.value}'/>
+			<handler event='initc'>
+				teem.soundcloud.findMusic('eminem').then(function(result){
+
+				})
+				teem.ard.connect();
+				teem.ard[0].connect();
+				teem.ard[1].connect();
+				teem.huebase.huelight.test('red')
+			</handler>
+			<view>
+				<rect name='myrect' color='{ard.slider}'>
+				</rect>
+				<rect/>
+				<slider name='mysld'/>
+			</view>
+			<view></view>
+		</screen>
+		<screen name='mydali' type='dali'>
+			<method name='bla'>
+				console.log('hi')
+			</method>
+			<view>
+				<mydiv/>
+				<rect color='{ard.slider}'>
+				</rect>
+				<rect/>
+			</view>
+			<view></view>
+		</screen>
+	</screens>
+	<huebase>
+		<huelight>
+			<method name='test'>
+			</method>
+		</huelight>
+	</huebase>
+	<smartthings>
+	</smartthings>
+	<soundcloud>
+		<methods name='findMusic'/>
+	</soundcloud>
+	<arduino port='com1'>
 		<handler name='connect'>
-			this.slider = 10
+		//console.log('i iz in server')
 		</handler>
 	</arduino>
-	<device id='default' type='browser'>
-		<view>
-			<mydiv/>
-			<rect color='{ard.slider}'>
-			</rect>
-			<rect/>
-		</view>
-		<view></view>
-	</device>
-	<device id='mydali' type='dali'>
-	</device>
 </composition>

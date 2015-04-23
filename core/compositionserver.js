@@ -35,7 +35,7 @@ define(function(require, exports, module){
 		this.file_root = file_root
 
 		this.busserver = new BusServer()
-
+		/*
 		this.busserver.onMessage = function(msg){
 			if(msg.type == 'color'){
 				console.color(msg.value)
@@ -49,7 +49,7 @@ define(function(require, exports, module){
 				}.bind(this))
 				this.showErrors(msg.errors)
 			}
-		}.bind(this)
+		}.bind(this)*/
 
 		this.watcher = new FileWatcher()
 		this.watcher.onChange = function(){
@@ -57,7 +57,7 @@ define(function(require, exports, module){
 			this.reload()
 		}.bind(this)
 
-		this.objects = {}
+		this.components = {}
 		// lets compile and run the dreem composition
 		define.onRequire = function(file){
 			this.watcher.watch(file)
@@ -107,11 +107,7 @@ define(function(require, exports, module){
 		  * @param {Function} callback(error, package)
 		  */
 	    this.destroy = function(){
-	    	for(var key in this.objects){
-	    		obj = this.objects[key]
-	    		if(obj.destroy) obj.destroy()
-	    	}
-	    	this.objects = {}
+	    	if(this.compDestruct) this.compDestruct()
 	    }
 
 	    this.parseDreSync = function(full_path, errors){
@@ -153,7 +149,7 @@ define(function(require, exports, module){
 					var base = this.file_root + '/classes/' 
 					var drefile = base + key + '.dre'
 					var jsfile =  base + key + '.js'
-
+					var postfix = ''
 					if(fs.existsSync(drefile)){
 						if(!this.compile_once[drefile]){
 							this.compile_once[drefile] = 1
@@ -170,12 +166,18 @@ define(function(require, exports, module){
 							if(local_err.length){
 								this.showErrors(local_err, drefile, jsxml.source)
 							}
+							else{
+								//postfix = '.dre.js'
+							}
 						}
 					}
 					else if(!fs.existsSync(jsfile)){
 						errors.push(new DreemError('Cannot find file '+jsfile))
+					} 
+					else{
+						this.watcher.watch(jsfile)
 					}
-					incpath = '../classes/' + key 
+					incpath = '../classes/' + key //+ postfix
 				}
 				out += indent + 'var ' + key + ' = require("' + incpath + '")\n'
 			}
@@ -201,19 +203,50 @@ define(function(require, exports, module){
 	    }
 
 	    /* Internal, packages and writes a dali application */
-	    this.packageDali = function(file){
-	    	
-	    }
+	    this.packageDali = function(root, output){
+	    	// lets load define
+	    	var definejs = fs.readFileSync(path.join(this.file_root, 'define.js')).toString()
+			// lets recursively load all our dependencies.
+			var files = {}
+			function recur(file){
+				if(files[file]) return
+				var data = fs.readFileSync(file)
+				var string = files[file] = data.toString()
+				var root = define.filePath(file)
+
+				define.findRequires(string).forEach(function(req){
+					var sub = path.join(root, define.expandVariables(req))
+					if(sub.lastIndexOf('.js') !== sub.length - 3) sub = sub + '.js'
+					recur(sub)
+				})
+			}
+			recur(root)
+			// lets write out our dali.js
+			var out = 'global.define = {packaged:1}\n' + definejs + '\n\n'
+			for(var key in files){
+				var string = files[key]
+				var modname = key.slice(this.file_root.length)
+				string = string.replace(/define\(\s*function\s*\(/, function(){
+					return 'define("' + modname + '", function('
+				})
+				out += string + '\n\n'
+			}
+			out += 'var req = define.require("'+ root.slice(this.file_root.length) +'");if(define.onMain) define.onMain(req);'
+			fs.writeFileSync(output, out)
+		}
 
 		/* Internal, reloads the composition */
-	    this.reload = function(){
+		this.reload = function(){
+			console.color("~bg~Reloading~~ composition\n")
 			this.destroy()
 			this.local_classes = {}
 			this.compile_once = {}
 			this.devices = {}
+			this.modules = {}
 
 			// lets clear our module cache
 			require.clearCache()
+			define.onMain = undefined
 
 			var filepath = path.join(this.file_root, this.name) + '.dre'
 			var errors = []
@@ -256,19 +289,18 @@ define(function(require, exports, module){
 				if(js.tag == 'device'){
 					if(child.attr && child.attr.type == 'dali'){
 						// lets package up a dali application
-						this.packageDali(component, this.file_root + "/dali_gen.js")
+						this.packageDali(component, component.slice(0,-3) + '.pack.js')
 					}
 					this.devices[js.id] = child
 				}
 				else{ // load it up in the server env
-					var render = require(component)
-					if(render){
-						var obj = this.objects[js.id] = render()
-					}
+					var mod = require(component)
+					if(mod) this.modules[js.id] = mod
 				}
 
 				if(errors.length) return this.showErrors(errors, filepath, dre.source)
 			}
+			if(define.onMain) this.compDestruct = define.onMain(this.modules, this.busserver)
 		}
 
 		this.loadHTML = function(title, boot){

@@ -5,30 +5,30 @@
 
 define(function(require, exports, module){
 
-	exports.Number = {
+	exports.number = {
 		parse:function(){
 
 		}
 	}
 
-	exports.String = {
+	exports.string = {
 		parse:function(){
 
 		}
 	}
 
-	exports.Boolean = {
+	exports.boolean = {
 		parse:function(){
 
 		}
 	}
 
-	exports.Color = {
+	exports.color = {
 		parse:function(){
 
 		}
 	}
 
-	exports.Event = {
+	exports.event = {
 	}
 })

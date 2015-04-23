@@ -105,6 +105,7 @@ define(function(require, exports, module){
 		  * @param {String|Buffer} data Data to send
 		  */
 		this.send = function(data){
+			if(typeof data !== 'string' && !(data instanceof Buffer)) data = JSON.stringify(data)
 			if(!this.socket) return
 			var head
 			var buf = new Buffer(data)

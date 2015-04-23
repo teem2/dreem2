@@ -20,17 +20,17 @@ define(function(require, exports, module){
 	Node.extend = function extend(class_name, class_body){
 		function DreemClass(){
 			var obj = this
+			if(DreemClass.singleton) obj = DreemClass
+
 			if(!(obj instanceof DreemClass)) obj = Object.create(DreemClass.prototype)
 			// process arguments
 			var i = 0
 			if(arguments.length >= 1){	
 				var arg0 = arguments[0]
 				if(!arg0.__is_node__){ // copy the props on here
-					for(var key in arg0){
-						obj[key] = arg0[key]
-					}
+					obj.processArg0(arguments[0])
+					i = 1
 				}
-				i = 1
 			}
 			// add our children
 			for(;i<arguments.length;i++){
@@ -38,29 +38,55 @@ define(function(require, exports, module){
     			obj.child.push(arguments[i])	
 			}
 			// expand into tree structure
+			if(obj.construct) obj.construct()
 			return obj
 		}
 
 		var proto = DreemClass.prototype = Object.create(this.prototype)
-		proto.constructor = DreemClass
 		
 		// populate
 		DreemClass.extend = extend
 		DreemClass.class = class_name
 		Object.defineProperty(proto, 'class', {enumerable:false, value:class_name})
+		Object.defineProperty(proto, 'constructor', {enumerable:false, value:DreemClass})
 	
-		class_body.call(proto, DreemClass)
+		if(class_body) class_body.call(proto, DreemClass)
 
 		return DreemClass
+	}
+
+	Node.singleton = function(class_name, class_body){
+		function Singleton(args){
+			console.log("HERE")
+			if(args) Singleton.processArg0(args) 
+			if(Singleton.onConstructor) Singleton.onConstructor()
+			return Singleton
+		}
+		Singleton.class = class_name || 'Singleton'
+		for(var key in Node.prototype){
+			Singleton[key] = Node.prototype[key]
+		}
+		return Singleton
 	}
 
 	Node.class = 'Node'
 
 	function body(){
-		this.class = 'Node'
+		Object.defineProperty(this, 'class', {enumerable:false, configurable:true, value:'Node'})
+
 		this.__is_node__ = true
 		this.types = types
 
+		this.processArg0 = function(arg0){
+			for(var key in arg0){
+				var prop = arg0[key]
+				if(typeof prop == 'object' && prop._prop_ == 'attribute'){
+					var type = types[prop.type || 'string']
+					this.attribute(key, type)
+				}
+				else this[key] = arg0[key]
+			}
+		}
 		/** 
 		  * @method render
 		  * render this node
@@ -154,6 +180,7 @@ define(function(require, exports, module){
 			attr.value = init_value
 			// lets create an attribute
 			var attr_key = 'attr_' + key
+			Object.defineProperty(this, attr_key, {enumerable:false, value:attr})
 			// maybe this is not needed
 			Object.defineProperty(this, 'on_' + key, {
 				configurable:true,

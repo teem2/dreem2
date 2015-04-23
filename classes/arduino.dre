@@ -1,5 +1,13 @@
+<!--
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+-->
 <class name='arduino'>
+	<attribute name='testprop'/>
+	<method name = 'construct'>
+		console.color('~br~Arduino~~ object started on server\n')
+	</method>
 	<method name = 'test'>
-		console.log('i iz live now on server')
+		console.log('test called!')
 	</method>
 </class>

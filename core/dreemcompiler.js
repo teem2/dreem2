@@ -87,10 +87,14 @@ define(function(require, exports, module){
 		return out
 	}
 
+	exports.default_deps = {
+		teem:1
+	}
+
 	exports.compileClass = function(node, errors){
 
 		var body = ''
-		var deps = {}
+		var deps = Object.create(this.default_deps)
 		if(node.tag !== 'class'){
 			errors.push(new DreemError('compileClass on non class', node.pos))
 			return
@@ -192,7 +196,7 @@ define(function(require, exports, module){
 
 	exports.compileInstance = function(node, errors, indent){
 
-		var deps = {}
+		var deps = Object.create(this.default_deps)
 		
 		var walk = function(node, parent, indent){
 			deps[node.tag] = 1
@@ -219,17 +223,27 @@ define(function(require, exports, module){
 					if(!fn) continue
 					if(!child.attr || !child.attr.name){
 						errors.push(new DreemError('code tag has no name', child.pos))
+						continue
 					}
-					else{
-						var name = child.attr.name
-						if(child.tag == 'getter') name = 'get_' + name
-						else if(child.tag == 'setter') name = 'set_' + name
-						if(props) props += ',\n' + myindent
-						else props = '{\n' + myindent
-						props += name + ': function ' + fn.name + '(' + fn.args.join(', ') + '){' + fn.comp + '}'
-					}
+					var name = child.attr.name
+					if(child.tag == 'getter') name = 'get_' + name
+					else if(child.tag == 'setter') name = 'set_' + name
+					if(props) props += ',\n' + myindent
+					else props = '{\n' + myindent
+					props += name + ': function ' + fn.name + '(' + fn.args.join(', ') + '){' + fn.comp + '}'
 				}
-				else{
+				else if(child.tag == 'attribute'){
+					if(!child.attr || !child.attr.name){
+						errors.push(new DreemError('attribute tag has no name', child.pos))
+						continue
+					}
+					var name = child.attr.name
+					var type = child.attr.type || 'string'
+					if(props) props += ',\n' + myindent
+					else props = '{\n' + myindent
+					props += name+': {_prop_:"attribute", type:"'+type+'"}'
+				} 
+				else {
 					if(children) children += ',\n' + myindent
 					else children = '\n' + myindent
 					children += walk(child, node, myindent)
@@ -253,7 +267,7 @@ define(function(require, exports, module){
 
 		return {
 			tag: node.tag,
-			id: node.attr && node.attr.id || 'unknown',
+			id: node.attr && node.attr.id || node.tag,
 			deps: deps,
 			body: body
 		}

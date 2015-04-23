@@ -5,8 +5,6 @@
 
 define(function(require, exports, module){
 	var node = require("../classes/node")
-	return node.extend("device", function(){
-		this.construct = function(){
-		}
+	return node.extend("huebase", function(){
 	})
 })

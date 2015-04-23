@@ -3,10 +3,9 @@
  Copyright (C) 2014-2015 Teem2 LLC
 
  Micro AMD module loader for browser and node.js
- Also includes a bit of util from node.js
 */
 
-(function(){
+;(function(config_define){
 
 	// the main define function
 	function define(factory){
@@ -28,6 +27,11 @@
 	define.DEFAULT_DIR = '$ROOT/lib/'
 	define.LIB_DIR = '$ROOT/lib/'
 	define.FILE_BASE = ''
+
+	// copy configuration onto define
+	if(typeof config_define == 'object') for(var key in config_define){
+		define[key] = config_define[key]
+	}
 
 	define.filePath = function(file){
 		if(!file) return ''
@@ -58,48 +62,60 @@
 		}))
 	}
 
+	define.findRequires = function(str){
+		var req = []
+		str.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path){
+			req.push(path)
+		})
+		return req
+	}
+
+	define.localRequire = function(base_path){
+		function require(dep_path){
+			abs_path = define.joinPath(base_path, define.expandVariables(dep_path))
+			if(abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js'
+			// lets look it up
+			var module = define.module[abs_path]
+			if(module) return module.exports
+
+			// otherwise lets initialize the module
+			var factory = define.factory[abs_path]
+			module = {exports:{}, id:abs_path, filename:abs_path}
+			define.module[abs_path] = module
+
+			if(factory === null) return null // its not an AMD module, but accept that
+			if(!factory) throw new Error("Cannot find factory for module:" + abs_path)
+
+			// call the factory
+			var ret = factory.call(module.exports, define.localRequire(define.filePath(abs_path)), module.exports, module)
+			if(ret !== undefined) module.exports = ret
+			return module.exports
+		}
+		return require
+	}
+
 	// storage structures
 	define.module = {}
 	define.factory = {}
 
-	if(typeof window !== 'undefined')(function(){ // browser implementation
+	// the environment we are in
+	if(typeof window !== 'undefined') define.env = 'browser'
+	else if (typeof process !== 'undefined') define.env = 'nodejs'
+	else define.env = 'v8'
+
+	if(define.packaged){
+		global.define = define
+		define.require = define.localRequire('')
+	}
+	else if(typeof window !== 'undefined')(function(){ // browser implementation
 		// if define was already defined use it as a config store
-		var config_define = window.define
-
 		define.FILE_BASE = location.origin
-
-		// copy configuration onto define
-		if(typeof config_define == 'object') for(var key in config_define){
-			define[key] = config_define[key]
-		}
-
+		define.environment == 'browser|modules'
 		// storage structures
 		define.script_tags = {}
 
 		// the require function passed into the factory is local
-		function localRequire(base_path){
-			function require(dep_path){
-				abs_path = define.joinPath(base_path, define.expandVariables(dep_path))
-				if(abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js'
-				// lets look it up
-				var module = define.module[abs_path]
-				if(module) return module.exports
-
-				// otherwise lets initialize the module
-				var factory = define.factory[abs_path]
-				module = {exports:{}, id:abs_path, filename:abs_path}
-				define.module[abs_path] = module
-
-				if(factory === null) return null // its not an AMD module, but accept that
-				if(!factory) throw new Error("Cannot find factory for module:" + abs_path)
-
-				// call the factory
-				var ret = factory.call(module.exports, localRequire(define.filePath(abs_path)), module.exports, module)
-				if(ret !== undefined) module.exports = ret
-				return module.exports
-			}
-			return require
-		}
+		
 		
 		var app_root = define.filePath(window.location.href)
 
@@ -112,7 +128,8 @@
 			// lets boot up
 			var module = {exports:{}, id:main_mod, filename:main_mod}
 			define.module[main_mod] = module
-			factory(localRequire(define.filePath(main_mod)), module.exports, module)
+			var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module)
+			if(define.onMain) define.onMain(ret)
 		}
 
 		// the main dependency download queue counter
@@ -133,7 +150,7 @@
 				var factory = define.factory[script_url] = define.last_factory || null
 				define.last_factory = undefined
 				// parse the function for other requires
-				if(factory) factory.toString().replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path){
+				if(factory) define.findRequires(factory.toString()).forEach(function(path){
 					// Make path absolute and process variables
 					var dep_path = define.joinPath(base_path, define.expandVariables(path))
 					// automatic .js appending if not given
@@ -159,31 +176,32 @@
 			insertScriptTag(define.joinPath(app_root, define.expandVariables(define.MAIN)), window.location.href)
 		}
 
+		var backoff = 1
 		define.autoreloadConnect = function(){
-			var backoff = 1
-			if(this.socket){
-				this.socket.onclose = undefined
-				this.socket.onerror = undefined
-				this.socket.onmessage = undefined
-				this.socket.onopen = undefined
-				this.socket.close()
-				this.socket = undefined
-			}
-			this.socket = new WebSocket('ws://' + location.host)
 
-			this.socket.onopen = function(){
+			if(this.reload_socket){
+				this.reload_socket.onclose = undefined
+				this.reload_socket.onerror = undefined
+				this.reload_socket.onmessage = undefined
+				this.reload_socket.onopen = undefined
+				this.reload_socket.close()
+				this.reload_socket = undefined
+			}
+			this.reload_socket = new WebSocket('ws://' + location.host)
+
+			this.reload_socket.onopen = function(){
 				backoff = 1
 			}
 
-			this.socket.onerror = function(){
+			this.reload_socket.onerror = function(){
 			}
 
-			this.socket.onclose = function(){
+			this.reload_socket.onclose = function(){
 				if((backoff*=2) > 1000) backoff = 1000
 				setTimeout(function(){ define.autoreloadConnect() }, backoff)
 			}
 
-			this.socket.onmessage = function(event){
+			this.reload_socket.onmessage = function(event){
 				var msg = JSON.parse(event.data)
 				if (msg.type === 'filechange') {
 					location.href = location.href  // reload on filechange
@@ -203,7 +221,7 @@
 	})()
 	else (function(){ // nodeJS implementation
 		module.exports = global.define = define
-
+		define.environment = 'node'
 		var Module = require("module")
 
 		var modules = []
@@ -262,4 +280,4 @@
 			module.exports = require
 		})
 	})()
-})()
+})(typeof define !== 'undefined' && define)
