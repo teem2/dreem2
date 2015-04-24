@@ -82,15 +82,15 @@ define(function(require, exports, module){
 				if(typeof prop == 'object' && prop._kind_ == 'attribute'){
 						this.attribute(key, prop.type)
 				}
-				else if(typeof prop == 'object' && prop._kind_ == 'setter'){
+				else if(key.indexOf('set_') == 0){
 					key = key.slice(4)
 					if(!this.isAttribute(key)) throw new Error('Cannot make a setter on a non attribute '+key)
-					this['on_'+key].setter = prop.method
+					this['on_'+key].setter = prop
 				}
-				else if(typeof prop == 'object' && prop._kind_ == 'getter'){
+				else if(key.indexOf('get_') == 0){
 					key = key.slice(4)
 					if(!this.isAttribute(key)) throw new Error('Cannot make a getter on a non attribute '+key)
-					this['on_'+key].getter = prop.method
+					this['on_'+key].getter = prop
 				}
 				else this[key] = arg0[key]
 			}
