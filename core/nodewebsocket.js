@@ -48,7 +48,7 @@ define(function(require, exports, module){
 		this.maskoff = 0 // the offset in the mask
 		this.maskcount = 0 // mask counter
 		this.paylen = 0 // payload length
-
+		this.readyState = 1
 		// 10 second ping frames
 		var pf = new Buffer(2)
 		pf[0] = 9 | 128
@@ -138,6 +138,7 @@ define(function(require, exports, module){
 				this.onClose()
 				this.socket.destroy()
 				clearInterval(this.ping_interval)
+				this.readyState = 3
 			}
 			this.socket = undefined
 		}

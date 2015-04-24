@@ -47,6 +47,11 @@ define(function(require, exports, module){
 			this.promises[uid] = prom
 			msg.uid = uid
 
+			if(this.sendbus.readyState == 3){
+				prom.resolve(null)
+				return prom
+			}
+
 			this.sendbus.send(msg)
 
 			return prom
