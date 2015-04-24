@@ -117,6 +117,7 @@ define(function(require, exports, module){
 				var RootThis = this;
 				var P = this.port;
 				var PS = this.portScanner;
+				if(!serialPortModule) return
 				if (this.portOpened == false)
 				{
 					serialPortModule.list(function (err, ports) 

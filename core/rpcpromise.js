@@ -62,7 +62,12 @@ define(function(require, exports, module){
 			if(!promise) return console.log('Error resolving RPC promise id ' + msg.uid)
 			this.uid_free.push(msg.uid)
 			this.promises[msg.uid] = undefined
-			promise.resolve(msg.value)
+			if(msg.error){
+				promise.reject(msg.value)
+			}
+			else{
+				promise.resolve(msg.value)
+			}
 		}
 	}
 })

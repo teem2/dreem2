@@ -57,7 +57,6 @@ define(function(require, exports, module){
 
 	Node.singleton = function(class_name, class_body){
 		function Singleton(args){
-			console.log("HERE")
 			if(args) Singleton.processArg0(args) 
 			if(Singleton.onConstructor) Singleton.onConstructor()
 			return Singleton
@@ -84,7 +83,6 @@ define(function(require, exports, module){
 					this.attribute(key, prop.type)
 				}
 				else this[key] = arg0[key]
-				//console.log(key)
 			}
 		}
 		/** 
@@ -166,6 +164,11 @@ define(function(require, exports, module){
 			}
 		}
 		
+		this.isAttribute = function(key){
+			if(this['attr_' + key]) return true
+			else return false
+		}
+
 		/** 
 		  * @method attribute
 		  * create an attribute
@@ -182,15 +185,16 @@ define(function(require, exports, module){
 			attr.value = init_value
 			// lets create an attribute
 			var attr_key = 'attr_' + key
-			Object.defineProperty(this, attr_key, {enumerable:false, value:attr})
+			Object.defineProperty(this, attr_key, {writable:true, value:attr})
 			// maybe this is not needed
 			Object.defineProperty(this, 'on_' + key, {
 				configurable:true,
 				enumerable:false,
 				get:function(){
-					var attr = this[attr_key]					
+					var attr = this[attr_key]
 					// make an instance copy if needed
 					if(attr.owner != this){
+
 						attr = this[attr_key] = Object.create(attr)
 						attr.owner = this
 					}
@@ -213,13 +217,14 @@ define(function(require, exports, module){
 					var attr = this[attr_key]
 					// make instance copy if needed
 					if(attr.owner != this){
-						attr = this[attr_key] = Object.create(attr)
+						attr = this[attr_key]= Object.create(attr)
 						attr.owner = this
 					}
 					if(typeof value == 'function'){
 						attr.addListener(value)
 						return
 					}
+					if(this.onAttributeSet) this.onAttributeSet(key, value)
 					if(attr.setter) value = attr.setter.call(this, value, attr)
 					attr.set(value)
 				}
