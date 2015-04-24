@@ -38,10 +38,18 @@ define(function(require, exports, module){
 			
 		this.attribute("testprop", "boolean")
 		this.attribute("init", "event")
+		this.connectedOutputs = {};
 		
 		this.onAttributeSet = function(key, value)
 		{
-			
+			if (this.portOpened === true &&  this.serialPortContainer != undefined)
+			{
+				if(key in this.connectedOutputs)
+				{
+					console.log("onAttributeSet " + key + " " + value);
+					this.serialPortContainer.write("atr " + key + " " + value.toString()+"\r\n");
+				}
+			}
 		}
 
 		this.init = function() 
@@ -87,13 +95,17 @@ define(function(require, exports, module){
 							var parsed = JSON.parse(data);
 							if (parsed.atr)
 							{	
-								console.log("incoming attribute: "+ parsed.atr + " " + parsed.type + " " + parsed.value);
-								this[parsed.atr] = parsed.value;			
+								this[parsed.atr] = parsed.value;											
 							}
 							else if (parsed.inq)
 							{	
-								console.log("incoming inquiry set: ");
-								console.dir(parsed.inq);
+								console.log("incoming output set: ");
+								//console.dir(parsed.inq);
+								for(outp in parsed.inq.digitalOutputs)
+								{
+									console.log("output: " + parsed.inq.digitalOutputs[outp]);
+									this.connectedOutputs[parsed.inq.digitalOutputs[outp]];
+								}
 							}	
 							else if (parsed.mtd)
 							{	
