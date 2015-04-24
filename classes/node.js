@@ -220,7 +220,7 @@ define(function(require, exports, module){
 				get:function(){
 					var attr = this[attr_key]
 					if(this.onAttributeGet) this.onAttributeGet(key)
-					if(attr.getter) return attr.getter.call(attr.owner, attr)
+					if(attr.getter) return attr.getter.call(this, attr)
 					return attr.value
 				},
 				set:function(value){
@@ -235,7 +235,7 @@ define(function(require, exports, module){
 						return
 					}
 					if(this.onAttributeSet) this.onAttributeSet(key, value)
-					if(attr.setter) value = attr.setter.call(attr.owner, value, attr)
+					if(attr.setter) value = attr.setter.call(this, value, attr)
 					attr.set(value)
 				}
 			})
