@@ -37,7 +37,7 @@ define(function(require, exports, module){
 		// lets rip off the array index
 		var def = rpcdef[component]
 		if(!def){
-			console.log('Illegal RPC call on ' + component)
+			console.log('Illegal RPC '+kind+' on ' + component)
 			return false
 		}
 		var prop = def[prop]
@@ -187,7 +187,6 @@ define(function(require, exports, module){
 					var proxy = new RpcProxy()
 
 					teem.root = main()
-					console.log(teem.root)
 					// ok lets fire up the rendering of the root!
 					teem.root.on_init.emit()
 				}

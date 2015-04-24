@@ -84,7 +84,6 @@ define(function(require, exports, module){
 					this.attribute(key, prop.type)
 				}
 				else this[key] = arg0[key]
-				//console.log(key)
 			}
 		}
 		/** 
@@ -182,15 +181,16 @@ define(function(require, exports, module){
 			attr.value = init_value
 			// lets create an attribute
 			var attr_key = 'attr_' + key
-			Object.defineProperty(this, attr_key, {enumerable:false, value:attr})
+			Object.defineProperty(this, attr_key, {writable:true, value:attr})
 			// maybe this is not needed
 			Object.defineProperty(this, 'on_' + key, {
 				configurable:true,
 				enumerable:false,
 				get:function(){
-					var attr = this[attr_key]					
+					var attr = this[attr_key]
 					// make an instance copy if needed
 					if(attr.owner != this){
+
 						attr = this[attr_key] = Object.create(attr)
 						attr.owner = this
 					}
@@ -213,7 +213,7 @@ define(function(require, exports, module){
 					var attr = this[attr_key]
 					// make instance copy if needed
 					if(attr.owner != this){
-						attr = this[attr_key] = Object.create(attr)
+						attr = this[attr_key]= Object.create(attr)
 						attr.owner = this
 					}
 					if(typeof value == 'function'){
