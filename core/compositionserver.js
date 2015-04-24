@@ -59,8 +59,10 @@ define(function(require, exports, module){
 
 		this.components = {}
 		// lets compile and run the dreem composition
-		define.onRequire = function(file){
-			this.watcher.watch(file)
+		define.onRequire = function(filename){
+			// lets output to the main watcher
+			process.stderr.write('\x0F!'+filename+'\n', function(){})
+			this.watcher.watch(filename)
 		}.bind(this)
 
 		this.reload()

@@ -205,7 +205,6 @@ define(function(require, exports, module){
 					var attr = this[attr_key]
 					// make an instance copy if needed
 					if(attr.owner != this){
-
 						attr = this[attr_key] = Object.create(attr)
 						attr.owner = this
 					}

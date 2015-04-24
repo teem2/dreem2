@@ -48,6 +48,39 @@ define(function(require, exports, module){
 		}
 	}
 
+	RpcProxy.handleCall = function(object, msg, socket){
+		var ret = object[msg.method].apply(object, msg.args)
+		if(ret && ret.then){ // make the promise resolve to a socket send
+			ret.then(function(result){
+				socket.send({type:'rpcReturn', uid:msg.uid, value:result})
+			}).catch(function(error){
+				socket.send({type:'rpcReturn', uid:msg.uid, value:error, error:1})
+			})
+		}
+		else{
+			if(!RpcProxy.isJsonSafe(ret)){
+				console.log('RPC Return value of '+msg.id+' '+msg.method + ' is not json safe')		
+				ret = null
+			}
+			socket.send({type:'rpcReturn', uid:msg.uid, value:ret})
+		}		
+	}
+
+	RpcProxy.verifyRpc = function(rpcdefs, component, prop, kind){
+		// lets rip off the array index
+		var def = rpcdef[component]
+		if(!def){
+			console.log('Illegal RPC '+kind+' on ' + component)
+			return false
+		}
+		var prop = def[prop]
+		if(!prop || prop.kind !== kind){
+			console.log('Illegal RPC '+kind+' on '+component+'.'+prop)
+			return false
+		}
+		return true
+	}
+
 	RpcProxy.isJsonSafe = function(obj, stack){
 		if(!obj) return true
 		if(typeof obj == 'function') return false
@@ -81,6 +114,9 @@ define(function(require, exports, module){
 				if(prop.kind == 'attribute'){
 					// lets make an attribute
 					obj.attribute(key, prop.type)
+					obj.onAttributeSet = function(key, value){
+						
+					}
 				}
 				else if(prop.kind == 'method'){
 					// its a method, lets make an rpc interface for it
