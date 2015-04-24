@@ -205,7 +205,7 @@ define(function(require, exports, module){
 	    /* Internal, packages and writes a dali application */
 	    this.packageDali = function(root, output){
 	    	// lets load define
-	    	var definejs = fs.readFileSync(path.join(this.file_root, 'define.js')).toString()
+	    	var definejs = fs.readFileSync(define.joinPath(this.file_root, 'define.js')).toString()
 			// lets recursively load all our dependencies.
 			var files = {}
 			function recur(file){
@@ -215,7 +215,7 @@ define(function(require, exports, module){
 				var root = define.filePath(file)
 
 				define.findRequires(string).forEach(function(req){
-					var sub = path.join(root, define.expandVariables(req))
+					var sub = define.joinPath(root, define.expandVariables(req))
 					if(sub.lastIndexOf('.js') !== sub.length - 3) sub = sub + '.js'
 					recur(sub)
 				})
@@ -248,7 +248,7 @@ define(function(require, exports, module){
 			require.clearCache()
 			define.onMain = undefined
 
-			var filepath = path.join(this.file_root, this.name) + '.dre'
+			var filepath = define.joinPath(this.file_root, this.name) + '.dre'
 			var errors = []
 
 			var dre = this.parseDreSync(filepath, errors)

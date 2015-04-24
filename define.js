@@ -46,6 +46,9 @@
 
 	define.joinPath = function(base, relative){
 		if(relative.charAt(0) != '.'){ // relative is already absolute
+			if(relative.charAt(0) == '/'){
+				return relative
+			}
 			var path = this.FILE_BASE + (relative.charAt(0) == '/'? relative: '/' + relative) 
 			return define.cleanPath(path)
 		}
@@ -222,6 +225,7 @@
 	else (function(){ // nodeJS implementation
 		module.exports = global.define = define
 		define.environment = 'node'
+		define.FILE_BASE = define.filePath(module.filename.replace(/\\/g,'/'))
 		var Module = require("module")
 
 		var modules = []
