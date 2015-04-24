@@ -15,14 +15,8 @@
 		</handler>
 		<screen name='default' title='wheee' type='browser'>
 			<attribute name='mysld' value='{myslider.value}'/>
-			<handler event='initc'>
-				teem.soundcloud.findMusic('eminem').then(function(result){
-					
-				})
-				teem.ard.connect()
-				teem.ard[0].connect()
-				teem.ard[1].connect()
-				teem.huebase.huelight.color = 'red'
+			<handler event='init'>
+				console.log('hii')
 			</handler>
 			<view>
 				<rect name='myrect' color='{ard.slider}'>

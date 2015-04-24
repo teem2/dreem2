@@ -6,6 +6,7 @@
 define(function(require, exports, module){
 	var node = require("../classes/node")
 	return node.extend("screen", function(){
+		this.attribute('init','event')
 		this.message = function(msg){
 			console.log("Got message call:" + msg)
 		}	
