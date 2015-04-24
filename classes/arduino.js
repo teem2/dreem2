@@ -55,6 +55,7 @@ define(function(require, exports, module){
 				var RootThis = this;
 				var P = this.port;
 				var PS = this.portScanner;
+				if(!serialPortModule) return
 				serialPortModule.list(function (err, ports) 
 				{
 					ports.forEach(function(port) 
