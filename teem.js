@@ -65,7 +65,7 @@ function main(){
 		}
 		else{
 			var TeemServer = require('./core/teemserver')
-			new TeemServer(args, define.filePath(module.filename))
+			new TeemServer(args, define.filePath(module.filename.replace(/\\/g,'/')))
 		}
 	}
 	else{
