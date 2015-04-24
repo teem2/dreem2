@@ -226,11 +226,17 @@ define(function(require, exports, module){
 						continue
 					}
 					var name = child.attr.name || child.attr.event
-					if(child.tag == 'getter') name = 'get_' + name
-					else if(child.tag == 'setter') name = 'set_' + name
+	
+	
 					if(props) props += ',\n' + myindent
 					else props = '{\n' + myindent
-					props += name + ': function ' + fn.name + '(' + fn.args.join(', ') + '){' + fn.comp + '}'
+					var pre = '', post = ''
+					if(child.tag == 'getter') pre = '{_kind_:"getter", method:',name = 'get_'+name, post = '}'
+					else if(child.tag == 'setter') pre = '{_kind_:"setter", method:',name = 'set_'+name, post = '}'
+
+					props += name + ':'+ pre +' function ' + fn.name + '(' + fn.args.join(', ') + '){' + fn.comp + '}' + post
+
+
 				}
 				else if(child.tag == 'attribute'){
 					if(!child.attr || !child.attr.name){
