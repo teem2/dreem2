@@ -55,9 +55,16 @@
 	<soundcloud apikey='...'>
 		<method name='findMusic'/>
 	</soundcloud>
-	<arduino port='com1'>
-		<handler name='connect'>
-			console.color('~bb~Arduino~~ connect called!\n')
+	<arduino port='com19'>
+		<handler name='connected'>
+			console.color('~bb~Arduino on com19~~ succesfully connected!\n')
+			return 'hiii'
+
+		</handler>
+	</arduino>
+	<arduino port='com20'>
+		<handler name='connected'>
+			console.color('~bb~Arduino on com20~~ succesfully connected!\n')
 			return 'hiii'
 
 		</handler>
