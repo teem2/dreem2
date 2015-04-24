@@ -27,27 +27,39 @@ define(function(require, exports, module){
 			});
 		};
 	}  
-  
-	serialPortModule.list(function (err, ports) 
-	{
-		ports.forEach(function(port) 
-		{
-			console.log(port.comName + " " + port.pnpId + " " + port.manufacturer);
-		});
-	});
+	
 
 	
 	return node.extend("arduino", function(){
 	
-		this.portopened = false;
+		this.portOpened = false;
 		
 		
 		this.attribute("testprop", "boolean")
 		this.attribute("init", "event")
+		
+		this.scanPorts = function()
+		{
+			serialPortModule.list(function (err, ports) 
+			{
+				ports.forEach(function(port) 
+				{
+					console.log("available com port: " + port.comName + " " + port.pnpId + " " + port.manufacturer);
+					if (port.comName.toLowerCase() == this.port.toLowerCase())
+					{
+						this.clearInterval(this.portScanner);
+						this.portScanner = undefined;
+					}
+				});
+		});
+
+		}
 		this.init = function() 
 		{
 			console.color('~br~Arduino~~ object started on server\n')	
-			console.log(this.port);
+			console.log("my port: " + this.port);
+			
+			this.portScanner = setInterval(this.scanPorts, 1000);
 		}
 		
 		this.test = function(){
