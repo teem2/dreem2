@@ -178,6 +178,9 @@ define(function(require, exports, module){
 					var proxy = new RpcProxy()
 
 					teem.root = main()
+					console.log(teem.root)
+					// ok lets fire up the rendering of the root!
+					teem.root.on_init.emit()
 				}
 				else if(msg.type == 'rpcJoin'){
 					var parts = msg.component.split('.')
