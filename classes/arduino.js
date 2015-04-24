@@ -46,7 +46,6 @@ define(function(require, exports, module){
 			{
 				if(key in this.connectedOutputs)
 				{
-					console.log("onAttributeSet " + key + " " + value);
 					this.serialPortContainer.write("atr " + key + " " + value.toString()+"\r\n");
 				}
 			}
@@ -99,17 +98,17 @@ define(function(require, exports, module){
 							}
 							else if (parsed.inq)
 							{	
-								console.log("incoming output set: ");
-								//console.dir(parsed.inq);
 								for(outp in parsed.inq.digitalOutputs)
 								{
-									console.log("output: " + parsed.inq.digitalOutputs[outp]);
-									this.connectedOutputs[parsed.inq.digitalOutputs[outp]];
+									this.connectedOutputs[parsed.inq.digitalOutputs[outp]] = 1;
+								}
+								for(outp in parsed.inq.attributeBindings)
+								{
+									this.connectedOutputs[parsed.inq.attributeBindings[outp]] = 1;
 								}
 							}	
 							else if (parsed.mtd)
 							{	
-								console.log("incoming method call: "+ parsed.mtd);
 								try
 								{
 									this[parsed]();
