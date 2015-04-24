@@ -84,6 +84,7 @@ define(function(require, exports, module){
 					this.attribute(key, prop.type)
 				}
 				else this[key] = arg0[key]
+				console.log(key)
 			}
 		}
 		/** 
