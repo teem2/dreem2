@@ -263,7 +263,7 @@
 				if(define.onRequire && full_name.charAt(0) == '/'){
 					define.onRequire(full_name)
 				}
-console.log(full_name);
+
 				return require(full_name)
 			}
 

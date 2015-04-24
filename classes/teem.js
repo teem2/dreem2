@@ -14,6 +14,15 @@ define(function(require, exports, module){
 
 	teem._modules = {}
 
+	teem.destroy = function(){
+		for(var key in teem){
+			prop = teem[key]
+			if(typeof prop == 'object' && prop !== teem && prop.destroy && typeof prop.destroy == 'function'){
+				prop.destroy()
+			}
+		}
+	}
+
 	teem.toString = function(){
 		// lets dump our RPC objects
 		var out = 'Teem RPC object:\n'

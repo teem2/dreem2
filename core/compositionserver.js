@@ -107,7 +107,8 @@ define(function(require, exports, module){
 		  * @param {Function} callback(error, package)
 		  */
 	    this.destroy = function(){
-	    	if(this.compDestruct) this.compDestruct()
+	    	if(this.myteem && this.myteem.destroy) this.myteem.destroy()
+	    	this.myteem = undefined
 	    }
 
 	    this.parseDreSync = function(full_path, errors){
@@ -241,6 +242,7 @@ define(function(require, exports, module){
 			this.destroy()
 			this.local_classes = {}
 			this.compile_once = {}
+			this.components = {}
 			this.screens = {}
 			this.modules = []
 
@@ -287,10 +289,19 @@ define(function(require, exports, module){
 				if(js.tag === 'screens'){
 					var component = filepath +'.screens.js' 
 				}
-				else var component = filepath + '.' + js.tag + '.' + js.name + '.js'
-				
-				fs.writeFileSync(component, out)
+				else{
+					var collide = ''
+					while(this.components[js.name + collide]){
+						if(collide === '') collide = 1
+						else collide++
+					}
+					js.name += collide
+					this.components[js.name] = 1
+					var component = filepath + '.' + js.tag + '.' + js.name + '.js'
+				}
 
+				fs.writeFileSync(component, out)
+			
 				this.modules.push({
 					jsxml:child,
 					name: js.name,// the base name of the component
@@ -350,7 +361,7 @@ define(function(require, exports, module){
 				console.error(e.stack+'\x0E')
 			}
 			// initialize it
-			if(define.onMain) this.compDestruct = define.onMain(this.modules, this.busserver)
+			if(define.onMain) define.onMain(this.modules, this.busserver)
 		}
 
 		this.loadHTML = function(title, boot){
