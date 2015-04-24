@@ -33,12 +33,14 @@ define(function(require, exports, module){
 		obj[key] = function(){
 			var args = []
 			var msg = {type:'rpcCall', id:this._rpcid, method:key, args:args }
-			
+
 			for(var i = 0; i < arguments.length; i++){
 				var arg = arguments[i]
 				
-				if(typeof arg == 'function' || typeof arg == 'object' && !RpcProxy.isJsonSafe(arg))
-					throw new Error('RPC calls can only support JSON safe objects')
+				if(typeof arg == 'function' || typeof arg == 'object' && !RpcProxy.isJsonSafe(arg)){
+					throw new Error('RPC call ' + key + ' can only support JSON safe objects')
+				}
+
 				args.push(arg)
 			}
 			if(!this._rpcpromise) return new Promise(function(resolve, reject){resolve(undefined)})

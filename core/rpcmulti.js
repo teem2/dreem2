@@ -16,7 +16,6 @@ define(function(require, exports, module){
 	function defineIndex(obj, i){
 		Object.defineProperty(obj, i, {
 			get:function(){
-				console.log(this._array.length)
 				if(i >= this._array.length) return this._voidproxy
 				return this._array[i]
 			},
@@ -45,17 +44,23 @@ define(function(require, exports, module){
 		obj[method] = function(){
 			var out = []
 			for(var i = 0;i<this._array.length;i++){
-				out.push(this._array[i][method]())
+				var item = this._array[i]
+				if(item) out.push(item[method].apply(item, arguments))
 			}
 			return Promise.all(out)
 		}
 	}
 
 	var RpcMulti = module.exports = Node.extend('RpcMulti', function(){
-		this.attribute('length', 'number', 0)
+		this.length = 0//this.attribute('length', 'number', 0)
 		// lets define array indices
 		for(var i = 0; i < 256; i++){
 			defineIndex(this, i)
+		}
+
+		this._addNewProxy = function(index, rpcid, rpcpromise){
+			var proxy = RpcProxy.createFromDef(this._def, rpcid + '[' + index + ']', rpcpromise)
+			this._array[index] = proxy
 		}
 	})
 
@@ -63,6 +68,7 @@ define(function(require, exports, module){
 		var obj = new RpcMulti()
 		
 		obj._array = []
+		obj._def = def
 
 		obj._voidproxy = RpcProxy.createFromDef(def)
 		// lets interpret the def

@@ -24,23 +24,30 @@ define(function(require, exports, module){
 	}
 
 	function verifyRpc(rpcdef, component, prop, kind){
+		// lets rip off the array index
 		var def = rpcdef[component]
 		if(!def){
 			console.log('Illegal RPC call on ' + component)
-			return 
+			return false
 		}
 		var prop = def[prop]
-		if(!prop || prop.kind !== kind)  return console.log('Illegal RPC '+kind+' on '+component+'.'+prop)
+		if(!prop || prop.kind !== kind){
+			console.log('Illegal RPC '+kind+' on '+component+'.'+prop)
+			return false
+		}
+		return true
 	}
 
 	if(define.env == 'nodejs'){
-		console.log('Teem server module')
+		console.log('Teem server module started')
 		// our teem bus is the local server bus
 		define.onMain = function(moddescs, bus){
 			
 			var rpcpromise = new RpcPromise(bus)
 
 			teem.bus = bus
+			
+			teem.session = Math.random()*10000000
 
 			// lets render all modules and store them on the teem tag
 			var rpcdef = {}
@@ -76,11 +83,16 @@ define(function(require, exports, module){
 			}
 			// ok now what. well we need to build our RPC interface
 
+			bus.onConnect = function(socket){
+				socket.send({type:'sessionCheck', session:teem.session})
+			}
+
 			bus.onMessage = function(msg, socket){
 				// we will get messages from the clients
 				if(msg.type == 'connectBrowser'){
 					socket.send({type:'connectBrowserOK', rpcdef: rpcdef})
-					if(teem.screens) teem.screens.screenJoin(socket) 
+					// ok we have to send it all historic joins.
+					if(teem.screens) teem.screens.screenJoin(socket)
 				}
 				else if(msg.type == 'rpcAttribute'){
 					// validate rpc call against our rpc def to filter out bad calls
@@ -89,12 +101,25 @@ define(function(require, exports, module){
 					teem[msg.id][msg.attribute] = msg.value
 				}
 				else if(msg.type == 'rpcCall'){
-					if(!verifyRpc(rpcdef, msg.id, msg.method, 'method')) return
-					// ok lets call the function
-					var obj = teem[msg.id]
-					var ret = obj[msg.method].call(obj, msg.args)
-					if(ret && ret.then){ // its a promise itself so it might be a call to another client.
+					var idx = msg.id.split('[')
+					var id = idx[0]
 
+					if(!verifyRpc(rpcdef, id, msg.method, 'method')) return
+
+					// its a object.sub[0] call
+					if(id.indexOf('.') != -1){
+						var part = id.split('.')
+						var obj = teem[part[0]][part[1]]
+						if(idx[1]) obj = obj[idx[1].slice(0,-1)]
+					}
+					else var obj = teem[id]
+
+					// ok lets call the function
+					var ret = obj[msg.method].apply(obj, msg.args)
+					if(ret && ret.then){ // make the promise resolve to a socket send
+						ret.then(function(result){
+							socket.send({type:'rpcReturn', uid:msg.uid, value:result})
+						})
 					}
 					else{
 						if(!RpcProxy.isJsonSafe(ret)){
@@ -106,7 +131,7 @@ define(function(require, exports, module){
 				}
 				else if(msg.type == 'rpcReturn'){
 					// we got an rpc return
-					rpcpromise.resolveResult(msg)
+					socket.rpcpromise.resolveResult(msg)
 				}
 			}
 
@@ -116,7 +141,7 @@ define(function(require, exports, module){
 		}
 	}
 	else if(define.env == 'browser'){
-		console.log('Teem browser module')
+		console.log('Teem browser module started')
 		// web environment
 		var BusClient = require('../core/busclient')
 
@@ -128,10 +153,13 @@ define(function(require, exports, module){
 
 		define.onMain = function(main){
 
-			teem.bus.send({type:'connectBrowser'})
-
 			teem.bus.onMessage = function(msg){
-				if(msg.type == 'connectBrowserOK'){
+				if(msg.type == 'sessionCheck'){
+					if(teem.session != msg.session){
+						teem.bus.send({type:'connectBrowser'})
+					}
+				}
+				else if(msg.type == 'connectBrowserOK'){
 					// lets set up our teem.bla base RPC layer (nonmultiples)
 					for(var key in msg.rpcdef){
 						var def = msg.rpcdef[key]
@@ -146,15 +174,39 @@ define(function(require, exports, module){
 					}
 					var proxy = new RpcProxy()
 
-					teem.arduino.connect()
-
-					main()
+					teem.root = main()
 				}
 				else if(msg.type == 'rpcJoin'){
-					
+					var parts = msg.component.split('.')
+					var multi = teem[parts[0]][parts[1]]
+					multi._addNewProxy(msg.index, msg.component, rpcpromise)
+				}
+				else if(msg.type == 'rpcAttribute'){
+					// validate rpc call against our rpc def to filter out bad calls
+					if(!teem.root[msg.attribute]){
+						return console.log('Rpc call received on nonexisting method ' + msg.method)
+					}
+					// set the value
+					teem.root[msg.attribute] = msg.value
 				}
 				else if(msg.type == 'rpcCall'){
-					
+					// lets call our method on root.
+					if(!teem.root[msg.method]){
+						return console.log('Rpc call received on nonexisting method ' + msg.method)
+					}
+					var ret = teem.root[msg.method].apply(teem.root, msg.args)
+					if(ret && ret.then){ // make the promise resolve to a socket send
+						ret.then(function(result){
+							teem.bus.send({type:'rpcReturn', uid:msg.uid, value:result})
+						})
+					}
+					else{
+						if(!RpcProxy.isJsonSafe(ret)){
+							console.log('RPC Return value of '+msg.id+' '+msg.method + ' is not json safe')		
+							ret = null
+						}
+						teem.bus.send({type:'rpcReturn', uid:msg.uid, value:ret})
+					}
 				}
 				else if (msg.type == 'rpcReturn'){
 					rpcpromise.resolveResult(msg)

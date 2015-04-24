@@ -9,6 +9,7 @@ define(function(require, exports, module){
 	var teem = require('./teem')
 	var RpcProxy = require('../core/rpcproxy')
 	var RpcMulti = require('../core/rpcmulti')
+	var RpcPromise = require('../core/rpcpromise')
 
 	return Node.extend("screens", function(){
 		this.attribute('init', 'event')
@@ -16,12 +17,6 @@ define(function(require, exports, module){
 		this.rpcDef = function(name, rpcdefs, rpcpromise){
 			this.name = name
 			this.rpcdefs = {}
-			this.rpcpromise = rpcpromise
-			// ok we have an init. now what.
-			// ok we have children.
-			// what do we do with them.
-			// we have to put them on our object as RPC multicall interfaces
-
 			// lets pull out the rpcdef
 			for(var i = 0; i < this.child.length; i++){
 				var child = this.child[i]
@@ -36,24 +31,27 @@ define(function(require, exports, module){
 
 		// this method is used serverside to compute the rpc interface
 		this.screenJoin = function(socket){
+			socket.rpcpromise = new RpcPromise(socket)
 			var screen_name = socket.url.split('/')[2] || 'default'
 			// so how are we going to send this out.
+			// ok so how do we do this
+			var multi = this[screen_name]
+			var index = multi.length++
+			// send it the joins for the previous ones 
+			for(var i = 0; i<index; i++){
+				socket.send({
+					index:i,
+					type:'rpcJoin',
+					component:this.name + '.' + screen_name
+				})
+			}
+			multi._addNewProxy(index, this.name + '.' + screen_name, socket.rpcpromise)
+
 			teem.bus.broadcast({
+				index:index,
 				type:'rpcJoin',
 				component:this.name + '.' + screen_name
 			})
-			
-			// ok so how do we do this
-			var myproxy = RpcProxy.createFromDef(this.rpcdefs[screen_name])
-
-			// ok so the reverse
-			this[screen_name]._array.push(myproxy)
-
-			// ohboy we have a screen joining!
-			// lets fire up an RpcProxy for it with the right name
-			// and then we need to broadcast to all the clients that we have a new screen.bla object
-			// somehow
-
 		}
 	})
 })

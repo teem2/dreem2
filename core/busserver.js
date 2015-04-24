@@ -32,6 +32,8 @@ define(function(require, exports, module){
 			sock.onMessage = function(message){
 				this.onMessage(JSON.parse(message), sock)
 			}.bind(this)
+
+			this.onConnect(sock)
 		}
 
 		/**
@@ -41,6 +43,15 @@ define(function(require, exports, module){
 		 * @param {WebSocket} socket
 		 */
 		this.onMessage = function(message, socket){
+		}
+
+		/**
+		 * @event onConnect
+		 * Called when a new socket appears on the bus
+		 * @param {Object} message
+		 * @param {WebSocket} socket
+		 */
+		this.onConnect = function(message, socket){
 		}
 
 	    /** 
@@ -53,6 +64,13 @@ define(function(require, exports, module){
 			for(var i = 0;i<this.sockets.length;i++){
 				this.sockets[i].send(message)
 			}
+		}
+
+		this.closeAll = function(){
+			for(var i = 0; i < this.sockets.length; i++){
+				this.sockets[i].close()
+			}
+			this.sockets = []
 		}
 	}
 })

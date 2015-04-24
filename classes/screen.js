@@ -7,7 +7,7 @@ define(function(require, exports, module){
 	var node = require("../classes/node")
 	return node.extend("screen", function(){
 		this.message = function(msg){
-			console.log("SCREEN MESSAGED" + msg)
+			console.log("Got message call:" + msg)
 		}	
 	})
 })

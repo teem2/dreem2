@@ -54,8 +54,8 @@ define(function(require, exports, module){
 
 		this.resolveResult = function(msg){
 			var promise = this.promises[msg.uid]
-			if(!promise) return console.log('Error resolving RPC promise id ' + msg.puid)
-			this.uid_free.push(msg.puid)
+			if(!promise) return console.log('Error resolving RPC promise id ' + msg.uid)
+			this.uid_free.push(msg.uid)
 			this.promises[msg.uid] = undefined
 			promise.resolve(msg.value)
 		}
