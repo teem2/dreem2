@@ -131,6 +131,8 @@ define(function(require, exports, module){
 					if(ret && ret.then){ // make the promise resolve to a socket send
 						ret.then(function(result){
 							socket.send({type:'rpcReturn', uid:msg.uid, value:result})
+						}).catch(function(error){
+							teem.bus.send({type:'rpcReturn', uid:msg.uid, value:error, error:1})
 						})
 					}
 					else{
@@ -187,7 +189,9 @@ define(function(require, exports, module){
 					var proxy = new RpcProxy()
 
 					teem.root = main()
-					// ok lets fire up the rendering of the root!
+
+					console.log(teem.root)
+
 					teem.root.on_init.emit()
 				}
 				else if(msg.type == 'rpcJoin'){
@@ -212,6 +216,8 @@ define(function(require, exports, module){
 					if(ret && ret.then){ // make the promise resolve to a socket send
 						ret.then(function(result){
 							teem.bus.send({type:'rpcReturn', uid:msg.uid, value:result})
+						}).catch(function(error){
+							teem.bus.send({type:'rpcReturn', uid:msg.uid, value:error, error:1})
 						})
 					}
 					else{

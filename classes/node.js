@@ -57,7 +57,6 @@ define(function(require, exports, module){
 
 	Node.singleton = function(class_name, class_body){
 		function Singleton(args){
-			console.log("HERE")
 			if(args) Singleton.processArg0(args) 
 			if(Singleton.onConstructor) Singleton.onConstructor()
 			return Singleton
@@ -165,6 +164,11 @@ define(function(require, exports, module){
 			}
 		}
 		
+		this.isAttribute = function(key){
+			if(this['attr_' + key]) return true
+			else return false
+		}
+
 		/** 
 		  * @method attribute
 		  * create an attribute
@@ -220,6 +224,7 @@ define(function(require, exports, module){
 						attr.addListener(value)
 						return
 					}
+					if(this.onAttributeSet) this.onAttributeSet(key, value)
 					if(attr.setter) value = attr.setter.call(this, value, attr)
 					attr.set(value)
 				}

@@ -268,6 +268,7 @@ define(function(require, exports, module){
 				var child = children[i]
 				// ok lets spawn up our tags into our local object pool.
 				var tag = child.tag
+				if(tag.charAt(0) == '$') continue
 				if(tag == 'classes'){ // generate local classes
 					// lets compile our local classes
 					for(var j = 0, classes = child.child, clen = classes.length; j<clen; j++){
