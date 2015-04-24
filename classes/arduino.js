@@ -32,15 +32,18 @@ define(function(require, exports, module){
 		};
 	}  
 
-		
-	return node.extend("arduino", function(){
-	
+	return node.extend("arduino", function()
+	{
 		this.portOpened = false;
-		
-		
+			
 		this.attribute("testprop", "boolean")
 		this.attribute("init", "event")
 		
+		this.onAttributeSet = function(key, value)
+		{
+			
+		}
+
 		this.init = function() 
 		{
 			console.color('~br~Arduino~~ object started on server\n')	
@@ -48,6 +51,65 @@ define(function(require, exports, module){
 			this.openPort = function()
 			{
 				console.log(this.portOpened);
+				console.log("opening port using handle "  + this.port);
+				
+				this.serialPortContainer = new SerialPort(this.port,{baudrate: 115200,  parser: lineConsumer("\n")});
+				
+				this.serialPortContainer.on('open', function()		
+				{
+					this.portOpened = true;
+					console.log('Serial Port Opened');
+					this.serialPortContainer.on('close', function (err) 
+					{
+						this.serialPortContainer = null;
+						this.portOpened = false;
+					});
+
+					this.serialPortContainer.on('disconnect', function (err) 
+					{
+						console.log('on.disconnect');
+					}.bind(this));
+
+					this.serialPortContainer.on('error', function (err) 
+					{
+						console.error("on.error", err);
+					}.bind(this));
+	
+					var i = 0;
+	
+					//setInterval(function(){this.serialPortContainer.write("mtd countdown\r\n");i=(i+1)%10}.bind(this), 4000);
+	
+					this.serialPortContainer.on('data', function(data)
+					{
+						//	console.log(data);
+						try
+						{
+							var parsed = JSON.parse(data);
+							if (parsed.atr)
+							{	
+								console.log("incoming attribute: "+ parsed.atr + " " + parsed.type + " " + parsed.value);
+								this[parsed.atr] = parsed.value;			
+							}
+							else if (parsed.inq)
+							{	
+								console.log("incoming inquiry set: ");
+								console.dir(parsed.inq);
+							}	
+							else if (parsed.mtd)
+							{	
+								console.log("incoming method call: "+ parsed.mtd);
+								try
+								{
+									this[parsed]();
+								}
+								catch(e){};
+							}		
+						}
+						catch(e){}
+					}.bind(this));
+	
+					this.serialPortContainer.write("inq\r\n");
+				}.bind(this));
 			}.bind(this);
 			
 			this.scanPorts = function()
@@ -55,35 +117,40 @@ define(function(require, exports, module){
 				var RootThis = this;
 				var P = this.port;
 				var PS = this.portScanner;
-				serialPortModule.list(function (err, ports) 
+				if (this.portOpened == false)
 				{
-					ports.forEach(function(port) 
+					serialPortModule.list(function (err, ports) 
 					{
-					//	console.log("available com port: " + port.comName + " " + port.pnpId + " " + port.manufacturer);
-						//console.log(this.port);
-						if (P != undefined)
+						ports.forEach(function(port) 
 						{
-							if (port.comName.toLowerCase() == P.toLowerCase())
+							//	console.log("available com port: " + port.comName + " " + port.pnpId + " " + port.manufacturer);
+							if (P != undefined)
 							{
-								console.log("found "+ P + "! Connecting!");
-								this.clearInterval(PS);
-								RootThis.portScanner = undefined;		
-								RootThis.openPort();										
+								if (port.comName.toLowerCase() == P.toLowerCase())
+								{
+									RootThis.port = port.comName;
+									console.log("found "+ P + "! Connecting!");
+									RootThis.openPort();										
+								}
 							}
-						}
-					});
-				});
+						})
+					})
+				};
 			}.bind(this);
-			
+	
 			this.portScanner = setInterval(this.scanPorts, 1000);
 		}
+		
 		this.destroy = function()
 		{
-			
-		}
-		this.test = function()
-		{
-			console.log('test called!')
+			if (this.portScanner)
+			{
+				clearInterval(this.portScanner);
+			}				
+			if (this.serialPortContainer)
+			{
+				this.serialPortContainer.close();
+			}
 		}
 	})
 })
