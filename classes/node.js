@@ -80,9 +80,8 @@ define(function(require, exports, module){
 		this.processArg0 = function(arg0){
 			for(var key in arg0){
 				var prop = arg0[key]
-				if(typeof prop == 'object' && prop._prop_ == 'attribute'){
-					var type = types[prop.type || 'string']
-					this.attribute(key, type)
+				if(typeof prop == 'object' && prop._kind_ == 'attribute'){
+					this.attribute(key, prop.type)
 				}
 				else this[key] = arg0[key]
 			}
@@ -173,8 +172,10 @@ define(function(require, exports, module){
 		  * @param {String} type 
 		  */
 		this.attribute = function(key, type, init_value){
+			var typeobj = types[type]
+			if(!typeobj) throw new Error('unknown type in attribute '+type)
+			var attr = new Attribute(typeobj)
 
-			var attr = new Attribute(type)
 			attr.owner = this
 			attr.name = key
 			attr.value = init_value
@@ -211,7 +212,7 @@ define(function(require, exports, module){
 					var attr = this[attr_key]
 					// make instance copy if needed
 					if(attr.owner != this){
-						attr = this[signalStore] = Object.create(attr)
+						attr = this[attr_key] = Object.create(attr)
 						attr.owner = this
 					}
 					if(typeof value == 'function'){

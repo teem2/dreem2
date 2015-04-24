@@ -241,8 +241,8 @@ define(function(require, exports, module){
 			this.destroy()
 			this.local_classes = {}
 			this.compile_once = {}
-			this.devices = {}
-			this.modules = {}
+			this.screens = {}
+			this.modules = []
 
 			// lets clear our module cache
 			require.clearCache()
@@ -275,38 +275,88 @@ define(function(require, exports, module){
 					}
 					continue
 				}
+				
 				// lets compile the JS
 				var js = dreem_compiler.compileInstance(child, errors, '\t\t')
-				
+
 				// ok now the instances..
 				var out = 'define(function(require, exports, module){\n' 
 				out += this.makeLocalDeps(js.deps, this.name, '\t', errors)
 				out += '\treturn function(){\n\t\treturn ' + js.body + '\n\t}\n})'
-
-				var component = filepath + '.' + js.tag + '.' + js.id + '.js'
+				
+				if(js.tag === 'screens'){
+					var component = filepath +'.screens.js' 
+				}
+				else var component = filepath + '.' + js.tag + '.' + js.name + '.js'
+				
 				fs.writeFileSync(component, out)
+
+				this.modules.push({
+					jsxml:child,
+					name: js.name,// the base name of the component
+					path: component
+				})
+
+				// if we compile a screen, we need to compile the children in screen separate
+				if(js.tag == 'screens'){
+					for(var j = 0, schilds = child.child, slen = schilds.length; j < slen; j++){
+						var schild = schilds[j]
+
+						if(schild.tag !== 'screen') continue
+						var sjs = dreem_compiler.compileInstance(schild, errors, '\t\t')
+
+						// ok now the instances..
+						var out = 'define(function(require, exports, module){\n' 
+						out += this.makeLocalDeps(sjs.deps, this.name, '\t', errors)
+						out += '\treturn function(){\n\t\treturn ' + sjs.body + '\n\t}\n})'
+						
+						var component = filepath + '.screens.' + sjs.name + '.js'
+						fs.writeFileSync(component, out)
+
+						if(schild.attr && schild.attr.type == 'dali'){
+							this.packageDali(component, component.slice(0, -3) + '.pack.js')
+						}
+
+						this.screens[sjs.name] = schild
+					}
+				}
+
+				// ok how do we boot up the server
+				/*
+				// ok so, now we have written the components
+				// lets instance our singleton teem tag
+				var teem = require()
 
 				if(js.tag == 'device'){
 					if(child.attr && child.attr.type == 'dali'){
 						// lets package up a dali application
-						this.packageDali(component, component.slice(0,-3) + '.pack.js')
+						this.packageDali(component, component.slice(0, -3) + '.pack.js')
 					}
 					this.devices[js.id] = child
 				}
 				else{ // load it up in the server env
 					var mod = require(component)
 					if(mod) this.modules[js.id] = mod
-				}
+				}*/
 
 				if(errors.length) return this.showErrors(errors, filepath, dre.source)
 			}
+
+			// require our teem tag
+			try{
+				this.myteem = require('../classes/teem.js')
+			}
+			catch(e){
+				console.error(e.stack+'\x0E')
+			}
+			// initialize it
 			if(define.onMain) this.compDestruct = define.onMain(this.modules, this.busserver)
 		}
 
 		this.loadHTML = function(title, boot){
 			return '<html lang="en">\n'+
 				' <head>\n'+
-				'  <title>'+title+'</title>\n'+
+				'  <title>' + title + '</title>\n'+
 				'  <script type"text/javascript">\n'+
 				'    window.define = {\n'+
 				'      MAIN:"' + boot + '"\n'+
@@ -329,14 +379,14 @@ define(function(require, exports, module){
 			var app = req.url.split('/')[2] || 'default'
 			// ok lets serve our Composition device 
 
-			var device = this.devices[app]
-			if(!device){
+			var screen = this.screens[app]
+			if(!screen){
 				res.writeHead(404)
 				res.end()
 				return
 			}
 
-			var html = this.loadHTML(device.attr && device.attr.title || this.name, this.name + '.dre.device.' + app + '.js')
+			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, this.name + '.dre.screens.' + app + '.js')
 
 			var header = {
 				"Cache-control":"max-age=0",

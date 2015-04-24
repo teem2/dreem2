@@ -6,29 +6,34 @@
 define(function(require, exports, module){
 
 	exports.number = {
+		name:'number',
 		parse:function(){
 
 		}
 	}
 
 	exports.string = {
+		name:'string',
 		parse:function(){
 
 		}
 	}
 
 	exports.boolean = {
+		name:'boolean',
 		parse:function(){
 
 		}
 	}
 
 	exports.color = {
+		name:'color',
 		parse:function(){
 
 		}
 	}
 
 	exports.event = {
+		name:'event'
 	}
 })

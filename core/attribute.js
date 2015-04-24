@@ -4,12 +4,12 @@
 */
 
 define(function(require, exports, module){
-	module.exports = attribute
+	module.exports = Attribute
 
-	function attribute(type){
+	function Attribute(type){
 		this.type = type
 	}
-	body.call(attribute.protype)
+	body.call(Attribute.prototype)
 
 	function body(){
 

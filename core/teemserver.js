@@ -113,7 +113,7 @@ define(function(require, exports, module){
 		this.getComposition = function(url){
 			if(url.indexOf('.')!== -1) return
 			var path = url.split('/')
-			var name = path[1] || this.default_composition
+			var name = path[1] || path[0] || this.default_composition
 			if(!name) return
 			if(!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, this.file_root, this.COMP_DIR + '/' + name, this)
 			return this.compositions[name]
@@ -129,7 +129,7 @@ define(function(require, exports, module){
 		this.upgrade = function(req, sock, head){
 			// lets connect the sockets to the app
 			var sock = new NodeWebSocket(req, sock, head)
-
+			sock.url = req.url
 			var composition = this.getComposition(req.url)
 			if(!composition) this.busserver.addWebSocket(sock)
 			else composition.busserver.addWebSocket(sock)

@@ -126,14 +126,14 @@ define(function(require, exports, module){
 		if (node.child) for (var i = 0; i < node.child.length; i++) {
 			var child = node.child[i]
 			if (child.tag == 'attribute' || child.tag == 'method' || child.tag == 'handler' || child.tag == 'getter' || child.tag == 'setter'){
-				var attrname = child.attr && child.attr.name
+				var attrname = child.attr && (child.attr.name || child.attr.event)
 				if(!attrname){
 					errors.push(new DreemError('Attribute has no name ', child.pos))
 					return
 				}
 				var type = child.attr && child.attr.type || 'string'
 				if(child.tag == 'attribute'){
-					body += '\t\tthis.attribute("' + attrname + '", this.types.' + type.toLowerCase() + ')\n'
+					body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '")\n'
 				}
 				else{
 					var fn = this.compileMethod(child, node, 'js', errors)
@@ -221,11 +221,11 @@ define(function(require, exports, module){
 				else if (child.tag == 'method' || child.tag == 'handler' || child.tag == 'getter' || child.tag == 'setter'){
 					var fn = this.compileMethod(child, parent, 'js', errors)
 					if(!fn) continue
-					if(!child.attr || !child.attr.name){
+					if(!child.attr || (!child.attr.name && !child.attr.event)){
 						errors.push(new DreemError('code tag has no name', child.pos))
 						continue
 					}
-					var name = child.attr.name
+					var name = child.attr.name || child.attr.event
 					if(child.tag == 'getter') name = 'get_' + name
 					else if(child.tag == 'setter') name = 'set_' + name
 					if(props) props += ',\n' + myindent
@@ -241,7 +241,7 @@ define(function(require, exports, module){
 					var type = child.attr.type || 'string'
 					if(props) props += ',\n' + myindent
 					else props = '{\n' + myindent
-					props += name+': {_prop_:"attribute", type:"'+type+'"}'
+					props += name+': {_kind_:"attribute", type:"'+type+'"}'
 				} 
 				else {
 					if(children) children += ',\n' + myindent
@@ -267,7 +267,7 @@ define(function(require, exports, module){
 
 		return {
 			tag: node.tag,
-			id: node.attr && node.attr.id || node.tag,
+			name: node.attr && node.attr.name || node.tag,
 			deps: deps,
 			body: body
 		}

@@ -11,23 +11,23 @@
 		<handler event='connect'>
 			// some screen is connecting!
 			console.color('~bb~Teem~~ init called!\n')
+			return 'hiii'
 		</handler>
-		<screen name='default' title='wooo' type='browser'>
+		<screen name='default' title='wheee' type='browser'>
 			<attribute name='mysld' value='{myslider.value}'/>
 			<handler event='initc'>
 				teem.soundcloud.findMusic('eminem').then(function(result){
-
+					
 				})
-				teem.ard.connect();
-				teem.ard[0].connect();
-				teem.ard[1].connect();
-				teem.huebase.huelight.test('red')
+				teem.ard.connect()
+				teem.ard[0].connect()
+				teem.ard[1].connect()
+				teem.huebase.huelight.color = 'red'
 			</handler>
 			<view>
 				<rect name='myrect' color='{ard.slider}'>
 				</rect>
 				<rect/>
-				<slider name='mysld'/>
 			</view>
 			<view></view>
 		</screen>
@@ -50,14 +50,16 @@
 			</method>
 		</huelight>
 	</huebase>
-	<smartthings>
-	</smartthings>
-	<soundcloud>
-		<methods name='findMusic'/>
+	<smarthub>
+	</smarthub>
+	<soundcloud apikey='...'>
+		<method name='findMusic'/>
 	</soundcloud>
 	<arduino port='com1'>
 		<handler name='connect'>
-		//console.log('i iz in server')
+			console.color('~bb~Arduino~~ connect called!\n')
+			return 'hiii'
+
 		</handler>
 	</arduino>
 </composition>

@@ -25,7 +25,7 @@ define(function(require, exports, module){
 		}
 
 		this.socket = socket
-
+		
 	 	// calc key
 		var key = req.headers['sec-websocket-key']
 		var sha1 = crypto.createHash('sha1');

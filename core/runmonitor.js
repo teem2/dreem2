@@ -81,8 +81,8 @@ define(function(require, exports, module){
 					return
 				}
 
-				this.was_exception = true
-				var m = data.match(/^(\/[^\:]+)\:(\d+)\n/)
+				this.was_exception = data.indexOf('\0xE')!= -1? false: true
+				var m = data.match(/(\/[^\:]+)\:(\d+)\n/)
 				var ln = data.split(/\n/)
 				if(m){ // open error in code editor
 					if(this.args['-notify']) ExternalApps.notify(ln[1]+'\n'+ln[2],ln[3])
