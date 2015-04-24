@@ -66,7 +66,7 @@ define(function(require, exports, module){
 		}		
 	}
 
-	RpcProxy.verifyRpc = function(rpcdefs, component, prop, kind){
+	RpcProxy.verifyRpc = function(rpcdef, component, prop, kind){
 		// lets rip off the array index
 		var def = rpcdef[component]
 		if(!def){
