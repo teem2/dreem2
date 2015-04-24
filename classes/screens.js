@@ -5,13 +5,13 @@
 
 define(function(require, exports, module){
 
-	var Node = require("./node")
+	var Node = require('./node')
 	var teem = require('./teem')
 	var RpcProxy = require('../core/rpcproxy')
 	var RpcMulti = require('../core/rpcmulti')
 	var RpcPromise = require('../core/rpcpromise')
 
-	return Node.extend("screens", function(){
+	return Node.extend('screens', function(){
 		this.attribute('init', 'event')
 
 		this.rpcDef = function(name, rpcdefs, rpcpromise){
@@ -31,13 +31,12 @@ define(function(require, exports, module){
 
 		// this method is used serverside to compute the rpc interface
 		this.screenJoin = function(socket){
-			socket.rpcpromise = new RpcPromise(socket)
 			var screen_name = socket.url.split('/')[2] || 'default'
 			// so how are we going to send this out.
 			// ok so how do we do this
 			var multi = this[screen_name]
 			var index = multi.length++
-			// send it the joins for the previous ones 
+			// send it the joins for the previous ones to the new one
 			for(var i = 0; i<index; i++){
 				socket.send({
 					index:i,

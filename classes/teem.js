@@ -7,6 +7,7 @@ define(function(require, exports, module){
 	// lets return our singleton teem object
 	var Node = require('./node')
 	var teem = Node.singleton('Teem')
+
 	var RpcProxy = require('../core/rpcproxy')
 	var RpcPromise = require('../core/rpcpromise')
 	var RpcMulti = require('../core/rpcmulti')
@@ -92,6 +93,8 @@ define(function(require, exports, module){
 				if(msg.type == 'connectBrowser'){
 					socket.send({type:'connectBrowserOK', rpcdef: rpcdef})
 					// ok we have to send it all historic joins.
+					socket.rpcpromise = new RpcPromise(socket)
+
 					if(teem.screens) teem.screens.screenJoin(socket)
 				}
 				else if(msg.type == 'rpcAttribute'){
