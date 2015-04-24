@@ -28,13 +28,7 @@ define(function(require, exports, module){
 			};
 		}  
 	  
-		serialPortModule.list(function (err, ports) 
-		{
-			ports.forEach(function(port) 
-			{
-				console.log(port.comName + " " + port.pnpId + " " + port.manufacturer);
-			});
-		});
+		
 
 	}
 	catch(e){
@@ -49,26 +43,36 @@ define(function(require, exports, module){
 		this.attribute("testprop", "boolean")
 		this.attribute("init", "event")
 		
-		this.scanPorts = function()
-		{
-			serialPortModule.list(function (err, ports) 
-			{
-				ports.forEach(function(port) 
-				{
-					console.log("available com port: " + port.comName + " " + port.pnpId + " " + port.manufacturer);
-					if (port.comName.toLowerCase() == this.port.toLowerCase())
-					{
-						this.clearInterval(this.portScanner);
-						this.portScanner = undefined;
-					}
-				});
-		});
-
-		}
 		this.init = function() 
 		{
 			console.color('~br~Arduino~~ object started on server\n')	
 			console.log("my port: " + this.port);
+			this.scanPorts = function()
+			{
+			var RootThis = this;
+			var P = this.port;
+			var PS = this.portScanner;
+			serialPortModule.list(function (err, ports) 
+			{
+				ports.forEach(function(port) 
+				{
+				//	console.log("available com port: " + port.comName + " " + port.pnpId + " " + port.manufacturer);
+					//console.log(this.port);
+					if (P != undefined)
+					{
+						if (port.comName.toLowerCase() == P.toLowerCase())
+						{
+							console.log("found "+ P + "! Connecting!");
+							this.clearInterval(PS);
+							RootThis.portScanner = undefined;
+							
+						}
+	
+					}
+				});
+			});
+
+		}.bind(this);
 			
 			this.portScanner = setInterval(this.scanPorts, 1000);
 		}
