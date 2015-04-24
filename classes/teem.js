@@ -53,7 +53,7 @@ define(function(require, exports, module){
 		// our teem bus is the local server bus
 		define.onMain = function(moddescs, bus){
 			
-			var rpcpromise = new RpcPromise(bus)
+			//var rpcpromise = new RpcPromise(bus)
 
 			teem.bus = bus
 			
@@ -113,7 +113,7 @@ define(function(require, exports, module){
 					teem[msg.id][msg.attribute] = msg.value
 				}
 				else if(msg.type == 'rpcCall'){
-					var idx = msg.id.split('[')
+					var idx = msg.id.split('[')// screens.default[3]
 					var id = idx[0]
 
 					if(!verifyRpc(rpcdef, id, msg.method, 'method')) return

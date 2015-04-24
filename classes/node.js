@@ -38,7 +38,7 @@ define(function(require, exports, module){
     			obj.child.push(arguments[i])	
 			}
 			// expand into tree structure
-			if(obj.construct) obj.construct()
+			if(obj.onConstruct) obj.onConstruct()
 			return obj
 		}
 
@@ -80,7 +80,17 @@ define(function(require, exports, module){
 			for(var key in arg0){
 				var prop = arg0[key]
 				if(typeof prop == 'object' && prop._kind_ == 'attribute'){
-					this.attribute(key, prop.type)
+						this.attribute(key, prop.type)
+				}
+				else if(typeof prop == 'object' && prop._kind_ == 'setter'){
+					key = key.slice(4)
+					if(!this.isAttribute(key)) throw new Error('Cannot make a setter on a non attribute '+key)
+					this['on_'+key].setter = prop.method
+				}
+				else if(typeof prop == 'object' && prop._kind_ == 'getter'){
+					key = key.slice(4)
+					if(!this.isAttribute(key)) throw new Error('Cannot make a getter on a non attribute '+key)
+					this['on_'+key].getter = prop.method
 				}
 				else this[key] = arg0[key]
 			}
