@@ -80,7 +80,8 @@ define(function(require, exports, module){
 			for(var key in arg0){
 				var prop = arg0[key]
 				if(typeof prop == 'object' && prop._kind_ == 'attribute'){
-						this.attribute(key, prop.type)
+					key = key.slice(5)
+					this.attribute(key, prop.type)
 				}
 				else if(key.indexOf('set_') == 0){
 					key = key.slice(4)
