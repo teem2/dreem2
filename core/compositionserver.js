@@ -154,7 +154,6 @@ define(function(require, exports, module){
 					paths.push('$EXTLIB/' + value)
 					paths.push('$EXTLIB/' + value + '/classes')
 				})
-
 			}
 			catch(e){
 				errors.push(new DreemError(e.message))
@@ -174,6 +173,10 @@ define(function(require, exports, module){
 						var local_err = []
 						var dre = this.parseDreSync(drefile, local_err)
 						var root
+						if(!dre.child){
+							console.log('Empty DRE file '+drefile)
+							return ''
+						}
 						for(var i = 0;i<dre.child.length; i++){
 							if(dre.child[i].tag == 'class') root = dre.child[i]
 						}
@@ -272,7 +275,20 @@ define(function(require, exports, module){
 			require.clearCache()
 			define.onMain = undefined
 
+			// scan our EXTLIB for compositions first
 			var filepath = "$COMPOSITIONS/" + this.name + '.dre'
+
+			if(define.EXTLIB){
+				var dir = fs.readdirSync(define.expandVariables(define.EXTLIB))
+				for(var i = 0; i<dir.length; i++){
+					var mypath = '$EXTLIB/'+dir[i]+'/compositions/'+this.name+'.dre'
+					if(fs.existsSync(define.expandVariables(mypath))){
+						filepath = mypath
+						break
+					}
+				}
+			}
+
 			var errors = []
 
 			var dre = this.parseDreSync(filepath, errors)
