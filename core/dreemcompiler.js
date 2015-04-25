@@ -251,7 +251,7 @@ define(function(require, exports, module){
 					if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value + '"'
 					props += 'attr_' + name + ': {_kind_:"attribute", type:"'+type+'", value:'+value+'}'
 				} 
-				else {
+				else if(child.tag.charAt(0) != '$'){
 					if(children) children += ',\n' + myindent
 					else children = '\n' + myindent
 					children += walk(child, node, myindent)

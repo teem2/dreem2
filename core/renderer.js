@@ -15,7 +15,18 @@ define(function(require, exports, module){
 
 	function body(){
 		this.render = function(object){
-			
+			while(1){
+				var temp = object.render()
+				if(temp === object) break
+				object = temp
+			}
+
+			if(object.child){
+				for(var i = 0; i<object.child.length; i++){
+					object.child[i] = this.render(object.child[i])
+				}
+			}
+			return object
 		}
 	}
 })
