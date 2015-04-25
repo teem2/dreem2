@@ -1,0 +1,97 @@
+<composition>
+<screens>
+	<screen type="browser" name="default" legacy="true">
+		<view width="500" height="400" minwidth="1000" bgcolor="#cc99cc">
+		    <!--// Class Definitions //-->
+		    <class name="item" with="button" extends="view" height="15" width="100" bgcolor="#ff0000">
+		      <attribute name="thing" type="number" value="20"></attribute>
+		      <handler event="activated" args="activated" type="coffee">
+		        @count ?= 0
+		        @count++
+		        
+		        switch @count
+		          when 1
+		            @set('width', 2 * @width)
+		            @set('height', 2 * @height) 
+		          when 2
+		            @set('width', @width / 2) 
+		            @set('height', @height / 2)
+		          when 3
+		            @destroy()
+		      </handler>
+		      <setter name="width" args="width">
+		        console.log('setWidth on class', width);
+		        this.callSuper(width);
+		        this.foo();
+		      </setter>
+		      <method name="foo" args="bar">
+		        console.log('foo called.', this.width);
+		      </method>
+		    </class>
+		    
+		    <class name="item2" extends="item" height="20" width="40" bgcolor="#0000ff"></class>
+		    
+		    <class name="foo" height="20" width="40" bgcolor="#0000cc">
+		      <view name="a" with="bar" x="1" y="1" width="20" height="20" bgcolor="#669933"></view>
+		      <view name="b" x="25" y="1" width="20" height="20" bgcolor="#996633"></view>
+		    </class>
+		    
+		    <class name="subfoo" extends="foo">
+		      <view name="c" x="1" y="25" width="10" height="10" bgcolor="#ff0000"></view>
+		    </class>
+		    
+		    <mixin name="baz" opacity="0.5"></mixin>
+		    
+		    <mixin name="bar" with="baz">
+		      <view x="1" y="1" width="10" height="10" bgcolor="#ff0000"></view>
+		    </mixin>
+		    
+		    <!--// Instances //-->
+		    <view with="bar" x="10" y="20" width="100" height="${this.parent.item2.x + 100}" bgcolor="#ff9999"></view>
+		    
+		    <subfoo id="bar" x="200" width="100" height="40">
+		      <view name="d" x="50" y="5" width="10" height="10" bgcolor="#9933cc"></view>
+		    </subfoo>
+		    
+		    <item2 name="item2" y="200" x="${this.y / 10 + foo.width + foo.x}" bgcolor="green">asdf</item2>
+		    
+		    <item name="theItem" y="250" id="foo" bgcolor="orange">
+		      <attribute name="thing" type="number" value="5"></attribute>
+		      <attribute name="another" type="string" value="hello"></attribute>
+		      <attribute name="again" type="boolean" value="true"></attribute>
+		      
+		      <handler event="activated" args="activated">
+		        console.log('activated', activated, this.thing, this.another, this.again);
+		      </handler>
+		      <handler event="another" args="another">
+		        console.log('instance handler: another', another);
+		      </handler>
+		      <handler event="thing" args="thing">
+		        console.log('instance handler: thing', thing);
+		      </handler>
+		      <setter name="width" args="width">
+		        console.log('setWidth on instance', width, this.inited);
+		        if (this.inited) {
+		          this.setAttribute('opacity', this.opacity / 2);
+		          this.setAttribute('another', 'hi there');
+		          this.setAttribute('thing', 132);
+		        }
+		        this.callSuper(width);
+		      </setter>
+		      <animator attribute="x" to="100" repeat="2" running="true"></animator>
+		      <animator attribute="y" to="-25" relative="true" running="true"></animator>
+		    blah
+		    </item>
+		    <handler event="another" args="another" reference="this.theItem">
+		      console.log('another', another);
+		    </handler>
+		    <handler event="thing" args="thing" reference="foo">
+		      console.log('thing', thing);
+		    </handler>
+		    
+		    <dreem-text text="hello there." x="50" y="100"></dreem-text>
+		    <markup x="50" y="120">asdf asdf asdf</markup>
+		  </view>
+	</screen>
+</screens>
+</composition>

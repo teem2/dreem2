@@ -319,7 +319,9 @@ define(function(require, exports, module){
 					for(var j = 0, classes = child.child, clen = classes.length; j<clen; j++){
 						var cls = classes[j]
 						var classname = cls.attr && cls.attr.name || 'unknown'
-						this.compileAndWriteDreToJS(classes[j], '$BUILD/' + this.name + '.dre.' + classname + '.js' , this.name,  errors)
+
+						this.compileAndWriteDreToJS(cls, '$BUILD/' + this.name + '.dre.' + classname + '.js' , this.name,  errors)
+
 						this.local_classes[classname] = 1
 					}
 					continue

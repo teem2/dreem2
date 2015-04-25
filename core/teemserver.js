@@ -115,6 +115,8 @@ define(function(require, exports, module){
 			var path = url.split('/')
 			var name = path[1] || path[0] || this.default_composition
 			if(!name) return
+
+			// lets find the composition either in define.COMPOSITIONS
 			if(!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, name, this)
 			return this.compositions[name]
 		}

@@ -69,6 +69,10 @@
 
 	define.findRequires = function(str){
 		var req = []
+		// bail out if we redefine require
+		if(str.match(/function\s+require/) || str.match(/var\s+require/)){
+			return req
+		}
 		str.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path){
 			req.push(path)
 		})

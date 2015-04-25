@@ -198,7 +198,7 @@ define(function(require, exports, module){
 
 		var deps = Object.create(this.default_deps)
 		
-		var walk = function(node, parent, indent){
+		var walk = function(node, parent, indent, depth){
 			deps[node.tag] = 1
 			var myindent = indent + '\t'
 			var props = '' 
@@ -254,16 +254,27 @@ define(function(require, exports, module){
 				else if(child.tag.charAt(0) != '$'){
 					if(children) children += ',\n' + myindent
 					else children = '\n' + myindent
-					children += walk(child, node, myindent)
+					children += walk(child, node, myindent, depth+1)
 				}
 			}
 			var out = node.tag + '('
+
+			if(depth == 0 && node.attr && node.attr.legacy == 'true'){
+				if(props) props += ',\n' + myindent
+				else props = '{\n' + myindent				
+				props += '_legacy:' + JSON.stringify(node)
+			}
+
 			if(props) out += props+'\n'+myindent+'}'
+
 			if(children){
 				if(props) out += ',' + myindent
 				out += children
 			}
-			if (children || props) out += '\n' + indent
+			if (children || props){
+				out += '\n' + indent
+				
+			}
 			out += ')'
 
 			return out
@@ -271,7 +282,7 @@ define(function(require, exports, module){
 		}.bind(this)
 
 		// Walk JSON
-		var body =  walk(node, null, indent || '')
+		var body =  walk(node, null, indent || '', 0)
 
 		return {
 			tag: node.tag,

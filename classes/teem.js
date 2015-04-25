@@ -13,7 +13,7 @@ define(function(require, exports, module){
 	var RpcPromise = require('$CORE/rpcpromise')
 	var RpcMulti = require('$CORE/rpcmulti')
 	var Renderer = require('$CORE/renderer')
-
+	
 	teem._modules = {}
 
 	teem.destroy = function(){
@@ -130,6 +130,7 @@ define(function(require, exports, module){
 	}
 	else if(define.env == 'browser'){
 		console.log('Teem browser module started')
+
 		// web environment
 		var BusClient = require('$CORE/busclient')
 
@@ -165,11 +166,15 @@ define(function(require, exports, module){
 
 					teem.root = main()
 
-					var newroot = renderer.render(teem.root)
-					
-					renderer.spawn(newroot, {dom_node:document.body})
-
-					teem.root.on_init.emit()
+					if(teem.root._legacy){
+						var domRunner = require('$LIB/dr/domRunner.js')
+						domRunner.run(teem.root._legacy.child[0])
+					}
+					else{
+						var newroot = renderer.render(teem.root)
+						renderer.spawn(newroot, {dom_node:document.body})
+						teem.root.on_init.emit()
+					}
 				}
 				else if(msg.type == 'join'){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
