@@ -20,8 +20,8 @@ define(function(require, exports, module){
 			}
 
 			this.spawn = function(parent){
-				this.domNode = document.createElement('div')
-				parent.domNode.appendChild(this.domNode)
+				this.dom_node = document.createElement('div')
+				parent.dom_node.appendChild(this.dom_node)
 			}
 		})
 	}
