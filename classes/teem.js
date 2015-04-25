@@ -11,6 +11,7 @@ define(function(require, exports, module){
 	var RpcProxy = require('../core/rpcproxy')
 	var RpcPromise = require('../core/rpcpromise')
 	var RpcMulti = require('../core/rpcmulti')
+	var Renderer = require('../core/renderer')
 
 	teem._modules = {}
 
@@ -120,6 +121,7 @@ define(function(require, exports, module){
 
 		teem.bus = new BusClient(location.pathname)
 		var rpcpromise = new RpcPromise(teem.bus)
+		var renderer = new Renderer()
 
 		// lets put teem on window just as  adebuggint tool
 		window.teem = teem
@@ -148,7 +150,9 @@ define(function(require, exports, module){
 					var proxy = new RpcProxy()
 
 					teem.root = main()
-					out(teem.root)
+
+					renderer.render(teem.root)
+					
 					teem.root.on_init.emit()
 				}
 				else if(msg.type == 'rpcJoin'){

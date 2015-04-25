@@ -15,6 +15,8 @@ define(function(require, exports, module){
 	else if(define.env == 'browser'){
 		return node.extend("sprite", function(){
 
+			this.attribute('bgcolor', 'color')
+
 			this.render = function(){
 				return this
 			}
