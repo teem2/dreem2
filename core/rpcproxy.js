@@ -32,7 +32,7 @@ define(function(require, exports, module){
 	RpcProxy.defineMethod = function(obj, key){
 		obj[key] = function(){
 			var args = []
-			var msg = {type:'rpcCall', id:this._rpcid, method:key, args:args }
+			var msg = {type:'rpcCall', rpcid:this._rpcid, method:key, args:args }
 
 			for(var i = 0; i < arguments.length; i++){
 				var arg = arguments[i]
@@ -59,7 +59,7 @@ define(function(require, exports, module){
 		}
 		else{
 			if(!RpcProxy.isJsonSafe(ret)){
-				console.log('RPC Return value of '+msg.id+' '+msg.method + ' is not json safe')		
+				console.log('RPC Return value of '+msg.rpcid+' '+msg.method + ' is not json safe')		
 				ret = null
 			}
 			socket.send({type:'rpcReturn', uid:msg.uid, value:ret})
@@ -79,6 +79,48 @@ define(function(require, exports, module){
 			return false
 		}
 		return true
+	}
+
+	RpcProxy.bindSetAttribute = function(object, rpcid, bus){
+	// ok lets now wire our mod.vdom.onSetAttribute
+		object._onAttributeSet = function(key, value){
+			// lets broadcast
+			if(!RpcProxy.isJsonSafe(value)){
+				console.log('setAttribute not JSON safe ' + name + '.' + key)
+				return
+			}
+			var msg = {
+				type:'rpcAttribute',
+				rpcid:rpcid,
+				attribute:key,
+				value: value
+			}
+			if(bus.broadcast){
+
+				bus.broadcast(msg)
+			}
+			else{
+				bus.send(msg)
+			}
+		}		
+	}
+
+	RpcProxy.decodeRpcID = function(onobj, rpcid){
+		if(!rpcid) throw new Error('no RPC ID')
+		var idx = rpcid.split('[')
+		var name = idx[0]
+
+		// its a object.sub[0] call
+		if(name.indexOf('.') != -1){
+			var part = name.split('.')
+			var obj = onobj[part[0]]
+			if(!obj) return 
+			obj = obj[part[1]]
+			if(!obj) return
+			if(idx[1]) return obj[objidx[1].slice(0,-1)]
+			return obj
+		}
+		return onobj[name]
 	}
 
 	RpcProxy.isJsonSafe = function(obj, stack){
@@ -114,9 +156,6 @@ define(function(require, exports, module){
 				if(prop.kind == 'attribute'){
 					// lets make an attribute
 					obj.attribute(key, prop.type)
-					obj.onAttributeSet = function(key, value){
-						
-					}
 				}
 				else if(prop.kind == 'method'){
 					// its a method, lets make an rpc interface for it

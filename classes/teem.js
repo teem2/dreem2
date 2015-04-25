@@ -65,11 +65,14 @@ define(function(require, exports, module){
 
 				// ok so. we have a vdom
 				var def = RpcProxy.createRpcDef(mod.vdom, Node.prototype)
+
 				// this is the rpc def for the clients
 				rpcdef[mod.name] = def
 
 				// store the vdom object as our main object
 				var obj = teem[mod.name] = mod.vdom
+
+				RpcProxy.bindSetAttribute(obj, mod.name, teem.bus)
 
 				// allow extension of the rpc def with multiples by the class itself
 				if(obj.rpcDef) obj.rpcDef(mod.name, rpcdef, rpcpromise)
@@ -92,26 +95,12 @@ define(function(require, exports, module){
 					if(teem.screens) teem.screens.screenJoin(socket)
 				}
 				else if(msg.type == 'rpcAttribute'){
-					// validate rpc call against our rpc def to filter out bad calls
-					if(!RpcProxy.verifyRpc(rpcdef, msg.id, msg.attribute, 'attribute')) return
-					// set the value
-					teem[msg.id][msg.attribute] = msg.value
+					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
+					if(obj) obj[msg.attribute] = msg.value
 				}
 				else if(msg.type == 'rpcCall'){
-					var idx = msg.id.split('[')
-					var id = idx[0]
-
-					if(!RpcProxy.verifyRpc(rpcdef, id, msg.method, 'method')) return
-
-					// its a object.sub[0] call
-					if(id.indexOf('.') != -1){
-						var part = id.split('.')
-						var obj = teem[part[0]][part[1]]
-						if(idx[1]) obj = obj[idx[1].slice(0,-1)]
-					}
-					else var obj = teem[id]
-
-					RpcProxy.handleCall(obj, msg, socket)
+					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
+					if(obj) RpcProxy.handleCall(obj, msg, socket)
 				}
 				else if(msg.type == 'rpcReturn'){
 					// we got an rpc return
@@ -163,17 +152,12 @@ define(function(require, exports, module){
 					teem.root.on_init.emit()
 				}
 				else if(msg.type == 'rpcJoin'){
-					var parts = msg.component.split('.')
-					var multi = teem[parts[0]][parts[1]]
-					multi._addNewProxy(msg.index, msg.component, rpcpromise)
+					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
+					obj._addNewProxy(msg.index, msg.rpcid, rpcpromise)
 				}
 				else if(msg.type == 'rpcAttribute'){
-					// validate rpc call against our rpc def to filter out bad calls
-					if(!teem.root[msg.attribute]){
-						return console.log('Rpc call received on nonexisting method ' + msg.method)
-					}
-					// set the value
-					teem.root[msg.attribute] = msg.value
+					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
+					if(obj) obj[msg.attribute] = msg.value
 				}
 				else if(msg.type == 'rpcCall'){
 					// lets call our method on root.

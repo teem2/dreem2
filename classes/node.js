@@ -81,7 +81,7 @@ define(function(require, exports, module){
 				var prop = arg0[key]
 				if(key.indexOf('attr_') == 0 && typeof prop == 'object' && prop._kind_ == 'attribute'){
 					key = key.slice(5)
-					this.attribute(key, prop.type)
+					this.attribute(key, prop.type, prop.value)
 				}
 				else if(key.indexOf('set_') == 0){
 					key = key.slice(4)
@@ -234,8 +234,10 @@ define(function(require, exports, module){
 						attr.addListener(value)
 						return
 					}
+		
+					if(this._onAttributeSet) this._onAttributeSet(key, value)
 					if(this.onAttributeSet) this.onAttributeSet(key, value)
-					if(attr.setter) value = attr.setter.call(this, value, attr)
+		
 					attr.set(value)
 				}
 			})

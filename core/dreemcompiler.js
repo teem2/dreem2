@@ -247,7 +247,9 @@ define(function(require, exports, module){
 					var type = child.attr.type || 'string'
 					if(props) props += ',\n' + myindent
 					else props = '{\n' + myindent
-					props += 'attr_' + name + ': {_kind_:"attribute", type:"'+type+'"}'
+					var value = child.attr.value
+					if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value + '"'
+					props += 'attr_' + name + ': {_kind_:"attribute", type:"'+type+'", value:'+value+'}'
 				} 
 				else {
 					if(children) children += ',\n' + myindent
