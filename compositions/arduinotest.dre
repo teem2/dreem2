@@ -26,7 +26,7 @@
 			<view>
 			</view>
 		</screen>
-		<screen name='mydali' type='dali'>
+		<screen name='mydali' type='browser'>
 			<method name='bla'>
 				console.log('hi')
 			</method>

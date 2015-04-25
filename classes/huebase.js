@@ -45,7 +45,7 @@ define(function(require, exports, module)
 		}
 		this.init = function() 
 		{				
-			console.color('~br~Hue~~ object started on server\n')	
+			console.color('~by~Hue~~ object started on server\n')	
 			
 			Hue.nupnpSearch(function(err, result) 
 			{
@@ -53,16 +53,14 @@ define(function(require, exports, module)
 				{
 					if (result[r].id == this.id)
 					{
+						console.log("found " + this.id + " at address " + result[r].ipaddress);
 						if (this.username != undefined)
 						{
 							var state  =  LightState.create();
 							this.apiObject =  new HueApi(result[r].ipaddress, this.username);
-							this.apiObject.searchForNewLights().then(displayResult).done();
-							this.apiObject.lights().then(displayResult).done();
-							this.apiObject.setLightState(1, state.on().transitiontime(0).hue(0).sat(255)).fail(displayError).done();
-							return;
-							this.apiObject.setLightState(2, state.on().transitiontime(0).hue(0).sat(255)).fail(displayError).done();
-							return;
+							this.apiObject.searchForNewLights().then(displayResult).fail(displayError).done();
+							this.apiObject.lights().then(displayResult).fail(displayError).done();
+							
 						}
 					}
 				}
