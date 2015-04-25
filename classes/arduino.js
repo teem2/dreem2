@@ -1,6 +1,10 @@
+/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+*/
 
-
-define(function(require, exports, module){
+define(function(require, exports, module)
+{
 	var node = require("../classes/node")
 	var teem = require("../classes/teem")
 	// do not reload the serialport module - it has operating-system dependent things that will crash otherwise
@@ -9,9 +13,7 @@ define(function(require, exports, module){
 		var serialPortModule = define.serialOnce || (define.serialOnce = require("serialport"));
 		var SerialPort = serialPortModule.SerialPort
 	}
-	catch(e){
-
-	}
+	catch(e){}
 
 	function lineConsumer (delimiter, encoding) 
 	{
@@ -35,9 +37,10 @@ define(function(require, exports, module){
 	return node.extend("arduino", function()
 	{
 		this.portOpened = false;
-			
-		this.attribute("testprop", "boolean")
+				
 		this.attribute("init", "event")
+		this.attribute("connected", "event")
+		
 		this.connectedOutputs = {};
 		
 		this.onAttributeSet = function(key, value)
@@ -54,20 +57,20 @@ define(function(require, exports, module){
 		this.init = function() 
 		{
 			console.color('~br~Arduino~~ object started on server\n')	
-			console.log("my port: " + this.port);
 			this.openPort = function()
 			{
-				console.log(this.portOpened);
-				console.log("opening port using handle "  + this.port);
 				
 				this.serialPortContainer = new SerialPort(this.port,{baudrate: 115200,  parser: lineConsumer("\n")});
 				
 				this.serialPortContainer.on('open', function()		
 				{
 					this.portOpened = true;
-					console.log('Serial Port Opened');
+					console.log('Serial Port Opened: ' + this.port);
+					if (this.on_connected) this.on_connected.emit();
+					
 					this.serialPortContainer.on('close', function (err) 
 					{
+					
 						this.serialPortContainer = null;
 						this.portOpened = false;
 					});
@@ -76,6 +79,7 @@ define(function(require, exports, module){
 					{
 						console.log('on.disconnect');
 					}.bind(this));
+					
 
 					this.serialPortContainer.on('error', function (err) 
 					{
@@ -141,7 +145,6 @@ define(function(require, exports, module){
 								if (port.comName.toLowerCase() == P.toLowerCase())
 								{
 									RootThis.port = port.comName;
-									console.log("found "+ P + "! Connecting!");
 									RootThis.openPort();										
 								}
 							}

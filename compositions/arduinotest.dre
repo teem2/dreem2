@@ -39,7 +39,7 @@
 			<view></view>
 		</screen>
 	</screens>
-	<huebase>
+	<huebase address="10.0.1.10" username="739b2752a33a7e73115a9412d23ff13">
 		<huelight>
 			<method name='test'>
 			</method>
@@ -52,12 +52,22 @@
 	</soundcloud>
 	<arduino name="ardu19" port='com19'>
 		<attribute name="number" value="0"/>
-		<attribute name="seg0" value="0"/>
-		<attribute name="knob1" value="0"/>
-		<method name="knob1" args="value">
-			console.log("handler");
-			teem.ardu19.number = Math.round(value*10);
+		<attribute name="button1" value="0"/>
+		<method name="button1" args="value">
+			if (value == 0) console.log("button 1 pressed");
 		</method>
+		<attribute name="button2" value="0"/>
+		<method name="button2" args="value">
+			if (value == 0) console.log("button 2 pressed");
+		</method>
+		<attribute name="knob1" value="0"/>
+		<handler name="knob1" args="value">
+			teem.ardu19.number = Math.round(value*50);
+		</handler>
+		<attribute name="knob2" value="0"/>
+		<handler name="knob2" args="value">
+			console.log(value);
+		</handler>
 		<handler name='connected'>
 			console.color('~bb~Arduino on com19~~ succesfully connected!\n')
 			return 'connected'
@@ -70,4 +80,5 @@
 			return 'connected'
 		</handler>
 	</arduino>
+	
 </composition>
