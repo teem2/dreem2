@@ -1,8 +1,58 @@
 <composition>
+<classes>
+	<class name="button" extends="view">		
+		<attribute name="label" type="string"/>		
+		<view bgcolor="gray" padding="10">
+			<text text="${this.label}"/>
+		</view>
+	</class>
+	<class name="iconbutton" extends="view">		
+		<attribute name="url" type="string"/>		
+		<view bgcolor="gray" padding="10">
+			<img src="${this.url}"/>
+		</view>
+	</class>
+	<class name="checkbox" extends="view">		
+		<attribute name="label" type="string"/>		
+		<view bgcolor="gray" padding="5">
+			<view bgcolor="white" bordercolor="darkgray" borderwidth="1" padding="0"></view>			
+			<text text="${this.label}"></text>
+		</view>
+	</class>
+	<class name="hslider" extends="view">
+		<view><!-- bg -->
+		<view></view> <!-- rail -->
+		<view></view> <!-- dragger -->
+		</view>
+	</class>
+	<class name="vslider" extends="view">
+		<view><!-- bg -->
+		<view></view> <!-- rail -->
+		<view></view> <!-- dragger -->
+		</view>
+	</class>
+	<class name="numberbox" extends="view"></class>
+	<class name="textbox" extends="view"></class>
+	<class name="radiobutton" extends="view"></class>
+	<class name="groupbox" extends="view"></class>
+</classes>
 <screens>
 	<screen type="browser" name="default">
-		<view bgcolor="black"> 
-			<view >
+		<view bgcolor="black" padding="15"> 
+			<view height="150" bgcolor="darkgray" padding="15">
+				<text font="Arial" size="30" color="white">Dreem2</text>
+			</view>
+			<view height="*" bgcolor="lightgray" padding="20">
+				<text>Hallo!</text>
+				<text>These are some UI elements to play around with!</text>
+				<button label="test button">
+					<handler event="clicked">
+						console.log("the test button has been clicked!");
+					</handler>
+				</button>
+				<iconbutton/>
+				<checkbox label="checkbox!"/>
+				<hslider/>
 			</view>
 		</view>
 	</screen>
