@@ -27,9 +27,9 @@ define(function(require, exports, module){
 	/**
 	  * @constructor
 	  */
-	function TeemServer(args, file_root){
+	function TeemServer(args){
 		this.compositions = {}
-		this.file_root = file_root
+
 		this.args = args
 		var port = this.args['-port'] || 8080
 		var iface = this.args['-iface'] || '0.0.0.0'
@@ -115,7 +115,7 @@ define(function(require, exports, module){
 			var path = url.split('/')
 			var name = path[1] || path[0] || this.default_composition
 			if(!name) return
-			if(!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, this.file_root, this.COMP_DIR + '/' + name, this)
+			if(!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, name, this)
 			return this.compositions[name]
 		}
 
@@ -151,7 +151,8 @@ define(function(require, exports, module){
 			if(composition) return composition.request(req, res)
 
 			// otherwise handle as static file
-			var file = path.join(this.file_root, req.url)
+
+			var file = path.join(define.expandVariables(define.ROOT), req.url)
 			fs.stat(file, function(err, stat){
 				if(err || !stat.isFile()){
 					if(url =='/favicon.ico'){

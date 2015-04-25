@@ -28,11 +28,10 @@ define(function(require, exports, module){
 	  * @param {String} file_root File server root
 	  * @param {String} name Name of the composition .dre
 	  */
-	function CompositionServer(args, file_root, name, teemserver){
+	function CompositionServer(args, name, teemserver){
 		this.teemserver = teemserver
 	 	this.args = args
 		this.name = name
-		this.file_root = file_root
 
 		this.busserver = new BusServer()
 		/*
@@ -81,7 +80,7 @@ define(function(require, exports, module){
 			var w = 0
 			if(!Array.isArray(errors)) errors = [errors]
 			errors.forEach(function(err){
-				err.expand(filepath, source)
+				err.expand(define.expandVariables(filepath), source)
 				console.color("~br~ Error ~y~" + err.path + "~bg~" + (err.line!==undefined?":"+ err.line + (err.col?":" + err.col:""):"")+"~~ "+err.message+"\n")
 				if(!err.path) w++
 			})
@@ -113,17 +112,17 @@ define(function(require, exports, module){
 	    	this.myteem = undefined
 	    }
 
-	    this.parseDreSync = function(full_path, errors){
+	    this.parseDreSync = function(drefile, errors){
 	    	// read our composition file
 	    	try{
-				var data = fs.readFileSync(full_path)
+				var data = fs.readFileSync(define.expandVariables(drefile))
 			} 
 			catch(e){
 				errors.push(new DreemError(e.toString()))
 				return
 			}
 			// watch it
-			this.watcher.watch(full_path)
+			this.watcher.watch(drefile)
 			
 			// and then showErrors
 			var htmlParser = new HTMLParser()
@@ -142,62 +141,78 @@ define(function(require, exports, module){
 			return jsobj
 	    }
 
-	    this.makeLocalDeps = function(deps, compfile, indent, errors){
-	    	var out = ''
-	    	for(var key in deps){
-				var incpath
-				if(compfile && key in this.local_classes) incpath = '../' + compfile + '.dre.' + key + '.js'
-				else{
-					// lets check if the file has a .dre file, ifso lets compile it sync.
-					var base = this.file_root + '/classes/' 
-					var drefile = base + key + '.dre'
-					var jsfile =  base + key + '.js'
-					var postfix = ''
-					if(fs.existsSync(drefile)){
-						if(!this.compile_once[drefile]){
-							this.compile_once[drefile] = 1
-							// lets parse and compile this dre file
-							var local_err = []
-							var dre = this.parseDreSync(drefile, local_err)
-							var root
-							for(var i = 0;i<dre.child.length; i++){
-								if(dre.child[i].tag == 'class') root = dre.child[i]
-							}
-							if(root && root.tag == 'class'){ // lets output this class
-								this.compileAndWriteDre(root, base, null, local_err)
-							}
-							if(local_err.length){
-								this.showErrors(local_err, drefile, jsxml.source)
-							}
-							else{
-								//postfix = '.dre.js'
-							}
+	    this.lookupDep = function(classname, compname, errors){
+			if(classname in this.local_classes){
+				// lets scan the -project subdirectories
+				return '$BUILD/' + compname + '.dre.' + classname + '.js'
+			}
+
+			try{
+				var paths = fs.readdirSync(define.expandVariables(define.LIB))
+				paths = paths.map(function(value){
+					return '$LIB/' + value
+				})
+			}
+			catch(e){
+				errors.push(new DreemError(e.message))
+				var paths = []
+			}
+			paths.unshift('$CLASSES')
+
+			for(var i = 0;i < paths.length; i++){
+
+				var drefile = paths[i] + '/' + classname + '.dre'
+				var jsfile =  paths[i] + '/' + classname + '.js'
+
+				if(fs.existsSync(define.expandVariables(drefile))){
+					if(!this.compile_once[drefile]){
+						this.compile_once[drefile] = 1
+						// lets parse and compile this dre file
+						var local_err = []
+						var dre = this.parseDreSync(drefile, local_err)
+						var root
+						for(var i = 0;i<dre.child.length; i++){
+							if(dre.child[i].tag == 'class') root = dre.child[i]
+						}
+						if(root && root.tag == 'class'){ // lets output this class
+							jsfile = "$BUILD/" + classname + ".js"
+							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
+						}
+						if(local_err.length){
+							this.showErrors(local_err, drefile, jsxml.source)
 						}
 					}
-					else if(!fs.existsSync(jsfile)){
-						errors.push(new DreemError('Cannot find file '+jsfile))
-					} 
-					else{
-						this.watcher.watch(jsfile)
-					}
-					incpath = '../classes/' + key //+ postfix
 				}
-				out += indent + 'var ' + key + ' = require("' + incpath + '")\n'
+				if(fs.existsSync(define.expandVariables(jsfile))){
+					this.watcher.watch(jsfile)
+					return jsfile
+				}
+			}
+			console.color("~br~Error~~ finding class " + classname)
+	    }
+
+	    this.makeLocalDeps = function(deps, compname, indent, errors){
+	    	var out = ''
+	    	for(var key in deps){
+				var incpath = this.lookupDep(key, compname, errors)
+				if(incpath){
+					out += indent + 'var ' + key + ' = require("' + incpath + '")\n'
+				}
 			}
 			return out
 	    }
 
 	    /* Internal, compiles and writes dre .js class */
-	    this.compileAndWriteDre = function(jsxml, base, filename, errors){
+	    this.compileAndWriteDreToJS = function(jsxml, filename, compname, errors){
 
 	    	var js = dreem_compiler.compileClass(jsxml, errors)
 	    	if(!js) return
 			// write out our composition classes
 			var out = 'define(function(require, exports, module){\n' 
-			out += this.makeLocalDeps(js.deps, filename, '\t', errors)
+			out += this.makeLocalDeps(js.deps, compname, '\t', errors)
 			out += '\treturn ' + js.body + '\n})'
 			try{
-				fs.writeFileSync(base + js.name + '.js', out)
+				fs.writeFileSync(define.expandVariables(filename), out)
 			}
 			catch(e){
 				errors.push(new DreemError(e.toString()))
@@ -208,7 +223,7 @@ define(function(require, exports, module){
 	    /* Internal, packages and writes a dali application */
 	    this.packageDali = function(root, output){
 	    	// lets load define
-	    	var definejs = fs.readFileSync(define.joinPath(this.file_root, 'define.js')).toString()
+	    	var definejs = fs.readFileSync(define.expandVariables('$ROOT/define.js')).toString()
 			// lets recursively load all our dependencies.
 			var files = {}
 			function recur(file){
@@ -252,7 +267,7 @@ define(function(require, exports, module){
 			require.clearCache()
 			define.onMain = undefined
 
-			var filepath = define.joinPath(this.file_root, this.name) + '.dre'
+			var filepath = "$COMPOSITIONS/" + this.name + '.dre'
 			var errors = []
 
 			var dre = this.parseDreSync(filepath, errors)
@@ -275,8 +290,9 @@ define(function(require, exports, module){
 					// lets compile our local classes
 					for(var j = 0, classes = child.child, clen = classes.length; j<clen; j++){
 						var cls = classes[j]
-						var name = this.compileAndWriteDre(classes[j], filepath + '.', this.name,  errors)
-						this.local_classes[name] = 1
+						var classname = cls.attr && cls.attr.name || 'unknown'
+						this.compileAndWriteDreToJS(classes[j], '$BUILD/' + this.name + '.dre.' + classname + '.js' , this.name,  errors)
+						this.local_classes[classname] = 1
 					}
 					continue
 				}
@@ -290,7 +306,7 @@ define(function(require, exports, module){
 				out += '\treturn function(){\n\t\treturn ' + js.body + '\n\t}\n})'
 				
 				if(js.tag === 'screens'){
-					var component = filepath +'.screens.js' 
+					var component = "$BUILD/" + this.name + '.dre.screens.js' 
 				}
 				else{
 					var collide = ''
@@ -300,10 +316,10 @@ define(function(require, exports, module){
 					}
 					js.name += collide
 					this.components[js.name] = 1
-					var component = filepath + '.' + js.tag + '.' + js.name + '.js'
+					var component = "$BUILD/" + this.name +  '.dre.' + js.tag + '.' + js.name + '.js'
 				}
 
-				fs.writeFileSync(component, out)
+				fs.writeFileSync(define.expandVariables(component), out)
 			
 				this.modules.push({
 					jsxml:child,
@@ -324,8 +340,8 @@ define(function(require, exports, module){
 						out += this.makeLocalDeps(sjs.deps, this.name, '\t', errors)
 						out += '\treturn function(){\n\t\treturn ' + sjs.body + '\n\t}\n})'
 						
-						var component = filepath + '.screens.' + sjs.name + '.js'
-						fs.writeFileSync(component, out)
+						var component = "$BUILD/" + this.name + '.dre.screens.' + sjs.name + '.js'
+						fs.writeFileSync(define.expandVariables(component), out)
 
 						if(schild.attr && schild.attr.type == 'dali'){
 							this.packageDali(component, component.slice(0, -3) + '.pack.js')
@@ -402,7 +418,7 @@ define(function(require, exports, module){
 						var json = JSON.parse(buf)
 						this.myteem.postAPI(json,{send:function(msg){
 							res.writeHead(200, {"Content-Type":"text/json"})
-							res.write(msg.value)
+							res.write(JSON.stringify(msg))
 							res.end()
 						}})
 					}
@@ -424,7 +440,7 @@ define(function(require, exports, module){
 				return
 			}
 
-			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, this.name + '.dre.screens.' + app + '.js')
+			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, '$BUILD/' + this.name + '.dre.screens.' + app + '.js')
 
 			var header = {
 				"Cache-control":"max-age=0",

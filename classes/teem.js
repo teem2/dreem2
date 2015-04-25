@@ -5,13 +5,14 @@
 
 define(function(require, exports, module){
 	// lets return our singleton teem object
-	var Node = require('./node')
+	var Node = require('$CLASSES/node')
+
 	var teem = Node.singleton('Teem')
 
-	var RpcProxy = require('../core/rpcproxy')
-	var RpcPromise = require('../core/rpcpromise')
-	var RpcMulti = require('../core/rpcmulti')
-	var Renderer = require('../core/renderer')
+	var RpcProxy = require('$CORE/rpcproxy')
+	var RpcPromise = require('$CORE/rpcpromise')
+	var RpcMulti = require('$CORE/rpcmulti')
+	var Renderer = require('$CORE/renderer')
 
 	teem._modules = {}
 
@@ -38,8 +39,6 @@ define(function(require, exports, module){
 		console.log('Teem server module started')
 		// our teem bus is the local server bus
 		define.onMain = function(moddescs, bus){
-			
-			//var rpcpromise = new RpcPromise(bus)
 
 			teem.bus = bus
 			
@@ -86,14 +85,16 @@ define(function(require, exports, module){
 				if(msg.type == 'attribute'){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					if(obj) obj[msg.attribute] = msg.value
-					response.send({value:'OK'})
+					response.send({type:'return',value:'OK'})
 				}
 				else if(msg.type == 'method'){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					if(obj) RpcProxy.handleCall(obj, msg, response)
 				}
-				else response.send({value:'please set type to rpcAttribute or rpcCall'})
+				else response.send({type:'error', value:'please set type to rpcAttribute or rpcCall'})
 			}
+
+			bus.broadcast({type:'sessionCheck', session:teem.session})
 
 			bus.onConnect = function(socket){
 				socket.send({type:'sessionCheck', session:teem.session})
@@ -130,7 +131,7 @@ define(function(require, exports, module){
 	else if(define.env == 'browser'){
 		console.log('Teem browser module started')
 		// web environment
-		var BusClient = require('../core/busclient')
+		var BusClient = require('$CORE/busclient')
 
 		teem.bus = new BusClient(location.pathname)
 		var rpcpromise = new RpcPromise(teem.bus)
@@ -171,6 +172,7 @@ define(function(require, exports, module){
 					teem.root.on_init.emit()
 				}
 				else if(msg.type == 'join'){
+					console.log("Adding proxy")
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					obj._addNewProxy(msg.index, msg.rpcid, rpcpromise)
 				}
@@ -178,7 +180,7 @@ define(function(require, exports, module){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					if(obj) obj[msg.attribute] = msg.value
 				}
-				else if(msg.type == 'call'){
+				else if(msg.type == 'method'){
 					// lets call our method on root.
 					if(!teem.root[msg.method]){
 						return console.log('Rpc call received on nonexisting method ' + msg.method)

@@ -117,7 +117,7 @@ define(function(require, exports, module){
 			if(!obj) return 
 			obj = obj[part[1]]
 			if(!obj) return
-			if(idx[1]) return obj[objidx[1].slice(0,-1)]
+			if(idx[1]) return obj[idx[1].slice(0,-1)]
 			return obj
 		}
 		return onobj[name]

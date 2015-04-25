@@ -5,7 +5,7 @@
 
 define(function(require, exports, module)
 {
-	var node = require("../classes/node")
+	var node = require("$CLASSES/node")
 	return node.extend("huelight", function()
 	{
 		this.attribute("init", "event")

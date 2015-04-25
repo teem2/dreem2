@@ -4,8 +4,12 @@
 */
 
 define(function(require, exports, module){
-	var node = require("../classes/node")
+	var node = require("$CLASSES/node")
 	return node.extend("soundcloud", function(){
-		this.attribute('init','event')
+		this.attribute('init', 'event')
+		
+		this.loadUrl = function(){
+			
+		}
 	})
 })

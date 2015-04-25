@@ -22,11 +22,12 @@
 	//define.amd = true
 
 	// default config variables
-	define.ROOT = '/'
-	define.CLASSES_DIR = '$ROOT/classes/'
-	define.DEFAULT_DIR = '$ROOT/lib/'
-	define.LIB_DIR = '$ROOT/lib/'
-	define.FILE_BASE = ''
+	define.ROOT = ''
+	define.CLASSES = "$ROOT/classes"
+	define.CORE = "$ROOT/core"
+	define.LIB = "_lib_"
+	define.COMPOSITIONS = "$ROOT/compositions"
+	define.BUILD = "$ROOT/build"
 
 	// copy configuration onto define
 	if(typeof config_define == 'object') for(var key in config_define){
@@ -46,10 +47,10 @@
 
 	define.joinPath = function(base, relative){
 		if(relative.charAt(0) != '.'){ // relative is already absolute
-			if(relative.charAt(0) == '/'){
+			if(relative.charAt(0) == '/' || relative.indexOf(':') != -1){
 				return relative
 			}
-			var path = this.FILE_BASE + (relative.charAt(0) == '/'? relative: '/' + relative) 
+			var path = base + '/' + relative
 			return define.cleanPath(path)
 		}
 		base = base.split(/\//)
@@ -112,7 +113,7 @@
 	}
 	else if(typeof window !== 'undefined')(function(){ // browser implementation
 		// if define was already defined use it as a config store
-		define.FILE_BASE = location.origin
+		define.ROOT = location.origin
 		define.environment == 'browser|modules'
 		// storage structures
 		define.script_tags = {}
@@ -124,7 +125,8 @@
 
 		function startMain(){
 			// lets find our main and execute the factory
-			var main_mod = define.joinPath(app_root, define.MAIN)
+			var main_mod = define.expandVariables(define.MAIN)
+
 			var factory = define.factory[main_mod]
 			if(!factory) throw new Error("Cannot find main: " + main_mod)
 
@@ -156,6 +158,7 @@
 				if(factory) define.findRequires(factory.toString()).forEach(function(path){
 					// Make path absolute and process variables
 					var dep_path = define.joinPath(base_path, define.expandVariables(path))
+
 					// automatic .js appending if not given
 					if(dep_path.indexOf(".js") != dep_path.length -3) dep_path += '.js'
 					// load it
@@ -176,10 +179,10 @@
 
 		// boot up using the MAIN property
 		if(define.MAIN){
-			insertScriptTag(define.joinPath(app_root, define.expandVariables(define.MAIN)), window.location.href)
+			insertScriptTag(define.expandVariables(define.MAIN), window.location.href)
 		}
 		window.out = console.log.bind(console)
-		
+
 		var backoff = 1
 		define.autoreloadConnect = function(){
 
@@ -226,9 +229,10 @@
 	else (function(){ // nodeJS implementation
 		module.exports = global.define = define
 		define.environment = 'node'
-		define.FILE_BASE = define.filePath(module.filename.replace(/\\/g,'/'))
-		var Module = require("module")
 
+		define.ROOT = define.filePath(module.filename.replace(/\\/g,'/'))
+
+		var Module = require("module")
 		var modules = []
 		var _compile = module.constructor.prototype._compile
 

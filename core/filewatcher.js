@@ -37,7 +37,7 @@ define(function(require, exports, module){
 			var names = []
 			for(var k in this.files){
 				names.push(k)
-				stats.push(fs.statPromise(k))
+				stats.push(fs.statPromise(define.expandVariables(k)))
 			}
 			Promise.all(stats).then(function(results){
 				for(var i = 0;i < results.length; i++){

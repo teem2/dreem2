@@ -6,8 +6,8 @@
 define(function(require, exports, module){
 	module.exports = Node
 
-	var Attribute = require ('../core/attribute')
-	var types = require('../core/types')
+	var Attribute = require ('$CORE/attribute')
+	var types = require('$CORE/types')
 
 	/**
 	  * @constructor

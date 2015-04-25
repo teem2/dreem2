@@ -38,6 +38,7 @@ function main(){
 		args['-delay'] = true
 		args['-nodreem'] = true
 		args['-browser'] = args['-web']
+		args['-lib'] = args['-lib'] || "../projects"
 	}
 
 	if(args['-h'] || args['-help'] || args['--h']|| args['--help']){
@@ -57,6 +58,9 @@ function main(){
 		console.color('~bc~-edit~~ Automatically open an exception in your code editor at the right line\n')
 		return process.exit(0)
 	}
+	define.LIB = define.joinPath(define.ROOT, args['-lib'])
+
+	try{fs.mkdirSync(define.expandVariables(define.BUILD))}catch(e){}
 
 	if(args['-nomoni']){
 		if(args['-dali']){
@@ -64,8 +68,8 @@ function main(){
 			new DaliGen(args)
 		}
 		else{
-			var TeemServer = require('./core/teemserver')
-			new TeemServer(args, define.filePath(module.filename.replace(/\\/g,'/')))
+			var TeemServer = require('$CORE/teemserver')
+			new TeemServer(args)
 		}
 	}
 	else{
