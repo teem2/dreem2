@@ -142,6 +142,11 @@ define(function(require, exports, module){
 	    }
 
 	    this.lookupDep = function(classname, compname, errors){
+			var built = "$BUILD/" + classname + '.js' 
+			if(fs.existsSync(define.expandVariables(built))){
+				return built
+			}
+
 			if(classname in this.local_classes){
 				// lets scan the -project subdirectories
 				return '$BUILD/' + compname + '.dre.' + classname + '.js'
@@ -194,7 +199,7 @@ define(function(require, exports, module){
 					return jsfile
 				}
 			}
-			console.color("~br~Error~~ finding class " + classname)
+			console.color("~br~Error~~ finding class " + classname + '\n')
 	    }
 
 	    this.makeLocalDeps = function(deps, compname, indent, errors){
