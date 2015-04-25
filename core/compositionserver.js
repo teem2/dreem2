@@ -167,13 +167,11 @@ define(function(require, exports, module){
 				var ignore_watch = false
 				if(fs.existsSync(define.expandVariables(drefile))){
 					if(!this.compile_once[drefile]){
-						this.compile_once[drefile] = 1
 						// lets parse and compile this dre file
 						var local_err = []
 						var dre = this.parseDreSync(drefile, local_err)
 						var root
 						if(!dre.child){
-							console.log('Empty DRE file '+drefile)
 							return ''
 						}
 						for(var j = 0; j < dre.child.length; j++){
@@ -181,6 +179,7 @@ define(function(require, exports, module){
 						}
 						if(root && root.tag == 'class'){ // lets output this class
 							jsfile = "$BUILD/" + classname + ".js"
+							this.compile_once[drefile] = jsfile;
 							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
 							ignore_watch = true
 						}
@@ -188,14 +187,20 @@ define(function(require, exports, module){
 							this.showErrors(local_err, drefile, dre.source)
 						}
 					}
+					else
+					{
+						jsfile = this.compile_once[drefile];
+					}
 
 				}
-
-				if(fs.existsSync(define.expandVariables(jsfile))){
+				
+				if(fs.existsSync(define.expandVariables(jsfile)))
+				{
 					if(!ignore_watch) this.watcher.watch(jsfile)
 					return jsfile
 				}
 			}
+			
 			console.color("~br~Error~~ finding class " + classname + '\n')
 	    }
 

@@ -3,6 +3,8 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 
+// using the node-hue-api found here:  https://github.com/peter-murray/node-hue-api
+
 define(function(require, exports, module)
 {
 	var node = require("$CLASSES/node")
@@ -19,30 +21,48 @@ define(function(require, exports, module)
 	
 	var displayResult = function(result) 
 	{
-		console.log(JSON.stringify(result, null, 2));
+		console.log("result: " + JSON.stringify(result, null, 2));
 	};
 
 	var displayError = function(err) 
 	{
-		console.error(err);
+		console.error("" + err);
 	};
-	return node.extend("huebase", function()
+	
+	return node.extend("huebase_old", function()
 	{
 		this.attribute("init", "event");
-	
+		this.setLight = function(id, r,g,b)
+		{
+			if (this.apiObject == undefined) 
+			{	
+				return;
+			}
+			var state  =  LightState.create();
+			this.apiObject.setLightState(id, state.on().transitiontime(0).hsl(r,g,b)).fail(displayError).done();
+		}
+		
 		this.init = function() 
 		{				
 			if(!LightState) return
 			console.color('~br~Hue~~ object started on server\n')	
-			console.log(this.username);
-			if (this.username != undefined && this.address != undefined)
+			Hue.nupnpSearch(function(err, result) 
 			{
-			var state  =  LightState.create();
-			this.apiObject =  new HueApi(this.address, this.username);
-			this.apiObject.searchForNewLights().then(displayResult).done();
-			this.apiObject.lights().then(displayResult).done();
-			this.apiObject.setLightState(1, state.on().transitiontime(0).hue(0).sat(0)).then(displayResult).fail(displayError).done();
-			}
-		};
+				for(r in result)
+				{
+					if (result[r].id == this.id)
+					{
+						console.log("found " + this.id + " at address " + result[r].ipaddress);
+						if (this.username != undefined)
+						{
+							var state  =  LightState.create();
+							this.apiObject =  new HueApi(result[r].ipaddress, this.username);
+							this.apiObject.searchForNewLights().then(displayResult).fail(displayError).done();
+							this.apiObject.lights().then(displayResult).fail(displayError).done();							
+						}
+					}
+				}
+			}.bind(this));
+		}
 	})
 })

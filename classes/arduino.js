@@ -69,8 +69,7 @@ define(function(require, exports, module)
 					if (this.on_connected) this.on_connected.emit();
 					
 					this.serialPortContainer.on('close', function (err) 
-					{
-					
+					{					
 						this.serialPortContainer = null;
 						this.portOpened = false;
 					});
@@ -88,11 +87,8 @@ define(function(require, exports, module)
 	
 					var i = 0;
 	
-					//setInterval(function(){this.serialPortContainer.write("mtd countdown\r\n");i=(i+1)%10}.bind(this), 4000);
-	
 					this.serialPortContainer.on('data', function(data)
 					{
-						//	console.log(data);
 						try
 						{
 							var parsed = JSON.parse(data);
@@ -139,7 +135,6 @@ define(function(require, exports, module)
 					{
 						ports.forEach(function(port) 
 						{
-							//	console.log("available com port: " + port.comName + " " + port.pnpId + " " + port.manufacturer);
 							if (P != undefined)
 							{
 								if (port.comName.toLowerCase() == P.toLowerCase())
