@@ -379,7 +379,7 @@ define(function(require, exports, module){
 			catch(e){
 				console.error(e.stack+'\x0E')
 			}
-			// initialize it
+			// send a reload on the busserver
 			if(define.onMain) define.onMain(this.modules, this.busserver)
 		}
 

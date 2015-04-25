@@ -25,7 +25,7 @@
 	define.ROOT = ''
 	define.CLASSES = "$ROOT/classes"
 	define.CORE = "$ROOT/core"
-	define.LIB = "_lib_"
+	define.LIB = "/_lib_"
 	define.COMPOSITIONS = "$ROOT/compositions"
 	define.BUILD = "$ROOT/build"
 

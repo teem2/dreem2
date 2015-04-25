@@ -172,7 +172,6 @@ define(function(require, exports, module){
 					teem.root.on_init.emit()
 				}
 				else if(msg.type == 'join'){
-					console.log("Adding proxy")
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					obj._addNewProxy(msg.index, msg.rpcid, rpcpromise)
 				}

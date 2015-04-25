@@ -9,7 +9,7 @@ define(function(require, exports, module){
 	var fs = require('fs')
 	var Promisify = require('./promisify')
 	fs.statPromise = Promisify(fs.stat)
-
+	var uid = 0
 	/**
 	 * @constructor
 	 */
@@ -20,6 +20,7 @@ define(function(require, exports, module){
 		this.itv = setTimeout(this.poll, 0)
 		this.lastfire = 0
 		this.firelimit = 1000
+		this.uid = uid++
 	}
 	body.call(FileWatcher.prototype)
 
@@ -40,13 +41,13 @@ define(function(require, exports, module){
 				stats.push(fs.statPromise(define.expandVariables(k)))
 			}
 			Promise.all(stats).then(function(results){
+				setTimeout(this.poll, this.timeout)
 				for(var i = 0;i < results.length; i++){
 					var file = names[i]
 					var res = results[i]
 					res.atime = null
 					var str = JSON.stringify(res)
 					// lets make sure we dont fire too often
-
 					if(this.files[file] !== null && this.files[file] !== str){
 						var now = Date.now()
 						if(now - this.lastfire > this.firelimit){
@@ -56,7 +57,6 @@ define(function(require, exports, module){
 					}
 					this.files[file] = str
 				}
-				setTimeout(this.poll, this.timeout)
 			}.bind(this)).catch(function(err){
 				// TODO lets unwatch the files that errored?
 			})

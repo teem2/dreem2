@@ -36,8 +36,14 @@
 	<class name="radiobutton" extends="view"></class>
 	<class name="groupbox" extends="view"></class>
 </classes>
+
 <screens>
 	<screen type="browser" name="default">
+		<myexternal>
+			<handler event='init'>
+				console.log('woop')
+			</handler>
+		</myexternal>	
 		<view bgcolor="black" padding="15"> 
 			<view height="150" bgcolor="darkgray" padding="15">
 				<text font="Arial" size="30" color="white">Dreem2</text>

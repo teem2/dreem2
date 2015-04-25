@@ -69,7 +69,7 @@ define(function(require, exports, module){
 			}
 			this.broadcast({
 				type:'filechange',
-				file:file.slice(this.file_root.length)
+				file: file
 			})
 		}.bind(this)
 
@@ -151,8 +151,14 @@ define(function(require, exports, module){
 			if(composition) return composition.request(req, res)
 
 			// otherwise handle as static file
+			var url = req.url
+			if(url.indexOf('_lib_') != -1){
+				var file = url.replace(/\_lib\_/,define.expandVariables(define.LIB))
+			}
+			else{
+				var file = path.join(define.expandVariables(define.ROOT), req.url)
+			}
 
-			var file = path.join(define.expandVariables(define.ROOT), req.url)
 			fs.stat(file, function(err, stat){
 				if(err || !stat.isFile()){
 					if(url =='/favicon.ico'){
@@ -171,7 +177,9 @@ define(function(require, exports, module){
 					"Content-Type": mimeFromFile(file),
 					"ETag": stat.mtime.getTime()+'_'+stat.ctime.getTime()+'_'+stat.size
 				}
-		
+	
+				this.watcher.watch(file)
+	
 				if( req.headers['if-none-match'] == header.ETag){
 					res.writeHead(304,header)
 					res.end()
@@ -181,8 +189,8 @@ define(function(require, exports, module){
 				var stream = fs.createReadStream(file)
 				res.writeHead(200, header)
 				stream.pipe(res)
-
-				this.watcher.watch(file)
+				// ok so we get a filechange right?
+				
 			}.bind(this))
 		}
 	}
