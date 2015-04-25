@@ -1,0 +1,10 @@
+<composition>
+<screens>
+	<screen type="browser" name="default">
+		<view bgcolor="black"> 
+			<view >
+			</view>
+		</view>
+	</screen>
+</screens>
+</composition>
