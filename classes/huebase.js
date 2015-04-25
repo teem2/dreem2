@@ -45,8 +45,8 @@ define(function(require, exports, module)
 		}
 		this.init = function() 
 		{				
-			console.color('~by~Hue~~ object started on server\n')	
-			
+			if(!LightState) return
+			console.color('~br~Hue~~ object started on server\n')	
 			Hue.nupnpSearch(function(err, result) 
 			{
 				for(r in result)

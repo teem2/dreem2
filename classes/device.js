@@ -4,7 +4,7 @@
 */
 
 define(function(require, exports, module){
-	var node = require("../classes/node")
+	var node = require("$CLASSES/node")
 	return node.extend("device", function(){
 		this.construct = function(){
 		}

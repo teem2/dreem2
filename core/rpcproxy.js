@@ -10,7 +10,7 @@
  */
 
 define(function(require, exports, module){
-	var Node = require('../classes/node')
+	var Node = require('$CLASSES/node')
 
 	// json safety check
 	var RpcProxy = module.exports = Node.extend('RpcProxy', function(){

@@ -152,8 +152,8 @@ define(function(require, exports, module){
 
 			// otherwise handle as static file
 			var url = req.url
-			if(url.indexOf('_lib_') != -1){
-				var file = url.replace(/\_lib\_/,define.expandVariables(define.LIB))
+			if(url.indexOf('_extlib_') != -1){
+				var file = url.replace(/\_extlib\_/,define.expandVariables(define.EXTLIB))
 			}
 			else{
 				var file = path.join(define.expandVariables(define.ROOT), req.url)

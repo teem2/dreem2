@@ -38,7 +38,7 @@ function main(){
 		args['-delay'] = true
 		args['-nodreem'] = true
 		args['-browser'] = args['-web']
-		args['-lib'] = args['-lib'] || "../projects"
+		args['-extlib'] = args['-extlib'] || "../projects"
 	}
 
 	if(args['-h'] || args['-help'] || args['--h']|| args['--help']){
@@ -58,7 +58,7 @@ function main(){
 		console.color('~bc~-edit~~ Automatically open an exception in your code editor at the right line\n')
 		return process.exit(0)
 	}
-	define.LIB = define.joinPath(define.ROOT, args['-lib'])
+	define.EXTLIB = define.joinPath(define.ROOT, args['-extlib'])
 
 	try{fs.mkdirSync(define.expandVariables(define.BUILD))}catch(e){}
 
