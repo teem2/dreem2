@@ -26,23 +26,22 @@ define(function(require, exports, module)
 
 	var displayError = function(err) 
 	{
-		console.error("error: " + err);
+		console.error("" + err);
 	};
 	
-	return node.extend("huebase", function()
+	return node.extend("huebase_old", function()
 	{
 		this.attribute("init", "event");
 		this.setLight = function(id, r,g,b)
 		{
-			console.log(id,r,g,b);
 			if (this.apiObject == undefined) 
-			{
-			console.log("test");
-			return;
+			{	
+				return;
 			}
 			var state  =  LightState.create();
 			this.apiObject.setLightState(id, state.on().transitiontime(0).hsl(r,g,b)).fail(displayError).done();
 		}
+		
 		this.init = function() 
 		{				
 			if(!LightState) return
@@ -59,8 +58,7 @@ define(function(require, exports, module)
 							var state  =  LightState.create();
 							this.apiObject =  new HueApi(result[r].ipaddress, this.username);
 							this.apiObject.searchForNewLights().then(displayResult).fail(displayError).done();
-							this.apiObject.lights().then(displayResult).fail(displayError).done();
-							
+							this.apiObject.lights().then(displayResult).fail(displayError).done();							
 						}
 					}
 				}
