@@ -43,7 +43,7 @@ define(function(require, exports, module){
 	/* Supported languages, these are lazily loaded */
 	exports.languages = {
 		js:{
-			compiler: require('./acorn'),
+			compiler: require('$LIB/acorn'),
 			compile: function(string, args){
 				// this returns a compiled function or an error
 				var head = 'function __parsetest__('+args.join(',')+'){'
@@ -59,7 +59,7 @@ define(function(require, exports, module){
 			}
 		},
 		coffee:{
-			compiler: require('./coffee-script'),
+			compiler: require('$LIB/coffee-script'),
 			compile: function(string, args){
 				// compile the code
 				try{

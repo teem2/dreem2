@@ -148,9 +148,9 @@ define(function(require, exports, module){
 			}
 
 			try{
-				var paths = fs.readdirSync(define.expandVariables(define.LIB))
+				var paths = fs.readdirSync(define.expandVariables(define.EXTLIB))
 				paths = paths.map(function(value){
-					return '$LIB/' + value
+					return '$EXTLIB/' + value
 				})
 			}
 			catch(e){
