@@ -38,10 +38,21 @@ define(function(require, exports, module){
 				if(arg === undefined) continue
     			if(!obj.child) obj.child = []
     			if(Array.isArray(arg)){
-    				obj.child.push.apply(obj.child, arg)
+    				for(var j = 0; j<arg.length; i++){
+    					var item = arg[j]
+    					if(typeof item == 'object' && item){
+	    					var name = item.name
+	    					if(name !== undefined && !(name in this)) this[name] = item
+	    				}
+    					obj.child.push(item)
+    				}
     			}
     			else{
-	    			obj.child.push(arg)
+    				if(typeof arg == 'object' && arg){
+						var name = arg.name
+						if(name !== undefined && !(name in this)) this[name] = arg
+					}
+					obj.child.push(arg)
 	    		}
 			}
 			// expand into tree structure
