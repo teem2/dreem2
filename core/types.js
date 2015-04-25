@@ -4,36 +4,39 @@
 */
 
 define(function(require, exports, module){
+	var colorParser = require('./colorparser.js')
 
 	exports.number = {
 		name:'number',
-		parse:function(){
-
+		parse:function(str){
+			return parseFloat(str)
 		}
 	}
 
 	exports.string = {
 		name:'string',
-		parse:function(){
-
+		parse:function(str){
+			return str
 		}
 	}
 
 	exports.boolean = {
 		name:'boolean',
-		parse:function(){
-
+		parse:function(str){
+			if(str === 'true') return true
+			else return false
 		}
 	}
 
 	exports.color = {
 		name:'color',
-		parse:function(){
-
+		parse:function(col){
+			return colorParser(col)
 		}
 	}
 
 	exports.event = {
-		name:'event'
+		name:'event',
+		parse:function(v){ return v }
 	}
 })

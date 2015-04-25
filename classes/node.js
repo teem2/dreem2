@@ -205,7 +205,8 @@ define(function(require, exports, module){
 					var attr = this[attr_key]
 					// make an instance copy if needed
 					if(attr.owner != this){
-						attr = this[attr_key] = Object.create(attr)
+						attr = Object.create(attr)
+						Object.defineProperty(this, attr_key, {writable:true, value:attr})
 						attr.owner = this
 					}
 					return attr
@@ -227,7 +228,8 @@ define(function(require, exports, module){
 					var attr = this[attr_key]
 					// make instance copy if needed
 					if(attr.owner != this){
-						attr = this[attr_key]= Object.create(attr)
+						attr = Object.create(attr)
+						Object.defineProperty(this, attr_key, {writable:true, value:attr})
 						attr.owner = this
 					}
 					if(typeof value == 'function'){

@@ -42,7 +42,7 @@ function main(){
 
 	if(args['-h'] || args['-help'] || args['--h']|| args['--help']){
 		console.color('~by~Teem~~ Server ~bm~2.0~~\n')
-		console.color('commandline: node teem.js <flags>\n')
+		console.color('commandline: node server.js <flags>\n')
 		console.color('~bc~-web htmlfile.html~~ Short for -edit -notify -devtools -nodreem -delay -browser htmlfile.html\n')	
 		console.color('~bc~-port ~br~[port]~~ Server port\n')
 		console.color('~bc~-nomoni ~~ Start process without monitor\n')

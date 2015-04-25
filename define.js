@@ -178,7 +178,8 @@
 		if(define.MAIN){
 			insertScriptTag(define.joinPath(app_root, define.expandVariables(define.MAIN)), window.location.href)
 		}
-
+		window.out = console.log.bind(console)
+		
 		var backoff = 1
 		define.autoreloadConnect = function(){
 

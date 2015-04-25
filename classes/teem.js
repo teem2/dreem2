@@ -148,7 +148,7 @@ define(function(require, exports, module){
 					var proxy = new RpcProxy()
 
 					teem.root = main()
-
+					out(teem.root)
 					teem.root.on_init.emit()
 				}
 				else if(msg.type == 'rpcJoin'){
