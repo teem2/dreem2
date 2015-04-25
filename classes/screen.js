@@ -4,8 +4,8 @@
 */
 
 define(function(require, exports, module){
-	var node = require("./node")
-	var sprite = require("./sprite")
+	var node = require("$CLASSES/node")
+	var sprite = require("$CLASSES/sprite")
 
 	return node.extend("screen", function(){
 		this.attribute('init','event')

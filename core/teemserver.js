@@ -27,9 +27,9 @@ define(function(require, exports, module){
 	/**
 	  * @constructor
 	  */
-	function TeemServer(args, file_root){
+	function TeemServer(args){
 		this.compositions = {}
-		this.file_root = file_root
+
 		this.args = args
 		var port = this.args['-port'] || 8080
 		var iface = this.args['-iface'] || '0.0.0.0'
@@ -69,7 +69,7 @@ define(function(require, exports, module){
 			}
 			this.broadcast({
 				type:'filechange',
-				file:file.slice(this.file_root.length)
+				file: file
 			})
 		}.bind(this)
 
@@ -115,7 +115,7 @@ define(function(require, exports, module){
 			var path = url.split('/')
 			var name = path[1] || path[0] || this.default_composition
 			if(!name) return
-			if(!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, this.file_root, this.COMP_DIR + '/' + name, this)
+			if(!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, name, this)
 			return this.compositions[name]
 		}
 
@@ -151,7 +151,14 @@ define(function(require, exports, module){
 			if(composition) return composition.request(req, res)
 
 			// otherwise handle as static file
-			var file = path.join(this.file_root, req.url)
+			var url = req.url
+			if(url.indexOf('_lib_') != -1){
+				var file = url.replace(/\_lib\_/,define.expandVariables(define.LIB))
+			}
+			else{
+				var file = path.join(define.expandVariables(define.ROOT), req.url)
+			}
+
 			fs.stat(file, function(err, stat){
 				if(err || !stat.isFile()){
 					if(url =='/favicon.ico'){
@@ -170,7 +177,9 @@ define(function(require, exports, module){
 					"Content-Type": mimeFromFile(file),
 					"ETag": stat.mtime.getTime()+'_'+stat.ctime.getTime()+'_'+stat.size
 				}
-		
+	
+				this.watcher.watch(file)
+	
 				if( req.headers['if-none-match'] == header.ETag){
 					res.writeHead(304,header)
 					res.end()
@@ -180,8 +189,8 @@ define(function(require, exports, module){
 				var stream = fs.createReadStream(file)
 				res.writeHead(200, header)
 				stream.pipe(res)
-
-				this.watcher.watch(file)
+				// ok so we get a filechange right?
+				
 			}.bind(this))
 		}
 	}

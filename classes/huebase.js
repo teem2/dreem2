@@ -7,8 +7,8 @@
 
 define(function(require, exports, module)
 {
-	var node = require("../classes/node")
-	var teem = require("../classes/teem")
+	var node = require("$CLASSES/node")
+	var teem = require("$CLASSES/teem")
 // do not reload the hue module - 
 	try
 	{

@@ -9,7 +9,7 @@
 	<class name="iconbutton" extends="view">		
 		<attribute name="url" type="string"/>		
 		<view bgcolor="gray" padding="10">
-			<img url="${this.url}"/>
+			<img src="${this.url}"/>
 		</view>
 	</class>
 	<class name="checkbox" extends="view">		
@@ -30,21 +30,20 @@
 		<view></view> <!-- rail -->
 		<view></view> <!-- dragger -->
 		</view>
-	</class>	
+	</class>
 	<class name="numberbox" extends="view"></class>
 	<class name="textbox" extends="view"></class>
 	<class name="radiobutton" extends="view"></class>
 	<class name="groupbox" extends="view"></class>
-	<class name="searchbox">
-		<view bordercolor="black" borderwidth="1" cornerradius="5">
-			<img url="icon.png"/>
-			<textbox>
-			</textbox>
-		</view>
-	</class>
 </classes>
+
 <screens>
 	<screen type="browser" name="default">
+		<myexternal>
+			<handler event='init'>
+				console.log('woop')
+			</handler>
+		</myexternal>	
 		<view bgcolor="black" padding="15"> 
 			<view height="150" bgcolor="darkgray" padding="15">
 				<text font="Arial" size="30" color="white">Dreem2</text>

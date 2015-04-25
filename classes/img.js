@@ -4,7 +4,7 @@
 */
 
 define(function(require, exports, module){
-	var node = require("../classes/node")
+	var node = require("$CLASSES/node")
 
 	if(define.env == 'v8')
 	{

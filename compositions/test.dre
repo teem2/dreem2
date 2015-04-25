@@ -51,9 +51,6 @@
 		<setter name='test'>
 		</setter>
 		<handler event='init'>
-			setInterval(function(){
-				this.test++
-			}.bind(this),500)
 		</handler>
 		<method name='findMusic'/>
 	</soundcloud>

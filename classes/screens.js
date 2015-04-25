@@ -5,11 +5,11 @@
 
 define(function(require, exports, module){
 
-	var Node = require('./node')
-	var teem = require('./teem')
-	var RpcProxy = require('../core/rpcproxy')
-	var RpcMulti = require('../core/rpcmulti')
-	var RpcPromise = require('../core/rpcpromise')
+	var Node = require('$CLASSES/node')
+	var teem = require('$CLASSES/teem')
+	var RpcProxy = require('$CORE/rpcproxy')
+	var RpcMulti = require('$CORE/rpcmulti')
+	var RpcPromise = require('$CORE/rpcpromise')
 
 	return Node.extend('screens', function(){
 		this.attribute('init', 'event')

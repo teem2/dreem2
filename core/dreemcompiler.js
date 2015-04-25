@@ -119,7 +119,7 @@ define(function(require, exports, module){
 			}
 			baseclass = node.attr.extends
 		}
-
+		
 		body += baseclass + '.extend("' + clsname + '", function(){\n'
 
 		// ok lets compile a dreem class to a module
