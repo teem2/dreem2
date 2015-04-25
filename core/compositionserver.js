@@ -185,7 +185,7 @@ define(function(require, exports, module){
 							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
 						}
 						if(local_err.length){
-							this.showErrors(local_err, drefile, jsxml.source)
+							this.showErrors(local_err, drefile, dre.source)
 						}
 					}
 				}
