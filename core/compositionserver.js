@@ -148,10 +148,13 @@ define(function(require, exports, module){
 			}
 
 			try{
-				var paths = fs.readdirSync(define.expandVariables(define.EXTLIB))
-				paths = paths.map(function(value){
-					return '$EXTLIB/' + value
+				var dir = fs.readdirSync(define.expandVariables(define.EXTLIB))
+				var paths = []
+				dir.forEach(function(value){
+					paths.push('$EXTLIB/' + value)
+					paths.push('$EXTLIB/' + value + '/classes')
 				})
+
 			}
 			catch(e){
 				errors.push(new DreemError(e.message))
