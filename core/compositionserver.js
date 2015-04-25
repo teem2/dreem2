@@ -393,6 +393,30 @@ define(function(require, exports, module){
 			var app = req.url.split('/')[2] || 'default'
 			// ok lets serve our Composition device 
 
+			if(req.method == 'POST'){
+				// lets do an RPC call
+				var buf = ''
+				req.on('data', function(data){buf += data.toString()})
+				req.on('end', function(){
+					try{
+						var json = JSON.parse(buf)
+						this.myteem.postAPI(json,{send:function(msg){
+							res.writeHead(200, {"Content-Type":"text/json"})
+							res.write(msg.value)
+							res.end()
+						}})
+					}
+					catch(e){
+						console.log('Error parsing RPC json or no teem object'+ buf,e)
+						res.writeHead(500, {"Content-Type":"text/html"})
+						res.write('FAIL')
+						res.end()
+						return						
+					}
+				}.bind(this))
+				return
+			}
+
 			var screen = this.screens[app]
 			if(!screen){
 				res.writeHead(404)

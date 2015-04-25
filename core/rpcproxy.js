@@ -32,7 +32,7 @@ define(function(require, exports, module){
 	RpcProxy.defineMethod = function(obj, key){
 		obj[key] = function(){
 			var args = []
-			var msg = {type:'rpcCall', rpcid:this._rpcid, method:key, args:args }
+			var msg = {type:'method', rpcid:this._rpcid, method:key, args:args }
 
 			for(var i = 0; i < arguments.length; i++){
 				var arg = arguments[i]
@@ -52,9 +52,9 @@ define(function(require, exports, module){
 		var ret = object[msg.method].apply(object, msg.args)
 		if(ret && ret.then){ // make the promise resolve to a socket send
 			ret.then(function(result){
-				socket.send({type:'rpcReturn', uid:msg.uid, value:result})
+				socket.send({type:'return', uid:msg.uid, value:result})
 			}).catch(function(error){
-				socket.send({type:'rpcReturn', uid:msg.uid, value:error, error:1})
+				socket.send({type:'return', uid:msg.uid, value:error, error:1})
 			})
 		}
 		else{
@@ -62,7 +62,7 @@ define(function(require, exports, module){
 				console.log('RPC Return value of '+msg.rpcid+' '+msg.method + ' is not json safe')		
 				ret = null
 			}
-			socket.send({type:'rpcReturn', uid:msg.uid, value:ret})
+			socket.send({type:'return', uid:msg.uid, value:ret})
 		}		
 	}
 
@@ -90,7 +90,7 @@ define(function(require, exports, module){
 				return
 			}
 			var msg = {
-				type:'rpcAttribute',
+				type:'attribute',
 				rpcid:rpcid,
 				attribute:key,
 				value: value

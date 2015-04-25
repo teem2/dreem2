@@ -27,15 +27,22 @@ define(function(require, exports, module){
 			var i = 0
 			if(arguments.length >= 1){	
 				var arg0 = arguments[0]
-				if(!arg0.__is_node__){ // copy the props on here
+				if(arg0 && !arg0.__is_node__){ // copy the props on here
 					obj.processArg0(arguments[0])
 					i = 1
 				}
 			}
 			// add our children
 			for(;i<arguments.length;i++){
+				var arg = arguments[i]
+				if(arg === undefined) continue
     			if(!obj.child) obj.child = []
-    			obj.child.push(arguments[i])	
+    			if(Array.isArray(arg)){
+    				obj.child.push.apply(obj.child, arg)
+    			}
+    			else{
+	    			obj.child.push(arg)
+	    		}
 			}
 			// expand into tree structure
 			if(obj.onConstruct) obj.onConstruct()

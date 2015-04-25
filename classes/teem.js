@@ -80,7 +80,20 @@ define(function(require, exports, module){
 
 				if(obj.on_init) obj.on_init.emit()
 			}
+			
 			// ok now what. well we need to build our RPC interface
+			teem.postAPI = function(msg, response){
+				if(msg.type == 'attribute'){
+					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
+					if(obj) obj[msg.attribute] = msg.value
+					response.send({value:'OK'})
+				}
+				else if(msg.type == 'method'){
+					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
+					if(obj) RpcProxy.handleCall(obj, msg, response)
+				}
+				else response.send({value:'please set type to rpcAttribute or rpcCall'})
+			}
 
 			bus.onConnect = function(socket){
 				socket.send({type:'sessionCheck', session:teem.session})
@@ -95,15 +108,15 @@ define(function(require, exports, module){
 
 					if(teem.screens) teem.screens.screenJoin(socket)
 				}
-				else if(msg.type == 'rpcAttribute'){
+				else if(msg.type == 'attribute'){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					if(obj) obj[msg.attribute] = msg.value
 				}
-				else if(msg.type == 'rpcCall'){
+				else if(msg.type == 'method'){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					if(obj) RpcProxy.handleCall(obj, msg, socket)
 				}
-				else if(msg.type == 'rpcReturn'){
+				else if(msg.type == 'return'){
 					// we got an rpc return
 					socket.rpcpromise.resolveResult(msg)
 				}
@@ -151,26 +164,28 @@ define(function(require, exports, module){
 
 					teem.root = main()
 
-					renderer.render(teem.root)
+					var newroot = renderer.render(teem.root)
 					
+					renderer.spawn(newroot, {dom_node:document.body})
+
 					teem.root.on_init.emit()
 				}
-				else if(msg.type == 'rpcJoin'){
+				else if(msg.type == 'join'){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					obj._addNewProxy(msg.index, msg.rpcid, rpcpromise)
 				}
-				else if(msg.type == 'rpcAttribute'){
+				else if(msg.type == 'attribute'){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					if(obj) obj[msg.attribute] = msg.value
 				}
-				else if(msg.type == 'rpcCall'){
+				else if(msg.type == 'call'){
 					// lets call our method on root.
 					if(!teem.root[msg.method]){
 						return console.log('Rpc call received on nonexisting method ' + msg.method)
 					}
 					RpcProxy.handleCall(teem.root, msg, teem.bus)
 				}
-				else if (msg.type == 'rpcReturn'){
+				else if (msg.type == 'return'){
 					rpcpromise.resolveResult(msg)
 				}
 			}

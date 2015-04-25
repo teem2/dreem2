@@ -1,0 +1,24 @@
+<composition>
+	<screens>
+		<method name='test' args='myarg'>
+			return "My Function!"+myarg.toUpperCase()
+		</method>
+		<screen type="browser" name="default">
+			<method event='init'>
+				var req = new XMLHttpRequest()
+				req.onreadystatechange = function () {
+				    if (this.readyState === 4){
+				    	console.log(this.responseText)
+				    }
+				};
+				req.open('POST', location.href, true)
+				req.send(JSON.stringify({
+					type:'method',
+					rpcid: 'screens',
+					method:'test',
+					args: ['hello']
+				}))
+			</method>
+		</screen>
+	</screens>
+</composition>

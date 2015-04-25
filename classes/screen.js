@@ -4,11 +4,17 @@
 */
 
 define(function(require, exports, module){
-	var node = require("../classes/node")
+	var node = require("./node")
+	var sprite = require("./sprite")
+
 	return node.extend("screen", function(){
 		this.attribute('init','event')
 		this.message = function(msg){
 			console.log("Got message call:" + msg)
 		}	
+
+		this.render = function(children){
+			return sprite(children)
+		}
 	})
 })

@@ -40,7 +40,7 @@ define(function(require, exports, module){
 			for(var i = 0; i<index; i++){
 				socket.send({
 					index:i,
-					type:'rpcJoin',
+					type:'join',
 					rpcid:this.name + '.' + screen_name
 				})
 			}
@@ -48,7 +48,7 @@ define(function(require, exports, module){
 
 			teem.bus.broadcast({
 				index:index,
-				type:'rpcJoin',
+				type:'join',
 				rpcid:this.name + '.' + screen_name
 			})
 		}

@@ -21,6 +21,7 @@ define(function(require, exports, module){
 
 			this.spawn = function(parent){
 				this.dom_node = document.createElement('div')
+				this.dom_node.style.backgroundColor = 'red'
 				parent.dom_node.appendChild(this.dom_node)
 			}
 		})
