@@ -42,7 +42,7 @@ define(function(require, exports, module){
     					var item = arg[j]
     					if(typeof item == 'object' && item){
 	    					var name = item.name
-	    					if(name !== undefined && !(name in this)) this[name] = item
+	    					if(name !== undefined && !(name in this)) obj[name] = item
 	    				}
     					obj.child.push(item)
     				}
@@ -50,7 +50,7 @@ define(function(require, exports, module){
     			else{
     				if(typeof arg == 'object' && arg){
 						var name = arg.name
-						if(name !== undefined && !(name in this)) this[name] = arg
+						if(name !== undefined && !(name in this)) obj[name] = arg
 					}
 					obj.child.push(arg)
 	    		}
