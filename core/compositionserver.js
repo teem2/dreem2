@@ -228,12 +228,15 @@ define(function(require, exports, module){
 			var files = {}
 			function recur(file){
 				if(files[file]) return
-				var data = fs.readFileSync(file)
+				var data = fs.readFileSync(define.expandVariables(file))
 				var string = files[file] = data.toString()
 				var root = define.filePath(file)
 
 				define.findRequires(string).forEach(function(req){
-					var sub = define.joinPath(root, define.expandVariables(req))
+					if(req.charAt(0) == '$') var sub = req
+					else var sub = define.joinPath(root, req)
+
+					console.log(req)
 					if(sub.lastIndexOf('.js') !== sub.length - 3) sub = sub + '.js'
 					recur(sub)
 				})
@@ -243,14 +246,13 @@ define(function(require, exports, module){
 			var out = 'global.define = {packaged:1}\n' + definejs + '\n\n'
 			for(var key in files){
 				var string = files[key]
-				var modname = key.slice(this.file_root.length)
 				string = string.replace(/define\(\s*function\s*\(/, function(){
-					return 'define("' + modname + '", function('
+					return 'define("' + key + '", function('
 				})
 				out += string + '\n\n'
 			}
-			out += 'var req = define.require("'+ root.slice(this.file_root.length) +'");if(define.onMain) define.onMain(req);'
-			fs.writeFileSync(output, out)
+			out += 'define.env="v8";var req = define.require("' + root + '");if(define.onMain) define.onMain(req);'
+			fs.writeFileSync(define.expandVariables(output), out)
 		}
 
 		/* Internal, reloads the composition */
@@ -374,7 +376,7 @@ define(function(require, exports, module){
 
 			// require our teem tag
 			try{
-				this.myteem = require('../classes/teem.js')
+				this.myteem = require('$CLASSES/teem.js')
 			}
 			catch(e){
 				console.error(e.stack+'\x0E')

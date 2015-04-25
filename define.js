@@ -110,6 +110,36 @@
 
 	if(define.packaged){
 		global.define = define
+
+		define.localRequire = function(base_path){
+			function require(dep_path){
+				if(dep_path.charAt(0) === '$')
+					var abs_path = dep_path
+				else
+					var abs_path = define.joinPath(base_path, dep_path)
+
+				if(abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js'
+
+				// lets look it up
+				var module = define.module[abs_path]
+				if(module) return module.exports
+
+				// otherwise lets initialize the module
+				var factory = define.factory[abs_path]
+				module = {exports:{}, id:abs_path, filename:abs_path}
+				define.module[abs_path] = module
+
+				if(factory === null) return null // its not an AMD module, but accept that
+				if(!factory) throw new Error("Cannot find factory for module:" + abs_path)
+
+				// call the factory
+				var ret = factory.call(module.exports, define.localRequire(define.filePath(abs_path)), module.exports, module)
+				if(ret !== undefined) module.exports = ret
+				return module.exports
+			}
+			return require
+		}
+
 		define.require = define.localRequire('')
 	}
 	else if(typeof window !== 'undefined')(function(){ // browser implementation

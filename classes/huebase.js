@@ -32,6 +32,7 @@ define(function(require, exports, module)
 	
 		this.init = function() 
 		{				
+			if(!LightState) return
 			console.color('~br~Hue~~ object started on server\n')	
 			console.log(this.username);
 			if (this.username != undefined && this.address != undefined)
