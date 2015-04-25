@@ -176,8 +176,8 @@ define(function(require, exports, module){
 							console.log('Empty DRE file '+drefile)
 							return ''
 						}
-						for(var i = 0;i<dre.child.length; i++){
-							if(dre.child[i].tag == 'class') root = dre.child[i]
+						for(var j = 0; j < dre.child.length; j++){
+							if(dre.child[j].tag == 'class') root = dre.child[j]
 						}
 						if(root && root.tag == 'class'){ // lets output this class
 							jsfile = "$BUILD/" + classname + ".js"
