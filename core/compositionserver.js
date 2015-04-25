@@ -142,11 +142,6 @@ define(function(require, exports, module){
 	    }
 
 	    this.lookupDep = function(classname, compname, errors){
-			var built = "$BUILD/" + classname + '.js' 
-			if(fs.existsSync(define.expandVariables(built))){
-				return built
-			}
-
 			if(classname in this.local_classes){
 				// lets scan the -project subdirectories
 				return '$BUILD/' + compname + '.dre.' + classname + '.js'
@@ -167,10 +162,9 @@ define(function(require, exports, module){
 			paths.unshift('$CLASSES')
 
 			for(var i = 0;i < paths.length; i++){
-
 				var drefile = paths[i] + '/' + classname + '.dre'
 				var jsfile =  paths[i] + '/' + classname + '.js'
-
+				var ignore_watch = false
 				if(fs.existsSync(define.expandVariables(drefile))){
 					if(!this.compile_once[drefile]){
 						this.compile_once[drefile] = 1
@@ -188,14 +182,17 @@ define(function(require, exports, module){
 						if(root && root.tag == 'class'){ // lets output this class
 							jsfile = "$BUILD/" + classname + ".js"
 							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
+							ignore_watch = true
 						}
 						if(local_err.length){
 							this.showErrors(local_err, drefile, dre.source)
 						}
 					}
+
 				}
+
 				if(fs.existsSync(define.expandVariables(jsfile))){
-					this.watcher.watch(jsfile)
+					if(!ignore_watch) this.watcher.watch(jsfile)
 					return jsfile
 				}
 			}
