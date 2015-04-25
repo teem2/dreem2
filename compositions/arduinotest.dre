@@ -39,7 +39,7 @@
 			<view></view>
 		</screen>
 	</screens>
-	<huebase address="10.0.1.10" username="739b2752a33a7e73115a9412d23ff13">
+	<huebase address="10.0.1.2" username="739b2752a33a7e73115a9412d23ff13">
 		<huelight>
 			<method name='test'>
 			</method>
