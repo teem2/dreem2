@@ -27,17 +27,21 @@ define(function(require, exports, module){
 		this.restart_count = 0
 
 		this.watcher = new FileWatcher()
+		this.only_when_down = {}
 		this.watcher.onChange = function(file){
 			//if(args['-nodreem'] && file.indexOf('dreem.js') != -1) return
-			console.color('~g~Got filechange: ~y~'+file+'~~ restarting server\n')
+			
 			// lets restart this.child
 			if(this.child){
+				if(this.only_when_down[file]) return
+				console.color('~g~Got filechange: ~y~'+file+'~~ killing and restarting server\n')
 				this.child.kill('SIGHUP')
 				setTimeout(function(){
 					if(this.child) this.child.kill('SIGTERM')
 				}.bind(this), 50)
 			}
 			else{
+				console.color('~g~Got filechange: ~y~'+file+'~~ starting server\n')
 				this.start()
 			}
 		}.bind(this)
@@ -76,7 +80,13 @@ define(function(require, exports, module){
 					var files = data.split('\x0F')
 					for(var i = 0;i<files.length;i++){
 						var file = files[i].replace(/\n/,'')
-						if(file) this.watcher.watch(file)
+						if(file){
+							if(file.charAt(0) == '!'){
+								file = file.slice(1)
+								this.only_when_down[file] = 1
+							}
+							this.watcher.watch(file)
+						}
 					}
 					return
 				}

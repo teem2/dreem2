@@ -43,12 +43,15 @@ define(function(require, exports, module){
 
 		this.emit =
 		this.set = function(value){
+			if(this.setter){
+				var ret = this.setter.call(this, value, this)
+				if(ret !== undefined) value = ret
+			} 
+
 			var old = this.value
 			this.value = value
 
 			if(!this.listeners) return
-
-			if(this.owner && this.owner.onAttribute) this.owner.onAttribute(value, old, attr, cb)
 
 			var proto = this
 			while(proto){

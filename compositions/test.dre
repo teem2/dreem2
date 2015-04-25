@@ -16,7 +16,7 @@
 		<screen name='default' title='wheee' type='browser'>
 			<attribute name='mysld' value='{myslider.value}'/>
 			<handler event='init'>
-				console.log('hii')
+				console.log('Someone called init!')
 			</handler>
 			<view>
 				<rect name='myrect' color='{ard.slider}'>
@@ -47,9 +47,17 @@
 	<smarthub>
 	</smarthub>
 	<soundcloud apikey='...'>
+		<attribute name='test' value='0'/>
+		<setter name='test'>
+		</setter>
+		<handler event='init'>
+			setInterval(function(){
+				this.test++
+			}.bind(this),500)
+		</handler>
 		<method name='findMusic'/>
 	</soundcloud>
-	<arduino name="ardu19" port='com19'>
+	<!--arduino name="ardu19" port='com19'>
 		<handler name='connected'>
 			console.color('~bb~Arduino on com19~~ succesfully connected!\n')
 			return 'hiii'
@@ -62,5 +70,5 @@
 			return 'hiii'
 
 		</handler>
-	</arduino>
+	</arduino-->
 </composition>

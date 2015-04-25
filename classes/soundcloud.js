@@ -5,6 +5,7 @@
 
 define(function(require, exports, module){
 	var node = require("../classes/node")
-	return node.extend("smarthub", function(){
+	return node.extend("soundcloud", function(){
+		this.attribute('init','event')
 	})
 })

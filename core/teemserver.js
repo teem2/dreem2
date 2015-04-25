@@ -80,7 +80,7 @@ define(function(require, exports, module){
 			if(this.args['-delay']) this.broadcast({type:'delay'})
 		}.bind(this))
 
-		this.getComposition('test')
+		if(this.args['-web']) this.getComposition(this.args['-web'])
 	}
 	body.call(TeemServer.prototype)
 

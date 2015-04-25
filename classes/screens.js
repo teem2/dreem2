@@ -41,7 +41,7 @@ define(function(require, exports, module){
 				socket.send({
 					index:i,
 					type:'rpcJoin',
-					component:this.name + '.' + screen_name
+					rpcid:this.name + '.' + screen_name
 				})
 			}
 			multi._addNewProxy(index, this.name + '.' + screen_name, socket.rpcpromise)
@@ -49,7 +49,7 @@ define(function(require, exports, module){
 			teem.bus.broadcast({
 				index:index,
 				type:'rpcJoin',
-				component:this.name + '.' + screen_name
+				rpcid:this.name + '.' + screen_name
 			})
 		}
 	})

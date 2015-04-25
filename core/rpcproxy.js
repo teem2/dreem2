@@ -32,7 +32,7 @@ define(function(require, exports, module){
 	RpcProxy.defineMethod = function(obj, key){
 		obj[key] = function(){
 			var args = []
-			var msg = {type:'rpcCall', id:this._rpcid, method:key, args:args }
+			var msg = {type:'rpcCall', rpcid:this._rpcid, method:key, args:args }
 
 			for(var i = 0; i < arguments.length; i++){
 				var arg = arguments[i]
@@ -46,6 +46,81 @@ define(function(require, exports, module){
 			if(!this._rpcpromise) return new Promise(function(resolve, reject){resolve(undefined)})
 			return this._rpcpromise.sendAndCreatePromise(msg)
 		}
+	}
+
+	RpcProxy.handleCall = function(object, msg, socket){
+		var ret = object[msg.method].apply(object, msg.args)
+		if(ret && ret.then){ // make the promise resolve to a socket send
+			ret.then(function(result){
+				socket.send({type:'rpcReturn', uid:msg.uid, value:result})
+			}).catch(function(error){
+				socket.send({type:'rpcReturn', uid:msg.uid, value:error, error:1})
+			})
+		}
+		else{
+			if(!RpcProxy.isJsonSafe(ret)){
+				console.log('RPC Return value of '+msg.rpcid+' '+msg.method + ' is not json safe')		
+				ret = null
+			}
+			socket.send({type:'rpcReturn', uid:msg.uid, value:ret})
+		}		
+	}
+
+	RpcProxy.verifyRpc = function(rpcdef, component, prop, kind){
+		// lets rip off the array index
+		var def = rpcdef[component]
+		if(!def){
+			console.log('Illegal RPC '+kind+' on ' + component)
+			return false
+		}
+		var prop = def[prop]
+		if(!prop || prop.kind !== kind){
+			console.log('Illegal RPC '+kind+' on '+component+'.'+prop)
+			return false
+		}
+		return true
+	}
+
+	RpcProxy.bindSetAttribute = function(object, rpcid, bus){
+	// ok lets now wire our mod.vdom.onSetAttribute
+		object._onAttributeSet = function(key, value){
+			// lets broadcast
+			if(!RpcProxy.isJsonSafe(value)){
+				console.log('setAttribute not JSON safe ' + name + '.' + key)
+				return
+			}
+			var msg = {
+				type:'rpcAttribute',
+				rpcid:rpcid,
+				attribute:key,
+				value: value
+			}
+			if(bus.broadcast){
+
+				bus.broadcast(msg)
+			}
+			else{
+				bus.send(msg)
+			}
+		}		
+	}
+
+	RpcProxy.decodeRpcID = function(onobj, rpcid){
+		if(!rpcid) throw new Error('no RPC ID')
+		var idx = rpcid.split('[')
+		var name = idx[0]
+
+		// its a object.sub[0] call
+		if(name.indexOf('.') != -1){
+			var part = name.split('.')
+			var obj = onobj[part[0]]
+			if(!obj) return 
+			obj = obj[part[1]]
+			if(!obj) return
+			if(idx[1]) return obj[objidx[1].slice(0,-1)]
+			return obj
+		}
+		return onobj[name]
 	}
 
 	RpcProxy.isJsonSafe = function(obj, stack){
