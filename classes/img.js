@@ -35,5 +35,4 @@ define(function(require, exports, module){
 	{
 		return node.extend("img")
 	}
-
 })

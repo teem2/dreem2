@@ -39,7 +39,7 @@
 			<view></view>
 		</screen>
 	</screens>
-	<huebase address="10.0.1.2" username="739b2752a33a7e73115a9412d23ff13">
+	<huebase id="001788fffe165ee4" username="739b2752a33a7e73115a9412d23ff13">
 		<huelight>
 			<method name='test'>
 			</method>
@@ -55,28 +55,38 @@
 		<attribute name="button1" value="0"/>
 		<method name="button1" args="value">
 			if (value == 0) console.log("button 1 pressed");
+			teem.huebase.setLight(1,0,(1-value)*50 + 50 ,10);
+			teem.huebase.setLight(2, 180 , (1-value)*50 + 50,10);
 		</method>
 		<attribute name="button2" value="0"/>
 		<method name="button2" args="value">
 			if (value == 0) console.log("button 2 pressed");
-		</method>
+			teem.huebase.setLight(1, teem.ardu5.knob1 * 360 , teem.ardu5.knob3 * 100,teem.ardu5.knob4 * 100);
+			teem.huebase.setLight(2, teem.ardu5.knob2 * 360 , teem.ardu5.knob3 * 100,teem.ardu5.knob4 * 100);
+		</method>                                                                                                              
 		<attribute name="knob1" value="0"/>
 		<handler name="knob1" args="value">
 			teem.ardu19.number = Math.round(value*50);
 		</handler>
 		<attribute name="knob2" value="0"/>
 		<handler name="knob2" args="value">
-			console.log(value);
+		//	console.log(value);
 		</handler>
 		<handler name='connected'>
 			console.color('~bb~Arduino on com19~~ succesfully connected!\n')
 			return 'connected'
 		</handler>
 	</arduino>
-	<arduino name="ardu20"  port='com20'>
-		<attribute name="number" value="9" />
-		<handler name='connected'>
-			console.color('~bb~Arduino on com20~~ succesfully connected!\n')
+	<arduino name="ardu5"  port='com5'>
+	<attribute name="knob1" value="0"/>
+	<attribute name="knob2" value="0"/>
+	<attribute name="knob3" value="0"/>
+	<attribute name="knob4" value="0"/>
+		<handler name="knob1" args="value">
+			teem.ardu19.number = Math.round(value*50);
+		</handler>
+			<handler name='connected'>
+			console.color('~bb~Arduino on com5~~ succesfully connected!\n')
 			return 'connected'
 		</handler>
 	</arduino>

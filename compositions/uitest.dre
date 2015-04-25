@@ -9,7 +9,7 @@
 	<class name="iconbutton" extends="view">		
 		<attribute name="url" type="string"/>		
 		<view bgcolor="gray" padding="10">
-			<img src="${this.url}"/>
+			<img url="${this.url}"/>
 		</view>
 	</class>
 	<class name="checkbox" extends="view">		
@@ -30,11 +30,18 @@
 		<view></view> <!-- rail -->
 		<view></view> <!-- dragger -->
 		</view>
-	</class>
+	</class>	
 	<class name="numberbox" extends="view"></class>
 	<class name="textbox" extends="view"></class>
 	<class name="radiobutton" extends="view"></class>
 	<class name="groupbox" extends="view"></class>
+	<class name="searchbox">
+		<view bordercolor="black" borderwidth="1" cornerradius="5">
+			<img url="icon.png"/>
+			<textbox>
+			</textbox>
+		</view>
+	</class>
 </classes>
 <screens>
 	<screen type="browser" name="default">

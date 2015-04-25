@@ -1,10 +1,11 @@
 <composition>
 	<screens>
 		<method name='test' args='myarg'>
-			return "My Function!"+myarg.toUpperCase()
+			console.dir(myarg);
+			return "My Function! Client sent: "+myarg.toUpperCase()
 		</method>
 		<screen type="browser" name="default">
-			<method event='init'>
+			<method name='init'>
 				var req = new XMLHttpRequest()
 				req.onreadystatechange = function () {
 				    if (this.readyState === 4){
