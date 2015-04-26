@@ -203,7 +203,7 @@ define(function(require, exports, module){
 		}
 	}
 
-	exports.compileInstance = function(node, errors, indent){
+	exports.compileInstance = function(node, errors, indent, onLocalClass){
 
 		var deps = Object.create(this.default_deps)
 		
@@ -225,7 +225,9 @@ define(function(require, exports, module){
 				var child = node.child[i]
 				
 				if (child.tag == 'class' || child.tag == 'mixin') {
-					errors.push(new DreemError('Cant support class in this location', node.pos))
+					// lets output a local class 
+					if(onLocalClass) onLocalClass(child, errors)
+					else errors.push(new DreemError('Cant support class in this location', node.pos))
 				}
 				else if (child.tag == 'method' || child.tag == 'handler' || child.tag == 'getter' || child.tag == 'setter'){
 					var fn = this.compileMethod(child, parent, 'js', errors)
@@ -240,9 +242,10 @@ define(function(require, exports, module){
 					if(props) props += ',\n' + myindent
 					else props = '{\n' + myindent
 					var pre = '', post = ''
-					if(child.tag == 'getter') name = 'get_'+name
-					else if(child.tag == 'setter') name = 'set_'+name
+					if(child.tag == 'getter') name = 'get_' + name
+					else if(child.tag == 'setter') name = 'set_' + name
 
+					if(child.tag == 'handler') name = 'handle_' + name
 					props += name + ': function ' + fn.name + '(' + fn.args.join(', ') + '){' + fn.comp + '}' 
 
 

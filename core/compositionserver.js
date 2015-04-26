@@ -268,6 +268,12 @@ define(function(require, exports, module){
 			fs.writeFileSync(define.expandVariables(output), out)
 		}
 
+		this.compileLocalClass = function(cls, errors){
+			var classname = cls.attr && cls.attr.name || 'unknown'
+			this.compileAndWriteDreToJS(cls, '$BUILD/' + this.name + '.dre.' + classname + '.js' , this.name,  errors)
+			this.local_classes[classname] = 1
+		}
+
 		/* Internal, reloads the composition */
 		this.reload = function(){
 			console.color("~bg~Reloading~~ composition\n")
@@ -318,17 +324,13 @@ define(function(require, exports, module){
 					// lets compile our local classes
 					for(var j = 0, classes = child.child, clen = classes.length; j<clen; j++){
 						var cls = classes[j]
-						var classname = cls.attr && cls.attr.name || 'unknown'
-
-						this.compileAndWriteDreToJS(cls, '$BUILD/' + this.name + '.dre.' + classname + '.js' , this.name,  errors)
-
-						this.local_classes[classname] = 1
+						this.compileLocalClass(classes[j])
 					}
 					continue
 				}
 				
 				// lets compile the JS
-				var js = dreem_compiler.compileInstance(child, errors, '\t\t')
+				var js = dreem_compiler.compileInstance(child, errors, '\t\t', this.compileLocalClass.bind(this))
 
 				// ok now the instances..
 				var out = 'define(function(require, exports, module){\n' 
@@ -363,7 +365,7 @@ define(function(require, exports, module){
 						var schild = schilds[j]
 
 						if(schild.tag !== 'screen') continue
-						var sjs = dreem_compiler.compileInstance(schild, errors, '\t\t')
+						var sjs = dreem_compiler.compileInstance(schild, errors, '\t\t', this.compileLocalClass.bind(this))
 
 						// ok now the instances..
 						var out = 'define(function(require, exports, module){\n' 

@@ -117,6 +117,14 @@ define(function(require, exports, module){
 					}
 					this['on_'+key].getter = prop
 				}
+				else if(key.indexOf('handle_') == 0){
+					key = key.slice(7)
+					if(!this.isAttribute(key)){
+						console.log('Please define attribute before making a handler '+key)
+						this.attribute(key, 'event')
+					}
+					this['attr_' + key].addListener(prop)
+				}
 				else this[key] = arg0[key]
 			}
 		}
