@@ -498,13 +498,12 @@ define(function(require, exports, module){
 				return
 			}
 			var screen = this.screens[app]
-			if(app = 'dali'){
+			if(app == 'dali'){
 				var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'))
 				res.writeHead(200, {"Content-Type": "text/html"})
 				stream.pipe(res)
 				return
 			}
-
 
 			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, '$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js')
 

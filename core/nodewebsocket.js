@@ -97,7 +97,7 @@ define(function(require, exports, module){
 			var ack = 'HTTP/1.1 101 Switching Protocols\r\n'+
 				'Upgrade: websocket\r\n'+
 				'Connection: Upgrade\r\n'+
-				'Sec-WebSocket-Accept: ' + sha1.digest('base64') +'\r\n\r\n\r\n'
+				'Sec-WebSocket-Accept: ' + sha1.digest('base64') +'\r\n\r\n'
 
 			this.socket.write(ack)
 			this.is_server = true
@@ -132,7 +132,7 @@ define(function(require, exports, module){
 				this.ping_interval = setInterval(function(){
 					if(!this.socket) clearInterval(this.ping_interval)
 					else this.socket.write(this.pingframe)
-				}.bind(this), 1000)
+				}.bind(this), 10000)
 			}
 
 			// Main socket data loop, uses state function to parse
@@ -305,7 +305,7 @@ define(function(require, exports, module){
 			if(this.head()) return false
 			// we get plain data back
 			if(!(this.header[this.written  - 1] & 128)){
-				//this.masked = false
+				this.masked = false
 				this.state = this.data
 				this.expected = this.header[this.written  - 1]
 				return true
