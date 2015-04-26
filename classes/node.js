@@ -103,12 +103,18 @@ define(function(require, exports, module){
 				}
 				else if(key.indexOf('set_') == 0){
 					key = key.slice(4)
-					if(!this.isAttribute(key)) throw new Error('Cannot make a setter on a non attribute '+key)
+					if(!this.isAttribute(key)){
+						console.log('Please define attribute type before making a setter '+key)
+						this.attribute(key, 'number')
+					}
 					this['on_'+key].setter = prop
 				}
 				else if(key.indexOf('get_') == 0){
 					key = key.slice(4)
-					if(!this.isAttribute(key)) throw new Error('Cannot make a getter on a non attribute '+key)
+					if(!this.isAttribute(key)){
+						console.log('Please define attribute type before making a getter '+key)
+						this.attribute(key, 'number')
+					}
 					this['on_'+key].getter = prop
 				}
 				else this[key] = arg0[key]
@@ -135,7 +141,7 @@ define(function(require, exports, module){
 					// copy over getters and setters
 					if(obj.__lookupGetter__(key) || obj.__lookupSetter__(key)){
 						// lets copy over this thing
-						
+
 					}
 					else{
 						// other
