@@ -104,7 +104,7 @@ define(function(require, exports, module){
 				else if(key.indexOf('set_') == 0){
 					key = key.slice(4)
 					if(!this.isAttribute(key)){
-						console.log('Please define attribute type before making a setter '+key)
+						//console.log('Please define attribute type before making a setter '+key)
 						this.attribute(key, 'number')
 					}
 					this['on_'+key].setter = prop
@@ -112,7 +112,7 @@ define(function(require, exports, module){
 				else if(key.indexOf('get_') == 0){
 					key = key.slice(4)
 					if(!this.isAttribute(key)){
-						console.log('Please define attribute type before making a getter '+key)
+						//console.log('Please define attribute type before making a getter '+key)
 						this.attribute(key, 'number')
 					}
 					this['on_'+key].getter = prop
@@ -120,7 +120,7 @@ define(function(require, exports, module){
 				else if(key.indexOf('handle_') == 0){
 					key = key.slice(7)
 					if(!this.isAttribute(key)){
-						console.log('Please define attribute before making a handler '+key)
+						//console.log('Please define attribute before making a handler '+key)
 						this.attribute(key, 'event')
 					}
 					this['attr_' + key].addListener(prop)

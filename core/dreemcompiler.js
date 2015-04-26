@@ -91,6 +91,18 @@ define(function(require, exports, module){
 		teem:1
 	}
 
+	exports.classnameToJS = function(name){
+		return name.replace(/-/g,'_')
+	}
+
+	exports.classnameToPath = function(name){
+		return name.replace(/-/g,'/')
+	}
+
+	exports.classnameToBuild = function(name){
+		return name.replace(/-/g,'.')
+	}
+
 	exports.compileClass = function(node, errors){
 
 		var body = ''
@@ -121,12 +133,12 @@ define(function(require, exports, module){
 			deps[baseclass] = 1
 		}
 
-		body += baseclass + '.extend("' + clsname + '", function(){\n'
+		body += exports.classnameToJS(baseclass) + '.extend("' + clsname + '", function(){\n'
 
 		if(node.attr && node.attr.with){
 			node.attr.with.split(/,\s*/).forEach(function(cls){
 				deps[cls] = 1
-				body += '\t\tthis.mixin('+cls+')\n'
+				body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n'
 				return
 			})
 		}
@@ -184,6 +196,7 @@ define(function(require, exports, module){
 		// give the method a unique but human readable name
 		var name = node.tag + '_' + (node.attr && node.attr.name) + '_' + node.pos + '_' + language
 		if(parent && (parent.tag == 'class' || parent.tag == 'mixin')) name = (parent.attr && parent.attr.name) + '_' + name
+		name = exports.classnameToJS(name)
 
 		//node.method_id = output.methods.length
 		var lang = this.languages[language]
@@ -269,13 +282,7 @@ define(function(require, exports, module){
 					children += walk(child, node, myindent, depth+1)
 				}
 			}
-			var out = node.tag + '('
-
-			if(depth == 0 && node.attr && node.attr.legacy == 'true'){
-				if(props) props += ',\n' + myindent
-				else props = '{\n' + myindent				
-				props += '_legacy:' + JSON.stringify(node)
-			}
+			var out = exports.classnameToJS(node.tag) + '('
 
 			if(props) out += props+'\n'+myindent+'}'
 

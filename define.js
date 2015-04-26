@@ -29,7 +29,8 @@
 	define.EXTLIB = "/_extlib_"
 	define.COMPOSITIONS = "$ROOT/compositions"
 	define.BUILD = "$ROOT/build"
-
+	define.SPRITE = "$ROOT/lib/dr/sprite_browser"
+	
 	// copy configuration onto define
 	if(typeof config_define == 'object') for(var key in config_define){
 		define[key] = config_define[key]
@@ -169,7 +170,8 @@
 			var module = {exports:{}, id:main_mod, filename:main_mod}
 			define.module[main_mod] = module
 			var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module)
-			if(define.onMain) define.onMain(ret)
+			if(ret !== undefined) module.exports = ret
+			if(define.onMain) define.onMain(module.exports)
 		}
 
 		// the main dependency download queue counter

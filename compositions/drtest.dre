@@ -5,29 +5,29 @@
 		    <!--// Class Definitions //-->
 		    <class name="item" with="button" extends="view" height="15" width="100" bgcolor="#ff0000">
 		      <attribute name="thing" type="number" value="20"></attribute>
-		      <handler event="activated" args="activated" type="coffee">
-		        @count ?= 0
-		        @count++
-		        
-		        switch @count
-		          when 1
-		            @set('width', 2 * @width)
-		            @set('height', 2 * @height) 
-		          when 2
-		            @set('width', @width / 2) 
-		            @set('height', @height / 2)
-		          when 3
-		            @destroy()
-		      </handler>
-		      <setter name="width" args="width">
-		        console.log('setWidth on class', width);
-		        this.callSuper(width);
-		        this.foo();
-		      </setter>
-		      <method name="foo" args="bar">
-		        console.log('foo called.', this.width);
-		      </method>
-		    </class>
+			  <handler event="activated" args="activated" type="coffee">
+			    @count ?= 0
+			    @count++
+			    
+			    switch @count
+			      when 1
+			        @set('width', 2 * @width)
+			        @set('height', 2 * @height) 
+			      when 2
+			        @set('width', @width / 2) 
+			        @set('height', @height / 2)
+			      when 3
+			        @destroy()
+			  </handler>
+			  <setter name="width" args="width">
+			    console.log('setWidth on class', width);
+			    this.callSuper(width);
+			    this.foo();
+			  </setter>
+			  <method name="foo" args="bar">
+			    console.log('foo called.', this.width);
+			  </method>
+			</class>
 		    
 		    <class name="item2" extends="item" height="20" width="40" bgcolor="#0000ff"></class>
 		    
