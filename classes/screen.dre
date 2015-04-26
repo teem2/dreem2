@@ -3,5 +3,8 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 <class name="screen">
-
+	<method name="spawn">
+	</method>
+	<method name="render">
+	</method>
 </class>
