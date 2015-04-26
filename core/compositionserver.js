@@ -156,7 +156,7 @@ define(function(require, exports, module){
 						paths.push('$EXTLIB/' + value + '/classes')
 					})
 				}
-				catch(e){ 
+				catch(e){
 					var paths = []
 				}
 			}
@@ -302,7 +302,6 @@ define(function(require, exports, module){
 
 			if(define.EXTLIB){
 				var extpath = define.expandVariables(define.EXTLIB)
-				console.log(extpath)
 				if(fs.existsSync(extpath)){
 					var dir = fs.readdirSync(extpath)
 					for(var i = 0; i<dir.length; i++){
