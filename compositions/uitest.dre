@@ -1,6 +1,13 @@
 <composition>
 <screens>
   <screen type="dali" name="dali" title='Whoo'>
+  <view name="root_instance" width="100%" height="100%" minwidth="1000" bgcolor="#cc99cc" scrollable="true">
+	<view bgcolor="green" width="500"height="500">
+	</view>
+    </view>
+	</screen>
+	
+  <screen type="browser" name="default" title='Whoo'>
     <view name="root_instance" width="100%" height="100%" minwidth="1000" bgcolor="#cc99cc" scrollable="true">
       <handler event="onscroll" args="scroll">
         console.log('onscroll', scroll);
@@ -12,13 +19,12 @@
         <handler event="onactivated" args="activated" type="coffee">
           @count ?= 0
           @count++
-          
           switch @count
             when 1
               @setAttribute('width', 2 * @width)
               @setAttribute('height', 2 * @height) 
             when 2
-              @setAttribute('width', @width / 2) 
+              @setAttribute('width', @width / 2) 			  
               @setAttribute('height', @height / 2)
             when 3
               @destroy()
@@ -28,6 +34,7 @@
           this.callSuper(width);
           this.foo();
         </setter>
+	
         <method name="foo" args="bar">
           console.log('METHOD:foo', this.width);
         </method>

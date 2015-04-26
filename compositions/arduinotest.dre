@@ -51,6 +51,7 @@
 		<method name='findMusic'/>
 	</soundcloud>
 	<arduino name="ardu19" port='com19'>
+		<attribute name="text" value="Yay!"/>
 		<attribute name="number" value="0"/>
 		<attribute name="button1" value="0"/>
 		<method name="button1" args="value">
@@ -74,6 +75,7 @@
 		</handler>
 		<handler name='connected'>
 			console.color('~bb~Arduino on com19~~ succesfully connected!\n')
+				text = "connected!";
 			return 'connected'
 		</handler>
 	</arduino>
@@ -88,11 +90,13 @@
 			lastnfc = value;
 			if (value == "d39920")
 			{
+				teem.ardu19.text = (value + "_red");
 				teem.huebase.setLight(1, 0,100,100);
 				teem.huebase.setLight(2, 0,100,100);
 			}		
 			else if ( value == "63eeec0")
 			{
+				teem.ardu19.text = (value + "_blue");
 				teem.huebase.setLight(1, 180,100,100);
 				teem.huebase.setLight(2, 180,100,100);
 			}
@@ -108,6 +112,7 @@
 			<handler name='connected'>
 			console.color('~bb~Arduino on com5~~ succesfully connected!\n')
 			lastnfc = 0;
+		
 			return 'connected'
 		</handler>
 	</arduino>

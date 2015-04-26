@@ -497,6 +497,7 @@ define(function(require, exports, module){
 				}.bind(this))
 				return
 			}
+			
 			var screen = this.screens[app]
 			if(app == 'dali'){
 				var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'))
