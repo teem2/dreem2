@@ -134,11 +134,12 @@ define(function(require, exports, module){
 				for(var key in obj){
 					// copy over getters and setters
 					if(obj.__lookupGetter__(key) || obj.__lookupSetter__(key)){
-
+						// lets copy over this thing
+						
 					}
 					else{
 						// other
-						proto[key] = obj[key]
+						this[key] = obj[key]
 					}
 				}
 			}	
