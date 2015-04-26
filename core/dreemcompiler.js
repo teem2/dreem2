@@ -124,7 +124,7 @@ define(function(require, exports, module){
 		body += baseclass + '.extend("' + clsname + '", function(){\n'
 
 		if(node.attr && node.attr.with){
-			if(node.attr.with.split(/,\s*/).forEach(function(cls){
+			node.attr.with.split(/,\s*/).forEach(function(cls){
 				deps[cls] = 1
 				body += '\t\tthis.mixin('+cls+')\n'
 				return
