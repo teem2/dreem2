@@ -127,10 +127,8 @@
 				//console.log(Object.keys(define.module).join(','));
 				if(module) 
 				{
-					console.log("cached " + abs_path);
 					return module.exports
 				}
-				console.log(abs_path);
 			
 				// otherwise lets initialize the module
 				var factory = define.factory[abs_path]
