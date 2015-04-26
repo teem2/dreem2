@@ -119,6 +119,7 @@ define(function(require, exports, module){
 			return
 		}
 
+		var language = 'js'
 		if (node.attr && node.attr.type) language = node.attr.type
 
 		// lets fetch our base class
@@ -157,7 +158,7 @@ define(function(require, exports, module){
 					body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '")\n'
 				}
 				else{
-					var fn = this.compileMethod(child, node, 'js', errors)
+					var fn = this.compileMethod(child, node, language, errors)
 					if(!fn) continue
 					var args = fn.args
 					if(!args && child.tag == 'setter') args = ['value']

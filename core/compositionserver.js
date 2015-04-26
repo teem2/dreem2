@@ -298,7 +298,7 @@ define(function(require, exports, module){
 			define.SPRITE = '$LIB/dr/sprite_browser'
 
 			// scan our EXTLIB for compositions firstƒ
-			var filepath = "$COMPOSITIONS/" + this.name + '.dre'
+			var filepath = '$COMPOSITIONS/' + this.name + '.dre'
 
 			if(define.EXTLIB){
 				var extpath = define.expandVariables(define.EXTLIB)
