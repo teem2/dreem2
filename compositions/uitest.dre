@@ -35,6 +35,7 @@
 	<class name="textbox" extends="view"></class>
 	<class name="radiobutton" extends="view"></class>
 	<class name="groupbox" extends="view"></class>
+	<class name="myexternal"></class>
 </classes>
 
 <screens>
