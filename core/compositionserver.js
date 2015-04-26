@@ -180,9 +180,10 @@ define(function(require, exports, module){
 							return ''
 						}
 						for(var j = 0; j < dre.child.length; j++){
-							if(dre.child[j].tag == 'class') root = dre.child[j]
+							var tag = dre.child[j].tag
+							if(tag == 'class' || tag == 'mixin') root = dre.child[j]
 						}
-						if(root && root.tag == 'class'){ // lets output this class
+						if(root){ // lets output this class
 							jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase()+'.'+ dreem_compiler.classnameToBuild(classname) + ".js"
 							this.compile_once[drefile] = jsfile;
 							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
