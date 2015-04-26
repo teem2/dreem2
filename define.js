@@ -144,7 +144,6 @@
 		}
 
 		define.require = define.localRequire('')
-
 		return define
 	}
 	else if(typeof window !== 'undefined')(function(){ // browser implementation
@@ -327,3 +326,14 @@
 		})
 	})()
 })(typeof define !== 'undefined' && define)
+if(typeof console === 'undefined'){
+	var console = {log:function(){
+		var out = ''
+		for(var i = 0;i<arguments.length;i++){
+			if(i) out += ', '
+			out += arguments[i]
+		}
+		out += '\n'
+		log(out)
+	}}
+}
