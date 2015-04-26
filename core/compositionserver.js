@@ -447,6 +447,18 @@ define(function(require, exports, module){
 				'    }\n'+
 				'  </script>\n'+
 				'  <script type="text/javascript" src="define.js"></script>\n'+
+				'  <style type="text/css">\n'+
+				'    html,body {\n'+
+				'      height:100%;\n'+
+				'      margin:0px;\n'+
+				'      padding:0px;\n'+
+				'      border:0px none;\n'+
+				'    }\n'+
+				'    body {\n'+
+				'      font-family:Arial, Helvetica, sans-serif;\n'+
+				'      font-size:14px;\n'+
+				'    }\n'+
+				'  </style>'+
 				' </head>\n'+
 				' <body>\n'+
 				' </body>\n'+
