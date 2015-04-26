@@ -78,25 +78,25 @@
 		</handler>
 	</arduino>
 	<arduino name="ardu5"  port='com5'>
-	<attribute name="nfc" value="0"/>
 	<attribute name="lastnfc" value="0"/>
-	<method name="nfc" args="value">
 	
-	if (value != lastnfc)
-	{
-		console.log("NFC card: " + value);
-		lastnfc = value;
-		if (value == "d39920")
+	<attribute name="nfc" value="0"/>
+	<method name="nfc" args="value">	
+		if (value != lastnfc)
 		{
-			teem.huebase.setLight(1, 0,100,100);
-			teem.huebase.setLight(2, 0,100,100);
-		}		
-		else if ( value == "63eeec0")
-		{
-			teem.huebase.setLight(1, 180,100,100);
-			teem.huebase.setLight(2, 180,100,100);
+			console.log("NFC card: " + value);
+			lastnfc = value;
+			if (value == "d39920")
+			{
+				teem.huebase.setLight(1, 0,100,100);
+				teem.huebase.setLight(2, 0,100,100);
+			}		
+			else if ( value == "63eeec0")
+			{
+				teem.huebase.setLight(1, 180,100,100);
+				teem.huebase.setLight(2, 180,100,100);
+			}
 		}
-	}
 	</method>
 	<attribute name="knob1" value="0"/>
 	<attribute name="knob2" value="0"/>

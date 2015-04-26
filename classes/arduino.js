@@ -94,7 +94,8 @@ define(function(require, exports, module)
 							var parsed = JSON.parse(data);
 							if (parsed.atr)
 							{	
-								this[parsed.atr] = parsed.value;											
+								this[parsed.atr] = parsed.value;	
+							console.log(this["on_nfc"].listeners);
 							}
 							else if (parsed.inq)
 							{	
