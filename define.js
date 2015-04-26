@@ -5,7 +5,7 @@
  Micro AMD module loader for browser and node.js
 */
 
-;(function(config_define){
+(function(config_define){
 
 	// the main define function
 	function define(factory){
@@ -114,8 +114,6 @@
 	else define.env = 'v8'
 
 	if(define.packaged){
-		global.define = define
-
 		define.localRequire = function(base_path){
 			function require(dep_path){
 				if(dep_path.charAt(0) === '$')
@@ -146,6 +144,8 @@
 		}
 
 		define.require = define.localRequire('')
+
+		return define
 	}
 	else if(typeof window !== 'undefined')(function(){ // browser implementation
 		// if define was already defined use it as a config store

@@ -258,7 +258,7 @@ define(function(require, exports, module){
 			}
 			recur(root)
 			// lets write out our dali.js
-			var out = 'global.define = {packaged:1}\n' + definejs + '\n\n'
+			var out = 'var define = {packaged:1}\ndefine = ' + definejs + '\n\n'
 			for(var key in files){
 				var string = files[key]
 				string = string.replace(/define\(\s*function\s*\(/, function(){
