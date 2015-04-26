@@ -41,8 +41,8 @@ define(function(require, exports, module){
 		define.onMain = function(moddescs, bus){
 
 			teem.bus = bus
-			
-			teem.session = Math.random()*10000000
+
+			teem.session = '' + Math.random()*10000000
 
 			// lets render all modules and store them on the teem tag
 			var rpcdef = {}

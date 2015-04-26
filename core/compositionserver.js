@@ -482,29 +482,29 @@ define(function(require, exports, module){
 				req.on('end', function(){
 					try{
 						var json = JSON.parse(buf)
-						this.myteem.postAPI(json,{send:function(msg){
+						this.myteem.postAPI(json, {send:function(msg){
 							res.writeHead(200, {"Content-Type":"text/json"})
 							res.write(JSON.stringify(msg))
 							res.end()
 						}})
 					}
 					catch(e){
-						console.log('Error parsing RPC json or no teem object'+ buf,e)
-						res.writeHead(500, {"Content-Type":"text/html"})
+						res.writeHead(500, {"Content-Type": "text/html"})
 						res.write('FAIL')
 						res.end()
-						return						
+						return
 					}
 				}.bind(this))
 				return
 			}
-
 			var screen = this.screens[app]
-			if(!screen){
-				res.writeHead(404)
-				res.end()
+			if(app = 'dali'){
+				var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'))
+				res.writeHead(200, {"Content-Type": "text/html"})
+				stream.pipe(res)
 				return
 			}
+
 
 			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, '$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js')
 

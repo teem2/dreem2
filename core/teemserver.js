@@ -170,18 +170,18 @@ define(function(require, exports, module){
 					}
 					res.writeHead(404)
 					res.end()
-					console.color('~br~Error~y~ '+file+'~~ File not found, returning 403\n')
+					console.color('~br~Error~y~ ' + file + '~~ File not found, returning 403\n')
 					return
 				}
 
 				var header = {
 					"Cache-control":"max-age=0",
 					"Content-Type": mimeFromFile(file),
-					"ETag": stat.mtime.getTime()+'_'+stat.ctime.getTime()+'_'+stat.size
+					"ETag": stat.mtime.getTime() + '_' + stat.ctime.getTime() + '_' + stat.size
 				}
 	
 				this.watcher.watch(file)
-	
+				
 				if( req.headers['if-none-match'] == header.ETag){
 					res.writeHead(304,header)
 					res.end()

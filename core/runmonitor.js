@@ -60,7 +60,6 @@ define(function(require, exports, module){
 		/* Internal. start the monitored process again*/
 		this.start = function(){
 			var subarg = process.argv.slice(1)
-
 			subarg.push('-nomoni')
 			subarg.push('-count')
 			subarg.push(this.restart_count++)

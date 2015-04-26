@@ -8,7 +8,7 @@ require = require('./define') // support define.js modules
 
 if(process.argv.indexOf('-nomoni') != -1){
 	define.onRequire = function(filename){
-		process.stderr.write('\x0F'+filename+'\n', function(){})
+		process.stderr.write('\x0F' + filename + '\n', function(){})
 	}
 }
 

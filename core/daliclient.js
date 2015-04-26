@@ -13,16 +13,16 @@ define(function(require, exports, module){
 	
 	var http = require('http')
 	var url = require('url')
-
+	var fs = require('fs')
+	var child_process = require('child_process')
 	var NodeWebSocket = require('./nodewebsocket')
 
 	// lets monitor all our dependencies and terminate if they change
 	function DaliClient(args){
 		this.args = args
-		this.url = url.parse(
-			args['-dali'] === true? 'http://127.0.0.1:8080/uitest/dali': args['-dali']
-		)
-		console.log("DaliClient connecting to " + this.url.toString())
+		this.host = args['-dali'] === true? 'http://127.0.0.1:8080/uitest/dali': args['-dali']
+		this.url = url.parse(this.host)
+		console.log("DaliClient connecting to " + this.host)
 		this.reconnect()
 	}
 
@@ -30,21 +30,64 @@ define(function(require, exports, module){
 
 	function body(){
 		// connect to server
-		this.reconnect = function(){
+		this.redownload = function(){
 			// lets fetch the main thing
 			http.get({
 				host: this.url.hostname,
 				port: this.url.port,
 				path: this.url.path
-			}, function(res){
+			}, 
+			function(res){
 				var data = ''
 				res.on('data', function(buf){ data += buf })
 				res.on('end', function(){
-					console.log(data)
-				})
-			})
+					// write it and restart it.
+					try{
+						fs.writeFileSync('./dali.js', data)
+						if(this.child) this.child.kill('SIGTERM')
+						this.child = child_process.spawn('./scriptrunner.example', ['./dali.js'])
+						this.child.on('close', function(code){
+							this.child = undefined
+						}.bind(this))		
+						this.child.on('error', function(){
+
+						})
+					}
+					catch(e){
+						//console.log(e)
+					}
+				}.bind(this))
+			}.bind(this))
+		}
+
+		this.reconnect = function(){
 			// put up websocket.
-			
+			if(this.sock) this.sock.close()
+
+			this.sock = new NodeWebSocket(this.host)
+			this.sock.onError = function(msg){
+				setTimeout(function(){
+					this.reconnect()
+				}.bind(this), 500)
+			}.bind(this)
+
+			this.sock.onMessage = function(msg){
+				console.log('##' + msg + '##')
+				try{
+					msg = JSON.parse(msg)
+				}
+				catch(e){
+				}
+				if(msg.type == "sessionCheck"){
+					this.redownload()
+				}
+			}.bind(this)
+	
+			this.sock.onClose = function(){
+				setTimeout(function(){
+					this.reconnect()
+				}.bind(this), 500)
+			}.bind(this)
 		}
 	}
 })
