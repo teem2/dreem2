@@ -44,7 +44,16 @@ define(function(require, exports, module){
 					// write it and restart it.
 					try{
 						fs.writeFileSync('./dali.js', data)
-						if(this.child) this.child.kill('SIGTERM')
+						if(this.child){
+							var kill = this.child
+							this.child = undefined
+							var i = 0;
+							var itv = this.setInterval(function(){
+								try{kill.kill('SIGTERM')}
+								catch(e){}
+								if(i++ > 20) this.clearInterval(itv) 
+							},10)
+						}
 						this.child = child_process.spawn('./scriptrunner.example', ['./dali.js'])
 						this.child.on('close', function(code){
 							this.child = undefined
@@ -72,7 +81,6 @@ define(function(require, exports, module){
 			}.bind(this)
 
 			this.sock.onMessage = function(msg){
-				console.log('##' + msg + '##')
 				try{
 					msg = JSON.parse(msg)
 				}
