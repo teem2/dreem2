@@ -127,7 +127,13 @@ define(function(require, exports, module){
 				}
 				else if(this.__lookupSetter__(key)){
 					if(this.isAttribute(key)){
-						this['on_' + key].value = arg0[key]
+						var prop = arg0[key]
+						if(typeof prop == 'function'){
+							this['on_' + key].addListener(prop)
+						}
+						else{
+							this['on_' + key].value = arg0[key]
+						}
 					}
 				}
 				else this[key] = arg0[key]
