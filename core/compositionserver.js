@@ -296,12 +296,15 @@ define(function(require, exports, module){
 			var filepath = "$COMPOSITIONS/" + this.name + '.dre'
 
 			if(define.EXTLIB){
-				var dir = fs.readdirSync(define.expandVariables(define.EXTLIB))
-				for(var i = 0; i<dir.length; i++){
-					var mypath = '$EXTLIB/'+dir[i]+'/compositions/'+this.name+'.dre'
-					if(fs.existsSync(define.expandVariables(mypath))){
-						filepath = mypath
-						break
+				var extpath = define.expandVariables(define.EXTLIB)
+				if(fs.existsSync(extpath)){
+					var dir = fs.readdirSync(extpath)
+					for(var i = 0; i<dir.length; i++){
+						var mypath = '$EXTLIB/'+dir[i]+'/compositions/'+this.name+'.dre'
+						if(fs.existsSync(define.expandVariables(mypath))){
+							filepath = mypath
+							break
+						}
 					}
 				}
 			}
