@@ -95,7 +95,7 @@ define(function(require, exports, module){
 
 		var body = ''
 		var deps = Object.create(this.default_deps)
-		if(node.tag !== 'class'){
+		if(node.tag !== 'class' && node.tag !== 'mixin'){
 			errors.push(new DreemError('compileClass on non class', node.pos))
 			return
 		}
@@ -118,10 +118,19 @@ define(function(require, exports, module){
 				return
 			}
 			baseclass = node.attr.extends
+			deps[baseclass] = 1
 		}
-		
+
 		body += baseclass + '.extend("' + clsname + '", function(){\n'
 
+		if(node.attr && node.attr.with){
+			if(node.attr.with.split(/,\s*/).forEach(function(cls){
+				deps[cls] = 1
+				body += '\t\tthis.mixin('+cls+')\n'
+				return
+			})
+		}
+		
 		// ok lets compile a dreem class to a module
 		if (node.child) for (var i = 0; i < node.child.length; i++) {
 			var child = node.child[i]
