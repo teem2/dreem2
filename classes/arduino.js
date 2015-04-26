@@ -95,7 +95,6 @@ define(function(require, exports, module)
 							if (parsed.atr)
 							{	
 								this[parsed.atr] = parsed.value;	
-							console.log(this["on_nfc"].listeners);
 							}
 							else if (parsed.inq)
 							{	

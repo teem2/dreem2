@@ -122,11 +122,16 @@
 					var abs_path = define.joinPath(base_path, dep_path)
 
 				if(abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js'
-
 				// lets look it up
 				var module = define.module[abs_path]
-				if(module) return module.exports
-
+				//console.log(Object.keys(define.module).join(','));
+				if(module) 
+				{
+					console.log("cached " + abs_path);
+					return module.exports
+				}
+				console.log(abs_path);
+			
 				// otherwise lets initialize the module
 				var factory = define.factory[abs_path]
 				module = {exports:{}, id:abs_path, filename:abs_path}
