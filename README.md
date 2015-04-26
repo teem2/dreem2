@@ -1,2 +1,3 @@
-# dreem2
-Dreem with virtual dom and renderer architecture
+# Dreem2
+
+Dreem with multiple screens, IOT and alternative renderer architecture
