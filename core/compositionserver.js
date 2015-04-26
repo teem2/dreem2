@@ -146,19 +146,24 @@ define(function(require, exports, module){
 				// lets scan the -project subdirectories
 				return '$BUILD/compositions.' + compname + '.dre.' + classname + '.js'
 			}
+			var extpath = define.expandVariables(define.EXTLIB)
+			if(fs.existsSync(extpath)){
+				try{
+					var dir = fs.readdirSync(extpath)
+					var paths = []
+					dir.forEach(function(value){
+						paths.push('$EXTLIB/' + value)
+						paths.push('$EXTLIB/' + value + '/classes')
+					})
+				}
+				catch(e){ 
+					var paths = []
+				}
+			}
+			else{
+				var paths = []
+			}
 
-			try{
-				var dir = fs.readdirSync(define.expandVariables(define.EXTLIB))
-				var paths = []
-				dir.forEach(function(value){
-					paths.push('$EXTLIB/' + value)
-					paths.push('$EXTLIB/' + value + '/classes')
-				})
-			}
-			catch(e){
-				errors.push(new DreemError(e.message))
-				var paths = []
-			}
 			paths.unshift('$CLASSES')
 
 			for(var i = 0;i < paths.length; i++){
@@ -292,21 +297,22 @@ define(function(require, exports, module){
 
 			define.SPRITE = '$LIB/dr/sprite_browser'
 
-			// scan our EXTLIB for compositions first
+			// scan our EXTLIB for compositions firstƒ
 			var filepath = "$COMPOSITIONS/" + this.name + '.dre'
 
 			if(define.EXTLIB){
 				var extpath = define.expandVariables(define.EXTLIB)
+				console.log(extpath)
 				if(fs.existsSync(extpath)){
 					var dir = fs.readdirSync(extpath)
 					for(var i = 0; i<dir.length; i++){
-						var mypath = '$EXTLIB/'+dir[i]+'/compositions/'+this.name+'.dre'
+						var mypath = '$EXTLIB/' + dir[i] + '/compositions/'+this.name+'.dre'
 						if(fs.existsSync(define.expandVariables(mypath))){
 							filepath = mypath
 							break
 						}
 					}
-				}
+				} 
 			}
 
 			var errors = []
