@@ -137,7 +137,7 @@ define(function(require, exports, module){
 		body += exports.classnameToJS(baseclass) + '.extend("' + clsname + '", function(){\n'
 
 		if(node.attr && node.attr.with){
-			node.attr.with.split(/,\s*/).forEach(function(cls){
+			node.attr.with.split(/,\s*|\s+/).forEach(function(cls){
 				deps[cls] = 1
 				body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n'
 				return
@@ -206,7 +206,7 @@ define(function(require, exports, module){
 
 		//node.method_id = output.methods.length
 		var lang = this.languages[language]
-		var args = node.attr && node.attr.args ? node.attr.args.split(/,\s*/): []
+		var args = node.attr && node.attr.args ? node.attr.args.split(/,\s*|\s+/): []
 		var compiled = lang.compile(this.concatCode(node), args)
 		
 		if(compiled instanceof DreemError){ // the compiler returned an error
