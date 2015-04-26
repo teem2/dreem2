@@ -242,13 +242,17 @@ define(function(require, exports, module){
 	    	var definejs = fs.readFileSync(define.expandVariables('$ROOT/define.js')).toString()
 			// lets recursively load all our dependencies.
 			var files = {}
-			function recur(file, parent){
+			var recur = function(file, parent){
 				if(files[file]) return
 				try{
-					var data = fs.readFileSync(define.expandVariables(file))
+					var filepath = define.expandVariables(file)
+					var data = fs.readFileSync(filepath)
+					if(file.indexOf('$BUILD') == -1){
+						this.watcher.watch(filepath)
+					}
 				}
 				catch(e){
-					console.log('Error opening file '+file+' from '+parent)
+					console.log('Dali build: Error opening file '+file+' from '+parent)
 					return
 				}
 				var string = files[file] = data.toString()
@@ -261,8 +265,8 @@ define(function(require, exports, module){
 					if(sub.lastIndexOf('.js') !== sub.length - 3) sub = sub + '.js'
 					recur(sub, file)
 				})
-			}
-			recur(root)
+			}.bind(this)
+			recur(root,'absolute root')
 			// lets write out our dali.js
 			var out = 'var define = {packaged:1}\ndefine = ' + definejs + '\n\n'
 			for(var key in files){
