@@ -15,8 +15,8 @@
  */
 define(function(require, exports, module){
 	
-	var HTMLParser = require('./HTMLParser')
-	var DreemError = require('./DreemError')
+	var HTMLParser = require('./htmlparser')
+	var DreemError = require('./dreemerror')
 
 	// Builtin modules, belongs here
 	exports.system = {
