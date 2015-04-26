@@ -144,7 +144,7 @@ define(function(require, exports, module){
 	    this.lookupDep = function(classname, compname, errors){
 			if(classname in this.local_classes){
 				// lets scan the -project subdirectories
-				return '$BUILD/' + compname + '.dre.' + classname + '.js'
+				return '$BUILD/compositions.' + compname + '.dre.' + classname + '.js'
 			}
 
 			try{
@@ -162,8 +162,8 @@ define(function(require, exports, module){
 			paths.unshift('$CLASSES')
 
 			for(var i = 0;i < paths.length; i++){
-				var drefile = paths[i] + '/' + classname + '.dre'
-				var jsfile =  paths[i] + '/' + classname + '.js'
+				var drefile = paths[i] + '/' + dreem_compiler.classnameToPath(classname) + '.dre'
+				var jsfile =  paths[i] + '/' + dreem_compiler.classnameToPath(classname) + '.js'
 				var ignore_watch = false
 				if(fs.existsSync(define.expandVariables(drefile))){
 					if(!this.compile_once[drefile]){
@@ -178,7 +178,7 @@ define(function(require, exports, module){
 							if(dre.child[j].tag == 'class') root = dre.child[j]
 						}
 						if(root && root.tag == 'class'){ // lets output this class
-							jsfile = "$BUILD/" + classname + ".js"
+							jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase()+'.'+ dreem_compiler.classnameToBuild(classname) + ".js"
 							this.compile_once[drefile] = jsfile;
 							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
 							ignore_watch = true
@@ -187,11 +187,7 @@ define(function(require, exports, module){
 							this.showErrors(local_err, drefile, dre.source)
 						}
 					}
-					else
-					{
-						jsfile = this.compile_once[drefile];
-					}
-
+					else jsfile = this.compile_once[drefile];
 				}
 				
 				if(fs.existsSync(define.expandVariables(jsfile)))
@@ -208,8 +204,9 @@ define(function(require, exports, module){
 	    	var out = ''
 	    	for(var key in deps){
 				var incpath = this.lookupDep(key, compname, errors)
+	    		this.classmap[key] = incpath
 				if(incpath){
-					out += indent + 'var ' + key + ' = require("' + incpath + '")\n'
+					out += indent + 'var ' + dreem_compiler.classnameToJS(key) + ' = require("' + incpath + '")\n'
 				}
 			}
 			return out
@@ -223,7 +220,7 @@ define(function(require, exports, module){
 			// write out our composition classes
 			var out = 'define(function(require, exports, module){\n' 
 			out += this.makeLocalDeps(js.deps, compname, '\t', errors)
-			out += '\treturn ' + js.body + '\n})'
+			out += '\tmodule.exports = ' + js.body + '\n\tmodule.exports.dre = ' + JSON.stringify(jsxml) + '})'
 			try{
 				fs.writeFileSync(define.expandVariables(filename), out)
 			}
@@ -239,9 +236,15 @@ define(function(require, exports, module){
 	    	var definejs = fs.readFileSync(define.expandVariables('$ROOT/define.js')).toString()
 			// lets recursively load all our dependencies.
 			var files = {}
-			function recur(file){
+			function recur(file, parent){
 				if(files[file]) return
-				var data = fs.readFileSync(define.expandVariables(file))
+				try{
+					var data = fs.readFileSync(define.expandVariables(file))
+				}
+				catch(e){
+					console.log('Error opening file '+file+' from '+parent)
+					return
+				}
 				var string = files[file] = data.toString()
 				var root = define.filePath(file)
 
@@ -249,14 +252,13 @@ define(function(require, exports, module){
 					if(req.charAt(0) == '$') var sub = req
 					else var sub = define.joinPath(root, req)
 
-					console.log(req)
 					if(sub.lastIndexOf('.js') !== sub.length - 3) sub = sub + '.js'
-					recur(sub)
+					recur(sub, file)
 				})
 			}
 			recur(root)
 			// lets write out our dali.js
-			var out = 'global.define = {packaged:1}\n' + definejs + '\n\n'
+			var out = 'var define = {packaged:1}\ndefine = ' + definejs + '\n\n'
 			for(var key in files){
 				var string = files[key]
 				string = string.replace(/define\(\s*function\s*\(/, function(){
@@ -270,7 +272,7 @@ define(function(require, exports, module){
 
 		this.compileLocalClass = function(cls, errors){
 			var classname = cls.attr && cls.attr.name || 'unknown'
-			this.compileAndWriteDreToJS(cls, '$BUILD/' + this.name + '.dre.' + classname + '.js' , this.name,  errors)
+			this.compileAndWriteDreToJS(cls, '$BUILD/compositions.' + this.name + '.dre.' + classname + '.js' , this.name,  errors)
 			this.local_classes[classname] = 1
 		}
 
@@ -283,10 +285,12 @@ define(function(require, exports, module){
 			this.components = {}
 			this.screens = {}
 			this.modules = []
-
+			this.classmap = {}
 			// lets clear our module cache
 			require.clearCache()
 			define.onMain = undefined
+
+			define.SPRITE = '$LIB/dr/sprite_browser'
 
 			// scan our EXTLIB for compositions first
 			var filepath = "$COMPOSITIONS/" + this.name + '.dre'
@@ -335,10 +339,11 @@ define(function(require, exports, module){
 				// ok now the instances..
 				var out = 'define(function(require, exports, module){\n' 
 				out += this.makeLocalDeps(js.deps, this.name, '\t', errors)
-				out += '\treturn function(){\n\t\treturn ' + js.body + '\n\t}\n})'
+				out += '\tmodule.exports = function(){\n\t\treturn ' + js.body + '\n\t}\n'
+				out += '\tmodule.exports.dre = '+ JSON.stringify(child) +'\n})'
 				
 				if(js.tag === 'screens'){
-					var component = "$BUILD/" + this.name + '.dre.screens.js' 
+					var component = "$BUILD/compositions." + this.name + '.dre.screens.js' 
 				}
 				else{
 					var collide = ''
@@ -348,7 +353,7 @@ define(function(require, exports, module){
 					}
 					js.name += collide
 					this.components[js.name] = 1
-					var component = "$BUILD/" + this.name +  '.dre.' + js.tag + '.' + js.name + '.js'
+					var component = "$BUILD/compositions." + this.name +  '.dre.' + js.tag + '.' + js.name + '.js'
 				}
 
 				fs.writeFileSync(define.expandVariables(component), out)
@@ -370,13 +375,17 @@ define(function(require, exports, module){
 						// ok now the instances..
 						var out = 'define(function(require, exports, module){\n' 
 						out += this.makeLocalDeps(sjs.deps, this.name, '\t', errors)
-						out += '\treturn function(){\n\t\treturn ' + sjs.body + '\n\t}\n})'
-						
-						var component = "$BUILD/" + this.name + '.dre.screens.' + sjs.name + '.js'
+						out += '\tmodule.exports = function(){\n\t\treturn ' + sjs.body + '\n\t}\n'
+						out += '\tmodule.exports.dre = '+ JSON.stringify(schild) +'\n'
+						out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) +'\n'
+						out += '\n})'
+						var component = "$BUILD/compositions." + this.name + '.dre.screens.' + sjs.name + '.js'
 						fs.writeFileSync(define.expandVariables(component), out)
 
 						if(schild.attr && schild.attr.type == 'dali'){
-							this.packageDali(component, component.slice(0, -3) + '.pack.js')
+							define.SPRITE = '$LIB/dr/sprite_dali'
+							this.packageDali(component, component.slice(0,-3)+".dali.js")
+							define.SPRITE = '$LIB/dr/sprite_browser'
 						}
 
 						this.screens[sjs.name] = schild
@@ -431,12 +440,12 @@ define(function(require, exports, module){
 				'</html>\n'
 		}
 
-	    /**
-	      * @method request
-	      * Handle server request for this Composition
-	      * @param {Request} req
+		/**
+		  * @method request
+		  * Handle server request for this Composition
+		  * @param {Request} req
 		  * @param {Response} res
-	      */
+		  */
 		this.request = function(req, res){
 			var app = req.url.split('/')[2] || 'default'
 			// ok lets serve our Composition device 
@@ -472,7 +481,7 @@ define(function(require, exports, module){
 				return
 			}
 
-			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, '$BUILD/' + this.name + '.dre.screens.' + app + '.js')
+			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, '$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js')
 
 			var header = {
 				"Cache-control":"max-age=0",

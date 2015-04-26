@@ -145,6 +145,7 @@ define(function(require, exports, module){
 
 			teem.bus.onMessage = function(msg){
 				if(msg.type == 'sessionCheck'){
+					if(teem.session) location.href = location.href
 					if(teem.session != msg.session){
 						teem.bus.send({type:'connectBrowser'})
 					}
@@ -166,9 +167,19 @@ define(function(require, exports, module){
 
 					teem.root = main()
 
-					if(teem.root._legacy){
-						var domRunner = require('$LIB/dr/domRunner.js')
-						domRunner.run(teem.root._legacy.child[0])
+					if(main.dre){
+						// lets boot up the legacy
+						var dreemParser = require('$LIB/dr/dreemParser.js')
+						var dreemMaker = require('$LIB/dr/dreemMaker.js')
+						var compiler = new dreemParser.Compiler()
+						compiler.execute(main.dre, main.classmap, function(error, pkg) {
+							if(error){
+								for(var i = 0;i<error.length;i++){
+									console.log(error[i].toString())
+								}
+							}
+							else dreemMaker.makeFromPackage(pkg)
+						})
 					}
 					else{
 						var newroot = renderer.render(teem.root)
@@ -201,7 +212,17 @@ define(function(require, exports, module){
 		// dali environment
 		define.onMain = function(main){
 			// ok lets start up
-
+			var dreemParser = require('$LIB/dr/dreemParser.js')
+			var dreemMaker = require('$LIB/dr/dreemMaker.js')
+			var compiler = new dreemParser.Compiler()
+			compiler.execute(main.dre, main.classmap, function(error, pkg) {
+				if(error){
+					for(var i = 0;i<error.length;i++){
+						console.log(error[i].toString())
+					}
+				}
+				else dreemMaker.makeFromPackage(pkg)
+			})
 		}
 	}
 

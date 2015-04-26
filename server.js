@@ -41,7 +41,7 @@ function main(){
 		args['-extlib'] = args['-extlib'] || "../projects"
 	}
 
-	if(args['-h'] || args['-help'] || args['--h']|| args['--help']){
+	if(args['-h'] || args['-help'] || args['--h'] || args['--help']){
 		console.color('~by~Teem~~ Server ~bm~2.0~~\n')
 		console.color('commandline: node server.js <flags>\n')
 		console.color('~bc~-web htmlfile.html~~ Short for -edit -notify -devtools -nodreem -delay -browser htmlfile.html\n')	
@@ -58,7 +58,7 @@ function main(){
 		console.color('~bc~-edit~~ Automatically open an exception in your code editor at the right line\n')
 		return process.exit(0)
 	}
-	define.EXTLIB = define.joinPath(define.ROOT, args['-extlib'])
+	define.EXTLIB = define.joinPath(define.ROOT, args['-extlib'] || '../projects')
 
 	try{fs.mkdirSync(define.expandVariables(define.BUILD))}catch(e){}
 

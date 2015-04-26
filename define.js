@@ -5,7 +5,7 @@
  Micro AMD module loader for browser and node.js
 */
 
-;(function(config_define){
+(function(config_define){
 
 	// the main define function
 	function define(factory){
@@ -29,7 +29,8 @@
 	define.EXTLIB = "/_extlib_"
 	define.COMPOSITIONS = "$ROOT/compositions"
 	define.BUILD = "$ROOT/build"
-
+	define.SPRITE = "$ROOT/lib/dr/sprite_browser"
+	
 	// copy configuration onto define
 	if(typeof config_define == 'object') for(var key in config_define){
 		define[key] = config_define[key]
@@ -113,8 +114,6 @@
 	else define.env = 'v8'
 
 	if(define.packaged){
-		global.define = define
-
 		define.localRequire = function(base_path){
 			function require(dep_path){
 				if(dep_path.charAt(0) === '$')
@@ -145,6 +144,8 @@
 		}
 
 		define.require = define.localRequire('')
+
+		return define
 	}
 	else if(typeof window !== 'undefined')(function(){ // browser implementation
 		// if define was already defined use it as a config store
@@ -169,7 +170,8 @@
 			var module = {exports:{}, id:main_mod, filename:main_mod}
 			define.module[main_mod] = module
 			var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module)
-			if(define.onMain) define.onMain(ret)
+			if(ret !== undefined) module.exports = ret
+			if(define.onMain) define.onMain(module.exports)
 		}
 
 		// the main dependency download queue counter
