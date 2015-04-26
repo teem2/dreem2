@@ -148,21 +148,26 @@ define(function(require, exports, module){
 		if (node.child) for (var i = 0; i < node.child.length; i++) {
 			var child = node.child[i]
 			if (child.tag == 'attribute' || child.tag == 'method' || child.tag == 'handler' || child.tag == 'getter' || child.tag == 'setter'){
-				var attrname = child.attr && (child.attr.name || child.attr.event)
-				if(!attrname){
-					errors.push(new DreemError('Attribute has no name ', child.pos))
-					return
-				}
-				var type = child.attr && child.attr.type || 'string'
-				if(child.tag == 'attribute'){
-					body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '")\n'
-				}
-				else{
-					var fn = this.compileMethod(child, node, language, errors)
-					if(!fn) continue
-					var args = fn.args
-					if(!args && child.tag == 'setter') args = ['value']
-					body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n'
+				var attrnameset = child.attr && (child.attr.name || child.attr.event)
+
+				var attrnames = attrnameset.split(/,\s*|\s+/)
+				for(var j = 0; j < attrnames.length; j++){
+					var attrname = attrnames[j]
+					if(!attrname){
+						errors.push(new DreemError('Attribute has no name ', child.pos))
+						return
+					}
+					var type = child.attr && child.attr.type || 'string'
+					if(child.tag == 'attribute'){
+						body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '")\n'
+					}
+					else{
+						var fn = this.compileMethod(child, node, language, errors)
+						if(!fn) continue
+						var args = fn.args
+						if(!args && child.tag == 'setter') args = ['value']
+						body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n'
+					}
 				}
 			}
 			else if(child.tag.charAt(0) != '$'){ // its our render-node
@@ -250,18 +255,21 @@ define(function(require, exports, module){
 						errors.push(new DreemError('code tag has no name', child.pos))
 						continue
 					}
-					var name = child.attr.name || child.attr.event
-	
-	
-					if(props) props += ',\n' + myindent
-					else props = '{\n' + myindent
-					var pre = '', post = ''
-					if(child.tag == 'getter') name = 'get_' + name
-					else if(child.tag == 'setter') name = 'set_' + name
+					var attrnameset = child.attr.name || child.attr.event
+					
+					var attrnames = attrnameset.split(/,\s*|\s+/)
+					for(var j = 0; j < attrnames.length; j++){
+						var attrname = attrnames[j]
+		
+						if(props) props += ',\n' + myindent
+						else props = '{\n' + myindent
+						var pre = '', post = ''
+						if(child.tag == 'getter') attrname = 'get_' + attrname
+						else if(child.tag == 'setter') attrname = 'set_' + attrname
 
-					if(child.tag == 'handler') name = 'handle_' + name
-					props += name + ': function ' + fn.name + '(' + fn.args.join(', ') + '){' + fn.comp + '}' 
-
+						if(child.tag == 'handler') attrname = 'handle_' + attrname
+						props += attrname + ': function ' + fn.name + '(' + fn.args.join(', ') + '){' + fn.comp + '}' 
+					}
 
 				}
 				else if(child.tag == 'attribute'){
