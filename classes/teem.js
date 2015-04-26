@@ -23,6 +23,9 @@ define(function(require, exports, module){
 				prop.destroy()
 			}
 		}
+		for(var i = 0;i<teem._intervals.length;i++){
+			clearInterval(teem._intervals[i])
+		}
 	}
 
 	teem.toString = function(){
@@ -33,6 +36,20 @@ define(function(require, exports, module){
 			out += key +'\n'
 		}
 		return out
+	}
+
+	teem._intervals = []
+
+	teem.setInterval = function(cb, timeout){
+		var id = setInterval(cb, timeout)
+		teem._intervals.push(id)
+		return id
+	}
+
+	teem.clearInterval = function(id){
+		var i = teem._intervals.indexOf(id)
+		if(i != -1) teem._intervals.splice(i,1)
+		clearInterval(id)
 	}
 
 	if(define.env == 'nodejs'){

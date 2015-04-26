@@ -1,4 +1,13 @@
 <composition>
+<server name='mysvr'>
+  <handler name='init'>
+    teem.setInterval(function(){
+     // console.log('whee')
+      //teem.screens.browser.dosomething()
+
+    },100)
+  </handler>
+</server>
 <screens>
   <screen type="dali" name="dali" title='Whoo'>
   <view name="root_instance" width="100%" height="100%" minwidth="1000" bgcolor="#cc99cc" scrollable="true">

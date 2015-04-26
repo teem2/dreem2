@@ -162,7 +162,7 @@ define(function(require, exports, module){
 						body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '")\n'
 					}
 					else{
-						var fn = this.compileMethod(child, node, language, errors)
+						var fn = this.compileMethod(child, node, language, errors, '\t\t\t\t')
 						if(!fn) continue
 						var args = fn.args
 						if(!args && child.tag == 'setter') args = ['value']
@@ -187,7 +187,7 @@ define(function(require, exports, module){
 		}
 	}
 
-	exports.compileMethod = function(node, parent, language, errors){
+	exports.compileMethod = function(node, parent, language, errors, indent){
 		language = language || 'js'
 
 		if(node.attr && node.attr.type) language = node.attr.type
@@ -195,7 +195,7 @@ define(function(require, exports, module){
 		// lets on-demand load the language
 		var langproc = this.languages[language]
 		if(!langproc){
-			errors.push(new DreemError('Unknown language used '+language, node.pos))
+			errors.push(new DreemError('Unknown language used ' + language, node.pos))
 			return {errors:errors}
 		}
 
@@ -208,11 +208,38 @@ define(function(require, exports, module){
 		var lang = this.languages[language]
 		var args = node.attr && node.attr.args ? node.attr.args.split(/,\s*|\s+/): []
 		var compiled = lang.compile(this.concatCode(node), args)
-		
+
 		if(compiled instanceof DreemError){ // the compiler returned an error
 			compiled.where += node.child[0].pos
 			errors.push(compiled)
 			return
+		}
+
+		// lets re-indent this thing.
+		var lines = compiled.split('\n')
+		
+		// lets scan for the shortest indentation which is not \n
+		var shortest = Infinity
+		for(var i = 0;i<lines.length;i++){
+			var m = lines[i].match(/^( |\t)+/g)
+			if(m && m[0].length){
+				m = m[0]
+				var len = m.length
+				if(m.charCodeAt(0) == 32){
+					// replace by tabs, just because.
+					if(len&1) len ++ // use tabstop of 2 to fix up spaces
+					len = len / 2
+					lines[i] = Array(len + 1).join('\t') + lines[i].slice(m.length)
+				}
+				if(len < shortest && lines[i] !== '\n') shortest = len
+			}
+		}
+		if(shortest != Infinity){
+			for(var i = 0;i<lines.length;i++){
+				if(i> 0 || lines[0].length !== 0)
+					lines[i] = indent + lines[i].slice(shortest).replace(/( |\t)+$/g,'')
+			}
+			compiled = lines.join('\n')
 		}
 
 		return {
@@ -249,7 +276,7 @@ define(function(require, exports, module){
 					else errors.push(new DreemError('Cant support class in this location', node.pos))
 				}
 				else if (child.tag == 'method' || child.tag == 'handler' || child.tag == 'getter' || child.tag == 'setter'){
-					var fn = this.compileMethod(child, parent, 'js', errors)
+					var fn = this.compileMethod(child, parent, 'js', errors, indent + '\t')
 					if(!fn) continue
 					if(!child.attr || (!child.attr.name && !child.attr.event)){
 						errors.push(new DreemError('code tag has no name', child.pos))
@@ -268,7 +295,7 @@ define(function(require, exports, module){
 						else if(child.tag == 'setter') attrname = 'set_' + attrname
 
 						if(child.tag == 'handler') attrname = 'handle_' + attrname
-						props += attrname + ': function ' + fn.name + '(' + fn.args.join(', ') + '){' + fn.comp + '}' 
+						props += attrname + ': function(' + fn.args.join(', ') + '){' + fn.comp + '}' 
 					}
 
 				}
@@ -283,7 +310,7 @@ define(function(require, exports, module){
 					else props = '{\n' + myindent
 					var value = child.attr.value
 					if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value + '"'
-					props += 'attr_' + name + ': {_kind_:"attribute", type:"'+type+'", value:'+value+'}'
+					props += 'attr_' + name + ': {type:"'+type+'", value:'+value+'}'
 				} 
 				else if(child.tag.charAt(0) != '$'){
 					if(children) children += ',\n' + myindent
@@ -293,16 +320,19 @@ define(function(require, exports, module){
 			}
 			var out = exports.classnameToJS(node.tag) + '('
 
-			if(props) out += props+'\n'+myindent+'}'
+			if(props){
+				if(!children) out += props+'\n'+indent+'}'
+				else out += props+'\n'+myindent+'}'
+			}
 
 			if(children){
-				if(props) out += ',' + myindent
+				if(props) out += ','
 				out += children
 			}
-			if (children || props){
+			if (children){
 				out += '\n' + indent
-				
 			}
+
 			out += ')'
 
 			return out

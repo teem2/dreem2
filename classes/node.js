@@ -97,7 +97,7 @@ define(function(require, exports, module){
 		this.processArg0 = function(arg0){
 			for(var key in arg0){
 				var prop = arg0[key]
-				if(key.indexOf('attr_') == 0 && typeof prop == 'object' && prop._kind_ == 'attribute'){
+				if(key.indexOf('attr_') == 0){
 					key = key.slice(5)
 					this.attribute(key, prop.type, prop.value)
 				}

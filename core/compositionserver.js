@@ -352,7 +352,7 @@ define(function(require, exports, module){
 				// ok now the instances..
 				var out = 'define(function(require, exports, module){\n' 
 				out += this.makeLocalDeps(js.deps, this.name, '\t', errors)
-				out += '\tmodule.exports = function(){\n\t\treturn ' + js.body + '\n\t}\n'
+				out += '\n\tmodule.exports = function(){\n\t\treturn ' + js.body + '\n\t}\n'
 				out += '\tmodule.exports.dre = '+ JSON.stringify(child) +'\n})'
 				
 				if(js.tag === 'screens'){
@@ -388,10 +388,10 @@ define(function(require, exports, module){
 						// ok now the instances..
 						var out = 'define(function(require, exports, module){\n' 
 						out += this.makeLocalDeps(sjs.deps, this.name, '\t', errors)
-						out += '\tmodule.exports = function(){\n\t\treturn ' + sjs.body + '\n\t}\n'
-						out += '\tmodule.exports.dre = '+ JSON.stringify(schild) +'\n'
+						out += '\n\tmodule.exports = function(){\n\t\treturn ' + sjs.body + '\n\t}\n'
+						out += '\n\tmodule.exports.dre = '+ JSON.stringify(schild) +'\n'
 						out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) +'\n'
-						out += '\n})'
+						out += '})'
 						var component = "$BUILD/compositions." + this.name + '.dre.screens.' + sjs.name + '.js'
 						fs.writeFileSync(define.expandVariables(component), out)
 
