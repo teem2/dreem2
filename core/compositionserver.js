@@ -446,7 +446,7 @@ define(function(require, exports, module){
 				'      MAIN:"' + boot + '"\n'+
 				'    }\n'+
 				'  </script>\n'+
-				'  <script type="text/javascript" src="define.js"></script>\n'+
+				'  <script type="text/javascript" src="/define.js"></script>\n'+
 				'  <style type="text/css">\n'+
 				'    html,body {\n'+
 				'      height:100%;\n'+
