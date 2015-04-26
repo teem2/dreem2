@@ -94,7 +94,7 @@ define(function(require, exports, module)
 							var parsed = JSON.parse(data);
 							if (parsed.atr)
 							{	
-								this[parsed.atr] = parsed.value;											
+								this[parsed.atr] = parsed.value;	
 							}
 							else if (parsed.inq)
 							{	
