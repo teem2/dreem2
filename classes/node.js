@@ -123,7 +123,12 @@ define(function(require, exports, module){
 						//console.log('Please define attribute before making a handler '+key)
 						this.attribute(key, 'event')
 					}
-					this['attr_' + key].addListener(prop)
+					this['on_' + key].addListener(prop)
+				}
+				else if(this.__lookupSetter__(key)){
+					if(this.isAttribute(key)){
+						this['on_' + key].value = arg0[key]
+					}
 				}
 				else this[key] = arg0[key]
 			}

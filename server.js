@@ -23,8 +23,9 @@ console.color = colorize(function(v){
 })
 
 function main(){
+
+	var argv = process.argv	
 	var args = {}
-	var argv = process.argv
 	for(var lastkey = '', arg, i = 0; i<argv.length; i++){
 		arg = argv[i]
 		if(arg.charAt(0) == '-') lastkey = arg, args[lastkey] = true
@@ -64,8 +65,8 @@ function main(){
 
 	if(args['-nomoni']){
 		if(args['-dali']){
-			var DaliGen = require('./core/daligen')
-			new DaliGen(args)
+			var DaliClient = require('$CORE/daliclient')
+			new DaliClient(args)
 		}
 		else{
 			var TeemServer = require('$CORE/teemserver')

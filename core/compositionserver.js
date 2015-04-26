@@ -146,19 +146,24 @@ define(function(require, exports, module){
 				// lets scan the -project subdirectories
 				return '$BUILD/compositions.' + compname + '.dre.' + classname + '.js'
 			}
+			var extpath = define.expandVariables(define.EXTLIB)
+			if(fs.existsSync(extpath)){
+				try{
+					var dir = fs.readdirSync(extpath)
+					var paths = []
+					dir.forEach(function(value){
+						paths.push('$EXTLIB/' + value)
+						paths.push('$EXTLIB/' + value + '/classes')
+					})
+				}
+				catch(e){
+					var paths = []
+				}
+			}
+			else{
+				var paths = []
+			}
 
-			try{
-				var dir = fs.readdirSync(define.expandVariables(define.EXTLIB))
-				var paths = []
-				dir.forEach(function(value){
-					paths.push('$EXTLIB/' + value)
-					paths.push('$EXTLIB/' + value + '/classes')
-				})
-			}
-			catch(e){
-				errors.push(new DreemError(e.message))
-				var paths = []
-			}
 			paths.unshift('$CLASSES')
 
 			for(var i = 0;i < paths.length; i++){
@@ -175,9 +180,10 @@ define(function(require, exports, module){
 							return ''
 						}
 						for(var j = 0; j < dre.child.length; j++){
-							if(dre.child[j].tag == 'class') root = dre.child[j]
+							var tag = dre.child[j].tag
+							if(tag == 'class' || tag == 'mixin') root = dre.child[j]
 						}
-						if(root && root.tag == 'class'){ // lets output this class
+						if(root){ // lets output this class
 							jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase()+'.'+ dreem_compiler.classnameToBuild(classname) + ".js"
 							this.compile_once[drefile] = jsfile;
 							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
@@ -292,18 +298,21 @@ define(function(require, exports, module){
 
 			define.SPRITE = '$LIB/dr/sprite_browser'
 
-			// scan our EXTLIB for compositions first
-			var filepath = "$COMPOSITIONS/" + this.name + '.dre'
+			// scan our EXTLIB for compositions firstƒ
+			var filepath = '$COMPOSITIONS/' + this.name + '.dre'
 
 			if(define.EXTLIB){
-				var dir = fs.readdirSync(define.expandVariables(define.EXTLIB))
-				for(var i = 0; i<dir.length; i++){
-					var mypath = '$EXTLIB/'+dir[i]+'/compositions/'+this.name+'.dre'
-					if(fs.existsSync(define.expandVariables(mypath))){
-						filepath = mypath
-						break
+				var extpath = define.expandVariables(define.EXTLIB)
+				if(fs.existsSync(extpath)){
+					var dir = fs.readdirSync(extpath)
+					for(var i = 0; i<dir.length; i++){
+						var mypath = '$EXTLIB/' + dir[i] + '/compositions/'+this.name+'.dre'
+						if(fs.existsSync(define.expandVariables(mypath))){
+							filepath = mypath
+							break
+						}
 					}
-				}
+				} 
 			}
 
 			var errors = []

@@ -7,6 +7,10 @@
 define(function(require, exports, module){
 	module.exports = promisify
 
+	if(true){//} Promise === 'undefined'){
+		global.Promise = require('./promisepolyfill')
+	}
+
 	function promisify(call){
 		return function(){
 			var arg = Array.prototype.slice.call(arguments)
