@@ -13,6 +13,59 @@ define(function(require, exports, module){
 		}
 	}
 
+	exports.positivenumber = {
+		name:'positivenumber',
+		parse:function(str){
+			return Math.max(0, parseFloat(str))
+		}
+	}
+
+	exports.easing_function = {
+		name:'easing_function',
+		parse:function(str){
+			return str
+		}
+	}
+
+	exports.json = {
+		name:'json',
+		parse:function(str){
+			try {
+				return JSON.parse(value);
+			} catch (e) {
+				return str;
+			}
+		}
+	}
+
+	exports.expression = {
+		name:'expression',
+		parse:function(str){
+			return (new Function('return ' + str)).bind(this)()
+		}
+	}
+
+	exports['*'] = {
+		name:'*',
+		parse:function(str){
+			return str
+		}
+	}
+
+	exports.object = {
+		name:'object',
+		parse:function(str){
+			return str
+		}
+	}
+
+	exports.function = {
+		name:'function',
+		parse:function(str){
+			return str
+		}
+	}
+
 	exports.string = {
 		name:'string',
 		parse:function(str){

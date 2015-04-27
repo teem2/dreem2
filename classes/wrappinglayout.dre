@@ -65,9 +65,9 @@ SOFTWARE. -->
       attrs.inset = attrs.value
     delete attrs.value
     
-    if attrs.attribute isnt 'x' and attrs.axis is 'x'
-      attrs.axis = attrs.attribute
-    delete attrs.attribute
+    if attrs.attr isnt 'x' and attrs.axis is 'x'
+      attrs.axis = attrs.attr
+    delete attrs.attr
     
     @super()
   </method>
@@ -164,8 +164,8 @@ SOFTWARE. -->
     */-->
   <attribute name="axis" type="string" value="x"></attribute>
   <setter name="axis" args="axis">
-    # An alias for attribute.
-    @setAttribute('attribute', axis);
+    # An alias for attr.
+    @setAttribute('attr', axis);
   </setter>
   
   <!--/**
@@ -173,15 +173,15 @@ SOFTWARE. -->
     * @private
     * The axis attribute is an alias for this attribute.
     */-->
-  <setter name="attribute" args="attribute">
-    if @attribute isnt attribute
+  <setter name="attr" args="attr">
+    if @attr isnt attr
       # Stop monitoring since the "axis" changed. This needs to
       # be done before the new "axis" value is set since stopMonitoringSubview
       # needs to know the old values.
       @stopMonitoringAllSubviews()
       
       # Setup private attributes based on axis
-      if attribute == 'y'
+      if attr == 'y'
         # The layout is oriented vertically
         @__parentAttrName = 'width'             # The attr to update on the parent if updateparent is true
         @__innerAttrName = 'innerheight'        # The attr used to get available space
@@ -202,7 +202,7 @@ SOFTWARE. -->
         @__otherDiffAttrName = 'boundsydiff'
         @__otherAttribute = 'y'
       
-      @setActual('attribute', attribute, 'string')
+      @setActual('attr', attr, 'string')
       
       if @inited
         # Start monitoring again and update since we have a new axis. This needs
@@ -383,7 +383,7 @@ SOFTWARE. -->
           amount = extra / (itemcount - 1)
           
           # Reposition each item in the line after the first one by the amount
-          attribute = @attribute
+          attribute = @attr
           i = 1
           while itemcount > i
             item = items[i++]

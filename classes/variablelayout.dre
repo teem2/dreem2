@@ -232,7 +232,7 @@ SOFTWARE. -->
 
       @doBeforeUpdate()
 
-      attribute = @attribute
+      attribute = @attr
       value = @value
       svs = @subviews
       len = svs.length
