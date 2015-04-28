@@ -93,7 +93,8 @@ SOFTWARE. -->
   <attribute name="inset" type="number" value="0"></attribute>
   <setter name="inset" args="inset">
     # An alias for value.
-    @setAttribute('value', inset);
+    @setActual('inset', inset, 'number', 0)
+    @setAttribute('value', @inset)
   </setter>
   
   <!--/**
@@ -165,7 +166,8 @@ SOFTWARE. -->
   <attribute name="axis" type="string" value="x"></attribute>
   <setter name="axis" args="axis">
     # An alias for attr.
-    @setAttribute('prop', axis);
+    @setActual('axis', axis, 'string', 'x')
+    @setAttribute('prop', @axis)
   </setter>
   
   <!--/**
@@ -311,7 +313,7 @@ SOFTWARE. -->
       @__lineSize = otherSize
     
     # Position for the line/column
-    view.setAttribute(@__otherAttribute, @__linePos)
+    @__positionView(view, @__otherAttribute, @__linePos);
     
     
     @__lineItems.push(view)
@@ -323,7 +325,7 @@ SOFTWARE. -->
     
     # Position the view at the provided value and compensate for 
     # any transformation position difference
-    view.setAttribute(attribute, view[@__diffAttrName] + value)
+    @__positionView(view, attribute, view[@__diffAttrName] + value);
     
     # Use spacingafter hint if defined instead of spacing
     if not @justify
@@ -365,13 +367,13 @@ SOFTWARE. -->
       switch @linealign
         when 'right', 'bottom'
           for item in items
-            item.setAttribute(otherAttribute, item[otherDiffAttrName] + item[otherAttribute] + lineMaxSize - item[otherMeasureAttrName])
+            @__positionView(item, otherAttribute, item[otherDiffAttrName] + item[otherAttribute] + lineMaxSize - item[otherMeasureAttrName])
         when 'center', 'middle'
           for item in items
-            item.setAttribute(otherAttribute, item[otherDiffAttrName] + item[otherAttribute] + (lineMaxSize - item[otherMeasureAttrName]) / 2)
+            @__positionView(item, otherAttribute, item[otherDiffAttrName] + item[otherAttribute] + (lineMaxSize - item[otherMeasureAttrName]) / 2)
         when 'top', 'left'
           for item in items
-            item.setAttribute(otherAttribute, item[otherDiffAttrName] + item[otherAttribute])
+            @__positionView(item, otherAttribute, item[otherDiffAttrName] + item[otherAttribute])
     
     # Justify lines with extra space if justify is turned on.
     if @justify
@@ -387,7 +389,7 @@ SOFTWARE. -->
           i = 1
           while itemcount > i
             item = items[i++]
-            item.setAttribute(attribute, item[attribute] + (i - 1) * amount)
+            @__positionView(item, attribute, item[attribute] + (i - 1) * amount)
         return
     
     # No justification case or justification of 1 item falls through to here.
@@ -402,7 +404,7 @@ SOFTWARE. -->
       # Reposition each item in the line
       attribute = @prop
       for item in items
-        item.setAttribute(attribute, item[attribute] + extra)
+        @__positionView(item, attribute, item[attribute] + extra)
   </method>
   
   <!--/**
@@ -433,6 +435,6 @@ SOFTWARE. -->
     # Resize the parent and allow for the difference between innersize and size
     # due to border and padding.
     parent = @parent
-    parent.setAttribute(@__parentAttrName, @__linePos + @__lineSize + @lineoutset + parent[@__parentAttrName] - parent[@__otherInnerAttrName])
+    @__positionView(parent, @__parentAttrName, @__linePos + @__lineSize + @lineoutset + parent[@__parentAttrName] - parent[@__otherInnerAttrName])
   </method>
 </class>

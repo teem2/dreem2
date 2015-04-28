@@ -138,6 +138,7 @@ SOFTWARE. -->
     @__internalUpdate = true
     unless @__hasSetWidth then @setSimpleActual('width', bounds.width, true) # Avoid dom update
     unless @__hasSetHeight then @setSimpleActual('height', bounds.height, true) # Avoid dom update
+    @__updateBounds()
     @__internalUpdate = false
   </method>
   

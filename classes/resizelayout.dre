@@ -143,7 +143,7 @@ SOFTWARE. -->
       
       # parent attr name is also suitable for resize views since it will just
       # be width or height
-      view.setAttribute(@__parentAttrName, size)
+      @__positionView(view, @__parentAttrName, size)
     
     return @super()
   </method>
