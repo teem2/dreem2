@@ -191,30 +191,39 @@ define(function(require, exports, module){
 	}
 
 	// color parser
-	function parseColor( col ) {
+	function parseColor( col ) 
+	{
 		if(Array.isArray(col)) return col
 		var c = color_wikipedia[col] // color LUT
 		var a = []
-		if( c === undefined ){
+		if( c === undefined )
+		{
+			
 			// lets parse the color
 			var len = col.length
 			var i = 0
+			if (col.charAt(0) == '#') i++;
 			c = 0
-			while(i<len){
+			while(i<len)
+			{
 				var ch = col.charCodeAt(i++)
-				if(ch >= 48 && ch <= 57){ // hex color
+				if(ch >= 48 && ch <= 57)
+				{ // hex color
 					c = c << 4
 					c += ch - 48
 				}
-				else if(ch >= 97 && ch <= 102){
+				else if(ch >= 97 && ch <= 102)
+				{
 					c = c << 4
 					c += ch - 87
 				}
-				else if(ch >= 65 && ch <= 70){
+				else if(ch >= 65 && ch <= 70)
+				{
 					c = c << 4
 					c += ch - 55
 				}
-				else{ // try to find the nearest color
+				else
+				{ // try to find the nearest color
 					col = col.toLowerCase()
 					c = color_wikipedia[col]
 					if(c === undefined) for(var k in color_wikipedia){
@@ -228,7 +237,8 @@ define(function(require, exports, module){
 					len = 0
 				}
 			}
-			if(len == 3){ 
+			if(len == 3)
+			{			
 				a[0] = ((c&0xf00)>>8|(c&0xf00)>>4) /255
 				a[1] = ((c&0xf0)|(c&0xf0)>>4) /255
 				a[2] = ((c&0xf)|(c&0xf)<<4) /255 

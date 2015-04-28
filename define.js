@@ -311,9 +311,11 @@
 				return require(full_name)
 			}
 
-			localRequire.clearCache = function(name){
+			localRequire.clearCache = function(name)
+			{
 				Module._cache = {}
 			}
+			
 			if (typeof factory !== "function") return module.exports = factory
 						
 			var ret = factory.call(module.exports, localRequire, module.exports, module)
@@ -324,19 +326,50 @@
 		global.define.module = {}
 		global.define.factory = {}
 		// fetch a new require for the main module and return that
-		define.define(function(require){
+		
+		define.define(function(require)
+		{
 			module.exports = require
 		})
 	})()
 })(typeof define !== 'undefined' && define)
-if(typeof console === 'undefined'){
-	var console = {log:function(){
-		var out = ''
-		for(var i = 0;i<arguments.length;i++){
-			if(i) out += ', '
-			out += arguments[i]
+
+if(typeof console === 'undefined')
+{
+	var console = 
+	{
+		log: function()
+		{
+			var out = ''
+			for(var i = 0;i<arguments.length;i++)
+			{
+				if(i) out += ', '
+				out += arguments[i]
+			}
+			out += '\n'
+			log(out)
+		},
+		dir: function()
+		{
+			var out = ''
+			for(var i = 0;i<arguments.length;i++)
+			{
+				if(i) out += ', '
+				out += arguments[i]
+			}
+			out += '\n'
+			log(out)
+		},
+		warn: function()
+		{
+			var out = ''
+			for(var i = 0;i<arguments.length;i++)
+			{
+				if(i) out += ', '
+				out += arguments[i]
+			}
+			out += '\n'
+			log(out)
 		}
-		out += '\n'
-		log(out)
-	}}
+	}
 }

@@ -188,7 +188,10 @@ SOFTWARE. -->
     * @return {*} The value to use for the next subview.
     */-->
   <method name="updateSubview" args="count, view, attribute, value">
-    view.setAttribute(attribute, value)
+    if @speed > 0
+      view.animate({prop:attribute, to:value, duration:@speed})
+    else
+      view.setAttribute(attribute, value)
     return value
   </method>
 
@@ -232,7 +235,7 @@ SOFTWARE. -->
 
       @doBeforeUpdate()
 
-      attribute = @attr
+      attribute = @prop
       value = @value
       svs = @subviews
       len = svs.length
