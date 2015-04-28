@@ -49,9 +49,10 @@
       
       <class name="foo" height="20" width="40" bgcolor="#0000cc">
         <view name="a" with="bar" x="1" y="1" width="20" height="20" bgcolor="#669933">
-          <view name="aa" x="12" y="1" width="5" height="5" bgcolor="#ffffcc"></view>
+          <view name="aa" x="12" y="1" width="5" height="5" bgcolor="#ffffcc"><text>text</text></view>
         </view>
-        <view name="b" x="25" y="1" width="20" height="20" bgcolor="#996633"></view>
+        <view name="b" x="25" y="1" width="20" height="20" bgcolor="#996633">
+		</view>
       </class>
       
       <class name="subfoo" extends="foo">
@@ -83,8 +84,8 @@
         <view name="d" x="50" y="5" width="10" height="10" bgcolor="#9933cc"></view>
       </subfoo>
       
-    <!--  <item2 name="item2_instance" y="200" x="${this.y / 10 + foo.width + foo.x}" bgcolor="green"></item2>-->
-      
+      <item2 name="item2_instance" y="200" x="${this.y / 10 + foo.width + foo.x}" bgcolor="green"></item2>
+      <text>text</text>
       <item name="item_instance" y="250" id="foo" bgcolor="orange">
         <attribute name="thing" type="number" value="5"></attribute>
         <attribute name="another" type="string" value="hello"></attribute>
@@ -204,7 +205,7 @@
         <view name="d" x="50" y="5" width="10" height="10" bgcolor="#9933cc"></view>
       </subfoo>
       
-    <!--  <item2 name="item2_instance" y="200" x="${this.y / 10 + foo.width + foo.x}" bgcolor="green"></item2>-->
+    <item2 name="item2_instance" y="200" x="${this.y / 10 + foo.width + foo.x}" bgcolor="green"></item2>
       
       <item name="item_instance" y="250" id="foo" bgcolor="orange">
         <attribute name="thing" type="number" value="5"></attribute>
