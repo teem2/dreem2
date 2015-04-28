@@ -1,9 +1,8 @@
-define(function(require, exports, module){
+// Acorn AST -> Javascript conversion
+
+define(function(require, exports, module)
+{
 	module.exports = serializer
-
-	var acorn = require('$LIB/acorn')
-
-	var ast = acorn.parse("im(a+5)*expr+es-ion.b.c")
 
 	var astDef = {
 		Program:{ body:2 },
@@ -12,7 +11,8 @@ define(function(require, exports, module){
 		MemberExpression:{object:1, property:1, computed:0},
 		CallExpression:{callee:1, arguments:2},
 		Identifier:{name:0},
-		Literal:{raw:0, value:0}
+		Literal:{raw:0, value:0},
+		ThisExpression:{}
 	}
 
 	function AstSerializer(){
@@ -27,6 +27,7 @@ define(function(require, exports, module){
 		}
 		return out
 	}
+	
 	
 	function list(array, parent, serializer){
 		var out = ''
@@ -51,6 +52,9 @@ define(function(require, exports, module){
 		},
 		ExpressionStatement:function(node){
 			return this.call(node.expression)
+		},
+		ThisExpression:function(node){
+			return 'this';
 		},
 		MemberExpression:function(node){
 			if(node.computed) return this.call(node.object,  node) + '[' + this.call(node.property, node) + ']'
@@ -87,14 +91,9 @@ define(function(require, exports, module){
 		return out
 	}
 
-	//console.log(dumpAst(ast, ''))
-
-	console.log( astSerializer.call(ast) )
-
-	function serializer(ast){
-		switch(ast.type){
-		}
-
+	function serializer(ast)
+	{
+	console.log(dumpAst(ast),"");
+		return  astSerializer.call(ast) ;
 	}
-
 })
