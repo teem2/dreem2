@@ -54,8 +54,8 @@ SOFTWARE. -->
     * @attribute {String} [attr=x]
     * The name of the attribute to update on each subview.
     */-->
-  <attribute name="attr" type="string" value="x"></attribute>
-  <handler event="onattr" method="update"></handler>
+  <attribute name="prop" type="string" value="x"></attribute>
+  <handler event="onprop" method="update"></handler>
 
   <!--/**
     * @attribute {*} [value=0]
@@ -65,14 +65,26 @@ SOFTWARE. -->
   <handler event="onvalue" method="update"></handler>
 
   <!--/**
+    * @attribute {*} [value=0]
+    * The speed of an animated update of the managed views. If 0 no animation
+    * will be performed
+    */-->
+  <attribute name="speed" type="positivenumber" value="0"></attribute>
+
+  <!--/**
     * @method update
     * Set the attribute to the value on every subview managed by this layout.
     */-->
   <method name="update">
     if @canUpdate() # Only update if we can.
-      attribute = @attr
+      attribute = @prop
       value = @value
-      for subview in @subviews
-        subview.setAttribute(attribute, value)
+      speed = @speed
+      if speed > 0
+        for subview in @subviews
+          subview.animate({prop:attribute, to:value, duration:speed})
+      else
+        for subview in @subviews
+          subview.setAttribute(attribute, value)
   </method>
 </class>
