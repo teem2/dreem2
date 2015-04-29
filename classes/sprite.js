@@ -26,6 +26,11 @@ define(function(require, exports, module){
 			}
 
 			this.render = function(){
+				this.x
+				this.y
+				this.width
+				this.height
+				this.rotation
 			}
 
 			this.spawn = function(parent){
