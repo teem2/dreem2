@@ -9,8 +9,8 @@
 		<method name='init'>
 			teem.setInterval(function(value){
 				this.timer ++
-				this.wavy = Math.sin(Date.now()*0.001)*100
-			}.bind(this), 30)
+				this.wavy = Math.sin(Date.now()*0.001)*100 + 100
+			}.bind(this), 16)
 		</method>
 	</server>
 	<classes>
@@ -19,13 +19,16 @@
 			<require name='sprite' src='$CLASSES/sprite'/>
 			<attribute name="count" value="10"/>
 			<method name='render'>
-				var out = [view]
+				var out = [view,{bgcolor:'black'}]
 				var colors = ["orange","green","blue","purple"]
 				for(var i = 0; i < this.count; i++){
 					out.push(
 						sprite({
+							rotation: (Date.now()/10+i*10)%360,
 							x: i * 10,
 							y: i * 10,
+							width: 20,
+							height: 120,
 							bgcolor: colors[i % 4],
 						})
 					)
@@ -42,7 +45,7 @@
 				})
 			</method>
 			<view x="50" y="40" bgcolor='blue'>
-				<loop count='${teem.soundcloud.timer%30}'/>
+				<loop count='${teem.soundcloud.timer%60}'/>
 			</view>
 		</screen>
 	</screens>

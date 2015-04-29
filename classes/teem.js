@@ -243,21 +243,24 @@ define(function(require, exports, module){
 							document.body.innerHTML = ''
 							redrawing = false
 
-							if(teem.root){
-								renderer.destroy(teem.root)
+							if(teem.drawroot){
+								renderer.destroy(teem.drawroot)
 							}
 	
-							var objtree = Node.createFromJSONML(root_jsonml)
+							var objroot = Node.createFromJSONML(root_jsonml)
 
-							var newroot = renderer.render(objtree, {}, {teem:teem}, function(count){
+							var drawroot = renderer.render(objroot, {}, {teem:teem}, function(count){
 								if(!redrawing) setTimeout(redraw, 1)
 								redrawing = true
 							}.bind(null, count++))
 
-							renderer.spawn(newroot, {dom_node:document.body})
-							if(!teem.root) var init = true
-							teem.root = Node.createFromJSONML(root_jsonml)
-							if(init) teem.root.on_init.emit()
+							renderer.spawn(drawroot, {dom_node:document.body})
+
+							if(!teem.drawroot) var init = true
+
+							teem.drawroot = drawroot
+							teem.objroot = objroot
+							if(init) teem.objroot.on_init.emit()
 						}
 						redraw()
 					}
