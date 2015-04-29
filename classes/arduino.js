@@ -41,6 +41,7 @@ define(function(require, exports, module)
 		this.attribute("init", "event")
 		this.attribute("connected", "event")
 		
+		
 		this.connectedOutputs = {};
 		
 		this.onAttributeSet = function(key, value)
@@ -49,7 +50,8 @@ define(function(require, exports, module)
 			{
 				if(key in this.connectedOutputs)
 				{
-					this.serialPortContainer.write("atr " + key + " " + value.toString()+"\r\n");
+					var command = "atr " + key + " " + value.toString()+"\r\n";
+					this.serialPortContainer.write(command);
 				}
 			}
 		}
@@ -95,10 +97,15 @@ define(function(require, exports, module)
 							if (parsed.atr)
 							{	
 								this[parsed.atr] = parsed.value;	
+								
 							}
 							else if (parsed.inq)
 							{	
 								for(outp in parsed.inq.digitalOutputs)
+								{
+									this.connectedOutputs[parsed.inq.digitalOutputs[outp]] = 1;
+								}
+								for(outp in parsed.inq.analogOutputs)
 								{
 									this.connectedOutputs[parsed.inq.digitalOutputs[outp]] = 1;
 								}
@@ -109,17 +116,32 @@ define(function(require, exports, module)
 							}	
 							else if (parsed.mtd)
 							{	
+								if (parsed.mtd == "initsequencedone")
+								{
+									this.serialPortContainer.write("inq\r\n");
+								}
 								try
 								{
 									this[parsed]();
 								}
 								catch(e){};
-							}		
+							}
+							else 
+							{
+							console.color("~by~Arduino~~ " + data + " \n");
+							}							
 						}
-						catch(e){}
+						catch(e)
+						{
+							data = data.toString();
+							data = data.trim();
+							console.color("~br~Arduino~~ " + e.toString() + " \n");
+							console.color("~by~Arduino~~ " + data + " \n");
+						}
 					}.bind(this));
 	
 					this.serialPortContainer.write("inq\r\n");
+								
 				}.bind(this));
 			}.bind(this);
 			
