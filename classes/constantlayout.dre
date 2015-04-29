@@ -79,12 +79,16 @@ SOFTWARE. -->
     if @canUpdate() # Only update if we can.
       attribute = @prop
       value = @value
-      speed = @speed
-      if speed > 0
-        for subview in @subviews
-          subview.animate({prop:attribute, to:value, duration:speed})
-      else
-        for subview in @subviews
-          subview.setAttribute(attribute, value)
+      for subview in @subviews
+        @__positionView(subview, attribute, value)
+  </method>
+  
+  <!-- @private -->
+  <method name="__positionView" args="view, attrName, value">
+    if @speed > 0
+      view.stopActiveAnimators(attrName)
+      view.animate({prop:attrName, to:value, duration:@speed})
+    else
+      view.setAttribute(attrName, value)
   </method>
 </class>

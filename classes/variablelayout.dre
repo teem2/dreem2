@@ -188,10 +188,7 @@ SOFTWARE. -->
     * @return {*} The value to use for the next subview.
     */-->
   <method name="updateSubview" args="count, view, attribute, value">
-    if @speed > 0
-      view.animate({prop:attribute, to:value, duration:@speed})
-    else
-      view.setAttribute(attribute, value)
+    @__positionView(view, attribute, value)
     return value
   </method>
 

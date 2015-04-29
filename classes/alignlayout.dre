@@ -195,7 +195,7 @@ SOFTWARE. -->
           actualVal = @parent[@__innerAttrName] - view[@__measureAttrName]
       else
         actualVal = 0
-    view.setAttribute(@__setterAttrName, view[@__diffAttrName] + actualVal)
+    @__positionView(view, @__setterAttrName, view[@__diffAttrName] + actualVal)
     
     return value
   </method>
@@ -204,6 +204,6 @@ SOFTWARE. -->
     # Resize the parent and allow for the difference between innersize and size
     # due to border and padding.
     parent = @parent
-    parent.setAttribute(@__parentAttrName, value + parent[@__parentAttrName] - parent[@__innerAttrName])
+    @__positionView(parent, @__parentAttrName, value + parent[@__parentAttrName] - parent[@__innerAttrName])
   </method>
 </class>
