@@ -28,6 +28,7 @@ define(function(require, exports, module){
 					}
 				}
 				// set up property binding vlaues
+				object.parent = parent
 				this.propertyBind(object, globals)
 
 				var jsonml = object.render(parent)
