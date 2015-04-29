@@ -135,7 +135,10 @@ define(function(require, exports, module){
 							else if(key in base){
 								base = base[key]
 							}
-							else{
+							else if(key == 'this'){
+								base = obj
+							}
+							else {
 								throw new Error('Cannot traverse binding ' + items.join('.'))
 							}
 						}
