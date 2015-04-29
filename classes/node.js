@@ -304,12 +304,13 @@ define(function(require, exports, module){
 					}
 					return attr
 				},
-				set:function(value){
+				set:function(value){ 
 					throw new Error('Cant assign to on_' + key + ', assign to ' + key + ' instead')
 				}
 			})
+			
 			Object.defineProperty(this, key, {
-				configurable:true,
+				configurable:false,
 				enumerable:true,
 				get: function(){
 					var attr = this[attr_key]

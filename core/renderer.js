@@ -67,6 +67,13 @@ define(function(require, exports, module){
 			// lets tear down all listeners
 			var obj = object
 			while(obj){
+				var listeners = obj._proplisten
+				if(listeners){
+					for(var i = 0;i < listeners.length; i++){
+						listeners[i]()
+					}
+					obj._proplisten = undefined
+				}
 				for(var key in obj){
 					var attr = obj['attr_' + key]
 					if(attr && attr.owner == obj){
@@ -97,6 +104,7 @@ define(function(require, exports, module){
 			// allright lets resolve the property binds
 			var binds = obj._propbinds
 			if(binds){
+				obj._proplisten = []
 				//console.log(object._propbinds)
 				for(var i = 0; i < binds.length; i++){
 					var bind = binds[i]
@@ -113,11 +121,16 @@ define(function(require, exports, module){
 							var key = items[k]
 							// lets walk into the node
 							if(k == items.length -1 && base['attr_' + key]){
-								// lets create a watch
-								base[key] = function(bind, value){
+								// lets store it on this
+								var bla
+								obj._proplisten.push(
+								bla = base['on_' + key].addListener(function(bind, value){
 									// recompute
 									var value = this[bind] = this['attr_' + bind].expr()
-								}.bind(obj, bind)
+								}.bind(obj, bind)))
+								//console.log(base['on_' + key].listeners.length)
+								//bla()
+								//console.log(base['on_' + key].listeners.length)
 							}
 							else if(key in base){
 								base = base[key]

@@ -1,0 +1,94 @@
+<composition>
+	<screens>
+		<screen name="default" type="browser" bgcolor="lightblue" >			
+			<view width="100%" bgcolor="lightblue" height="100%" clip="true">
+			
+			<view id="buttons" width="100%" height="130" bgcolor="lightgreen" y="${this.parent.height-130}">
+				<view ></view>
+			</view>
+			
+			<view id="buttons" width="140" height="100" bgcolor="darkgray" x="10" y="${this.parent.height-110}">
+				<view ></view>
+			</view>
+			
+			<view id="puppet" rotation ="30" width="50" height ="50" bgcolor="yellow" x="-100" y="-100" >
+				<view  x="${this.parent.width*0.2}" y="${this.parent.height*0.2}" width="${this.parent.width*0.2}" height = "${this.parent.width*0.4}" bgcolor="black"></view>
+				<view  x="${this.parent.width*0.6}" y="${this.parent.height*0.2}" width="${this.parent.width*0.2}" height = "${this.parent.width*0.4}" bgcolor="black"></view>
+				<handler event="onidle" reference="dr.global.idle">	
+					if (teem.ard1.knob1 != undefined)
+					{
+						this.setAttribute("x",  (this.parent.width*2 - this.width)*  teem.ard1.knob1);
+					}
+					if (teem.ard1.knob2 != undefined)
+					{
+						this.setAttribute("y",  ( this.parent.height-this.height) *  teem.ard1.knob2);
+					}
+					if (teem.ard1.knob3 != undefined)
+					{
+						this.setAttribute("rotation",  teem.ard1.knob3*360-180);
+					}
+					if (teem.ard1.knob4 != undefined)
+					{
+						this.setAttribute("width", 40 + Math.pow(teem.ard1.knob4, 3)*300);
+						this.setAttribute("height", 40 + teem.ard1.knob4*300);
+					}
+				</handler>
+			</view>
+			</view> 
+		</screen>
+		<screen name="stage2" type="browser" bgcolor="darkblue" >			
+			<view width="100%" bgcolor="darkblue" height="100%" clip="true">
+			
+			<view id="buttons" width="100%" height="130" bgcolor="darkgreen" y="${this.parent.height-130}">
+				<view ></view>
+			</view>
+			
+			<view id="buttons" width="140" height="100" bgcolor="darkgray" x="10" y="${this.parent.height-110}">
+				<view ></view>
+			</view>
+			
+			<view id="puppet" rotation ="30" width="50" height ="50" bgcolor="yellow" x="-100" y="-100" >
+				<view  x="${this.parent.width*0.2}" y="${this.parent.height*0.2}" width="${this.parent.width*0.2}" height = "${this.parent.width*0.4}" bgcolor="black"></view>
+				<view  x="${this.parent.width*0.6}" y="${this.parent.height*0.2}" width="${this.parent.width*0.2}" height = "${this.parent.width*0.4}" bgcolor="black"></view>
+				<handler event="onidle" reference="dr.global.idle">	
+					if (teem.ard1.knob1 != undefined)
+					{
+						this.setAttribute("x",  (this.parent.width*2 - this.width)*  teem.ard1.knob1 - this.parent.width);
+					}
+					if (teem.ard1.knob2 != undefined)
+					{
+						this.setAttribute("y",  ( this.parent.height-this.height) *  teem.ard1.knob2);
+					}
+					if (teem.ard1.knob3 != undefined)
+					{
+						this.setAttribute("rotation",  teem.ard1.knob3*360-180);
+					}
+					if (teem.ard1.knob4 != undefined)
+					{
+						this.setAttribute("width", 40 + Math.pow(teem.ard1.knob4, 3)*300);
+						this.setAttribute("height", 40 + teem.ard1.knob4*300);
+					}
+				</handler>
+			</view>
+			</view> 
+		</screen>
+	</screens>
+	
+	
+	<arduino name="ard1" port="com4">
+	
+		<attribute name="knob1"/>
+		<attribute name="knob2"/>
+		<attribute name="knob3"/> 
+		<attribute name="knob4"/>
+		<handler event="connected">console.log("connected!");</handler>		
+		<handler event="knob1" args="value">this.led1 =  value; console.log(value)</handler>
+		<handler event="knob2" args="value">this.led2 =  value >0.5? "1":"0"</handler>
+		<handler event="knob3" args="value">this.led3 =  value >0.5? "1":"0"</handler>
+		<handler event="knob4" args="value">this.led4 =  value >0.5? "1":"0" </handler>
+		<attribute name="led1" value="0"/>
+		<attribute name="led2" value="1"/>
+		<attribute name="led3" value="0"/>
+		<attribute name="led4" value="1"/>
+	</arduino>
+</composition>

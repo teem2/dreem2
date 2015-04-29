@@ -19,6 +19,7 @@ define(function(require, exports, module){
 			this.attribute("y", "number")
 			this.attribute("width", "number", 100)
 			this.attribute("height", "number", 100)
+			this.attribute("rotation", "number", 0)
 			this.attribute("bgcolor", "string", "orange")
 
 			this.onConstruct = function(){
@@ -35,6 +36,7 @@ define(function(require, exports, module){
 				this.dom_node.style.top = this.y + 'px'
 				this.dom_node.style.width = this.width + 'px'
 				this.dom_node.style.height = this.height + 'px'
+				if(this.rotation) this.dom_node.style.transform = 'rotateZ('+this.rotation+'deg)'
 				parent.dom_node.appendChild(this.dom_node)
 			}
 		})
