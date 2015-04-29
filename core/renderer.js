@@ -115,6 +115,7 @@ define(function(require, exports, module){
 					// ok we have to parse it and wire the things up
 					var walker = new AstBindingWalker()
 					var out = walker.walk(ast)
+
 					for(var j = 0;j < walker.references.length; j++){
 						var items = walker.references[j]
 						var base = globals
@@ -139,7 +140,10 @@ define(function(require, exports, module){
 							else if(key == 'this'){
 								base = obj
 							}
-							else {
+							else if(key == 'Math'){
+								break
+							}
+							else{
 								throw new Error('Cannot traverse binding ' + items.join('.'))
 							}
 						}
