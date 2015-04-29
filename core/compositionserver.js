@@ -21,6 +21,8 @@ define(function(require, exports, module){
 	var HTMLParser = require('./htmlparser')
 	var DreemError = require('./dreemerror')
 	var dreem_compiler = require('./dreemcompiler')
+	
+	var legacy_support = 0
 
 	/**
 	  * @constructor
@@ -183,7 +185,7 @@ define(function(require, exports, module){
 							var tag = dre.child[j].tag
 							if(tag == 'class' || tag == 'mixin') root = dre.child[j]
 						}
-						if(root){ // lets output this class
+						if(root && (!root.attr || !root.attr.legacy)){ // lets output this class
 							jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase()+'.'+ dreem_compiler.classnameToBuild(classname) + ".js"
 							this.compile_once[drefile] = jsfile;
 							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
@@ -209,8 +211,13 @@ define(function(require, exports, module){
 	    this.makeLocalDeps = function(deps, compname, indent, errors){
 	    	var out = ''
 	    	for(var key in deps){
-				var incpath = this.lookupDep(key, compname, errors)
-	    		this.classmap[key] = incpath
+	    		if(deps[key] !== 1){
+					var incpath = deps[key]
+	    		}
+	    		else{
+					var incpath = this.lookupDep(key, compname, errors)
+		    		this.classmap[key] = incpath
+	    		}
 				if(incpath){
 					out += indent + 'var ' + dreem_compiler.classnameToJS(key) + ' = require("' + incpath + '")\n'
 				}
@@ -353,8 +360,11 @@ define(function(require, exports, module){
 				var out = 'define(function(require, exports, module){\n' 
 				out += this.makeLocalDeps(js.deps, this.name, '\t', errors)
 				out += '\n\tmodule.exports = function(){\n\t\treturn ' + js.body + '\n\t}\n'
-				out += '\tmodule.exports.dre = '+ JSON.stringify(child) +'\n})'
-				
+				if(legacy_support){
+					out += '\tmodule.exports.dre = '+ JSON.stringify(child) +'\n'
+				}
+				out += '})'
+
 				if(js.tag === 'screens'){
 					var component = "$BUILD/compositions." + this.name + '.dre.screens.js' 
 				}
@@ -379,7 +389,7 @@ define(function(require, exports, module){
 
 				// if we compile a screen, we need to compile the children in screen separate
 				if(js.tag == 'screens'){
-					for(var j = 0, schilds = child.child, slen = schilds.length; j < slen; j++){
+					if(child.child) for(var j = 0, schilds = child.child, slen = schilds.length; j < slen; j++){
 						var schild = schilds[j]
 
 						if(schild.tag !== 'screen') continue
@@ -389,8 +399,10 @@ define(function(require, exports, module){
 						var out = 'define(function(require, exports, module){\n' 
 						out += this.makeLocalDeps(sjs.deps, this.name, '\t', errors)
 						out += '\n\tmodule.exports = function(){\n\t\treturn ' + sjs.body + '\n\t}\n'
-						out += '\n\tmodule.exports.dre = '+ JSON.stringify(schild) +'\n'
-						out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) +'\n'
+						if(legacy_support){
+							out += '\n\tmodule.exports.dre = '+ JSON.stringify(schild) +'\n'
+							out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) +'\n'
+						}
 						out += '})'
 						var component = "$BUILD/compositions." + this.name + '.dre.screens.' + sjs.name + '.js'
 						fs.writeFileSync(define.expandVariables(component), out)
@@ -447,18 +459,6 @@ define(function(require, exports, module){
 				'    }\n'+
 				'  </script>\n'+
 				'  <script type="text/javascript" src="/define.js"></script>\n'+
-				'  <style type="text/css">\n'+
-				'    html,body {\n'+
-				'      height:100%;\n'+
-				'      margin:0px;\n'+
-				'      padding:0px;\n'+
-				'      border:0px none;\n'+
-				'    }\n'+
-				'    body {\n'+
-				'      font-family:Arial, Helvetica, sans-serif;\n'+
-				'      font-size:14px;\n'+
-				'    }\n'+
-				'  </style>'+
 				' </head>\n'+
 				' <body>\n'+
 				' </body>\n'+
@@ -499,6 +499,8 @@ define(function(require, exports, module){
 			}
 			
 			var screen = this.screens[app]
+
+
 			if(app == 'dali'){
 				var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'))
 				res.writeHead(200, {"Content-Type": "text/html"})
@@ -506,11 +508,16 @@ define(function(require, exports, module){
 				return
 			}
 
-			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, '$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js')
-
 			var header = {
 				"Cache-control":"max-age=0",
 				"Content-Type": "text/html"
+			}
+
+			if(screen){ // parse errors
+				var html = this.loadHTML(screen.attr && screen.attr.title || this.name, '$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js')
+			}
+			else{
+				var html = this.loadHTML('ERROR', '')
 			}
 
 			res.writeHead(200, header)

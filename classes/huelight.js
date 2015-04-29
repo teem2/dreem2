@@ -6,13 +6,17 @@
 define(function(require, exports, module)
 {
 	var node = require("$CLASSES/node")
-	return node.extend("huelight", function()
-	{
+	return node.extend("huelight", function(){
 		this.attribute("init", "event")
-		this.init = function()
-		{
+
+		this.init = function(){
 			console.log(this);
 			console.color('~br~H~~~by~y~~~br~e~~ object started on server\n')	
+		}
+
+		this.powerOn = function(){
+			console.log("YESS", this.parent)
+			return "I POWERED ON!"
 		}
 	})
 })

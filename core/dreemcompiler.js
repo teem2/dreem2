@@ -158,17 +158,30 @@ define(function(require, exports, module){
 						return
 					}
 					var type = child.attr && child.attr.type || 'string'
+					var value = child.attr && child.attr.value
 					if(child.tag == 'attribute'){
-						body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '")\n'
+						body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '"'
+						if(value !== undefined)
+							body += ',' + value 
+						body += ')\n'
 					}
 					else{
-						var fn = this.compileMethod(child, node, language, errors, '\t\t\t\t')
+						var fn = this.compileMethod(child, node, language, errors, '\t\t')
 						if(!fn) continue
 						var args = fn.args
 						if(!args && child.tag == 'setter') args = ['value']
 						body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n'
 					}
 				}
+			}
+			else if(child.tag == 'require'){
+				if(!child.attr || !child.attr.name){
+					errors.push(new DreemError('Require has no name', child.pos))
+				}
+				if(!child.attr || !child.attr.src){
+					errors.push(new DreemError('Require has no src attribute ', child.pos))
+				}
+				deps[child.attr.name] = child.attr.src || child.attr.href
 			}
 			else if(child.tag.charAt(0) != '$'){ // its our render-node
 				var inst = this.compileInstance(child, errors, '\t\t\t')
@@ -312,10 +325,19 @@ define(function(require, exports, module){
 					if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value + '"'
 					props += 'attr_' + name + ': {type:"'+type+'", value:'+value+'}'
 				} 
+				else if(child.tag == 'require'){
+					if(!child.attr || !child.attr.name){
+						errors.push(new DreemError('Require has no name', child.pos))
+					}
+					if(!child.attr || !child.attr.src){
+						errors.push(new DreemError('Require has no src attribute ', child.pos))
+					}
+					deps[child.attr.name] = child.attr.src || child.attr.href
+				}
 				else if(child.tag.charAt(0) != '$'){
 					if(children) children += ',\n' + myindent
 					else children = '\n' + myindent
-					children += walk(child, node, myindent, depth+1)
+					children += walk(child, node, myindent, depth + 1)
 				}
 			}
 			var out = exports.classnameToJS(node.tag) + '('

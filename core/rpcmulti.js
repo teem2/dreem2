@@ -13,6 +13,41 @@ define(function(require, exports, module){
 	var Node = require('$CLASSES/node')
 	var RpcProxy = require('./rpcproxy')
 
+	var RpcMulti = module.exports = Node.extend('RpcMulti', function(){
+		this.length = 0//this.attribute('length', 'number', 0)
+		// lets define array indices
+		for(var i = 0; i < 256; i++){
+			defineIndex(this, i)
+		}
+
+		Object.defineProperty(this, 'subRpcDef', {
+			value:function(){
+				// ok what do we do, we should return our entire substructure
+				if(!this._def) console.log('WTF')
+				var array = []
+				var def = {
+					kind: 'multi',
+					self: this._def,
+					array: array
+				}
+				//!TODO prune this array for null sockets
+				for(var i = 0; i < this._array.length; i++){
+					array.push(RpcProxy.createRpcDef(this._array[i], Node))
+				}
+				return def
+			}
+		})
+
+		this.push = function(){
+			this._array.push.apply(this._array, arguments)
+		}
+
+		this.createIndex = function(index, rpcid, rpcpromise){
+			var proxy = RpcProxy.createFromDef(this._def, rpcid + '[' + index + ']', rpcpromise)
+			this._array[index] = proxy
+		}
+	})
+
 	function defineIndex(obj, i){
 		Object.defineProperty(obj, i, {
 			get:function(){
@@ -51,26 +86,19 @@ define(function(require, exports, module){
 		}
 	}
 
-	var RpcMulti = module.exports = Node.extend('RpcMulti', function(){
-		this.length = 0//this.attribute('length', 'number', 0)
-		// lets define array indices
-		for(var i = 0; i < 256; i++){
-			defineIndex(this, i)
-		}
-
-		this._addNewProxy = function(index, rpcid, rpcpromise){
-			var proxy = RpcProxy.createFromDef(this._def, rpcid + '[' + index + ']', rpcpromise)
-			this._array[index] = proxy
-		}
-	})
+	RpcMulti.createFromObject = function(object, baseclass){
+		var def = RpcProxy.createRpcDef(object, baseclass)
+		return RpcMulti.createFromDef(def)
+	}
 
 	RpcMulti.createFromDef = function(def, rpcid, rpcpromise){
 		var obj = new RpcMulti()
-		
-		obj._array = []
-		obj._def = def
 
-		obj._voidproxy = RpcProxy.createFromDef(def)
+		Object.defineProperty(obj, '_rpcid', {value: rpcid})
+		Object.defineProperty(obj, '_array', {value: []})
+		Object.defineProperty(obj, '_def', {value: def})
+		Object.defineProperty(obj, '_voidproxy', {value: RpcProxy.createFromDef(def)})
+
 		// lets interpret the def
 		for(var key in def){
 			var prop = def[key]
@@ -84,6 +112,7 @@ define(function(require, exports, module){
 				}			
 			}
 			else{ // we are a plain value, dont do much
+				if(key in obj) throw new Error('RpcMulti createFromDef collision on '+key)
 				obj[key] = prop
 			}
 		}

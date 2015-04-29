@@ -37,6 +37,7 @@ define(function(require, exports, module){
 			if(id !== -1) this.listeners.splice(id, 1)
 		}
 
+		this.clear = 
 		this.removeAllListeners = function(){
 			this.listeners = undefined
 		}
@@ -58,7 +59,7 @@ define(function(require, exports, module){
 				if(proto.hasOwnProperty('listeners') && (list = proto.listeners)){
 					for(var i = list.length - 1; i >= 0; i--){
 						var cb = list[i]
-						cb.call(this.owner, value, old, this, cb)
+						if(cb) cb.call(this.owner, value, old, this, cb)
 					}
 				}
 				proto = Object.getPrototypeOf(proto)

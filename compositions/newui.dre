@@ -1,0 +1,49 @@
+<composition>
+	<server name='soundcloud'>
+		<require name='nodehttp' src='$CORE/nodehttp'/>
+		<method name='fetchMusic' args='name'>
+			return nodehttp.get('http://www.google.com')
+		</method>
+		<attribute name='timer' value='0'/>
+		<attribute name='wavy' value='0'/>
+		<method name='init'>
+			teem.setInterval(function(value){
+				this.timer ++
+				this.wavy = Math.sin(Date.now()*0.001)*100
+			}.bind(this), 30)
+		</method>
+	</server>
+	<classes>
+		<class name='loop'>
+			<require name='view' src='$CLASSES/view'/>
+			<require name='sprite' src='$CLASSES/sprite'/>
+			<attribute name="count" value="10"/>
+			<method name='render'>
+				var out = [view]
+				var colors = ["orange","green","blue","purple"]
+				for(var i = 0; i < this.count; i++){
+					out.push(
+						sprite({
+							x: i * 10,
+							y: i * 10,
+							bgcolor: colors[i % 4],
+						})
+					)
+				}
+				return out
+			</method>
+		</class>
+	</classes>
+	<screens>
+		<screen type="browser" name="default" x='${teem.soundcloud.wavy}' y='10' bgcolor='red'>
+			<method name='init'>
+				teem.soundcloud.fetchMusic('hello').then(function(result){
+					console.log(result)
+				})
+			</method>
+			<view x="50" y="40" bgcolor='blue'>
+				<loop count='${teem.soundcloud.timer%30}'/>
+			</view>
+		</screen>
+	</screens>
+</composition>

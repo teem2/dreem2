@@ -68,10 +68,14 @@ function main(){
 			var DaliClient = require('$CORE/daliclient')
 			new DaliClient(args)
 		}
+		else if(args['-test']){
+			require('$CORE/acornserializer')
+		}
 		else{
 			var TeemServer = require('$CORE/teemserver')
 			new TeemServer(args)
 		}
+
 	}
 	else{
 		var RunMonitor = require('./core/runmonitor')

@@ -6,6 +6,7 @@
 define(function(require, exports, module){
 	var node = require("$CLASSES/node")
 	return node.extend("server", function(){
+		this.attribute('init', 'event')
 		this.construct = function(){
 		}
 	})

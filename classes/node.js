@@ -19,45 +19,16 @@ define(function(require, exports, module){
 
 	Node.extend = function extend(class_name, class_body){
 		function DreemClass(){
-			var obj = this
 			if(DreemClass.singleton) obj = DreemClass
-
-			if(!(obj instanceof DreemClass)) obj = Object.create(DreemClass.prototype)
-			// process arguments
-			var i = 0
-			if(arguments.length >= 1){	
-				var arg0 = arguments[0]
-				if(arg0 && !arg0.__is_node__){ // copy the props on here
-					obj.processArg0(arguments[0])
-					i = 1
-				}
+			if(!(this instanceof DreemClass)){
+				// use the JSONML mapping
+				var array = [DreemClass]
+				array.push.apply(array, arguments)
+				return array
 			}
-			// add our children
-			for(;i<arguments.length;i++){
-				var arg = arguments[i]
-				if(arg === undefined) continue
-    			if(!obj.child) obj.child = []
-    			if(Array.isArray(arg)){
-    				for(var j = 0; j<arg.length; i++){
-    					var item = arg[j]
-    					if(typeof item == 'object' && item){
-	    					var name = item.name
-	    					if(name !== undefined && !(name in obj)) obj[name] = item
-	    				}
-    					obj.child.push(item)
-    				}
-    			}
-    			else{
-    				if(typeof arg == 'object' && arg){
-						var name = arg.name
-						if(name !== undefined && !(name in obj)) obj[name] = arg
-					}
-					obj.child.push(arg)
-	    		}
+			if(this.onConstruct){
+				this.onConstruct()
 			}
-			// expand into tree structure
-			if(obj.onConstruct) obj.onConstruct()
-			return obj
 		}
 
 		var proto = DreemClass.prototype = Object.create(this.prototype)
@@ -94,12 +65,74 @@ define(function(require, exports, module){
 		this.__is_node__ = true
 		this.types = types
 
-		this.processArg0 = function(arg0){
-			for(var key in arg0){
-				var prop = arg0[key]
+		Node.createFromJSONML = function(array, depth){
+			// lets new the object
+			var constructor = array[0]
+			var obj = new constructor()
+
+			// ok so we are processing our json ML.
+			for(var i = 1; i < array.length; i++){
+				var item = array[i]
+				
+				if(Array.isArray(item)){
+					if(depth === undefined || depth > 0){
+						// lets create a new one
+						if(!obj.child){
+							Object.defineProperty(obj, 'child', {value:[]})
+						}
+						obj.child.push(Node.createFromJSONML(item, depth === undefined?depth:depth - 1))
+					}
+				}
+				else if(typeof item == 'object'){
+					obj.initFromJSONMLObject(item)
+				}
+			}
+
+			// lets call our constructor after we created all our children
+			if(obj.onConstruct) obj.onConstruct(array)
+
+			return obj
+		}
+		
+		this.checkPropertyBind = function(key, value, attr){
+			if(typeof value === 'string' && (value.charAt(0)=='$' || value.charAt(1)=='{')){
+				if(!this._propbinds) Object.defineProperty(this, '_propbinds', {value:[]})
+				this._propbinds.push(key)
+				attr.binding = value.slice(2, -1)
+				attr.value = null // initial value
+			}
+			else{
+				attr.value = value
+			}
+		}
+
+		this.initFromJSONMLObject = function(obj){
+			if(obj instanceof Node){
+				for(var key in obj){
+					// what do we copy over?...
+					if(!(key in Node.prototype)){
+						// we copy over the attributes
+						var attr = obj['attr_' + key]
+						var setattr = this['on_' + key]
+						
+						if(attr && !setattr){
+							this.attribute(key, attr.type.name, attr.value)
+						}
+						else if(!attr && setattr){
+							var value = obj[key]
+							this.checkPropertyBind(key, value, setattr)
+						}
+					}
+				}
+				return
+			}
+
+			for(var key in obj){
+				var prop = obj[key]
 				if(key.indexOf('attr_') == 0){
 					key = key.slice(5)
-					this.attribute(key, prop.type, prop.value)
+					this.attribute(key, prop.type)
+					this.checkPropertyBind(key, prop.value, this['attr_'+key])
 				}
 				else if(key.indexOf('set_') == 0){
 					key = key.slice(4)
@@ -127,18 +160,20 @@ define(function(require, exports, module){
 				}
 				else if(this.__lookupSetter__(key)){
 					if(this.isAttribute(key)){
-						var prop = arg0[key]
-						if(typeof prop == 'function'){
-							this['on_' + key].addListener(prop)
+						var value = obj[key]
+						if(typeof value == 'function'){
+							this['on_' + key].addListener(value)
 						}
 						else{
-							this['on_' + key].value = arg0[key]
+							this.checkPropertyBind(key, value, this['on_' + key])
 						}
 					}
 				}
-				else this[key] = arg0[key]
+				else this[key] = obj[key]
 			}
 		}
+
+
 		/** 
 		  * @method render
 		  * render this node
@@ -219,6 +254,20 @@ define(function(require, exports, module){
 			}
 		}
 		
+		this.hideProperty = function(){
+			for(var i = 0; i<arguments.length; i++){
+				var arg = arguments[i]
+				if(Array.isArray(arg)){
+					for(var j = 0; j<arg.length; j++){
+						Object.defineProperty(this, arg[j],{enumerable:false, configurable:true, writeable:true})
+					}
+				}
+				else{
+					Object.defineProperty(this, arg,{enumerable:false, configurable:true, writeable:true})
+				}
+			}
+		}
+
 		this.isAttribute = function(key){
 			if(this['attr_' + key]) return true
 			else return false
@@ -262,13 +311,13 @@ define(function(require, exports, module){
 			Object.defineProperty(this, key, {
 				configurable:true,
 				enumerable:true,
-				get:function(){
+				get: function(){
 					var attr = this[attr_key]
 					if(this.onAttributeGet) this.onAttributeGet(key)
 					if(attr.getter) return attr.getter.call(this, attr)
 					return attr.value
 				},
-				set:function(value){
+				set: function(value){
 					var attr = this[attr_key]
 					// make instance copy if needed
 					if(attr.owner != this){
@@ -280,7 +329,6 @@ define(function(require, exports, module){
 						attr.addListener(value)
 						return
 					}
-		
 					if(this._onAttributeSet) this._onAttributeSet(key, value)
 					if(this.onAttributeSet) this.onAttributeSet(key, value)
 		
