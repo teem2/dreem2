@@ -209,6 +209,7 @@ define(function(require, exports, module){
 					obj._addNewProxy(msg.index, msg.rpcid, rpcpromise)
 				}
 				else if(msg.type == 'attribute'){
+				//	console.log(msg);
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
 					if(obj) obj[msg.attribute] = msg.value
 				}

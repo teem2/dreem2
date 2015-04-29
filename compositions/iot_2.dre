@@ -1,0 +1,32 @@
+<composition>
+	<screens>
+		<screen name="default"></screen>
+	</screens>
+	<arduino port="com19" name="segments" >
+		<attribute name="seg0"/>
+		<attribute name="seg1"/>
+		<attribute name="seg2"/>
+		<attribute name="seg3"/>
+		<attribute name="seg4"/>
+		<attribute name="seg5"/>
+		<attribute name="seg6"/>
+		<attribute name="seg7"/>
+		<attribute name="seg8"/>
+		
+	</arduino>
+	<arduino port="com4" name="knobs" >
+		<attribute name="knob1"/>
+		<handler event="knob1" args="value">	
+			teem.segments.seg1 = value;
+			teem.segments.seg2 = value;
+			teem.segments.seg3 = value;
+			teem.segments.seg4 = value;
+		</handler>
+		<handler event="knob2" args="value">
+			teem.segments.seg5 = value;
+			teem.segments.seg6 = value;
+			teem.segments.seg7 = value;
+			teem.segments.seg0 = value;
+		</handler>
+	</arduino>
+</composition>
