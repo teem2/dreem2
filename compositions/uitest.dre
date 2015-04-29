@@ -69,16 +69,24 @@
       
       <mixin name="baz" opacity="0.5"></mixin>
       
-      <mixin name="bar" with="baz">
-        <view name="m1" x="1" y="1" width="10" height="10" bgcolor="#ff0000"></view>
+      <mixin name="bar" with="baz" defaultplacement="m1"><!-- defaultplacement="m1" -->
+        <view name="m1" x="1" y="1" width="90" height="90" bgcolor="red" scrollable="true">
+        
+        </view>
+        <view name="m2" defaultplacement="a" x="1" y="42" width="20" height="40" bgcolor="green" scrollable="true"><!-- defaultplacement="a" -->
+          <view name="a" x="2" y="2" width="8" height="8" bgcolor="#0000ff">
+          
+          </view>
+        </view>
       </mixin>
       
       <!--// Instances //-->
 
       <view with="bar" name="view_instance" x="10" y="20" width="200" height="${this.parent.item2_instance.x + 100}" bgcolor="#ff9999">
-        <wrappinglayout id="foolayout" spacing="2" inset="20" speed="1000"></wrappinglayout>
+        <wrappinglayout id="foolayout" spacing="2" inset="5" speed="1000" updateparent="true"></wrappinglayout>
+        <wrappinglayout ignoreplacement="true" spacing="2" inset="5" speed="1000"></wrappinglayout>
         
-        <view name="v1" placement="m1" width="5" height="5" bgcolor="#ffffff"></view>
+        <view name="v1" placement="m2.*" x="1" y="1" width="5" height="5" bgcolor="#ffffff"></view>
         
         <view with="button" name="v2" width="25" height="25" bgcolor="#aaaaaa">
           <handler event="onactivated" args="activated">
@@ -157,7 +165,7 @@
       </subfoo>
       
       <item2 name="item2_instance" y="200" x="${this.y / 10 + foo.width + foo.x}" bgcolor="green"></item2>
-      <text id="asdf">text</text>
+      <text>text</text>
       <item name="item_instance" y="250" id="foo" bgcolor="orange">
         <attribute name="thing" type="number" value="5"></attribute>
         <attribute name="another" type="string" value="hello"></attribute>
