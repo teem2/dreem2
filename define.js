@@ -373,3 +373,7 @@ if(typeof console === 'undefined')
 		}
 	}
 }
+Math.flow = function(arg){
+	console.log('flow', arg)
+	return arg
+}
