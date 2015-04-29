@@ -24,6 +24,11 @@ define(function(require, exports, module){
 			return this.walk(node.object, node, arg) + '.' + node.property.name
 		}
 
+		this.ThisExpression = function(node, parent, arg){
+			if(arg) arg.unshift('this')
+			return 'this'
+		}
+
 		this.Identifier = function(node, parent, arg){
 			if(arg) arg.unshift(node.name)
 			return node.name
