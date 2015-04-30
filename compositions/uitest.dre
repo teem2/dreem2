@@ -15,10 +15,7 @@
     </method>
     <view name="root_instance" width="100%" height="100%" minwidth="1000" bgcolor="#cc99cc" scrollable="true">
       <method name="getColor">
-        function getHex() {
-            return Math.floor(Math.random() * 16).toString(16);
-        };
-        return '#' + getHex() + getHex() + getHex() + getHex() + getHex() + getHex();
+        return '#' + Math.floor(Math.random() * Math.pow(16, 6)).toString(16);
       </method>
     
       <handler event="onscroll" args="scroll">
@@ -81,7 +78,6 @@
       </mixin>
       
       <!--// Instances //-->
-
       <view with="bar" name="view_instance" x="10" y="20" width="200" height="${this.parent.item2_instance.x + 100}" bgcolor="#ff9999">
         <wrappinglayout id="foolayout" spacing="2" inset="5" speed="1000" updateparent="true"></wrappinglayout>
         <wrappinglayout ignoreplacement="true" spacing="2" inset="5" speed="1000"></wrappinglayout>

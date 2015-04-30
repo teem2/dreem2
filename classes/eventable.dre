@@ -1,6 +1,4 @@
-/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
-<class name="eventable">
-</class>
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!-- Exposes dr.Eventable from lib/dr -->
+<class name="eventable"></class>

@@ -1,167 +1,148 @@
-<!-- The MIT License (MIT)
-
-Copyright ( c ) 2014 Teem2 LLC
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. -->
-  <!--/**
-     * @class dr.replicator {Data}
-     * @extends dr.node
-     * Handles replication and data binding.
-     *
-     * This example shows the replicator to creating four text instances, each corresponding to an item in the data attribute:
-     *
-     *     @example
-     *     <spacedlayout></spacedlayout>
-     *     <replicator classname="text" data="[1,2,3,4]"></replicator>
-     *
-     * Changing the data attribute to a new array causes the replicator to create a new text for each item:
-     *
-     *     @example
-     *     <spacedlayout></spacedlayout>
-     *     <text onclick="repl.setAttribute('data', [5,6,7,8]);">Click to change data</text>
-     *     <replicator id="repl" classname="text" data="[1,2,3,4]"></replicator>
-     *
-     * This example uses a {@link #filterexpression filterexpression} to filter the data to only numbers. Clicking changes {@link #filterexpression filterexpression} to show only non-numbers in the data:
-     *
-     *     @example
-     *     <spacedlayout></spacedlayout>
-     *     <text onclick="repl.setAttribute('filterexpression', '[^\\d]');">Click to change filter</text>
-     *     <replicator id="repl" classname="text" data="['a',1,'b',2,'c',3,4,5]" filterexpression="\d"></replicator>
-     *
-     * Replicators can be used to look up {@link #datapath datapath} expressions to values in JSON data in a dr.dataset. This example looks up the color of the bicycle in the dr.dataset named bikeshop:
-     *
-     *     @example
-     *     <dataset name="bikeshop">
-     *      {
-     *        "bicycle": {
-     *          "color": "red",
-     *          "price": 19.95
-     *        }
-     *      }
-     *     </dataset>
-     *     <replicator classname="text" datapath="$bikeshop/bicycle/color"></replicator>
-     *
-     * Matching one or more items will cause the replicator to create multiple copies:
-     *
-     *     @example
-     *     <dataset name="bikeshop">
-     *      {
-     *        "bicycle": [
-     *          {
-     *           "color": "red",
-     *           "price": 19.95
-     *          },
-     *          {
-     *           "color": "green",
-     *           "price": 29.95
-     *          },
-     *          {
-     *           "color": "blue",
-     *           "price": 59.95
-     *          }
-     *        ]
-     *      }
-     *     </dataset>
-     *     <spacedlayout></spacedlayout>
-     *     <replicator classname="text" datapath="$bikeshop/bicycle[*]/color"></replicator>
-     *
-     * It's possible to select a single item on from the array using an array index. This selects the second item:
-     *
-     *     @example
-     *     <dataset name="bikeshop">
-     *      {
-     *        "bicycle": [
-     *          {
-     *           "color": "red",
-     *           "price": 19.95
-     *          },
-     *          {
-     *           "color": "green",
-     *           "price": 29.95
-     *          },
-     *          {
-     *           "color": "blue",
-     *           "price": 59.95
-     *          }
-     *        ]
-     *      }
-     *     </dataset>
-     *     <spacedlayout></spacedlayout>
-     *     <replicator classname="text" datapath="$bikeshop/bicycle[1]/color"></replicator>
-     *
-     * It's also possible to replicate a range of items in the array with the [start,end,stepsize] operator. This replicates every other item:
-     *
-     *     @example
-     *     <dataset name="bikeshop">
-     *      {
-     *        "bicycle": [
-     *          {
-     *           "color": "red",
-     *           "price": 19.95
-     *          },
-     *          {
-     *           "color": "green",
-     *           "price": 29.95
-     *          },
-     *          {
-     *           "color": "blue",
-     *           "price": 59.95
-     *          }
-     *        ]
-     *      }
-     *     </dataset>
-     *     <spacedlayout></spacedlayout>
-     *     <replicator classname="text" datapath="$bikeshop/bicycle[0,3,2]/color"></replicator>
-     *
-     * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
-     *
-     *     @example
-     *     <dataset name="bikeshop">
-     *      {
-     *        "bicycle": [
-     *          {
-     *           "color": "red",
-     *           "price": 19.95
-     *          },
-     *          {
-     *           "color": "green",
-     *           "price": 29.95
-     *          },
-     *          {
-     *           "color": "blue",
-     *           "price": 59.95
-     *          }
-     *        ]
-     *      }
-     *     </dataset>
-     *     <spacedlayout></spacedlayout>
-     *     <replicator classname="text" datapath="$bikeshop/bicycle[*][@]">
-     *       <method name="filterfunction" args="obj, accum">
-     *         // add the color to the beginning of the results if the price is greater than 20
-     *         if (obj.price > 20)
-     *           accum.unshift(obj.color);
-     *         return accum
-     *       </method>
-     *     </replicator>
-     *
-     * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
-     */-->
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+      * @class dr.replicator {Data}
+      * @extends dr.node
+      * Handles replication and data binding.
+      *
+      * This example shows the replicator to creating four text instances, each corresponding to an item in the data attribute:
+      *
+      *     @example
+      *     <spacedlayout></spacedlayout>
+      *     <replicator classname="text" data="[1,2,3,4]"></replicator>
+      *
+      * Changing the data attribute to a new array causes the replicator to create a new text for each item:
+      *
+      *     @example
+      *     <spacedlayout></spacedlayout>
+      *     <text onclick="repl.setAttribute('data', [5,6,7,8]);">Click to change data</text>
+      *     <replicator id="repl" classname="text" data="[1,2,3,4]"></replicator>
+      *
+      * This example uses a {@link #filterexpression filterexpression} to filter the data to only numbers. Clicking changes {@link #filterexpression filterexpression} to show only non-numbers in the data:
+      *
+      *     @example
+      *     <spacedlayout></spacedlayout>
+      *     <text onclick="repl.setAttribute('filterexpression', '[^\\d]');">Click to change filter</text>
+      *     <replicator id="repl" classname="text" data="['a',1,'b',2,'c',3,4,5]" filterexpression="\d"></replicator>
+      *
+      * Replicators can be used to look up {@link #datapath datapath} expressions to values in JSON data in a dr.dataset. This example looks up the color of the bicycle in the dr.dataset named bikeshop:
+      *
+      *     @example
+      *     <dataset name="bikeshop">
+      *      {
+      *        "bicycle": {
+      *          "color": "red",
+      *          "price": 19.95
+      *        }
+      *      }
+      *     </dataset>
+      *     <replicator classname="text" datapath="$bikeshop/bicycle/color"></replicator>
+      *
+      * Matching one or more items will cause the replicator to create multiple copies:
+      *
+      *     @example
+      *     <dataset name="bikeshop">
+      *      {
+      *        "bicycle": [
+      *          {
+      *           "color": "red",
+      *           "price": 19.95
+      *          },
+      *          {
+      *           "color": "green",
+      *           "price": 29.95
+      *          },
+      *          {
+      *           "color": "blue",
+      *           "price": 59.95
+      *          }
+      *        ]
+      *      }
+      *     </dataset>
+      *     <spacedlayout></spacedlayout>
+      *     <replicator classname="text" datapath="$bikeshop/bicycle[*]/color"></replicator>
+      *
+      * It's possible to select a single item on from the array using an array index. This selects the second item:
+      *
+      *     @example
+      *     <dataset name="bikeshop">
+      *      {
+      *        "bicycle": [
+      *          {
+      *           "color": "red",
+      *           "price": 19.95
+      *          },
+      *          {
+      *           "color": "green",
+      *           "price": 29.95
+      *          },
+      *          {
+      *           "color": "blue",
+      *           "price": 59.95
+      *          }
+      *        ]
+      *      }
+      *     </dataset>
+      *     <spacedlayout></spacedlayout>
+      *     <replicator classname="text" datapath="$bikeshop/bicycle[1]/color"></replicator>
+      *
+      * It's also possible to replicate a range of items in the array with the [start,end,stepsize] operator. This replicates every other item:
+      *
+      *     @example
+      *     <dataset name="bikeshop">
+      *      {
+      *        "bicycle": [
+      *          {
+      *           "color": "red",
+      *           "price": 19.95
+      *          },
+      *          {
+      *           "color": "green",
+      *           "price": 29.95
+      *          },
+      *          {
+      *           "color": "blue",
+      *           "price": 59.95
+      *          }
+      *        ]
+      *      }
+      *     </dataset>
+      *     <spacedlayout></spacedlayout>
+      *     <replicator classname="text" datapath="$bikeshop/bicycle[0,3,2]/color"></replicator>
+      *
+      * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
+      *
+      *     @example
+      *     <dataset name="bikeshop">
+      *      {
+      *        "bicycle": [
+      *          {
+      *           "color": "red",
+      *           "price": 19.95
+      *          },
+      *          {
+      *           "color": "green",
+      *           "price": 29.95
+      *          },
+      *          {
+      *           "color": "blue",
+      *           "price": 59.95
+      *          }
+      *        ]
+      *      }
+      *     </dataset>
+      *     <spacedlayout></spacedlayout>
+      *     <replicator classname="text" datapath="$bikeshop/bicycle[*][@]">
+      *       <method name="filterfunction" args="obj, accum">
+      *         // add the color to the beginning of the results if the price is greater than 20
+      *         if (obj.price > 20)
+      *           accum.unshift(obj.color);
+      *         return accum
+      *       </method>
+      *     </replicator>
+      *
+      * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
+      */-->
 <class name="replicator" type="coffee" extends="node" scriptincludes="/lib/json-path+json-ptr-0.1.3.min.js">
   <!--/**
     * @attribute {Boolean} [pooling=false]
