@@ -5,16 +5,16 @@
 			<view width="1000" bgcolor="lightblue" height="1000" clip="true">
 				
 				<view id="puppet" rotation ="${teem.ard1.knob3 * 360 - 180}" width="${this.scaleval}" height ="${this.scaleval}" bgcolor="yellow" x="${teem.ard1.knob1 * (this.parent.width - this.width)}" y="${teem.ard1.knob2 * (this.parent.height - this.height)}" >
-					<attribute name="scaleval" value="${Math.pow(teem.ard1.knob4,3) *500+30}"/>						
+					<attribute name="scaleval" value="${Math.flow(Math.pow(teem.ard1.knob4,3) *500+30)}"/>						
 					<view  x="${this.parent.width*0.2}" y="${this.parent.height*0.2}" width="${this.parent.width*0.2}" height = "${this.parent.width*0.4}" bgcolor="black"></view>
 					<view  x="${this.parent.width*0.6}" y="${this.parent.height*0.2}" width="${this.parent.width*0.2}" height = "${this.parent.width*0.4}" bgcolor="black"></view>		
 					<!--view width="20" height="20" bgcolor="black" ></view-->
 				</view>
 			</view> 
-		</screen>
+		</screen>	
 		<screen name="screen2" type="browser" bgcolor="lightblue" >			
 			<view width="1000" bgcolor="darkblue" height="1000" clip="true">
-				<attribute name="a" value="${teem.ard1.knob1}"/>
+				<attribute name="a" value="${Math.flow(teem.ard1.knob1)}"/>
 				<method name="a" args="value">
 					//console.log(value);
 				</method>
