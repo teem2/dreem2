@@ -1,0 +1,27 @@
+<composition>
+	<server name='mysvr'>
+	</server>
+	<classes>
+		<class name="tinysquare" width="10" height = "10" bgcolor="#808090">
+		</class>
+		<class name="demoview" bgcolor="white" rotation="10">
+			<view bgcolor="#e0e0c0" x="100" y="100" width="100" height="100"/>
+			<view bgcolor="#e0e080" x="220" y="100" width="100" height="100"/>
+			<view bgcolor="#e0e040" x="220" y="220" width="100" height="100"/>
+			
+			<tinysquare x="320" y="320"/>
+			<tinysquare x="90" y="90"/>
+			<tinysquare x="320" y="90"/>			
+		</class>
+	</classes>
+	<screens>
+		<screen type="dali" name="dali">
+			<demoview x="300"/>
+			<demoview/>
+		</screen>
+		<screen type="browser" name="default">
+			<demoview x="300"/>
+			<demoview/>
+		</screen>
+	</screens>
+</composition>

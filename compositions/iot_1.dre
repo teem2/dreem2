@@ -11,7 +11,7 @@
 				<view ></view>
 			</view>
 			
-			<view id="puppet" rotation ="30" width="50" height ="50" bgcolor="yellow" x="-100" y="-100" >
+			<view id="puppet" rotation ="30" width="50" height ="50" bgcolor="yellow" x="${teem.ard1.knob1}" y="-100" >
 				<view  x="${this.parent.width*0.2}" y="${this.parent.height*0.2}" width="${this.parent.width*0.2}" height = "${this.parent.width*0.4}" bgcolor="black"></view>
 				<view  x="${this.parent.width*0.6}" y="${this.parent.height*0.2}" width="${this.parent.width*0.2}" height = "${this.parent.width*0.4}" bgcolor="black"></view>
 				<handler event="onidle" reference="dr.global.idle">	
@@ -73,7 +73,10 @@
 			</view> 
 		</screen>
 	</screens>
-	
+	<arduino name="ard2" port="com19">
+		<attribute name="number"/>
+		
+	</arduino>
 	
 	<arduino name="ard1" port="com4">
 	
@@ -85,7 +88,12 @@
 		<handler event="knob1" args="value">this.led1 =  value; console.log(value)</handler>
 		<handler event="knob2" args="value">this.led2 =  value >0.5? "1":"0"</handler>
 		<handler event="knob3" args="value">this.led3 =  value >0.5? "1":"0"</handler>
-		<handler event="knob4" args="value">this.led4 =  value >0.5? "1":"0" </handler>
+		<handler event="knob4" args="value">
+		
+			this.led4 =  value >0.5? "1":"0";
+			teem.ard2.number = Math.round(value * 9);
+			
+			</handler>
 		<attribute name="led1" value="0"/>
 		<attribute name="led2" value="1"/>
 		<attribute name="led3" value="0"/>

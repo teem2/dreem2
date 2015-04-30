@@ -97,6 +97,7 @@ define(function(require, exports, module)
 							if (parsed.atr)
 							{	
 								this[parsed.atr] = parsed.value;	
+								
 							}
 							else if (parsed.inq)
 							{	
@@ -127,13 +128,14 @@ define(function(require, exports, module)
 							}
 							else 
 							{
-								console.log(data);
+							console.color("~by~Arduino~~ " + data + " \n");
 							}							
 						}
 						catch(e)
 						{
 							data = data.toString();
 							data = data.trim();
+							console.color("~br~Arduino~~ " + e.toString() + " \n");
 							console.color("~by~Arduino~~ " + data + " \n");
 						}
 					}.bind(this));

@@ -137,7 +137,6 @@ define(function(require, exports, module)
 
 	function serialize(ast, dictionary)
 	{	
-		console.log("serialize!");
 		return  astSerializer.call(ast,undefined, dictionary) ;
 	}
 	
