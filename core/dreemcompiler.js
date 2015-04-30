@@ -47,7 +47,7 @@ define(function(require, exports, module){
 			compile: function(string, args){
 				// this returns a compiled function or an error
 				var head = 'function __parsetest__('+args.join(',')+'){'
-				var src = head + string+'}'
+				var src = head + string + '}'
 				try{ // we parse it just for errors
 					this.compiler.parse(src)
 				}
@@ -300,7 +300,7 @@ define(function(require, exports, module){
 					var attrnames = attrnameset.split(/,\s*|\s+/)
 					for(var j = 0; j < attrnames.length; j++){
 						var attrname = attrnames[j]
-		
+
 						if(props) props += ',\n' + myindent
 						else props = '{\n' + myindent
 						var pre = '', post = ''
@@ -310,7 +310,6 @@ define(function(require, exports, module){
 						if(child.tag == 'handler') attrname = 'handle_' + attrname
 						props += attrname + ': function(' + fn.args.join(', ') + '){' + fn.comp + '}' 
 					}
-
 				}
 				else if(child.tag == 'attribute'){
 					if(!child.attr || !child.attr.name){
@@ -322,8 +321,10 @@ define(function(require, exports, module){
 					if(props) props += ',\n' + myindent
 					else props = '{\n' + myindent
 					var value = child.attr.value
+
 					if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value + '"'
 					props += 'attr_' + name + ': {type:"'+type+'", value:'+value+'}'
+
 				} 
 				else if(child.tag == 'require'){
 					if(!child.attr || !child.attr.name){

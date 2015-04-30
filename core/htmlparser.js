@@ -375,7 +375,7 @@ define(function(require, exports, module){
 						ch = source.charCodeAt(pos++)
 						// whitespace, end of tag or assign
 						// if we hit a s
-						if(ch == 62 || ch == 47 || ch == 10 || ch == 12 || ch ==32 || ch == 61){
+						if(ch == 62 || ch == 47 || ch == 10 || ch == 13 || ch == 12 || ch ==32 || ch == 9 || ch == 61){
 							if(start != pos - 1){
 								if(tag){ // lets emit the tagname
 									this.onTagBegin(source.slice(start, pos - 1), start - 1, pos)

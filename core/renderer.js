@@ -23,6 +23,9 @@ define(function(require, exports, module){
 			while(1){
 				// store the attribute dependencies
 				object.onAttributeGet = function(key){
+					if(key == 'scaleval'){
+						var attr = this['attr_' + key]
+					}
 					this[key] = function(){
 						redraw()
 					}
@@ -121,11 +124,12 @@ define(function(require, exports, module){
 							// lets walk into the node
 							if(k == reference.length - 1 && base['attr_' + refpart]){
 								// lets store it on this
+								//console.log(bind, 'to', reference.join('.'))
 								obj._proplisten.push(
-									base['on_' + refpart].addListener(function(bind, value){
-									// trigger update
-									var value = this[bind] = this['attr_' + bind].expr()
-								}.bind(obj, bind)))
+									base['on_' + refpart].addListener(function(bind, ref, value){
+									var value = this['attr_' + bind].expr()
+									this[bind] = value
+								}.bind(obj, bind, reference.join('.'))))
 							}
 							else if(refpart in base){
 								base = base[refpart]
@@ -143,7 +147,7 @@ define(function(require, exports, module){
 						if(!base){
 							throw new Error('Cannot bind to global ')
 						}
-						code += 'if('+reference.join('.')+' === null) return null\n'
+						code += 'if(' + reference.join('.') + ' === null) return null\n'
 					}
 					var arg_names = []
 					var arg_vars = []
@@ -156,6 +160,7 @@ define(function(require, exports, module){
 					arg_names.push(code)
 					// if this function returns Object it failed, 
 					attr.expr = Function.apply(null, arg_names).apply(obj, arg_vars)
+
 					// ok so 
 					attr.value = attr.expr()
 					if(attr.value === null){
