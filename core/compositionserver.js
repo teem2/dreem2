@@ -65,7 +65,7 @@ define(function(require, exports, module){
 			process.stderr.write('\x0F!'+filename+'\n', function(){})
 			this.watcher.watch(filename)
 		}.bind(this)
-
+//
 		this.reload()
 	}
 	body.call(CompositionServer.prototype)
