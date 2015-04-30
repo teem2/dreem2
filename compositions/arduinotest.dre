@@ -40,10 +40,8 @@
 		</screen>
 	</screens>
 	<huebase id="001788fffe165ee4" username="739b2752a33a7e73115a9412d23ff13">
-		<huelight>
-			<method name='test'>
-			</method>
-		</huelight>
+		<huelight name='light1'/>
+		<huelight name='light2'/>
 	</huebase>
 	<smarthub>
 	</smarthub>

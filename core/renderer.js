@@ -41,11 +41,6 @@ define(function(require, exports, module){
 				
 				temp.outer = object
 
-				//if(object._propbinds){
-				//	var array = temp._propbinds || (temp._propbinds = [])
-				//	array.push.apply(array, object._propbinds)
-				//}
-
 				// what if we have an array
 				if(object.child){
 					if(!temp.child) temp.child = []
@@ -64,8 +59,7 @@ define(function(require, exports, module){
 		}
 
 		this.destroy = function(object, parent){
-			// lets call spawn
-			// lets tear down all listeners
+			// tear down all listener structures
 			var obj = object
 			while(obj){
 				var listeners = obj._proplisten
@@ -78,7 +72,6 @@ define(function(require, exports, module){
 				for(var key in obj){
 					var attr = obj['attr_' + key]
 					if(attr && attr.owner == obj){
-						//console.log('clearing ', key)
 						attr.clear()
 					} 
 				}
@@ -102,6 +95,7 @@ define(function(require, exports, module){
 		}
 
 		this.propertyBind = function(obj, globals){
+			var lazy = []
 			// allright lets resolve the property binds
 			var binds = obj._propbinds
 			if(binds){
@@ -115,64 +109,66 @@ define(function(require, exports, module){
 					// ok we have to parse it and wire the things up
 					var walker = new AstBindingWalker()
 					var out = walker.walk(ast)
+					var refs = []
+
+					var code = "return function(){ \n"
 
 					for(var j = 0;j < walker.references.length; j++){
-						var items = walker.references[j]
+						var reference = walker.references[j]
 						var base = globals
-						for(var k = 0; k < items.length; k++){
-							var key = items[k]
+						for(var k = 0; k < reference.length; k++){
+							var refpart = reference[k]
 							// lets walk into the node
-							if(k == items.length -1 && base['attr_' + key]){
+							if(k == reference.length - 1 && base['attr_' + refpart]){
 								// lets store it on this
-								var bla
 								obj._proplisten.push(
-								bla = base['on_' + key].addListener(function(bind, value){
-									// recompute
+									base['on_' + refpart].addListener(function(bind, value){
+									// trigger update
 									var value = this[bind] = this['attr_' + bind].expr()
 								}.bind(obj, bind)))
-								//console.log(base['on_' + key].listeners.length)
-								//bla()
-								//console.log(base['on_' + key].listeners.length)
 							}
-							else if(key in base){
-								base = base[key]
+							else if(refpart in base){
+								base = base[refpart]
 							}
-							else if(key == 'this'){
+							else if(refpart == 'this'){
 								base = obj
 							}
-							else if(key == 'Math'){
+							else if(refpart == 'Math'){
 								break
 							}
 							else{
 								throw new Error('Cannot traverse binding ' + items.join('.'))
 							}
 						}
-
 						if(!base){
 							throw new Error('Cannot bind to global ')
 						}
+						code += 'if('+reference.join('.')+' === null) return null\n'
 					}
+					var arg_names = []
+					var arg_vars = []
 					for(var key in globals){
-						globals
+						arg_names.push(key)
+						arg_vars.push(globals[key])
 					}
-					var args = []
-					var gargs = []
-					for(var key in globals){
-						args.push(key)
-						gargs.push(globals[key])
-					}
-					args.push("return function(){ return " + out + "}.bind(this)")
-					attr.expr = Function.apply(null, args).apply(obj, gargs)
+
+					code += "return " + out + "}.bind(this)"
+					arg_names.push(code)
+					// if this function returns Object it failed, 
+					attr.expr = Function.apply(null, arg_names).apply(obj, arg_vars)
+					// ok so 
 					attr.value = attr.expr()
+					if(attr.value === null){
+						lazy.push(bind)
+					}
 				}
 			}
-			// hop outwards over our outer objects
-			//obj = obj.outer
+			for(var i = 0; i < lazy.length; i++){
+				var bind = lazy[i]
+				var attr = obj['on_' + bind]
+				attr.value = attr.expr()
+				if(attr.value === null) console.log("Still could not resolve property "+bind)
+			}
 		}
-			//if(object.child){
-			//	for(var i =0; i<object.child.length; i++){
-			//		this.propertyBind(object.child[i], object, globals)
-			//	}
-			//}			
 	}
 })

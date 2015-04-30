@@ -161,8 +161,8 @@ define(function(require, exports, module){
 					var value = child.attr && child.attr.value
 					if(child.tag == 'attribute'){
 						body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '"'
-						if(value !== undefined)
-							body += ',' + value 
+						if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value + '"'
+						if(value !== undefined) body += ',' + value 
 						body += ')\n'
 					}
 					else{

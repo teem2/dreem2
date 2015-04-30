@@ -250,7 +250,7 @@ define(function(require, exports, module){
 							var objroot = Node.createFromJSONML(root_jsonml)
 
 							var drawroot = renderer.render(objroot, {}, {teem:teem}, function(count){
-								if(!redrawing) setTimeout(redraw, 1)
+								if(!redrawing) window.requestAnimationFrame(redraw)
 								redrawing = true
 							}.bind(null, count++))
 

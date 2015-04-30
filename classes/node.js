@@ -114,9 +114,9 @@ define(function(require, exports, module){
 						// we copy over the attributes
 						var attr = obj['attr_' + key]
 						var setattr = this['on_' + key]
-						
 						if(attr && !setattr){
 							this.attribute(key, attr.type.name, attr.value)
+							this.checkPropertyBind(key, attr.value, this['on_' + key])
 						}
 						else if(!attr && setattr){
 							var value = obj[key]
