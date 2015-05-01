@@ -115,12 +115,18 @@ define(function(require, exports, module){
 						var attr = obj['attr_' + key]
 						var setattr = this['on_' + key]
 						if(attr && !setattr){
-							this.attribute(key, attr.type.name, attr.value)
-							this.checkPropertyBind(key, attr.value, this['on_' + key])
-						}
-						else if(!attr && setattr){
-							var value = obj[key]
+							var value = attr.binding !== undefined? attr.binding: attr.value
+							this.attribute(key, attr.type.name)
+							setattr = this['on_' + key]
 							this.checkPropertyBind(key, value, setattr)
+						}
+						else if(setattr){
+							var value = attr? (attr.binding !== undefined? attr.binding: attr.value): obj[key]
+							this.checkPropertyBind(key, value, setattr)
+						}
+						if(attr && attr.listeners){
+							if(!setattr.listeners) setattr.listeners = []
+							setattr.listeners.push.apply(setattr.listeners, attr.listeners)
 						}
 					}
 				}

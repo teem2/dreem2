@@ -276,7 +276,7 @@ define(function(require, exports, module){
 				var value = node.attr[key]
 				if(props) props += ',\n' + myindent
 				else props = '{\n' + myindent
-				if(value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value + '"'
+				if(value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value.replace(/"/g,'\\"') + '"'
 				props += key + ':' + value
 			}
 
@@ -322,7 +322,7 @@ define(function(require, exports, module){
 					else props = '{\n' + myindent
 					var value = child.attr.value
 
-					if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value + '"'
+					if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value.replace(/"/g,'\\"') + '"'
 					props += 'attr_' + name + ': {type:"'+type+'", value:'+value+'}'
 
 				} 

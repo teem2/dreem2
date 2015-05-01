@@ -30,9 +30,8 @@ define(function(require, exports, module){
 						redraw()
 					}
 				}
-				// set up property binding vlaues
+				// set up property binding values
 				object.parent = parent
-				this.propertyBind(object, globals)
 
 				var jsonml = object.render(parent)
 				object.onAttributeGet = undefined
@@ -52,12 +51,15 @@ define(function(require, exports, module){
 
 				object = temp
 			}
-
+	
+			this.propertyBind(object, globals)
+		
 			if(object.child){
 				for(var i = 0; i < object.child.length; i++){
 					object.child[i] = this.render(object.child[i], object, globals, redraw)
 				}
 			}
+		
 			return object
 		}
 
@@ -141,7 +143,7 @@ define(function(require, exports, module){
 								break
 							}
 							else{
-								throw new Error('Cannot traverse binding ' + items.join('.'))
+								throw new Error('Cannot traverse binding ' + reference.join('.'))
 							}
 						}
 						if(!base){
