@@ -63,14 +63,20 @@ define(function(require, exports, module){
 			if(!this.listeners) return
 
 			var proto = this, list
+			var stack = []
 			while(proto){
 				if(proto.hasOwnProperty('listeners') && (list = proto.listeners)){
-					for(var i = list.length - 1; i >= 0; i--){
-						var cb = list[i]
-						if(cb) cb.call(this.owner, value, old, this, cb)
-					}
+					stack.push(list)
 				}
 				proto = Object.getPrototypeOf(proto)
+			}
+
+			for(var j = 0; j < stack.length; j++){
+				var list = stack[j]
+				for(var i = 0; i < list.length; i++){
+					var cb = list[i]
+					if(cb) cb.call(this.owner, value, old, this, cb)
+				}
 			}
 		}
 	}
