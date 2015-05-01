@@ -1,0 +1,25 @@
+<composition>
+	<huebase id="001788fffe165ee4" username="739b2752a33a7e73115a9412d23ff13">
+		<huelight name="light1" lightname="LivingColors 1" color="blue"></huelight>
+		<huelight name="light2" lightname="LivingColors 2" color="yellow" ></huelight>		
+	</huebase>
+	<server>
+		<attribute name="time"/>
+		<handler event="init">
+		
+		this.time = 0;
+		setInterval(function()
+		{
+			this.time++;
+			teem.huebase.light1.color="red";
+			teem.huebase.light2.color="red";
+		}.bind(this), 1000);
+		
+		</handler>		
+	</server>
+	<screens>
+		<screen name="default" type="browser" width="1000" height="1000" bgcolor="white">
+			<view width="40" height="40" x="10" y="10" bgcolor="yellow"></view>
+		</screen>
+	</screens>
+</composition>
