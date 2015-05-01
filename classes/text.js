@@ -13,14 +13,16 @@ define(function(require, exports, module){
 		})
 	}
 	else if(define.env == 'browser'){
-		return node.extend("sprite", function(){
+		return node.extend("text", function(){
 
 			this.attribute("x", "number")
 			this.attribute("y", "number")
-			this.attribute("width", "number", 100)
-			this.attribute("height", "number", 100)
+			this.attribute("width", "number", 0)
+			this.attribute("height", "number", 0)
 			this.attribute("rotation", "number", 0)
 			this.attribute("bgcolor", "string", "orange")
+			this.attribute("fgcolor", "string", "white")
+			this.attribute("text", "string", "")
 			this.attribute("click", "event")
 			this.attribute("mousedown", "event")
 			this.attribute("mouseout", "event")
@@ -37,6 +39,7 @@ define(function(require, exports, module){
 				this.width
 				this.height
 				this.rotation
+				this.text
 			}
 
 			this.spawn = function(parent){
@@ -45,14 +48,20 @@ define(function(require, exports, module){
 				this.dom_node.style.position = 'absolute'
 				this.dom_node.style.left = this.x + 'px'
 				this.dom_node.style.top = this.y + 'px'
-				this.dom_node.style.width = this.width + 'px'
-				this.dom_node.style.height = this.height + 'px'
 
-				this.dom_node.onclick = function(){
+				this.dom_node.addEventListener('click', function(){
 					this.on_click.emit()
-				}.bind(this)
+				}.bind(this))
 
+				if(this.width) this.dom_node.style.width = this.width + 'px'
+				if(this.height) this.dom_node.style.height = this.height + 'px'
 				if(this.rotation) this.dom_node.style.transform = 'rotateZ('+this.rotation+'deg)'
+
+				if(this.text !== ""){
+					var node = document.createTextNode(this.text)
+					this.dom_node.style.color = this.fgcolor
+					this.dom_node.appendChild(node)
+				}
 				parent.dom_node.appendChild(this.dom_node)
 			}
 		})

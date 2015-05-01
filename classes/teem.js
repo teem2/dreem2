@@ -203,18 +203,15 @@ define(function(require, exports, module){
 				}
 				else if(msg.type == 'connectBrowserOK'){
 					RpcProxy.createFromDefs(msg.rpcdef, teem, rpcpromise)
-					//console.log("CONNECT OK")
+
 					teem.webrtc_offer = WebRTC.createOffer()
 					teem.index = msg.index
 
 					teem.webrtc_offer.onIceCandidate = function(candidate){
-						//console.log('sending offer candidate')
 						teem.bus.send({type:'webrtcCandidate', candidate:candidate, index: teem.index})
 					}
 
 					teem.webrtc_offer.onOffer = function(offer){
-						// send our offer back to the bus
-						//console.log('sending offer')
 						teem.bus.send({type:'webrtcOffer', offer:offer, index: teem.index})
 					}
 
@@ -291,6 +288,7 @@ define(function(require, exports, module){
 		// dali environment
 		define.onMain = function(main){
 			// ok lets start up
+/*
 			var dreemParser = require('$LIB/dr/dreemParser.js')
 			var dreemMaker = require('$LIB/dr/dreemMaker.js')
 			var compiler = new dreemParser.Compiler()
@@ -302,6 +300,7 @@ define(function(require, exports, module){
 				}
 				else dreemMaker.makeFromPackage(pkg)
 			})
+*/
 		}
 	}
 
