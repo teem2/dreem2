@@ -30,26 +30,65 @@ define(function(require, exports, module)
 		console.error("" + err);
 	};
 	
+	function RGB2HSL(rgb)
+	{
+	var r = rgb[0];
+	var g = rgb[1];
+	var b = rgb[2];
+    var max = Math.max(r, g, b), min = Math.min(r, g, b);
+    var h, s, l = (max + min) / 2;
+
+    if(max == min){
+        h = s = 0; // achromatic
+    }else{
+        var d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max){
+            case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+            case g: h = (b - r) / d + 2; break;
+            case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+    }
+
+    return [h, s, l];
+}
+
+	
 	return node.extend("huebase", function()
 	{
 		this.attribute("init", "event");
 		this.setLightHSL = function(id, h,s,l)
 		{
-			if (this.apiObject == undefined|| id == 0) {
+			if (this.apiObject == undefined|| id == 0) 
+			{
 				return;
 			}
 			var state  =  LightState.create();
 			this.apiObject.setLightState(id, state.on().transitiontime(0).hsl(h,s,l)).fail(displayError).done();
+			delete state;
 		}
 		
-		this.setLightRGB = function(id, r,g,b)
+		this.setLightRGB = function(id, RGB)
 		{
 		//console.log(id, r,g,b);
+			var hsl = RGB2HSL(RGB)
 			if (this.apiObject == undefined || id == 0) {
 				return;
 			}
 			var state  =  LightState.create();
-			this.apiObject.setLightState(id, state.on().transitiontime(0).hsl(Math.round(r),Math.round(g),Math.round(b))).fail(displayError).done();
+			
+			if (RGB[0] == 0 && RGB[1] == 0 && RGB[2] == 0)
+			{
+				this.apiObject.setLightState(id, state.off().transitiontime(0)).fail(displayError).done();
+			}
+			else
+			{
+				hsl[0] *= 359;
+				hsl[1] *= 100;
+				hsl[2] *= 100;
+				this.apiObject.setLightState(id, state.on().transitiontime(0).bri(255).hsl(Math.round(hsl[0]),Math.round(hsl[1]),Math.round(hsl[2]))).fail(displayError).done();
+			}
 		}
 		
 		this.init = function()

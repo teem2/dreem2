@@ -11,8 +11,9 @@
 		setInterval(function()
 		{
 			this.time++;
-			teem.huebase.light1.color="blue";
-		}.bind(this), 300);
+			teem.huebase.light1.color="red";
+			teem.huebase.light2.color="red";
+		}.bind(this), 1000);
 		
 		</handler>		
 	</server>

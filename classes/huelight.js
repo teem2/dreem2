@@ -33,7 +33,7 @@ define(function(require, exports, module)
 		this.color = function (newcol)
 		{
 			var RGB = colorparse(newcol);
-			if (this.parent) this.parent.setLightRGB(this.hueID, RGB[0]*255, RGB[1]*255, RGB[2]*255);
+			if (this.parent) this.parent.setLightRGB(this.hueID, RGB);
 		};
 				
 		this.powerOn = function()
