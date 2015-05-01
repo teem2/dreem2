@@ -128,13 +128,13 @@ define(function(require, exports, module){
 							// lets walk into the node
 							if(k == reference.length - 1 && base['attr_' + refpart]){
 								// lets store it on this
-								//console.log(bind, 'to', reference.join('.'))
-								obj._proplisten.push(
-									base['on_' + refpart].addListener(function(bind, ref){
+								var fn = function(bind, ref){
 									var value = this['attr_' + bind].expr()
 									//console.log("WE HAZ THING for "+value)
 									this[bind] = value
-								}.bind(obj, bind, reference.join('.'))))
+								}.bind(obj, bind, reference.join('.'))
+								obj._proplisten.push(base['on_' + refpart].addListener(fn))
+								fn.someprop = 1
 							}
 							else if(refpart in base){
 								base = base[refpart]

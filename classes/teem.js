@@ -233,7 +233,6 @@ define(function(require, exports, module){
 						})*/
 					}
 					else{
-						// ok so how do we render?
 						var redrawing = 0
 						var count = 0
 						function redraw(){
@@ -243,14 +242,13 @@ define(function(require, exports, module){
 							if(teem.drawroot){
 								renderer.destroy(teem.drawroot)
 							}
-	
+							
 							var objroot = Node.createFromJSONML(root_jsonml)
 
 							var drawroot = renderer.render(objroot, {}, {teem:teem}, function(count){
 								if(!redrawing) window.requestAnimationFrame(redraw)
 								redrawing = true
 							}.bind(null, count++))
-
 							renderer.spawn(drawroot, {dom_node:document.body})
 
 							if(!teem.drawroot) var init = true
