@@ -18,16 +18,18 @@ define(function(require, exports, module)
 		var LightState = Hue.lightState;
 		var SerialPort = serialPortModule.SerialPort
 	}
-	catch(e){}
+	catch(e)
+	{
+	}
 	
 	var displayResult = function(result) 
 	{
-		console.log("result: " + JSON.stringify(result, null, 2));
+		//console.log("result: " + JSON.stringify(result, null, 2));
 	};
 
 	var displayError = function(err) 
 	{
-		console.error("" + err);
+		//console.error("" + err);
 	};
 	
 	function RGB2HSL(rgb)
@@ -113,7 +115,7 @@ define(function(require, exports, module)
 			if(!LightState) return
 			Hue.nupnpSearch(function(err, result){
 					for(r in result){
-					console.log("found " + this.id + " at address " + result[r].ipaddress);
+					//console.log("found " + this.id + " at address " + result[r].ipaddress);
 					if (result[r].id == this.id)
 					{
 						console.log("found " + this.id + " at address " + result[r].ipaddress);

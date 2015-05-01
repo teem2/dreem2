@@ -2,7 +2,15 @@
 	<huebase id="001788fffe165ee4" username="739b2752a33a7e73115a9412d23ff13">
 		<huelight name="light1" lightname="LivingColors 1" color="blue"></huelight>
 		<huelight name="light2" lightname="LivingColors 2" color="yellow" ></huelight>		
+		<attribute name="r" value="${teem.arduino.knob1}"/>
+		<attribute name="rgb" value="${teem.arduino.knob1}"/>
 	</huebase>
+	<arduino port="com5">
+		<attribute name="knob1"/>
+		<attribute name="knob2"/>
+		<attribute name="knob3"/>
+		<attribute name="knob4"/>
+	</arduino>
 	<server>
 		<attribute name="time"/>
 		<handler event="init">
@@ -11,9 +19,30 @@
 		setInterval(function()
 		{
 			this.time++;
-			teem.huebase.light1.color="red";
-			teem.huebase.light2.color="red";
-		}.bind(this), 1000);
+			if (this.time %2 == 0)
+			{
+				function componentToHex(c) 
+				{
+					var hex = Math.round(c).toString(16);
+					return hex.length == 1 ? "0" + hex : hex;
+				}
+
+				function rgbToHex(r, g, b) 
+				{
+					return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+				}
+
+
+				teem.huebase.light1.color=rgbToHex(this.time % 255, (this.time*2)%255, (this.time*3)%255);
+				teem.huebase.light2.color=rgbToHex(this.time % 255, (this.time*4)%255, (this.time*2)%255);
+			}
+			else
+			{
+				teem.huebase.light1.color="red";
+				teem.huebase.light2.color="red";
+			}
+		}.bind(this), 500);
+				
 		
 		</handler>		
 	</server>
