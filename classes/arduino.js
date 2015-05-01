@@ -61,7 +61,6 @@ define(function(require, exports, module)
 			console.color('~br~Arduino~~ object started on server\n')	
 			this.openPort = function()
 			{
-				
 				this.serialPortContainer = new SerialPort(this.port,{baudrate: 115200,  parser: lineConsumer("\n")});
 				
 				this.serialPortContainer.on('open', function()		
@@ -175,6 +174,7 @@ define(function(require, exports, module)
 		
 		this.destroy = function()
 		{
+			console.log("Disconnecting Arduino")
 			if (this.portScanner)
 			{
 				clearInterval(this.portScanner);
