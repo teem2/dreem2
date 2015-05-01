@@ -1,0 +1,27 @@
+<composition>
+	<smartconnect>
+		<handler event="init">
+		</handler>
+		<smartconnect-mouse>
+			<handler event="init">	
+				console.log("Smartconnect-mouse started!");
+			</handler>
+			<handler event="position" args="x,y">
+				console.log("Mouse event event: " + x + ", " + y);
+			</handler>
+		</smartconnect-mouse>
+		<smartconnect-remotecontrol>
+			<handler event="gyroscope" args="yaw,pitch,roll">
+				console.log("Remote control gyroscope event: " + x + ", " + y);
+			</handler>
+			<handler event="pointerposition" args="x,y">
+				console.log("Remote control pointer position event: " + x + ", " + y);
+			</handler>
+		</smartconnect-remotecontrol>
+	</smartconnect>
+	<screens>
+		<screen name="default" type="browser">
+			<view />
+		</screen>
+	</screens>
+</composition>

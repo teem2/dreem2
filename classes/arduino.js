@@ -40,8 +40,7 @@ define(function(require, exports, module)
 				
 		this.attribute("init", "event")
 		this.attribute("connected", "event")
-		
-		
+	
 		this.connectedOutputs = {};
 		
 		this.onAttributeSet = function(key, value)
