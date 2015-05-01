@@ -98,7 +98,7 @@ define(function(require, exports, module){
 			if(typeof value === 'string' && (value.charAt(0)=='$' || value.charAt(1)=='{')){
 				if(!this._propbinds) Object.defineProperty(this, '_propbinds', {value:[]})
 				this._propbinds.push(key)
-				attr.binding = value.slice(2, -1)
+				attr.binding = value//value.slice(2, -1)
 				attr.value = null // initial value
 			}
 			else{

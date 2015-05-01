@@ -110,11 +110,13 @@ define(function(require, exports, module){
 					var bind = binds[i]
 					// lets parse it
 					var attr = obj['on_' + bind]
-					var ast = acorn.parse(attr.binding)
+					var ast = acorn.parse(attr.binding.slice(2, -1))
+
 					// ok we have to parse it and wire the things up
 					var walker = new AstBindingWalker()
 					var out = walker.walk(ast)
 					var refs = []
+					//console.log(attr.binding.slice(2, -1), attr.listeners[0].toString())
 
 					var code = "return function(){ \n"
 
@@ -128,8 +130,9 @@ define(function(require, exports, module){
 								// lets store it on this
 								//console.log(bind, 'to', reference.join('.'))
 								obj._proplisten.push(
-									base['on_' + refpart].addListener(function(bind, ref, value){
+									base['on_' + refpart].addListener(function(bind, ref){
 									var value = this['attr_' + bind].expr()
+									//console.log("WE HAZ THING for "+value)
 									this[bind] = value
 								}.bind(obj, bind, reference.join('.'))))
 							}

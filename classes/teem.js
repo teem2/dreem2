@@ -264,7 +264,8 @@ define(function(require, exports, module){
 				}
 				else if(msg.type == 'join'){
 					var obj = RpcProxy.decodeRpcID(teem, msg.rpcid)
-					obj.createIndex(msg.index, msg.rpcid, rpcpromise)
+					if(!obj) console.log('Cannot find '+msg.rpcid+' on join')
+					else obj.createIndex(msg.index, msg.rpcid, rpcpromise)
 				}
 				else if(msg.type == 'attribute'){
 				//	console.log(msg);
