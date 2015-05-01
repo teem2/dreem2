@@ -58,7 +58,7 @@ define(function(require, exports, module){
 				if(this.rotation) this.dom_node.style.transform = 'rotateZ('+this.rotation+'deg)'
 
 				if(this.text !== ""){
-					var node = document.createTextNode(this.text)
+					var node = document.createTextNode(""+this.text)
 					this.dom_node.style.color = this.fgcolor
 					this.dom_node.appendChild(node)
 				}
