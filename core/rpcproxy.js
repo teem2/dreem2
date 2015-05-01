@@ -217,6 +217,11 @@ define(function(require, exports, module){
 		return rpcdefs
 	}
 
+	RpcProxy.createFromObject = function(object, baseclass){
+		var def = RpcProxy.createRpcDef(object, baseclass)
+		return RpcProxy.createFromDef(def)
+	}
+	
 	RpcProxy.createRpcDef = function(object, baseclass){
 		var baseproto
 		if(baseclass) baseproto = baseclass.prototype
