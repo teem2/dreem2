@@ -124,9 +124,10 @@ define(function(require, exports, module){
 							var value = attr? (attr.binding !== undefined? attr.binding: attr.value): obj[key]
 							this.checkPropertyBind(key, value, setattr)
 						}
-						if(attr && attr.listeners){
-							if(!setattr.listeners) setattr.listeners = []
-							setattr.listeners.push.apply(setattr.listeners, attr.listeners)
+						// ok so how is this possible. we are moving a listener from an unrelated thing
+						if(attr && attr.hasOwnProperty('listeners')){
+							//console.log('Adding listeners to '  + key, attr.listeners.join(',') )
+							setattr.addListener.apply(setattr, attr.listeners)
 						}
 					}
 				}

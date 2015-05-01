@@ -13,14 +13,19 @@ define(function(require, exports, module){
 
 	function body(){
 
-		this.addListener = function(callback){
-			if(!this.listeners) this.listeners = []
-			if(this.listeners.indexOf(callback) == -1){
-				this.listeners.push(callback)
+		this.addListener = function(){
+			var callbacks = Array.prototype.slice.apply(arguments)
+			for(var i = 0; i < callbacks.length; i++){
+				var callback = callbacks[i]
+				if(!this.hasOwnProperty('listeners')) this.listeners = []
+				if(this.listeners.indexOf(callback) == -1){
+					this.listeners.push(callback)
+				}
+				if(this.onAddListener) this.onAddListener(callback)
 			}
 			// return a subscription function you can call to unregister
 			return function(){
-				this.removeListener(callback)
+				this.removeListener.apply(this, callbacks)
 			}.bind(this)
 		}
 
@@ -31,10 +36,13 @@ define(function(require, exports, module){
 			}.bind(this))
 		}
 
-		this.removeListener = function(callback){
-			if(!this.listeners) return
-			var id = this.listeners.indexOf(callback)
-			if(id !== -1) this.listeners.splice(id, 1)
+		this.removeListener = function(){
+			for(var i = 0;i < arguments.length; i++){
+				var callback = arguments[i]
+				if(!this.hasOwnProperty('listeners')) return
+				var id = this.listeners.indexOf(callback)
+				if(id !== -1) this.listeners.splice(id, 1)
+			}
 		}
 
 		this.clear = 
@@ -54,7 +62,7 @@ define(function(require, exports, module){
 
 			if(!this.listeners) return
 
-			var proto = this
+			var proto = this, list
 			while(proto){
 				if(proto.hasOwnProperty('listeners') && (list = proto.listeners)){
 					for(var i = list.length - 1; i >= 0; i--){

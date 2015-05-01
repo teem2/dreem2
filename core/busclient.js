@@ -50,8 +50,8 @@ define(function(require, exports, module){
 				this.queue = undefined
 			}.bind(this)
 
-			this.socket.onerror = function(){
-				//this.reconnect()
+			this.socket.onerror = function(event){
+				this.backoff = 500
 			}.bind(this)
 
 			this.socket.onclose = function(){
