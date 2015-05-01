@@ -14,12 +14,17 @@ define(function(require, exports, module){
 	var RpcMulti = require('$CORE/rpcmulti')
 	var Renderer = require('$CORE/renderer')
 	var WebRTC = require('$CORE/webrtc')
+	var renderer = new Renderer()
+
 
 	teem.destroy = function(){
 		for(var key in teem){
 			prop = teem[key]
-			if(typeof prop == 'object' && prop !== teem && prop.destroy && typeof prop.destroy == 'function'){
-				prop.destroy()
+			if(typeof prop == 'object' && prop !== teem){
+				if(prop.destroy && typeof prop.destroy == 'function'){
+					prop.destroy()
+				}
+				renderer.destroy(prop)
 			}
 		}
 		for(var i = 0;i<teem._intervals.length;i++){
@@ -58,7 +63,7 @@ define(function(require, exports, module){
 
 			teem.bus = bus
 
-			teem.session = '' + Math.random()*10000000
+			teem.session = '' + Math.random() * 10000000
 
 			// lets spawn up all modules!
 			for(var i = 0; i<descs.length; i++){
@@ -70,6 +75,8 @@ define(function(require, exports, module){
 					var jsonml = render()
 					// lets call our constructor with our lisp arguments
 					obj = teem[desc.name] = Node.createFromJSONML(jsonml)
+					// lets initialize propertybindings
+
 					// bus bind our attributes
 					if(obj.on_init) obj.on_init.emit()
 					RpcProxy.bindSetAttribute(obj, desc.name, bus)
@@ -78,6 +85,11 @@ define(function(require, exports, module){
 					console.error(e.stack + '\x0E')
 					return
 				}
+			}
+			// initialize serverside property binding
+			for(var i = 0; i<descs.length; i++){
+				var desc = descs[i]
+				renderer.propertyBind(teem[desc.name], {teem:teem})
 			}
 			
 			// ok now what. well we need to build our RPC interface
@@ -156,8 +168,6 @@ define(function(require, exports, module){
 
 		teem.bus = new BusClient(location.pathname)
 		var rpcpromise = new RpcPromise(teem.bus)
-		var renderer = new Renderer()
-
 		// lets put teem on window just as  adebuggint tool
 		window.teem = teem
 

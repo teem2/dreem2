@@ -125,6 +125,7 @@ define(function(require, exports, module){
 						var base = globals
 						for(var k = 0; k < reference.length; k++){
 							var refpart = reference[k]
+							//console.log('binding '+bind+ ' to '+reference.join('.'))
 							// lets walk into the node
 							if(k == reference.length - 1 && base['attr_' + refpart]){
 								// lets store it on this
