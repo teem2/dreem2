@@ -201,7 +201,7 @@
         console.log('HANDLER:thing by reference', thing);
       </handler>
       
-      <dreem-text name="dreemtext_instance" text="Hai bob!." x="250" y="100" bgcolor="white"></dreem-text>
+      <dreem-text name="dreemtext_instance" text="This is text in an attr" x="250" y="100" bgcolor="white"></dreem-text>
       <text name="text_instance" x="250" y="150" bgcolor="orange">text as content</text>
       <!--markup x="50" y="120">asdf asdf asdf</markup-->
     </view>

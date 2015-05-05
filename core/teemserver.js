@@ -105,13 +105,18 @@ define(function(require, exports, module){
 		this.default_composition = null
 
 		/** 
-		  * @method bgetComposition
+		  * @method getComposition
 		  * Find composition object by url 
 		  * @param {String} url 
 		  * @return {Composition|undefined} 
 		  */
 		this.getComposition = function(url){
 			if(url.indexOf('.')!== -1) return
+			
+			// Strip Query
+			var queryIndex = url.indexOf('?');
+			if (queryIndex !== -1) url = url.substring(0, queryIndex);
+			
 			var path = url.split('/')
 			var name = path[1] || path[0] || this.default_composition
 			if(!name) return

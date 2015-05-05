@@ -437,10 +437,14 @@ define(function(require, exports, module){
 			if(define.onMain) define.onMain(this.modules, this.busserver)
 		}
 
-		this.loadHTML = function(title, boot){
+		this.loadHTML = function(title, boot, isTest){
 			return '<html lang="en">\n'+
 				' <head>\n'+
 				'  <title>' + title + '</title>\n'+
+				(isTest ?
+				'  <script type"text/javascript" src="/lib/chai.js"></script>\n'+
+				'  <script type"text/javascript" src="/lib/smoke_helper.js"></script>\n'
+				: '' ) +
 				'  <script type"text/javascript">\n'+
 				'    window.define = {\n'+
 				'      MAIN:"' + boot + '"\n'+
@@ -472,7 +476,25 @@ define(function(require, exports, module){
 		  * @param {Response} res
 		  */
 		this.request = function(req, res){
-			var app = req.url.split('/')[2] || 'default'
+			var url = req.url;
+			
+			// Extract Query
+			var query = {}, queryIndex = url.indexOf('?');
+			if (queryIndex !== -1) {
+				query = url.substring(queryIndex + 1);
+				url = url.substring(0, queryIndex);
+				
+				if (query) {
+					var parts = query.split('&'), pair;
+					query = {};
+					for (var i = 0, len = parts.length; len > i; i++) {
+						pair = parts[i].split('=');
+						query[pair[0]] = pair[1] == null ? null : pair[1]; // Clobber instead of support for multivalue query params
+					}
+				}
+			}
+			
+			var app = url.split('/')[2] || 'default'
 			// ok lets serve our Composition device 
 
 			if(req.method == 'POST'){
@@ -506,7 +528,11 @@ define(function(require, exports, module){
 				return
 			}
 
-			var html = this.loadHTML(screen.attr && screen.attr.title || this.name, '$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js')
+			var html = this.loadHTML(
+				screen.attr && screen.attr.title || this.name, 
+				'$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js',
+				query.test === null || query.test === 'true'
+			)
 
 			var header = {
 				"Cache-control":"max-age=0",
