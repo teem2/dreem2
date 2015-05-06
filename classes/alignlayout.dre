@@ -98,23 +98,23 @@
     # When not collapsing we were monitoring the parent's inner measure
     # Also verify that __innerAttrName exists, otherwise stopListening will
     # clear all the listeners.
-    if not @updateparent and @__innerAttrName? then @stopListening(@parent, @__innerAttrName, @update)
+    if not @updateparent and @__innerAttrName? then @stopListening(@parent, 'on' + @__innerAttrName, @update)
   </method>
   
   <method name="startMonitoringAllSubviews" args="view">
     @super()
     
     # When not collapsing we need to monitor the parent's inner measure
-    if not @updateparent then @listenTo(@parent, @__innerAttrName, @update)
+    if not @updateparent then @listenTo(@parent, 'on' + @__innerAttrName, @update)
   </method>
   
   <method name="startMonitoringSubview" args="view">
     @super()
     
     # Monitor each subview's measure, bounds offset and self alignment state
-    @listenTo(view, @__measureAttrName, @update)
-    @listenTo(view, @__diffAttrName, @update)
-    @listenTo(view, @__alignattr, @update)
+    @listenTo(view, 'on' + @__measureAttrName, @update)
+    @listenTo(view, 'on' + @__diffAttrName, @update)
+    @listenTo(view, 'on' + @__alignattr, @update)
   </method>
   
   <method name="stopMonitoringSubview" args="view">
@@ -122,9 +122,9 @@
     
     # No longer monitor each subview's measure, bounds offset and self 
     # alignment state
-    @stopListening(view, @__measureAttrName, @update)
-    @stopListening(view, @__diffAttrName, @update)
-    @stopListening(view, @__alignattr, @update)
+    @stopListening(view, 'on' + @__measureAttrName, @update)
+    @stopListening(view, 'on' + @__diffAttrName, @update)
+    @stopListening(view, 'on' + @__alignattr, @update)
   </method>
   
   <method name="skipSubview" args="view">

@@ -219,7 +219,6 @@ define(function(require, exports, module){
 
 		/* Internal, compiles and writes dre .js class */
 		this.compileAndWriteDreToJS = function(jsxml, filename, compname, errors){
-
 			var js = dreem_compiler.compileClass(jsxml, errors)
 			if(!js) return
 			// write out our composition classes
