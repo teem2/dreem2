@@ -2,7 +2,6 @@
  The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 */
-
 define(function(require, exports, module){
 	module.exports = Node
 
@@ -36,24 +35,24 @@ define(function(require, exports, module){
 			for(;i<arguments.length;i++){
 				var arg = arguments[i]
 				if(arg === undefined) continue
-    			if(!obj.child) obj.child = []
-    			if(Array.isArray(arg)){
-    				for(var j = 0; j<arg.length; i++){
-    					var item = arg[j]
-    					if(typeof item == 'object' && item){
-	    					var name = item.name
-	    					if(name !== undefined && !(name in obj)) obj[name] = item
-	    				}
-    					obj.child.push(item)
-    				}
-    			}
-    			else{
-    				if(typeof arg == 'object' && arg){
+				if(!obj.child) obj.child = []
+				if(Array.isArray(arg)){
+					for(var j = 0; j<arg.length; i++){
+						var item = arg[j]
+						if(typeof item == 'object' && item){
+							var name = item.name
+							if(name !== undefined && !(name in obj)) obj[name] = item
+						}
+						obj.child.push(item)
+					}
+				}
+				else{
+					if(typeof arg == 'object' && arg){
 						var name = arg.name
 						if(name !== undefined && !(name in obj)) obj[name] = arg
 					}
 					obj.child.push(arg)
-	    		}
+				}
 			}
 			// expand into tree structure
 			if(obj.onConstruct) obj.onConstruct()

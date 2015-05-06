@@ -104,7 +104,6 @@ define(function(require, exports, module){
 	}
 
 	exports.compileClass = function(node, errors){
-
 		var body = ''
 		var deps = Object.create(this.default_deps)
 		if(node.tag !== 'class' && node.tag !== 'mixin'){
@@ -123,11 +122,11 @@ define(function(require, exports, module){
 		if (node.attr && node.attr.type) language = node.attr.type
 
 		// lets fetch our base class
-		var baseclass = 'node'
-		deps['node'] = 1
+		var baseclass = 'teem_node'
+		deps['teem_node'] = 1
 		if(node.attr && node.attr.extends){
 			if(node.attr.extends.indexOf(',') != -1){
-				errors.push(new DreemError('Cant use multiple baseclasses ',  node.pos))
+				errors.push(new DreemError('Cant use multiple baseclasses ', node.pos))
 				return
 			}
 			baseclass = node.attr.extends
@@ -250,7 +249,6 @@ define(function(require, exports, module){
 	}
 
 	exports.compileInstance = function(node, errors, indent, onLocalClass){
-
 		var deps = Object.create(this.default_deps)
 		
 		var walk = function(node, parent, indent, depth){
@@ -340,7 +338,7 @@ define(function(require, exports, module){
 		}.bind(this)
 
 		// Walk JSON
-		var body =  walk(node, null, indent || '', 0)
+		var body = walk(node, null, indent || '', 0)
 
 		return {
 			tag: node.tag,

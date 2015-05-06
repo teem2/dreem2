@@ -10,7 +10,7 @@
  */
 
 define(function(require, exports, module){
-	var Node = require('$CLASSES/node')
+	var Node = require('$CLASSES/teem_node')
 	var RpcProxy = require('./rpcproxy')
 
 	function defineIndex(obj, i){

@@ -23,8 +23,7 @@ console.color = colorize(function(v){
 })
 
 function main(){
-
-	var argv = process.argv	
+	var argv = process.argv
 	var args = {}
 	for(var lastkey = '', arg, i = 0; i<argv.length; i++){
 		arg = argv[i]

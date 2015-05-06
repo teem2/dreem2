@@ -117,7 +117,7 @@ SOFTWARE. -->
       </block>
       
       <!-- Using align with a constant layout for simple switching of alignment. -->
-      <block name="special" y="480" width="120" height="120" border="1" bordercolor="black" padding="2">
+      <block name="special" y="480" width="120" height="120" border="1" bordercolor="black" bgcolor="yellow" padding="2">
         <constantlayout name="layout1" prop="x" value="'middle'"></constantlayout>
         <spacedlayout name="layout2" axis="y" spacing="1"></spacedlayout>
         

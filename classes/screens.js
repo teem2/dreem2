@@ -4,8 +4,7 @@
 */
 
 define(function(require, exports, module){
-
-	var Node = require('$CLASSES/node')
+	var Node = require('$CLASSES/teem_node')
 	var teem = require('$CLASSES/teem')
 	var RpcProxy = require('$CORE/rpcproxy')
 	var RpcMulti = require('$CORE/rpcmulti')

@@ -50,7 +50,6 @@ define(function(require, exports, module){
 	body.call(RunMonitor.prototype)
 
 	function body(){
-
 		/**
 		 * @attribute restart_delay
 		 * When in infinite restart loop, wait atleast this long (ms)
@@ -112,7 +111,7 @@ define(function(require, exports, module){
 						this.start()
 					}.bind(this), this.restart_delay)
 				}
-			}.bind(this))		
+			}.bind(this))
 		}
 	}
 })

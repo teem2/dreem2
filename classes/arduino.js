@@ -2,10 +2,9 @@
  The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 */
-
 define(function(require, exports, module)
 {
-	var node = require("$CLASSES/node")
+	var node = require("$CLASSES/teem_node")
 	var teem = require("$CLASSES/teem")
 	// do not reload the serialport module - it has operating-system dependent things that will crash otherwise
 	try

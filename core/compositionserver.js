@@ -30,7 +30,7 @@ define(function(require, exports, module){
 	  */
 	function CompositionServer(args, name, teemserver){
 		this.teemserver = teemserver
-	 	this.args = args
+		this.args = args
 		this.name = name
 
 		this.busserver = new BusServer()
@@ -69,13 +69,12 @@ define(function(require, exports, module){
 	body.call(CompositionServer.prototype)
 
 	function body(){
-
 		/**
-	      * @method showErrors
-	      * Shows error array and responds with notifications/opening editors
-	      * @param {Array} errors
-	      * @param {String} prefix Output prefix
-	      */
+		  * @method showErrors
+		  * Shows error array and responds with notifications/opening editors
+		  * @param {Array} errors
+		  * @param {String} prefix Output prefix
+		  */
 		this.showErrors = function(errors, filepath, source){
 			var w = 0
 			if(!Array.isArray(errors)) errors = [errors]
@@ -107,14 +106,14 @@ define(function(require, exports, module){
 		  * Destroys all objects maintained by the composition
 		  * @param {Function} callback(error, package)
 		  */
-	    this.destroy = function(){
-	    	if(this.myteem && this.myteem.destroy) this.myteem.destroy()
-	    	this.myteem = undefined
-	    }
+		this.destroy = function(){
+			if(this.myteem && this.myteem.destroy) this.myteem.destroy()
+			this.myteem = undefined
+		}
 
-	    this.parseDreSync = function(drefile, errors){
-	    	// read our composition file
-	    	try{
+		this.parseDreSync = function(drefile, errors){
+			// read our composition file
+			try{
 				var data = fs.readFileSync(define.expandVariables(drefile))
 			} 
 			catch(e){
@@ -139,9 +138,9 @@ define(function(require, exports, module){
 			jsobj.source = source
 
 			return jsobj
-	    }
+		}
 
-	    this.lookupDep = function(classname, compname, errors){
+		this.lookupDep = function(classname, compname, errors){
 			if(classname in this.local_classes){
 				// lets scan the -project subdirectories
 				return '$BUILD/compositions.' + compname + '.dre.' + classname + '.js'
@@ -204,25 +203,25 @@ define(function(require, exports, module){
 			}
 			
 			console.color("~br~Error~~ finding class " + classname + '\n')
-	    }
+		}
 
-	    this.makeLocalDeps = function(deps, compname, indent, errors){
-	    	var out = ''
-	    	for(var key in deps){
+		this.makeLocalDeps = function(deps, compname, indent, errors){
+			var out = ''
+			for(var key in deps){
 				var incpath = this.lookupDep(key, compname, errors)
-	    		this.classmap[key] = incpath
+				this.classmap[key] = incpath
 				if(incpath){
 					out += indent + 'var ' + dreem_compiler.classnameToJS(key) + ' = require("' + incpath + '")\n'
 				}
 			}
 			return out
-	    }
+		}
 
-	    /* Internal, compiles and writes dre .js class */
-	    this.compileAndWriteDreToJS = function(jsxml, filename, compname, errors){
+		/* Internal, compiles and writes dre .js class */
+		this.compileAndWriteDreToJS = function(jsxml, filename, compname, errors){
 
-	    	var js = dreem_compiler.compileClass(jsxml, errors)
-	    	if(!js) return
+			var js = dreem_compiler.compileClass(jsxml, errors)
+			if(!js) return
 			// write out our composition classes
 			var out = 'define(function(require, exports, module){\n' 
 			out += this.makeLocalDeps(js.deps, compname, '\t', errors)
@@ -234,12 +233,12 @@ define(function(require, exports, module){
 				errors.push(new DreemError(e.toString()))
 			}
 			return js.name
-	    }
+		}
 
-	    /* Internal, packages and writes a dali application */
-	    this.packageDali = function(root, output){
-	    	// lets load define
-	    	var definejs = fs.readFileSync(define.expandVariables('$ROOT/define.js')).toString()
+		/* Internal, packages and writes a dali application */
+		this.packageDali = function(root, output){
+			// lets load define
+			var definejs = fs.readFileSync(define.expandVariables('$ROOT/define.js')).toString()
 			// lets recursively load all our dependencies.
 			var files = {}
 			var recur = function(file, parent){

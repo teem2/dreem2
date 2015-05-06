@@ -2,9 +2,8 @@
  The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 */
-
 define(function(require, exports, module){
-	var node = require("$CLASSES/node")
+	var node = require("$CLASSES/teem_node")
 
 	if(define.env == 'v8'){
 		return node.extend("sprite", function(){
@@ -29,5 +28,4 @@ define(function(require, exports, module){
 	else{
 		return node.extend("sprite")
 	}
-
 })

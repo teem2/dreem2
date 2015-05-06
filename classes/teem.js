@@ -2,10 +2,9 @@
  The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 */
-
 define(function(require, exports, module){
 	// lets return our singleton teem object
-	var Node = require('$CLASSES/node')
+	var Node = require('$CLASSES/teem_node')
 
 	var teem = Node.singleton('Teem')
 

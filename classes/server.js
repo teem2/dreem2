@@ -4,7 +4,7 @@
 */
 
 define(function(require, exports, module){
-	var node = require("$CLASSES/node")
+	var node = require("$CLASSES/teem_node")
 	return node.extend("server", function(){
 		this.construct = function(){
 		}
