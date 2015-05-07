@@ -79,26 +79,26 @@ SOFTWARE. -->
       
       <foosub1>
         <handler event="oninit">
-          assert.equal(this.bar, 20)
+          assert.equal(this.bar, 20, 'In oninit of foosub1 bar should be 20')
         </handler>
       </foosub1>
       <foosub1 bar="25">
-        <handler event="oninit">assert.equal(this.bar, 25)</handler>
+        <handler event="oninit">assert.equal(this.bar, 25, 'Instance Attr Overrides: In oninit of foosub1 bar should be 25')</handler>
       </foosub1>
       <foosub1>
         <attribute name="bar" type="number" value="25"></attribute>
-        <handler event="oninit">assert.equal(this.bar, 25)</handler>
+        <handler event="oninit">assert.equal(this.bar, 25, 'Instance Attribute Overrides: foosub1')</handler>
       </foosub1>
       
       <foosub2>
-        <handler event="oninit">assert.equal(this.bar, 15)</handler>
+        <handler event="oninit">assert.equal(this.bar, 15, 'In oninit of foosub2 bar should be 15.')</handler>
       </foosub2>
       <foosub2 bar="25">
-        <handler event="oninit">assert.equal(this.bar, 25)</handler>
+        <handler event="oninit">assert.equal(this.bar, 25, 'Instance Attr Overrides: In oninit of foosub2 bar should be 25')</handler>
       </foosub2>
       <foosub2>
         <attribute name="bar" type="number" value="25"></attribute>
-        <handler event="oninit">assert.equal(this.bar, 25)</handler>
+        <handler event="oninit">assert.equal(this.bar, 25, 'Instance Attribute Overrides: foosub2')</handler>
       </foosub2>
       
       <foosub3>
@@ -181,22 +181,23 @@ SOFTWARE. -->
           assert.testCaseLabel = 'Binding to the same attribute with a different constraint value unregisters the previous constraint';
     
           // Should already be registered for fifty with the constraint above
-          assert.equal(this.events.fifty.length, 1)
           assert.equal(this.x, 50)
+          
           // Change the constraint
           this.setConstraint('x', 'this.thirty')
+          
           // Was fifty unregistered?
-          assert.equal(this.events.fifty.length, 0)
-          assert.equal(this.events.thirty.length, 1)
           assert.equal(this.x, 30)
           this.setAttribute('thirty', 40)
           assert.equal(this.x, 40)
+          
           // Should this unregister the constraint?
           this.setAttribute('x', 20)
           assert.equal(this.x, 20)
           this.setAttribute('thirty', 40)
           assert.equal(this.thirty, 40)
           assert.equal(this.x, 20)
+          
           // this will cause the event system to attempt to unbind constraints for the noconstraint attribute which shouldn't exist. There shouldn't be an error.
           this.setAttribute('noconstraint', 0)
         </handler>
@@ -209,8 +210,11 @@ SOFTWARE. -->
           assert.testCaseLabel = 'Constraints shouldnt attempt to bind to functions, see https://www.pivotaltracker.com/story/show/83879598';
     
           // There shouldn't be a warning and this.floating should be bound even though it's inside Math.round()
-          assert.equal(this.events.floating.length, 1)
           assert.equal(this.x, 1)
+          
+          this.setAttribute('floating', 5.2);
+          assert.equal(this.floating, 5.2);
+          assert.equal(this.x, 5);
         </handler>
       </view>
       
@@ -220,14 +224,14 @@ SOFTWARE. -->
       </view>
       
       <!-- attribute with invalid type -->
-      <!--view>
+      <view>
         <attribute name="something" type="text" value=""></attribute>
-      </view-->
+      </view>
     
       <!-- attribute with invalid jason value -->
-      <!--view>
+      <view>
         <attribute name="foo" type="json" value="{'test': 'invalid'}"></attribute>
-      </view-->
+      </view>
     
       <!-- attribute of type 'expression' -->
       <view>
@@ -236,7 +240,7 @@ SOFTWARE. -->
         <handler event="oninit">
           assert.testCaseLabel = "attribute of type 'expression'";
           
-          assert.isTrue(this.location.indexOf('attributes.html') >= 0, 'location is set to window.location')
+          assert.isTrue(this.location.indexOf('smoke_attributes') >= 0, 'location is set to window.location')
         </handler>
       </view>
     </view>

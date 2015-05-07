@@ -117,6 +117,7 @@ define(function(require, exports, module){
 			errors.push(new DreemError('Class has no name ', node.pos))
 			return
 		}
+		clsname = clsname.toLowerCase()
 
 		var language = 'js'
 		if (node.attr && node.attr.type) language = node.attr.type
@@ -144,37 +145,43 @@ define(function(require, exports, module){
 		}
 		
 		// ok lets compile a dreem class to a module
-		if (node.child) for (var i = 0; i < node.child.length; i++) {
-			var child = node.child[i]
-			if (child.tag == 'attribute' || child.tag == 'method' || child.tag == 'handler' || child.tag == 'getter' || child.tag == 'setter'){
-				var attrnameset = child.attr && (child.attr.name || child.attr.event)
-
-				var attrnames = attrnameset.split(/,\s*|\s+/)
-				for(var j = 0; j < attrnames.length; j++){
-					var attrname = attrnames[j]
-					if(!attrname){
-						errors.push(new DreemError('Attribute has no name ', child.pos))
-						return
+		if (node.child) {
+			var attributes = {};
+			
+			for (var i = 0; i < node.child.length; i++) {
+				var child = node.child[i],
+					tagName = child.tag,
+					attr = child.attr;
+				if (tagName === 'attribute') {
+					if (attr) {
+						attributes[attr.name.toLowerCase()] = attr.type.toLowerCase() || 'string';
 					}
-					var type = child.attr && child.attr.type || 'string'
-					if(child.tag == 'attribute'){
-						body += '\t\tthis.attribute("' + attrname + '", "' + type.toLowerCase() + '")\n'
-					}
-					else{
+				} else if (tagName === 'method' || tagName === 'handler' || tagName === 'getter' || tagName === 'setter'){
+					var attrnameset = attr && (attr.name || attr.event)
+					var attrnames = attrnameset.split(/,\s*|\s+/), attrname, j;
+					for (j = 0; j < attrnames.length; j++) {
+						attrname = attrnames[j]
+						if (!attrname) {
+							errors.push(new DreemError('Attribute has no name ', child.pos))
+							return
+						}
 						var fn = this.compileMethod(child, node, language, errors, '\t\t\t\t')
-						if(!fn) continue
+						if (!fn) continue
 						var args = fn.args
-						if(!args && child.tag == 'setter') args = ['value']
+						if (!args && tagName == 'setter') args = ['value']
 						body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n'
 					}
+				} else if (tagName.charAt(0) !== '$') { // its our render-node
+					var inst = this.compileInstance(child, errors, '\t\t\t')
+					for (var key in inst.deps) deps[key] = 1
+					body += '\t\tthis.render = function(){\n'
+					body += '\t\t\treturn ' + inst.body +'\n'
+					body += '\t\t}\n'
 				}
 			}
-			else if(child.tag.charAt(0) != '$'){ // its our render-node
-				var inst = this.compileInstance(child, errors, '\t\t\t')
-				for(var key in inst.deps) deps[key] = 1
-				body += '\t\tthis.render = function(){\n'
-				body += '\t\t\treturn ' + inst.body +'\n'
-				body += '\t\t}\n'
+			
+			for (var name in attributes) {
+				body += '\t\tthis.attribute("' + name + '", "' + attributes[name] + '")\n'
 			}
 		}
 		body += '\t})'
@@ -193,7 +200,7 @@ define(function(require, exports, module){
 		
 		// lets on-demand load the language
 		var langproc = this.languages[language]
-		if(!langproc){
+		if (!langproc) {
 			errors.push(new DreemError('Unknown language used ' + language, node.pos))
 			return {errors:errors}
 		}
@@ -233,7 +240,7 @@ define(function(require, exports, module){
 				if(len < shortest && lines[i] !== '\n') shortest = len
 			}
 		}
-		if(shortest != Infinity){
+		if (shortest != Infinity) {
 			for(var i = 0;i<lines.length;i++){
 				if(i> 0 || lines[0].length !== 0)
 					lines[i] = indent + lines[i].slice(shortest).replace(/( |\t)+$/g,'')
@@ -257,84 +264,104 @@ define(function(require, exports, module){
 			var props = '' 
 			var children = ''
 
-			if(node.attr) for(var key in node.attr){
-				var value = node.attr[key]
-				if(props) props += ',\n' + myindent
-				else props = '{\n' + myindent
-				if(value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value.split('"').join('\\"') + '"'
-				props += key + ':' + value
-			}
-
-			if (node.child) for (var i = 0; i < node.child.length; i++) {
-				var child = node.child[i]
-				
-				if (child.tag == 'class' || child.tag == 'mixin') {
-					// lets output a local class 
-					if(onLocalClass) onLocalClass(child, errors)
-					else errors.push(new DreemError('Cant support class in this location', node.pos))
-				}
-				else if (child.tag == 'method' || child.tag == 'handler' || child.tag == 'getter' || child.tag == 'setter'){
-					var fn = this.compileMethod(child, parent, 'js', errors, indent + '\t')
-					if(!fn) continue
-					if(!child.attr || (!child.attr.name && !child.attr.event)){
-						errors.push(new DreemError('code tag has no name', child.pos))
-						continue
-					}
-					var attrnameset = child.attr.name || child.attr.event
-					
-					var attrnames = attrnameset.split(/,\s*|\s+/)
-					for(var j = 0; j < attrnames.length; j++){
-						var attrname = attrnames[j]
-		
-						if(props) props += ',\n' + myindent
-						else props = '{\n' + myindent
-						var pre = '', post = ''
-						if(child.tag == 'getter') attrname = 'get_' + attrname
-						else if(child.tag == 'setter') attrname = 'set_' + attrname
-
-						if(child.tag == 'handler') attrname = 'handle_' + attrname
-						props += attrname + ': function(' + fn.args.join(', ') + '){' + fn.comp + '}' 
-					}
-
-				}
-				else if(child.tag == 'attribute'){
-					if(!child.attr || !child.attr.name){
-						errors.push(new DreemError('attribute tag has no name', child.pos))
-						continue
-					}
-					var name = child.attr.name
-					var type = child.attr.type || 'string'
+			if (node.attr) {
+				for(var key in node.attr) {
+					var value = node.attr[key]
 					if(props) props += ',\n' + myindent
 					else props = '{\n' + myindent
-					var value = child.attr.value
-					if(value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value.split('"').join('\\"') + '"'
-					props += 'attr_' + name + ': {type:"'+type+'", value:'+value+'}'
-				} 
-				else if(child.tag.charAt(0) != '$'){
-					if(children) children += ',\n' + myindent
-					else children = '\n' + myindent
-					children += walk(child, node, myindent, depth+1)
+					if(value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value.split('"').join('\\"') + '"'
+					props += key + ':' + value
+				}
+			}
+
+			if (node.child) {
+				var attributes = {};
+				
+				for (var i = 0; i < node.child.length; i++) {
+					var child = node.child[i],
+						tagName = child.tag,
+						attr = child.attr;
+					
+					if (tagName === 'class' || tagName === 'mixin') {
+						// lets output a local class 
+						if(onLocalClass) onLocalClass(child, errors)
+						else errors.push(new DreemError('Cant support class in this location', node.pos))
+					} else if (tagName == 'method' || tagName == 'handler' || tagName == 'getter' || tagName == 'setter') {
+						var fn = this.compileMethod(child, parent, 'js', errors, indent + '\t')
+						if (!fn) continue
+						if (!attr || (!attr.name && !attr.event)) {
+							errors.push(new DreemError('code tag has no name', child.pos))
+							continue
+						}
+						var attrnameset = attr.name || attr.event
+						
+						var attrnames = attrnameset.split(/,\s*|\s+/)
+						for(var j = 0; j < attrnames.length; j++){
+							var attrname = attrnames[j]
+			
+							if(props) props += ',\n' + myindent
+							else props = '{\n' + myindent
+							var pre = '', post = ''
+							if(tagName == 'getter') attrname = 'get_' + attrname
+							else if(tagName == 'setter') attrname = 'set_' + attrname
+	
+							if(tagName == 'handler') attrname = 'handle_' + attrname
+							props += attrname + ': function(' + fn.args.join(', ') + '){' + fn.comp + '}' 
+						}
+					} else if (tagName == 'attribute') {
+						if (attr && attr.name) {
+							var value = attr.value
+							if (value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) {
+								value = '"' + value.split('"').join('\\"') + '"'
+							}
+							attributes[attr.name.toLowerCase()] = [
+								attr.type.toLowerCase() || 'string',
+								value
+							];
+						} else {
+							errors.push(new DreemError('attribute tag has no name', child.pos))
+							continue
+						}
+					} else if (tagName.charAt(0) != '$') {
+						if (children) {
+							children += ',\n' + myindent
+						} else {
+							children = '\n' + myindent
+						}
+						children += walk(child, node, myindent, depth+1)
+					}
+				}
+				
+				var typeAndValue;
+				for (var name in attributes) {
+					if (props) {
+						props += ',\n' + myindent
+					} else {
+						props = '{\n' + myindent
+					}
+					typeAndValue = attributes[name];
+					props += 'attr_' + name + ': {type:"' + typeAndValue[0] + '", value:' + typeAndValue[1] + '}'
 				}
 			}
 			var out = exports.classnameToJS(node.tag) + '('
 
-			if(props){
-				if(!children) out += props+'\n'+indent+'}'
-				else out += props+'\n'+myindent+'}'
+			if (props) {
+				if (!children) {
+					out += props+'\n'+indent+'}'
+				} else {
+					out += props+'\n'+myindent+'}'
+				}
 			}
 
-			if(children){
-				if(props) out += ','
+			if (children) {
+				if (props) out += ','
 				out += children
-			}
-			if (children){
 				out += '\n' + indent
 			}
 
 			out += ')'
 
 			return out
-
 		}.bind(this)
 
 		// Walk JSON
