@@ -427,8 +427,7 @@ define(function(require, exports, module){
 			// require our teem tag
 			try{
 				this.myteem = require('$CLASSES/teem.js')
-			}
-			catch(e){
+			} catch(e){
 				console.error(e.stack+'\x0E')
 			}
 			// send a reload on the busserver

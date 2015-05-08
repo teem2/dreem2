@@ -125,7 +125,7 @@ define(function(require, exports, module){
 		// lets fetch our base class
 		var baseclass = 'teem_node'
 		deps['teem_node'] = 1
-		if(node.attr && node.attr.extends){
+		if (node.attr && node.attr.extends) {
 			if(node.attr.extends.indexOf(',') != -1){
 				errors.push(new DreemError('Cant use multiple baseclasses ', node.pos))
 				return
@@ -136,7 +136,7 @@ define(function(require, exports, module){
 
 		body += exports.classnameToJS(baseclass) + '.extend("' + clsname + '", function(){\n'
 
-		if(node.attr && node.attr.with){
+		if (node.attr && node.attr.with) {
 			node.attr.with.split(/,\s*|\s+/).forEach(function(cls){
 				deps[cls] = 1
 				body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n'

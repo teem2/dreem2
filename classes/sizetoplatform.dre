@@ -108,6 +108,20 @@
     @sizeToPlatform()
   </method>
 
+  <method name="__updateInnerWidth">
+    # Ensure that __updateInnerWidth updates width "internally"
+    @__internalUpdate = true;
+    @super()
+    @__internalUpdate = false;
+  </method>
+
+  <method name="__updateInnerHeight">
+    # Ensure that __updateInnerHeight updates height "internally"
+    @__internalUpdate = true;
+    @super()
+    @__internalUpdate = false;
+  </method>
+
   <!--/**
     * @method sizeToPlatform
     * Sizes this view to the current size of the DOM elements within it.
