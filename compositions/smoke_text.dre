@@ -57,7 +57,7 @@ SOFTWARE. -->
   
         <!-- Setting text inside tags -->
         <text bgcolor="green">
-          Some text goes here
+      Some text goes here
           <handler event="oninit">
             var el = this.sprite.platformObject,
               testVal = 'Some text goes here';
@@ -111,10 +111,10 @@ SOFTWARE. -->
         </text>
   
         <text width="150" multiline="true" bgcolor="purple">This
-        text should wrap at my width.
+      text should wrap at my width.
           <handler event="oninit">
             var el = this.sprite.platformObject,
-              testVal = 'This\n        text should wrap at my width.';
+              testVal = 'This\n      text should wrap at my width.';
             assert.equal(this.text, testVal, 'Multiline text with a line ending should work.');
             assert.equal(this.sprite.getText(), testVal, 'innerText should exist #9');
           </handler>
@@ -304,12 +304,12 @@ SOFTWARE. -->
             assert.testCaseLabel = 'nowrap auto';
   
             assert.equal(this.multiline, false);
-            assert.closeTo(this.width, 101, 10)
-            assert.closeTo(this.height, 24, 10)
+            assert.closeTo(this.width, 90, 11, 'width check')
+            assert.closeTo(this.height, 24, 10, 'height check')
           </handler>
         </text>
         <text bgcolor="pink">foo bar
-        baz
+      baz
           <handler event="oninit">
             assert.equal(this.multiline, false);
             assert.equal(this.width, this.parent.nowrap_auto.width)
@@ -322,39 +322,41 @@ SOFTWARE. -->
           <handler event="oninit">
             assert.testCaseLabel = 'nowrap fixed';
   
-            assert.equal(this.multiline, false);
-            assert.equal(this.width, 50)
-            assert.equal(this.height, this.parent.nowrap_auto.height)
+            assert.equal(this.multiline, false, 'multiline should be false');
+            assert.equal(this.width, 50, 'width should be 50')
+            assert.equal(this.height, this.parent.nowrap_auto.height, 'nowrap fixed height should be the same as nowrap auto')
           </handler>
         </text>
         <text bgcolor="red" width="50">foo bar
-        baz
+      baz
           <handler event="oninit">
-            assert.equal(this.multiline, false);
-            assert.equal(this.width, this.parent.nowrap_fixed.width)
-            assert.equal(this.height, this.parent.nowrap_fixed.height)
+            assert.testCaseLabel = 'nowrap fixed, newline in text';
+            assert.equal(this.multiline, false, 'multiline should be false');
+            assert.equal(this.width, this.parent.nowrap_fixed.width, 'this.parent.nowrap_fixed.width should be the same as nowrap fixed example')
+            assert.equal(this.height, this.parent.nowrap_fixed.height, 'this.parent.nowrap_fixed.height should be the same as nowrap fixed example')
             
             // Turn ellipsis on
             this.setAttribute('ellipsis', true);
             
-            assert.equal(this.ellipsis, true);
-            assert.equal(this.width, this.parent.nowrap_fixed.width)
-            assert.equal(this.height, this.parent.nowrap_fixed.height)
+            assert.equal(this.ellipsis, true, 'ellipsis should be true');
+            assert.equal(this.width, this.parent.nowrap_fixed.width, 'this.parent.nowrap_fixed.width should be the same as nowrap fixed example')
+            assert.equal(this.height, this.parent.nowrap_fixed.height, 'this.parent.nowrap_fixed.height should be the same as nowrap fixed example')
           </handler>
         </text>
         <text bgcolor="red" width="50" ellipsis="true">foo bar baz
           <handler event="oninit">
-            assert.equal(this.multiline, false);
-            assert.equal(this.ellipsis, true);
-            assert.equal(this.width, this.parent.nowrap_fixed.width)
-            assert.equal(this.height, this.parent.nowrap_fixed.height)
+            assert.testCaseLabel = 'nowrap fixed, ellipsis is true';
+            assert.equal(this.multiline, false, 'multiline should be false');
+            assert.equal(this.ellipsis, true, 'ellipsis should be true');
+            assert.equal(this.width, this.parent.nowrap_fixed.width, 'this.parent.nowrap_fixed.width should be the same as nowrap fixed example')
+            assert.equal(this.height, this.parent.nowrap_fixed.height, 'this.parent.nowrap_fixed.height should be the same as nowrap fixed example')
             
             // Turn ellipsis off
             this.setAttribute('ellipsis', false);
             
-            assert.equal(this.ellipsis, false);
-            assert.equal(this.width, this.parent.nowrap_fixed.width)
-            assert.equal(this.height, this.parent.nowrap_fixed.height)
+            assert.equal(this.ellipsis, false, 'ellipsis should be false');
+            assert.equal(this.width, this.parent.nowrap_fixed.width, 'this.parent.nowrap_fixed.width should be the same as nowrap fixed example')
+            assert.equal(this.height, this.parent.nowrap_fixed.height, 'this.parent.nowrap_fixed.height should be the same as nowrap fixed example')
           </handler>
         </text>
         
@@ -391,7 +393,7 @@ SOFTWARE. -->
           </handler>
         </text>
         <text multiline="true" width="60" bgcolor="green">f o o b a r
-        b a z
+      b a z
           <handler event="oninit">
             assert.equal(this.multiline, true);
             assert.equal(this.sprite.styleObj['white-space'], 'pre-wrap');
@@ -419,8 +421,8 @@ SOFTWARE. -->
             assert.testCaseLabel = 'Change fixed and multiline';
             
             assert.equal(this.multiline, false);
-            assert.closeTo(this.width, 135, 10);
-            assert.closeTo(this.height, 24, 10);
+            assert.closeTo(this.width, 125, 11, 'width check');
+            assert.closeTo(this.height, 24, 10, 'height check');
             
             // Change to fixed width
             this.setAttribute('width', 60);
@@ -442,7 +444,7 @@ SOFTWARE. -->
             
             assert.equal(this.multiline, true);
             assert.equal(this.sprite.styleObj['white-space'], 'pre');
-            assert.closeTo(this.width, 105, 10);
+            assert.closeTo(this.width, 100, 10);
             assert.closeTo(this.height, 48, 10);
             
             // Change to back single line
@@ -450,28 +452,28 @@ SOFTWARE. -->
             
             assert.equal(this.multiline, false);
             assert.equal(this.sprite.styleObj['white-space'], 'nowrap');
-            assert.closeTo(this.width, 135, 10);
-            assert.closeTo(this.height, 24, 10);
+            assert.closeTo(this.width, 125, 11, 'check width after changed back to single line');
+            assert.closeTo(this.height, 24, 10, 'check height after changed back to single line');
             
             // Change to back multiline
             this.setAttribute('multiline', true);
             
             assert.equal(this.multiline, true);
             assert.equal(this.sprite.styleObj['white-space'], 'pre');
-            assert.closeTo(this.width, 105, 10);
+            assert.closeTo(this.width, 100, 10);
             assert.closeTo(this.height, 48, 10);
             
             // Make bold and observe a resize
             this.setAttribute('bold', true);
             
-            assert.closeTo(this.width, 109, 10);
+            assert.closeTo(this.width, 100, 10);
             assert.closeTo(this.height, 48, 10);
             
             // Change fontsize and observe a resize
             this.setAttribute('fontsize', 32);
             
-            assert.closeTo(this.width, 174, 10);
-            assert.closeTo(this.height, 72, 10);
+            assert.closeTo(this.width, 165, 10);
+            assert.closeTo(this.height, 72, 12, 'height check after fontsize change');
           </handler>
         </text>
       </view>

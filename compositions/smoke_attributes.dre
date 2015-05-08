@@ -169,8 +169,8 @@ SOFTWARE. -->
       <handler event="oninit">
         assert.testCaseLabel = 'checking main width';
         
-        assert.notEqual(main.width, 100)
-        assert.equal(main.width, dr.global.viewportResize.getWidth())
+        assert.notEqual(main.width, 100, 'main view width should not equal 100')
+        assert.equal(main.width, dr.global.viewportResize.getWidth(), 'main view width should equal the body width')
       </handler>
     
       <!-- Binding to the same attribute with a different constraint value unregisters the previous constraint -->
@@ -220,7 +220,7 @@ SOFTWARE. -->
       
       <!-- attribute with no value -->
       <view>
-        <attribute name="fullName" type="string"></attribute>
+        <attribute name="fullname" type="string"></attribute>
       </view>
       
       <!-- attribute with invalid type -->
