@@ -163,6 +163,51 @@ SOFTWARE. -->
           assert.equal(who.$tagname, 'textb')
         </handler>
       </class>
+      
+      <!-- class methods -->
+      <class name="alloctest">
+        <attribute name="value" type="number" value="0" allocation="class"></attribute>
+        <attribute name="value" type="number" value="0"></attribute>
+        
+        <method name="increment" args="v" allocation="class">
+          return this.value += v;
+        </method>
+        <method name="increment" args="v">
+          return this.value += 2 * v;
+        </method>
+      </class>
+      
+      <view>
+          <alloctest name="v1"></alloctest>
+          <alloctest name="v2"></alloctest>
+          
+          <handler event="oninit">
+            var v1 = this.v1,
+                v2 = this.v2;
+            
+            assert.equal(v1.value, 0, 'instance v1 value is 0');
+            assert.equal(v2.value, 0, 'instance v1 value is 0');
+            assert.equal(dr.alloctest.value, 0, 'class alloctest value is 0');
+            
+            v1.increment(1);
+            
+            assert.equal(v1.value, 2, 'instance v1 value is 0');
+            assert.equal(v2.value, 0, 'instance v1 value is 0');
+            assert.equal(dr.alloctest.value, 0, 'class alloctest value is 0');
+            
+            v2.increment(1);
+            
+            assert.equal(v1.value, 2, 'instance v1 value is 0');
+            assert.equal(v2.value, 2, 'instance v1 value is 0');
+            assert.equal(dr.alloctest.value, 0, 'class alloctest value is 0');
+            
+            dr.alloctest.increment(1);
+            
+            assert.equal(v1.value, 2, 'instance v1 value is 0');
+            assert.equal(v2.value, 2, 'instance v1 value is 0');
+            assert.equal(dr.alloctest.value, 1, 'class alloctest value is 0');
+          </handler>
+      </view>
     
       <!-- classes should have the correct number of subviews, see https://www.pivotaltracker.com/story/show/83603414 -->
       <class name="user" type="coffee">
