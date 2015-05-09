@@ -232,21 +232,20 @@ define(function(require, exports, module){
 		var entity_rx = new RegExp("&("+Object.keys(entities).join('|')+");|&#([0-9]+);|&x([0-9a-fA-F]+);","g")
 
 		/* Internal Called when processing entities */
-		this.processEntities = function(value, start){
-			if(typeof value != 'string') value = new String(value)
+		this.processEntities = function(value, start) {
+			if (typeof value != 'string') value = new String(value)
 
-			return value.replace(entity_rx, function(m, name, num, hex, off){
-				if(name !== undefined){
-					if(!(name in entities)){
-						this.error('Entity not found &'+m, start + off)
+			return value.replace(entity_rx, function(m, name, num, hex, off) {
+				if (name !== undefined) {
+					if (!(name in entities)) {
+						this.error('Entity not found &' + m, start + off)
 						return m
+					} else {
+						return String.fromCharCode(entities[name])
 					}
-					String.fromCharCode(entities[name])
-				}
-				else if(num !== undefined){
+				} else if (num !== undefined) {
 					return String.fromCharCode(parseInt(num))
-				}
-				else if(hex !== undefined){
+				} else if (hex !== undefined) {
 					return String.fromCharCode(parseInt(hex, 16))
 				}
 			})

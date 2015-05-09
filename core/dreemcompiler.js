@@ -103,41 +103,42 @@ define(function(require, exports, module){
 		return name.replace(/-/g,'.')
 	}
 
-	exports.compileClass = function(node, errors){
-		var body = ''
-		var deps = Object.create(this.default_deps)
-		if(node.tag !== 'class' && node.tag !== 'mixin'){
+	exports.compileClass = function(node, errors) {
+		var body = '',
+			deps = Object.create(this.default_deps)
+			nodeAttrs = node.attr;
+		
+		if (node.tag !== 'class' && node.tag !== 'mixin'){
 			errors.push(new DreemError('compileClass on non class', node.pos))
 			return
 		}
 
 		// ok lets iterate the class children
-		var clsname = node.attr && node.attr.name
-		if(!clsname){
+		var clsname = nodeAttrs && nodeAttrs.name
+		if (!clsname) {
 			errors.push(new DreemError('Class has no name ', node.pos))
 			return
 		}
 		clsname = clsname.toLowerCase()
 
-		var language = 'js'
-		if (node.attr && node.attr.type) language = node.attr.type
+		var language = nodeAttrs && nodeAttrs.type ? nodeAttrs.type : 'js';
 
 		// lets fetch our base class
 		var baseclass = 'teem_node'
 		deps['teem_node'] = 1
-		if (node.attr && node.attr.extends) {
-			if(node.attr.extends.indexOf(',') != -1){
+		if (nodeAttrs && nodeAttrs.extends) {
+			if (nodeAttrs.extends.indexOf(',') != -1) {
 				errors.push(new DreemError('Cant use multiple baseclasses ', node.pos))
 				return
 			}
-			baseclass = node.attr.extends
+			baseclass = nodeAttrs.extends
 			deps[baseclass] = 1
 		}
 
 		body += exports.classnameToJS(baseclass) + '.extend("' + clsname + '", function(){\n'
 
-		if (node.attr && node.attr.with) {
-			node.attr.with.split(/,\s*|\s+/).forEach(function(cls){
+		if (nodeAttrs && nodeAttrs.with) {
+			nodeAttrs.with.split(/,\s*|\s+/).forEach(function(cls) {
 				deps[cls] = 1
 				body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n'
 				return
@@ -150,14 +151,14 @@ define(function(require, exports, module){
 			
 			for (var i = 0; i < node.child.length; i++) {
 				var child = node.child[i],
-					tagName = child.tag,
-					attr = child.attr;
-				if (tagName === 'attribute') {
-					if (attr) {
-						attributes[attr.name.toLowerCase()] = attr.type.toLowerCase() || 'string';
+					childTagName = child.tag,
+					childAttrs = child.attr;
+				if (childTagName === 'attribute') {
+					if (childAttrs) {
+						attributes[childAttrs.name.toLowerCase()] = childAttrs.type.toLowerCase() || 'string';
 					}
-				} else if (tagName === 'method' || tagName === 'handler' || tagName === 'getter' || tagName === 'setter'){
-					var attrnameset = attr && (attr.name || attr.event)
+				} else if (childTagName === 'method' || childTagName === 'handler' || childTagName === 'getter' || childTagName === 'setter'){
+					var attrnameset = childAttrs && (childAttrs.name || childAttrs.event)
 					var attrnames = attrnameset.split(/,\s*|\s+/), attrname, j;
 					for (j = 0; j < attrnames.length; j++) {
 						attrname = attrnames[j]
@@ -168,10 +169,10 @@ define(function(require, exports, module){
 						var fn = this.compileMethod(child, node, language, errors, '\t\t\t\t')
 						if (!fn) continue
 						var args = fn.args
-						if (!args && tagName == 'setter') args = ['value']
+						if (!args && childTagName == 'setter') args = ['value']
 						body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n'
 					}
-				} else if (tagName.charAt(0) !== '$') { // its our render-node
+				} else if (childTagName.charAt(0) !== '$') { // its our render-node
 					var inst = this.compileInstance(child, errors, '\t\t\t')
 					for (var key in inst.deps) deps[key] = 1
 					body += '\t\tthis.render = function(){\n'

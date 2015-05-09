@@ -104,8 +104,6 @@
     # Makes initial border and padding work
     @sprite.set_width('auto') if @width is @__fullBorderPaddingWidth
     @sprite.set_height('auto') if @height is @__fullBorderPaddingHeight
-    
-    @sizeToPlatform()
   </method>
 
   <method name="__updateInnerWidth">
@@ -131,8 +129,12 @@
     bounds = @sprite.getBounds()
     
     @__internalUpdate = true
-    unless @__hasSetWidth then @setSimpleActual('width', bounds.width, true) # Avoid dom update
-    unless @__hasSetHeight then @setSimpleActual('height', bounds.height, true) # Avoid dom update
+    unless @__hasSetWidth
+      @setSimpleActual('width', bounds.width, true) # Avoid dom update
+      @setSimpleActual('innerwidth', @width - @__fullBorderPaddingWidth, true);
+    unless @__hasSetHeight
+      @setSimpleActual('height', bounds.height, true) # Avoid dom update
+      @setSimpleActual('innerheight', @height - @__fullBorderPaddingHeight, true);
     @__updateBounds()
     @__internalUpdate = false
   </method>
@@ -143,4 +145,11 @@
     else
       @super()
   </method>
+  
+  <handler event="oninit">
+    # Size to platform here rather than in initNode so CSS rules that are
+    # set late by style elements in the browser runtime have a chance to 
+    # be applied
+    @sizeToPlatform()
+  </handler>
 </mixin>
