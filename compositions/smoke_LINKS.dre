@@ -45,6 +45,7 @@ SOFTWARE. -->
       <link url="./smoke_bitmap?test">Bitmap</link>
       <link url="./smoke_circularevent?test">Circular Event</link>
       <link url="./smoke_class?test">Class</link>
+      <link url="./smoke_dre?test">Dre</link>
       <link url="./smoke_events?test">Events</link>
       <link url="./smoke_handlers?test">Handlers</link>
       <link url="./smoke_idle?test">Idle</link>
