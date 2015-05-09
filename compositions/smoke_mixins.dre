@@ -1,0 +1,230 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Mixins'>
+    <view id="container" width="100%" height="100%">
+      <mixin name="sizemixin" type="coffee" width="100" height="10">
+        <attribute name="misc" type="string" value="hello"></attribute>
+        <attribute name="count" type="number" value="0"></attribute>
+        <handler event="onwidth" args="width">
+          this.count++;
+        </handler>
+        <method name="doFoo" args="foo">
+          return 'foo' + foo;
+        </method>
+      </mixin>
+      
+      <mixin name="colormixin" type="coffee" bgcolor="green">
+        <method name="doBar" args="bar">
+          return 'bar' + bar;
+        </method>
+        <setter name="height" args="height">
+          @super(2 * height)
+        </setter>
+      </mixin>
+      
+      <mixin name="sizeandcolormixin" with="sizemixin, colormixin" type="coffee" bgcolor="orange" misc="welcome">
+        <handler event="onwidth">
+          this.count++;
+        </handler>
+        <method name="doFoo" args="foo">
+          return 'FOO' + this.super();
+        </method>
+        <setter name="height" args="height">
+          @super(Number(height) + 5)
+        </setter>
+      </mixin>
+      
+      <mixin name="viewmixin" type="coffee">
+        <method name="initNode" args="parent, attrs">
+          @super()
+          
+          @createChild({class:'view', name:'v1', width:20, height:5, bgcolor:'red'})
+          @createChild({class:'view', with:'colormixin', name:'v2', x:25, width:20, height:5, bgcolor:'yellow'})
+        </method>
+      </mixin>
+      
+      <class name="everything" with="sizemixin, colormixin, viewmixin">
+      </class>
+      
+      <spacedlayout axis="y" spacing="1"></spacedlayout>
+      
+      <view with="sizemixin, colormixin">
+        <handler event="oninit">
+          assert.equal(this.width, 100);
+          assert.equal(this.height, 20);
+          assert.equal(this.bgcolor, 'green');
+          
+          assert.equal(this.doFoo('blah'), 'fooblah');
+          assert.equal(this.doBar('hey'), 'barhey');
+          
+          assert.equal(this.misc, 'hello');
+          assert.equal(this.count, 1);
+        </handler>
+      </view>
+      
+      <!-- Test "with" syntax. -->
+      <view with="sizemixin, colormixin, viewmixin">
+        <handler event="oninit">
+          assert.equal(this.width, 100);
+          assert.equal(this.height, 20);
+          assert.equal(this.bgcolor, 'green');
+          
+          assert.equal(this.v1.width, 20);
+          assert.equal(this.v1.height, 5);
+          assert.equal(this.v1.bgcolor, 'red');
+          assert.equal(this.v2.width, 20);
+          assert.equal(this.v2.height, 10);
+          assert.equal(this.v2.x, 25);
+          assert.equal(this.v2.bgcolor, 'yellow');
+          
+          assert.equal(this.doFoo('blah'), 'fooblah');
+          assert.equal(this.doBar('hey'), 'barhey');
+          
+          assert.equal(this.misc, 'hello');
+          assert.equal(this.count, 1);
+        </handler>
+      </view>
+      <view with="sizeandcolormixin, viewmixin,test-loadmixin,">
+        <handler event="oninit">
+          assert.equal(this.width, 100);
+          assert.equal(this.height, 30); // 2 * (10 + 5)
+          assert.equal(this.bgcolor, 'orange');
+          
+          assert.equal(this.v1.width, 20);
+          assert.equal(this.v1.height, 5);
+          assert.equal(this.v1.bgcolor, 'red');
+          assert.equal(this.v2.width, 20);
+          assert.equal(this.v2.height, 10);
+          assert.equal(this.v2.x, 25);
+          assert.equal(this.v2.bgcolor, 'yellow');
+          
+          assert.equal(this.doFoo('blah'), 'FOOfooblah');
+          assert.equal(this.doBar('hey'), 'barhey');
+          
+          assert.equal(this.misc, 'welcome');
+          assert.equal(this.count, 2);
+          assert.equal(typeof this.mixinloaded, 'boolean');
+          assert.equal(this.mixinloaded, true);
+        </handler>
+      </view>
+      <view with="sizeandcolormixin" bgcolor="purple" misc="greetings">
+        <handler event="onwidth">
+          this.count++;
+        </handler>
+        <method name="doBar" args="bar">
+          return 'BAR' + this.super();
+        </method>
+        <method name="doBaz" args="baz">
+          return 'baz' + baz;
+        </method>
+        <setter name="height" args="height">
+          this.super(Number(height) + 4)
+        </setter>
+        <handler event="oninit">
+          assert.equal(this.width, 100);
+          assert.equal(this.height, 38); // 2 * (10 + 5 + 4)
+          assert.equal(this.bgcolor, 'purple');
+          
+          assert.equal(this.doFoo('blah'), 'FOOfooblah');
+          assert.equal(this.doBar('hey'), 'BARbarhey');
+          assert.equal(this.doBaz('you'), 'bazyou');
+          
+          assert.equal(this.misc, 'greetings');
+          assert.equal(this.count, 3);
+        </handler>
+      </view>
+      
+      <everything>
+        <handler event="oninit">
+          assert.equal(this.width, 100);
+          assert.equal(this.height, 20);
+          assert.equal(this.bgcolor, 'green');
+          
+          assert.equal(this.v1.width, 20);
+          assert.equal(this.v1.height, 5);
+          assert.equal(this.v1.bgcolor, 'red');
+          assert.equal(this.v2.width, 20);
+          assert.equal(this.v2.height, 10);
+          assert.equal(this.v2.x, 25);
+          assert.equal(this.v2.bgcolor, 'yellow');
+          
+          assert.equal(this.doFoo('blah'), 'fooblah');
+          assert.equal(this.doBar('hey'), 'barhey');
+          
+          assert.equal(this.misc, 'hello');
+          assert.equal(this.count, 1);
+        </handler>
+      </everything>
+      
+      <!-- Verify mixin ordering -->
+      <mixin name="a" type="coffee">
+        <method name="doIt" args="value">
+          return 'a ' + (@super() || value)
+        </method>
+      </mixin>
+      <mixin name="b" type="coffee">
+        <method name="doIt" args="value">
+          return 'b ' + (@super() || value)
+        </method>
+      </mixin>
+      <mixin name="c" type="coffee">
+        <method name="doIt" args="value">
+          return 'c ' + (@super() || value)
+        </method>
+      </mixin>
+      
+      <mixin name="d" type="coffee">
+        <method name="doIt" args="value">
+          return 'd ' + (@super() || value)
+        </method>
+      </mixin>
+      <mixin name="e" type="coffee">
+        <method name="doIt" args="value">
+          return 'e ' + (@super() || value)
+        </method>
+      </mixin>
+      <mixin name="f" type="coffee">
+        <method name="doIt" args="value">
+          return 'f ' + ((@super and @super()) || value)
+        </method>
+      </mixin>
+      
+      <class name="def" with="d,e,f" type="coffee">
+        <method name="doIt" args="value">
+          return 'parent ' + (@super() || value)
+        </method>
+      </class>
+      
+      <def with="a,b,c">
+        <method name="doIt" args="value">
+          return 'instance ' + (this.super() || value)
+        </method>
+        <handler event="oninit">
+          assert.equal(this.doIt('VALUE'), 'instance a b c parent d e f VALUE')
+        </handler>
+      </def>
+    </view>
+  </screen>
+</screens>
+</composition>

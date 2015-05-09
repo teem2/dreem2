@@ -1,5 +1,5 @@
 <!-- The MIT License (see LICENSE)
      Copyright (C) 2014-2015 Teem2 LLC -->
-<class name="test-loadmixin">
+<mixin name="test-loadmixin">
   <attribute name="mixinloaded" type="boolean" value="true"></attribute>
-</class>
+</mixin>

@@ -54,6 +54,7 @@ SOFTWARE. -->
       <link url="./smoke_layout_spaced?test">Layout Spaced</link>
       <link url="./smoke_layout_variable?test">Layout Variable</link>
       <link url="./smoke_layout_wrapping?test">Layout Wrapping</link>
+      <link url="./smoke_mixins?test">Mixins</link>
       <link url="./smoke_node?test">Node</link>
       <link url="./smoke_scrollable?test">Scrollable</link>
       <link url="./smoke_sizetoplatform?test">Size to Platform</link>

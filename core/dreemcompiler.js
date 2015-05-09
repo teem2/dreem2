@@ -139,9 +139,10 @@ define(function(require, exports, module){
 
 		if (nodeAttrs && nodeAttrs.with) {
 			nodeAttrs.with.split(/,\s*|\s+/).forEach(function(cls) {
-				deps[cls] = 1
-				body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n'
-				return
+				if (cls) {
+					deps[cls] = 1
+					body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n'
+				}
 			})
 		}
 		
@@ -266,11 +267,23 @@ define(function(require, exports, module){
 			var children = ''
 
 			if (node.attr) {
-				for(var key in node.attr) {
+				if (node.attr.with) {
+					node.attr.with.split(/,\s*|\s+/).forEach(function(cls) {
+						if (cls) deps[cls] = 1
+					})
+				}
+				
+				for (var key in node.attr) {
 					var value = node.attr[key]
-					if(props) props += ',\n' + myindent
-					else props = '{\n' + myindent
-					if(value !== 'true' && value !== 'false' && parseFloat(value) != value) value = '"' + value.split('"').join('\\"') + '"'
+					
+					if (props) {
+						props += ',\n' + myindent
+					} else {
+						props = '{\n' + myindent
+					}
+					if (value !== 'true' && value !== 'false' && parseFloat(value) != value) {
+						value = '"' + value.split('"').join('\\"') + '"'
+					}
 					props += key + ':' + value
 				}
 			}

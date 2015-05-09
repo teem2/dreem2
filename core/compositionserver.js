@@ -141,12 +141,12 @@ define(function(require, exports, module){
 		}
 
 		this.lookupDep = function(classname, compname, errors){
-			if(classname in this.local_classes){
+			if (classname in this.local_classes) {
 				// lets scan the -project subdirectories
 				return '$BUILD/compositions.' + compname + '.dre.' + classname + '.js'
 			}
 			var extpath = define.expandVariables(define.EXTLIB)
-			if(fs.existsSync(extpath)){
+			if (fs.existsSync(extpath)) {
 				try{
 					var dir = fs.readdirSync(extpath)
 					var paths = []
@@ -154,50 +154,48 @@ define(function(require, exports, module){
 						paths.push('$EXTLIB/' + value)
 						paths.push('$EXTLIB/' + value + '/classes')
 					})
-				}
-				catch(e){
+				} catch(e){
 					var paths = []
 				}
-			}
-			else{
+			} else{
 				var paths = []
 			}
 
 			paths.unshift('$CLASSES')
 
-			for(var i = 0;i < paths.length; i++){
+			for (var i = 0; i < paths.length; i++) {
 				var drefile = paths[i] + '/' + dreem_compiler.classnameToPath(classname) + '.dre'
 				var jsfile =  paths[i] + '/' + dreem_compiler.classnameToPath(classname) + '.js'
 				var ignore_watch = false
-				if(fs.existsSync(define.expandVariables(drefile))){
-					if(!this.compile_once[drefile]){
+				if (fs.existsSync(define.expandVariables(drefile))) {
+					if (!this.compile_once[drefile]) {
 						// lets parse and compile this dre file
 						var local_err = []
 						var dre = this.parseDreSync(drefile, local_err)
 						var root
-						if(!dre.child){
+						if (!dre.child) {
 							return ''
 						}
 						for(var j = 0; j < dre.child.length; j++){
 							var tag = dre.child[j].tag
 							if(tag == 'class' || tag == 'mixin') root = dre.child[j]
 						}
-						if(root){ // lets output this class
+						if (root) { // lets output this class
 							jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase()+'.'+ dreem_compiler.classnameToBuild(classname) + ".js"
 							this.compile_once[drefile] = jsfile;
 							this.compileAndWriteDreToJS(root, jsfile, null, local_err)
 							ignore_watch = true
 						}
-						if(local_err.length){
+						if (local_err.length) {
 							this.showErrors(local_err, drefile, dre.source)
 						}
+					} else {
+						jsfile = this.compile_once[drefile];
 					}
-					else jsfile = this.compile_once[drefile];
 				}
 				
-				if(fs.existsSync(define.expandVariables(jsfile)))
-				{
-					if(!ignore_watch) this.watcher.watch(jsfile)
+				if (fs.existsSync(define.expandVariables(jsfile))) {
+					if (!ignore_watch) this.watcher.watch(jsfile)
 					return jsfile
 				}
 			}
