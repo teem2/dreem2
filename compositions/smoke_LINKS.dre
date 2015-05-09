@@ -42,6 +42,7 @@ SOFTWARE. -->
       <spacedlayout axis="y" spacing="1"></spacedlayout>
       
       <link url="./smoke_attributes?test">Attributes</link>
+      <link url="./smoke_bitmap?test">Bitmap</link>
       <link url="./smoke_circularevent?test">Circular Event</link>
       <link url="./smoke_class?test">Class</link>
       <link url="./smoke_events?test">Events</link>
