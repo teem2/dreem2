@@ -113,11 +113,10 @@ define(function(require, exports, module){
 
 		this.parseDreSync = function(drefile, errors){
 			// read our composition file
-			try{
+			try {
 				var data = fs.readFileSync(define.expandVariables(drefile))
-			} 
-			catch(e){
-				errors.push(new DreemError(e.toString()))
+			} catch(e) {
+				errors.push(new DreemError("Error in readFileSync: " + e.toString()))
 				return
 			}
 			// watch it
@@ -129,9 +128,9 @@ define(function(require, exports, module){
 			var jsobj = htmlParser.parse(source)
 
 			// forward the parser errors 
-			if(htmlParser.errors.length){
+			if (htmlParser.errors.length) {
 				var err = htmlParser.errors.map(function(e){
-					errors.push(new DreemError(e.message, e.where))
+					errors.push(new DreemError("HTML Parser Error: " + e.message, e.where))
 				})
 			}
 
@@ -223,11 +222,10 @@ define(function(require, exports, module){
 			var out = 'define(function(require, exports, module){\n' 
 			out += this.makeLocalDeps(js.deps, compname, '\t', errors)
 			out += '\tmodule.exports = ' + js.body + '\n\tmodule.exports.dre = ' + JSON.stringify(jsxml) + '})'
-			try{
+			try {
 				fs.writeFileSync(define.expandVariables(filename), out)
-			}
-			catch(e){
-				errors.push(new DreemError(e.toString()))
+			} catch(e){
+				errors.push(new DreemError("Error in writeFilSync: " + e.toString()))
 			}
 			return js.name
 		}

@@ -22,9 +22,11 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Dre'>
-    <view width="100%" height="100%">
+    <view width="100%" height="100%" scrolling="true" bgcolor="#cccccc" padding="10">
+      <spacedlayout axis="y" spacing="1"></spacedlayout>
+      
       <!-- Oninit should only fire once for dre classes -->
-      <bitmap x="100" y="200" width="200" height="200" src="./img/shoarma.jpg">
+      <bitmap width="200" height="200" src="./img/shoarma.jpg">
         <handler event="oninit">
           window.initCount = !!window.initCount ? window.initCount + 1 : 1
           
@@ -35,6 +37,12 @@ SOFTWARE. -->
           }, 100);
         </handler>
       </bitmap>
+      
+      <view type="coffee" width="25" height="25" bgcolor="green">
+        <handler event="oninit">
+          assert.equal(@width, 25, 'Verify that instances can be typed coffee.')
+        </handler>
+      </view>
     </view>
   </screen>
 </screens>

@@ -50,10 +50,9 @@ define(function(require, exports, module){
 				var src = head + string+'}'
 				try{ // we parse it just for errors
 					this.compiler.parse(src)
-				}
-				catch(e){
+				} catch(e){
 					var at = exports.charPos(src, e.loc && e.loc.line - 1, e.loc && e.loc.column + 1)
-					return new DreemError(e.message, at - head.length)
+					return new DreemError("JS Compilation Error: " + e.message, at - head.length)
 				}
 				return string
 			}
@@ -66,7 +65,7 @@ define(function(require, exports, module){
 					var out = this.compiler.compile(string)
 				}
 				catch(e){ // we have an exception. throw it back
-					return new DreemError(e.message, exports.charPos(string, e.location && e.location.first_line, e.location && e.location.first_column))
+					return new DreemError("CoffeeScript compilation Error: " + e.message, exports.charPos(string, e.location && e.location.first_line, e.location && e.location.first_column))
 				}
 				// lets return the blob without the function headers
 				return out.split('\n').slice(1,-2).join('\n')
@@ -168,7 +167,8 @@ define(function(require, exports, module){
 							return
 						}
 						var fn = this.compileMethod(child, node, language, errors, '\t\t\t\t')
-						if (!fn) continue
+						if (fn === errors) continue;
+						
 						var args = fn.args
 						if (!args && childTagName == 'setter') args = ['value']
 						body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n'
@@ -195,21 +195,22 @@ define(function(require, exports, module){
 		}
 	}
 
-	exports.compileMethod = function(node, parent, language, errors, indent){
+	exports.compileMethod = function(node, parent, language, errors, indent) {
+		// Method type overrides class or instanceof type which is what is
+		// what the language arg is.
 		language = language || 'js'
-
-		if(node.attr && node.attr.type) language = node.attr.type
+		if (node.attr && node.attr.type) language = node.attr.type
 		
 		// lets on-demand load the language
 		var langproc = this.languages[language]
 		if (!langproc) {
 			errors.push(new DreemError('Unknown language used ' + language, node.pos))
-			return {errors:errors}
+			return errors;
 		}
 
 		// give the method a unique but human readable name
 		var name = node.tag + '_' + (node.attr && node.attr.name) + '_' + node.pos + '_' + language
-		if(parent && (parent.tag == 'class' || parent.tag == 'mixin')) name = (parent.attr && parent.attr.name) + '_' + name
+		if (parent && (parent.tag == 'class' || parent.tag == 'mixin')) name = (parent.attr && parent.attr.name) + '_' + name
 		name = exports.classnameToJS(name)
 
 		//node.method_id = output.methods.length
@@ -217,10 +218,10 @@ define(function(require, exports, module){
 		var args = node.attr && node.attr.args ? node.attr.args.split(/,\s*|\s+/): []
 		var compiled = lang.compile(this.concatCode(node), args)
 
-		if(compiled instanceof DreemError){ // the compiler returned an error
+		if (compiled instanceof DreemError) { // the compiler returned an error
 			compiled.where += node.child[0].pos
 			errors.push(compiled)
-			return
+			return errors;
 		}
 
 		// lets re-indent this thing.
@@ -228,24 +229,25 @@ define(function(require, exports, module){
 		
 		// lets scan for the shortest indentation which is not \n
 		var shortest = Infinity
-		for(var i = 0;i<lines.length;i++){
+		for (var i = 0; i < lines.length; i++) {
 			var m = lines[i].match(/^( |\t)+/g)
-			if(m && m[0].length){
+			if (m && m[0].length) {
 				m = m[0]
 				var len = m.length
-				if(m.charCodeAt(0) == 32){
+				if (m.charCodeAt(0) == 32) {
 					// replace by tabs, just because.
-					if(len&1) len ++ // use tabstop of 2 to fix up spaces
+					if (len&1) len++ // use tabstop of 2 to fix up spaces
 					len = len / 2
 					lines[i] = Array(len + 1).join('\t') + lines[i].slice(m.length)
 				}
-				if(len < shortest && lines[i] !== '\n') shortest = len
+				if (len < shortest && lines[i] !== '\n') shortest = len
 			}
 		}
 		if (shortest != Infinity) {
-			for(var i = 0;i<lines.length;i++){
-				if(i> 0 || lines[0].length !== 0)
+			for (var i = 0; i < lines.length; i++) {
+				if (i > 0 || lines[0].length !== 0) {
 					lines[i] = indent + lines[i].slice(shortest).replace(/( |\t)+$/g,'')
+				}
 			}
 			compiled = lines.join('\n')
 		}
@@ -260,7 +262,7 @@ define(function(require, exports, module){
 	exports.compileInstance = function(node, errors, indent, onLocalClass){
 		var deps = Object.create(this.default_deps)
 		
-		var walk = function(node, parent, indent, depth){
+		var walk = function(node, parent, indent, depth, language) {
 			deps[node.tag] = 1
 			var myindent = indent + '\t'
 			var props = '' 
@@ -286,6 +288,12 @@ define(function(require, exports, module){
 					}
 					props += key + ':' + value
 				}
+				
+				// screen and attribute nodes also have types so we don't want 
+				// to look at them for a compiler language
+				if (node.tag !== 'screen' && node.tag !== 'attribute') {
+					language = node.attr.type ? node.attr.type : language;
+				}
 			}
 
 			if (node.child) {
@@ -301,8 +309,9 @@ define(function(require, exports, module){
 						if(onLocalClass) onLocalClass(child, errors)
 						else errors.push(new DreemError('Cant support class in this location', node.pos))
 					} else if (tagName == 'method' || tagName == 'handler' || tagName == 'getter' || tagName == 'setter') {
-						var fn = this.compileMethod(child, parent, 'js', errors, indent + '\t')
-						if (!fn) continue
+						var fn = this.compileMethod(child, parent, language, errors, indent + '\t')
+						if (fn === errors) continue;
+						
 						if (!attr || (!attr.name && !attr.event)) {
 							errors.push(new DreemError('code tag has no name', child.pos))
 							continue
@@ -310,7 +319,7 @@ define(function(require, exports, module){
 						var attrnameset = attr.name || attr.event
 						
 						var attrnames = attrnameset.split(/,\s*|\s+/)
-						for(var j = 0; j < attrnames.length; j++){
+						for (var j = 0; j < attrnames.length; j++){
 							var attrname = attrnames[j]
 			
 							if(props) props += ',\n' + myindent
@@ -342,7 +351,7 @@ define(function(require, exports, module){
 						} else {
 							children = '\n' + myindent
 						}
-						children += walk(child, node, myindent, depth+1)
+						children += walk(child, node, myindent, depth+1, language)
 					}
 				}
 				
@@ -379,7 +388,7 @@ define(function(require, exports, module){
 		}.bind(this)
 
 		// Walk JSON
-		var body = walk(node, null, indent || '', 0)
+		var body = walk(node, null, indent || '', 0, 'js')
 
 		return {
 			tag: node.tag,
