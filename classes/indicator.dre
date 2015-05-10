@@ -19,32 +19,37 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<composition>
-<screens>
-  <screen type="browser" name="default" title='Smoke Test - Dre'>
-    <view width="100%" height="100%" scrolling="true" bgcolor="#cccccc" padding="10">
-      <spacedlayout axis="y" spacing="1"></spacedlayout>
-      
-      <!-- Oninit should only fire once for dre classes -->
-      <bitmap width="200" height="200" src="./img/shoarma.jpg">
-        <handler event="oninit">
-          window.initCount = !!window.initCount ? window.initCount + 1 : 1
-          
-          assert.equal(1, window.initCount);
-          
-          window.setTimeout(function() {
-            assert.equal(1, window.initCount, 'oninit handler should only fire once')
-          }, 100);
-        </handler>
-      </bitmap>
-      
-      <view type="coffee" width="25" height="25" bgcolor="chartreuse" border="1" bordercolor="black">
-        <handler event="oninit">
-          assert.equal(@width, 25, 'Verify that instances can be typed coffee.')
-        </handler>
-        <indicator></indicator>
-      </view>
-    </view>
-  </screen>
-</screens>
-</composition>
+<!--/**
+    * @class dr.indicator {UI Components}
+    * @extends dr.view
+    * Provides a visual indicator of "componentness".
+    */-->
+<class name="indicator" type="coffee" clip="true"
+  width="${this.size}"
+  height="${this.size}"
+  x="${this.inset}"
+  y="${this.parent.innerheight - this.height - this.inset}"
+>
+  <!--/**
+      * @attribute {String} [fill='']
+      * The color of the indicator
+      */-->
+  <attribute name="fill" type="color" value="black"></attribute>
+  
+  <!--/**
+      * @attribute {Number} [inset=2]
+      * The inset of the indicator from the bottom left corner of the parent.
+      */-->
+  <attribute name="inset" type="number" value="2"></attribute>
+  
+  <!--/**
+      * @attribute {Number} [size=10]
+      * The size of the indicator. The indicator should always be square so
+      * adjust this value rather than width and height.
+      */-->
+  <attribute name="size" type="number" value="10"></attribute>
+  
+  <view width="142%" height="142%" bgcolor="${this.parent.fill}"
+    rotation="45" xanchor="left" yanchor="top"
+  ></view>
+</class>

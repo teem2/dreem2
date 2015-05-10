@@ -44,7 +44,7 @@ SOFTWARE. -->
       *         <b>Here is some text</b> that is really just HTML.
       *     </markup>
       */-->
-<class name="markup" with="sizetoplatform" type="coffee" initchildren="false" $runtime="browser">
+<class name="markup" with="sizetoplatform" type="coffee" $runtime="browser">
   <!--/**
     * @attribute {String} [markup='']
     * Sets the inner HTML of this view. Since the < and > characters are
