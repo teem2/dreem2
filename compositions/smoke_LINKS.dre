@@ -64,6 +64,7 @@ SOFTWARE. -->
       <link url="./smoke_text?test">Text</link>
       <link url="./smoke_view_border_padding?test">View: Borders and Padding</link>
       <link url="./smoke_view_bounds_transforms?test">View: Bounds and Transformations</link>
+      <link url="./smoke_view_ordering?test">View: Ordering</link>
       <link url="./smoke_view_position?test">View: Position</link>
       <link url="./smoke_view_size?test">View: Size</link>
       <link url="./smoke_view?test">View</link>
