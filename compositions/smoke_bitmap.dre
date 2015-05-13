@@ -44,18 +44,25 @@ SOFTWARE. -->
         </handler>
       </bitmap>
       
+      <bitmap width="150" height="100" bgcolor="red" src="./img/shoarma.jpg" stretches="scale">
+        <handler event="onload" args="size">
+          assert.equal(size.width, 259, 'test 3')
+          assert.equal(size.height, 194, 'test 3')
+        </handler>
+      </bitmap>
+      
       <bitmap width="150" height="100" bgcolor="red" src="./img/shoarma.jpg" naturalsize="true">
         <handler event="onload" args="size">
-          assert.equal(this.width, 259, 'test 3')
-          assert.equal(this.height, 194, 'test 3')
+          assert.equal(this.width, 259, 'test 4')
+          assert.equal(this.height, 194, 'test 4')
         </handler>
       </bitmap>
       
       <!-- window test -->
       <bitmap bgcolor="red" src="./img/shoarma.jpg" window="50,60,70,80">
         <handler event="onload" args="size">
-          assert.equal(this.width, 70, 'test 4')
-          assert.equal(this.height, 80, 'test 4')
+          assert.equal(this.width, 70, 'test 5')
+          assert.equal(this.height, 80, 'test 5')
         </handler>
       </bitmap>
       
@@ -134,7 +141,7 @@ SOFTWARE. -->
         setTimeout(function() {
           assert.equal(foo.width, 259, 'oninit timer test');
           assert.equal(foo.height, 194, 'oninit timer test');
-        }, 300);
+        }, 500);
       </handler>
     </view>
   </screen>
