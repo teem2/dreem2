@@ -203,7 +203,52 @@
       
       <dreem-text name="dreemtext_instance" text="This is text in an attr" x="250" y="100" bgcolor="white"></dreem-text>
       <text name="text_instance" x="250" y="150" bgcolor="orange">text as content</text>
-      <!--markup x="50" y="120">asdf asdf asdf</markup-->
+      <markup x="50" y="120">asdf asdf asdf</markup>
+      
+      <mixin name="commonDragBehavior" with="draggable" bgcolor="green" border="1" bordercolor="white">
+        <handler event="onisdragging" args="isdragging">
+          this.moveToFront();
+          this.setAttribute('bgcolor', isdragging ? 'orange' : 'green');
+        </handler>
+      </mixin>
+      
+      <view x="300" y="100" width="500" height="500" bgcolor="#999999" scrollable="true">
+        <handler event="oninit">
+          this.moveToBack();
+        </handler>
+        
+        <view x="100" y="100" width="500" height="500" bgcolor="#cccccc" scrollable="true">
+          <view with="commonDragBehavior"
+            distancebeforedrag="10"
+            x="10" y="10" width="30" height="30"
+          ></view>
+          
+          <view with="commonDragBehavior"
+            isdraggable="false"
+            x="100" y="100" width="20" height="20"
+          ></view>
+          
+          <view with="commonDragBehavior,button"
+            centeronmouse="true" allowabort="true"
+            x="50" y="50" width="50" height="60"
+          >
+            <method name="requestDragPosition" args="x,y">
+              this.super();
+              if (this.getDistanceFromOriginalLocation() > 100) this.setAttribute('disabled', true);
+            </method>
+          </view>
+          
+          <view with="commonDragBehavior"
+            allowabort="true"
+            x="150" y="50" width="50" height="60"
+          >
+            <method name="getDragViews">
+              return this.header;
+            </method>
+            <view name="header" with="button" width="100%" height="10" bgcolor="white"></view>
+          </view>
+        </view>
+      </view>
     </view>
   </screen>
 
