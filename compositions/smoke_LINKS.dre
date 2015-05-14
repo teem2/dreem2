@@ -39,35 +39,38 @@ SOFTWARE. -->
         </method>
       </class>
       
-      <spacedlayout axis="y" spacing="1"></spacedlayout>
-      
-      <link url="./smoke_attributes?test">Attributes</link>
-      <link url="./smoke_bitmap?test">Bitmap</link>
-      <link url="./smoke_circularevent?test">Circular Event</link>
-      <link url="./smoke_class?test">Class</link>
-      <link url="./smoke_dre?test">Dre</link>
-      <link url="./smoke_events?test">Events</link>
-      <link url="./smoke_handlers?test">Handlers</link>
-      <link url="./smoke_idle?test">Idle</link>
-      <link url="./smoke_initialization?test">Initialization</link>
-      <link url="./smoke_layout_align?test">Layout Align</link>
-      <link url="./smoke_layout_constant?test">Layout Constant</link>
-      <link url="./smoke_layout_resize?test">Layout Resize</link>
-      <link url="./smoke_layout_spaced?test">Layout Spaced</link>
-      <link url="./smoke_layout_variable?test">Layout Variable</link>
-      <link url="./smoke_layout_wrapping?test">Layout Wrapping</link>
-      <link url="./smoke_mixins?test">Mixins</link>
-      <link url="./smoke_node?test">Node</link>
-      <link url="./smoke_scrollable?test">Scrollable</link>
-      <link url="./smoke_sizetoplatform?test">Size to Platform</link>
-      <link url="./smoke_super?test">Super</link>
-      <link url="./smoke_text?test">Text</link>
-      <link url="./smoke_view_border_padding?test">View: Borders and Padding</link>
-      <link url="./smoke_view_bounds_transforms?test">View: Bounds and Transformations</link>
-      <link url="./smoke_view_ordering?test">View: Ordering</link>
-      <link url="./smoke_view_position?test">View: Position</link>
-      <link url="./smoke_view_size?test">View: Size</link>
-      <link url="./smoke_view?test">View</link>
+      <view width="100%">
+        <spacedlayout axis="y" spacing="1" outset="4" updateparent="true"></spacedlayout>
+        
+        <link url="./smoke_attributes?test">Attributes</link>
+        <link url="./smoke_bitmap?test">Bitmap</link>
+        <link url="./smoke_circularevent?test">Circular Event</link>
+        <link url="./smoke_class?test">Class</link>
+        <link url="./smoke_draggable?test">Draggable</link>
+        <link url="./smoke_dre?test">Dre</link>
+        <link url="./smoke_events?test">Events</link>
+        <link url="./smoke_handlers?test">Handlers</link>
+        <link url="./smoke_idle?test">Idle</link>
+        <link url="./smoke_initialization?test">Initialization</link>
+        <link url="./smoke_layout_align?test">Layout Align</link>
+        <link url="./smoke_layout_constant?test">Layout Constant</link>
+        <link url="./smoke_layout_resize?test">Layout Resize</link>
+        <link url="./smoke_layout_spaced?test">Layout Spaced</link>
+        <link url="./smoke_layout_variable?test">Layout Variable</link>
+        <link url="./smoke_layout_wrapping?test">Layout Wrapping</link>
+        <link url="./smoke_mixins?test">Mixins</link>
+        <link url="./smoke_node?test">Node</link>
+        <link url="./smoke_scrollable?test">Scrollable</link>
+        <link url="./smoke_sizetoplatform?test">Size to Platform</link>
+        <link url="./smoke_super?test">Super</link>
+        <link url="./smoke_text?test">Text</link>
+        <link url="./smoke_view_border_padding?test">View: Borders and Padding</link>
+        <link url="./smoke_view_bounds_transforms?test">View: Bounds and Transformations</link>
+        <link url="./smoke_view_ordering?test">View: Ordering</link>
+        <link url="./smoke_view_position?test">View: Position</link>
+        <link url="./smoke_view_size?test">View: Size</link>
+        <link url="./smoke_view?test">View</link>
+      </view>
     </view>
   </screen>
 </screens>

@@ -219,7 +219,7 @@
         
         <view x="100" y="100" width="500" height="500" bgcolor="#cccccc" scrollable="true">
           <view with="commonDragBehavior"
-            distancebeforedrag="10"
+            distancebeforedrag="10" dragaxis="x"
             x="10" y="10" width="30" height="30"
           ></view>
           
@@ -232,7 +232,7 @@
             centeronmouse="true" allowabort="true"
             x="50" y="50" width="50" height="60"
           >
-            <method name="requestDragPosition" args="x,y">
+            <method name="updatePosition" args="x,y">
               this.super();
               if (this.getDistanceFromOriginalLocation() > 100) this.setAttribute('disabled', true);
             </method>
