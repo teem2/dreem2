@@ -279,7 +279,9 @@ SOFTWARE. -->
         setTimeout(function() {
           assert.equal(1, container.scrollXEventCount, 'A scrollx event should have happened.');
           assert.equal(1, container.scrollYEventCount, 'A scrolly event should have happened.');
-          assert.equal(1, container.scrollEventCount, 'A scroll event should have happened.');
+          // Firefox can generate 2 scroll events. If this becomes an issue, the
+          // events should be throttled.
+          assert.include([1,2], container.scrollEventCount, 'A scroll event should have happened.');
   
           assert.equal(73, container.scrollx, 'scrollx should now be 73.');
           assert.equal((container.sprite.platformObject.scrollLeft == 73) || (container.sprite.platformObject.scrollLeft == 88), true, 'The scrollLeft on the dom element should now be 69 or 88 on phantomrunner.');
@@ -307,7 +309,7 @@ SOFTWARE. -->
         setTimeout(function() {
           assert.equal(1, container.scrollXEventCount, 'The scrollXEventCount should be the same.');
           assert.equal(1, container.scrollYEventCount, 'The scrollYEventCount should be the same.');
-          assert.equal(1, container.scrollEventCount, 'The scrollEventCount should be the same.');
+          assert.include([1,2], container.scrollEventCount, 'The scrollEventCount should be 1 or 2.');
         }, 100);
       </method>
     </view>
