@@ -1,0 +1,148 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+<!--/**
+   * @class dr.slider {UI Components}
+   * @extends dr.view
+   * An input component whose state is changed when the mouse is dragged.
+   *
+   *     @example
+   *
+   *     <slider name="hslide" y="5" width="250" height="10" value="50" bgcolor="#808080"></slider>
+   * Slider with a label:
+   *
+   *     @example
+   *
+   *     <spacedlayout spacing="8"></spacedlayout>
+   *     <slider name="hslide" y="5" width="250" height="10" value="50" bgcolor="#808080"></slider>
+   *     <text text="${Math.round(this.parent.hslide.value)}" y="${this.parent.hslide.y + (this.parent.hslide.height-this.height)/2}"></text>
+   */-->
+<class name="slider" type="coffee" with="draggable" 
+  bordercolor="#666666" border="1" padding="2"
+>
+  <!--/**
+    * @attribute {Number} [minvalue=0]
+    * The minimum value of the slider
+    */-->
+  <attribute name="minvalue" type="number" value="0"></attribute>
+  <setter name="minvalue" args="v">
+    @setActual('minvalue', v, 'number', 0)
+    if @inited then @setAttribute('value', @verifyCurrentValue(@minvalue, @maxvalue, @value))
+  </setter>
+
+  <!--/**
+    * @attribute {Number} [maxvalue=100]
+    * The maximum value of the slider
+    */-->
+  <attribute name="maxvalue" type="number" value="100"></attribute>
+  <setter name="maxvalue" args="v">
+    @setActual('maxvalue', v, 'number', 100)
+    if @inited then @setAttribute('value', @verifyCurrentValue(@minvalue, @maxvalue, @value))
+  </setter>
+
+  <!--/**
+    * @attribute {Number} [value=0]
+    * The current value of the slider.
+    */-->
+  <attribute name="value" type="number" value="0"></attribute>
+  <setter name="value" args="v">
+    @setActual('value', @verifyCurrentValue(@minvalue, @maxvalue, v), 'number', 0)
+  </setter>
+
+  <!--/**
+    * @attribute {"x"/"y"} [axis=x]
+    * The axis to track on
+    */-->
+  <attribute name="axis" type="string" value="x"></attribute>
+
+  <!--/**
+    * @attribute {Boolean} [invert=false]
+    * Set to true to invert the direction of the slider.
+    */-->
+  <attribute name="invert" type="boolean" value="false"></attribute>
+
+  <!--/**
+    * @attribute {String} [selectcolor="#cccccc"]
+    * The selected color of the slider.
+    */-->
+  <attribute name="selectcolor" type="string" value="#cccccc"></attribute>
+
+  <!--/**
+    * @attribute {String} [progresscolor="#999999"]
+    * The color of the progress bar.
+    */-->
+  <attribute name="progresscolor" type="string" value="#999999"></attribute>
+
+  <handler event="oninnerwidth,oninnerheight,oninvert,onvalue,onminvalue,onmaxvalue,oninit">
+    percent = (@value - @minvalue) / (@maxvalue - @minvalue)
+    
+    if @axis is 'x'
+      y = iy = 'top'
+      height = iwidth = iheight = @innerheight
+      width = @innerwidth * percent
+      x = if @invert then 'right' else 'left'
+      ix = if @invert then 'left' else 'right'
+    else
+      x = ix = 'left'
+      width = iwidth = iheight = @innerwidth
+      height = @innerheight * percent
+      y = if @invert then 'bottom' else 'top'
+      iy = if @invert then 'top' else 'bottom'
+    
+    @valueview.setAttributes({x:x, y:y, width:width, height:height})
+    @valueview.indicator.setAttributes({x:ix, y:iy, width:iwidth, height:iheight})
+  </handler>
+
+  <handler event="onisdragging" args="isdragging">
+    if isdragging
+      @__bordercolor = @bordercolor
+      @setAttribute('bordercolor', @selectcolor)
+    else
+      @setAttribute('bordercolor', @__bordercolor)
+  </handler>
+
+  <method name="initNode" args="parent,attrs">
+    @lateAttrs = ['value']
+    
+    @super()
+  </method>
+
+  <method name="verifyCurrentValue" args="min, max, v">
+    return Math.min(max, Math.max(v, min))
+  </method>
+
+  <method name="updatePosition" args="x, y">
+    if !@disabled
+      if @axis is 'x'
+        value = x + (@__initMouseX - @__initAbsLocX) - @leftpadding
+        extent = @innerwidth
+      else
+        value = y + (@__initMouseY - @__initAbsLocY) - @toppadding
+        extent = @innerheight
+      @setAttribute('value', ((value / extent) * (@maxvalue - @minvalue)) + @minvalue)
+  </method>
+
+  <!-- Internal view to show the current slider value -->
+  <view name="valueview" bgcolor="${this.classroot.progresscolor}" clip="true">
+    <indicator name="indicator" fill="${this.classroot.bordercolor}"></indicator>
+  </view>
+</class>

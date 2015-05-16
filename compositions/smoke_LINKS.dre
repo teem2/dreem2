@@ -64,6 +64,7 @@ SOFTWARE. -->
       <link url="./smoke_node?test">Node</link>
       <link url="./smoke_scrollable?test">Scrollable</link>
       <link url="./smoke_sizetoplatform?test">Size to Platform</link>
+      <link url="./smoke_sliders?test">Sliders</link>
       <!--link url="./smoke_statebutton?test">State Button</link-->
       <link url="./smoke_super?test">Super</link>
       <link url="./smoke_text?test">Text</link>
