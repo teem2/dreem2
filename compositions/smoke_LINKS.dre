@@ -75,6 +75,7 @@ SOFTWARE. -->
       <link url="./smoke_view_position?test">View: Position</link>
       <link url="./smoke_view_size?test">View: Size</link>
       <link url="./smoke_view?test">View</link>
+      <link url="./smoke_webpage?test">Webpage</link>
     </view>
   </screen>
 </screens>
