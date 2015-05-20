@@ -78,13 +78,13 @@ SOFTWARE. -->
     settings = {}
 
     if @_fixedwidth
-      settings.textx = (@innerwidth - @label.width) / 2
+      settings.textx = (@innerwidth - @label.width) / 2.0
     else
       settings.width = @label.width + @leftpadding + @rightpadding + @leftborder + @rightborder + (@indicatorsize * 1.5) + 2
-      settings.textx = @indicatorsize + 1
+      settings.textx = @indicatorsize + 1 if @indicatorsize
 
     if @_fixedheight
-      settings.texty = (@innerheight - @label.height)/2.0
+      settings.texty = (@innerheight - @label.height) / 2.0
     else
       settings.height = @label.height + @toppadding + @bottompadding + @topborder + @bottomborder
 

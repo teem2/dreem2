@@ -52,6 +52,7 @@ SOFTWARE. -->
       <link url="./smoke_handlers?test">Handlers</link>
       <link url="./smoke_idle?test">Idle</link>
       <link url="./smoke_initialization?test">Initialization</link>
+      <link url="./smoke_inputtext?test">Input Text</link>
       <link url="./smoke_labelbutton?test">Label Button</link>
       <link url="./smoke_layout_align?test">Layout Align</link>
       <link url="./smoke_layout_constant?test">Layout Constant</link>

@@ -1,0 +1,147 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<!--/**
+     * @class dr.inputtext {UI Components, Input}
+     * @extends dr.view
+     * Provides an editable input text field.
+     *
+     *     @example
+     *     <spacedlayout axis="y" spacing="10"></spacedlayout>
+     *
+     *     <text text="Enter your name:"></text>
+     *
+     *     <inputtext id="nameinput" width="200"></inputtext>
+     *
+     *     <labelbutton text="submit">
+     *       <handler event="onclick">
+     *         welcome.setAttribute('text', 'Welcome ' + nameinput.text);
+     *       </handler>
+     *     </labelbutton>
+     *
+     *     <text id="welcome"></text>
+     *
+     * It's possible to listen for an onchange event to find out when the user changed the inputtext value:
+     *
+     *     @example
+     *     <spacedlayout axis="y" spacing="10"></spacedlayout>
+     *     <text text="Type some text below and press enter:"></text>
+     *     <inputtext id="nameinput" width="200" onchange="alert('onchange event: ' + this.text)"></inputtext>
+     *
+     */-->
+<class name="inputtext" extends="text" type="coffee"
+  clickable="true" focusable="true" width="100"
+>
+<!--/**
+   * @event onselect
+   * Fired when an inputtext is selected
+   * @param {dr.view} view The view that fired the event
+   */
+
+  /**
+   * @event onchange
+   * Fired when an inputtext has changed
+   * @param {dr.view} view The view that fired the event
+   */
+
+  /**
+   * @event onfocus
+   * Fired when an inputtext is focused
+   * @param {dr.view} view The view that fired the event
+   */
+
+  /**
+   * @event onblur
+   * Fired when an inputtext is blurred or loses focus
+   * @param {dr.view} view The view that fired the event
+   */
+
+  /**
+   * @event onkeydown
+   * Fired when a key goes down
+   * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
+   */
+
+  /**
+   * @event onkeyup
+   * Fired when a key goes up
+   * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
+   *
+
+   /**
+     * @event onrows
+     * Fired the rows attribute changes.
+     * @param {number} The number of rows displayed for multiline text input.
+     */-->
+  <attribute name="rows" type="number" value="3"></attribute>
+
+  <attribute name="value" type="string" value=""></attribute>
+  <setter name="value" args="v">
+    if @setActual('value', v, 'string', '')
+      if this.text isnt this.value then @setAttribute('text', this.value, true);
+  </setter>
+  <setter name="text" args="text">
+    @super()
+    @setAttribute('value', this.text, true);
+  </setter>
+
+  <handler event="onchange">
+    return unless @replicator
+    
+    # attempt to coerce to the current type if it was a boolean or number (bad idea?)
+    newdata = @text
+    if (typeof @data is 'number')
+      if parseFloat(newdata) + '' is newdata
+        newdata = parseFloat(newdata)
+    else if (typeof @data is 'boolean')
+      if newdata is 'true'
+        newdata = true
+      else if newdata is 'false'
+        newdata = false
+    @replicator.updateData(newdata)
+  </handler>
+
+  <method name="initNode" args="parent, attrs">
+    # Use whichever attribute or aliased attribute is not the default and
+    # delete the unnecessary initial value.
+    if attrs.value isnt '' and attrs.text is ''
+      delete attrs.text
+    
+    if attrs.text isnt '' and attrs.value is ''
+      delete attrs.value
+    
+    @super()
+  </method>
+
+  <method name="createSprite" args="attrs">
+    return new dr.sprite.InputText(this, attrs);
+  </method>
+
+  <method name="sendEvent" args="type, value">
+    @super()
+    
+    # send text events for events that could cause text to change
+    if type is 'onkeydown' or type is 'onkeyup' or type is 'onblur' or name is 'onchange'
+      value = @sprite.get_value()
+      if @text isnt value
+        @setAttribute('text', value, true)
+  </method>
+</class>
