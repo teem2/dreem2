@@ -23,10 +23,8 @@ define(function(require, exports, module){
 		  */
 		this.addWebSocket = function(sock){
 			this.sockets.push(sock)
-			console.log('   ADD SOCKET', this.sockets.length);
 
 			sock.onClose = function(){
-				console.log('REMOVE SOCKET', this.sockets.length);
 				this.sockets.splice(this.sockets.indexOf(sock), 1)
 				sock.onClose = undefined
 			}.bind(this)
