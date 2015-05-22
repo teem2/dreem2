@@ -23,15 +23,15 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - View Position'>
     <view width="auto" height="auto" bgcolor="#cccccc" padding="5">
-      <testingtimer>15000</testingtimer>
+      <testingtimer>5000</testingtimer>
       
       <spacedlayout axis="y"></spacedlayout>
       
       <webpage width="500" height="300" bgcolor="orange" clickable="true"
-        src="http://en.wikipedia.org/wiki/San_Francisco"
+        src="/testpage.html"
       >
         <handler event="oninit">
-          assert.equal(this.src, 'http://en.wikipedia.org/wiki/San_Francisco', 'The src should be set at init.');
+          assert.equal(this.src, '/testpage.html', 'The src should be set at init.');
         </handler>
       </webpage>
       
@@ -47,12 +47,12 @@ SOFTWARE. -->
             self.loaded = false;
             
             // Change src. We expect to get another onload event.
-            self.setAttribute('src', 'http://en.wikipedia.org/wiki/San_Francisco');
-            assert.equal(self.src, 'http://en.wikipedia.org/wiki/San_Francisco', 'The src should now be updated.');
+            self.setAttribute('src', '/testpage.html');
+            assert.equal(self.src, '/testpage.html', 'The src should now be updated.');
             setTimeout(function() {
-              assert.equal(self.loaded, true, 'We waited 10 seconds, so hopefully the webpage is loaded by now.');
-            }, 10000);
-          }, 500);
+              assert.equal(self.loaded, true, 'We waited 3 seconds, so hopefully the webpage is loaded by now.');
+            }, 3000);
+          }, 1000);
         </handler>
         <handler event="onload">
           this.loaded = true;
