@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <composition>
 <screens>
-  <screen type="browser" name="default" title='Smoke Test - View Position'>
+  <screen type="browser" name="default" title='Smoke Test - Webpage'>
     <view width="auto" height="auto" bgcolor="#cccccc" padding="5">
       <testingtimer>5000</testingtimer>
       
