@@ -23,6 +23,8 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Idle'>
     <view id="all" width="100%" height="100%" clip="true">
+      <testingtimer>1000</testingtimer>
+      
       <text text="${this.parent.time}"></text>
       <text y="20" text="${this.parent.delta}"></text>
       <handler event="onidle" reference="dr.idle" args="t">

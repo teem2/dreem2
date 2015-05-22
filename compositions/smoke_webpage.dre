@@ -23,32 +23,34 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - View Position'>
     <view width="auto" height="auto" bgcolor="#cccccc" padding="5">
+      <testingtimer>15000</testingtimer>
+      
       <spacedlayout axis="y"></spacedlayout>
       
       <webpage width="500" height="300" bgcolor="orange" clickable="true"
         src="http://en.wikipedia.org/wiki/San_Francisco"
       >
         <handler event="oninit">
-          assert.equal(this.src, 'http://en.wikipedia.org/wiki/San_Francisco');
+          assert.equal(this.src, 'http://en.wikipedia.org/wiki/San_Francisco', 'The src should be set at init.');
         </handler>
       </webpage>
       
       <webpage width="500" height="300" bgcolor="red">
         <handler event="oninit">
-          assert.equal(this.src, '/iframe_stub.html');
-          assert.equal(this.loaded, undefined);
+          assert.equal(this.src, '/iframe_stub.html', 'The src should default to the iframe stub.');
+          assert.equal(this.loaded, undefined, 'The webpage should not be loaded initially.');
           
           var self = this;
           setTimeout(function() {
-            assert.equal(self.loaded, true);
+            assert.equal(self.loaded, true, 'Now the webpage should be loaded since we waited 500 millis.');
             
             self.loaded = false;
             
             // Change src. We expect to get another onload event.
             self.setAttribute('src', 'http://en.wikipedia.org/wiki/San_Francisco');
-            assert.equal(self.src, 'http://en.wikipedia.org/wiki/San_Francisco');
+            assert.equal(self.src, 'http://en.wikipedia.org/wiki/San_Francisco', 'The src should now be updated.');
             setTimeout(function() {
-              assert.equal(self.loaded, true);
+              assert.equal(self.loaded, true, 'We waited 10 seconds, so hopefully the webpage is loaded by now.');
             }, 10000);
           }, 500);
         </handler>
@@ -62,7 +64,7 @@ SOFTWARE. -->
       >
         <handler event="oninit">
           assert.equal(this.contents, 'Hello &lt;b&gt;there&lt;/b&gt;.');
-          assert.equal(this.loaded, true);
+          assert.equal(this.loaded, true, 'Webpage with contents should be loaded immediately.');
         </handler>
         <handler event="onload">
           this.loaded = true;

@@ -23,6 +23,8 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Attributes'>
     <view id="root" width="100%" height="100%" clip="true">
+      <testingtimer>200</testingtimer>
+      
       <attribute name="bgcolorhandled" type="boolean" value="false"></attribute>
       <attribute name="hasbeenselected" type="boolean" value="false"></attribute>
       

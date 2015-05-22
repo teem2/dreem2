@@ -45,7 +45,7 @@ SOFTWARE. -->
       </view>
       
       <!-- embedded <'s in the code -->
-      <view>
+      <!--view>
         <handler event="oninit">
           var someArray = [1,2,3];
           var tots = 0;
@@ -53,7 +53,7 @@ SOFTWARE. -->
             tots += someArray[i];
           }
         </handler>
-      </view>
+      </view-->
     </view>
   </screen>
 </screens>

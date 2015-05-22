@@ -24,6 +24,8 @@ SOFTWARE. -->
   <screen type="browser" name="default" title='Smoke Test - View Size'>
     <!-- InputText smoke tests. See spec/features/inputtext_spec.rb for interactive tests -->
     <view width="auto" height="auto" padding="25">
+      <testingtimer>500</testingtimer>
+      
       <spacedlayout axis="y" spacing="15"></spacedlayout>
   
       <!-- Default DOM property and CSS property Tests -->
@@ -49,7 +51,7 @@ SOFTWARE. -->
       <!-- Visibility -->
       <view bgcolor="lightgreen" width="100" height="50" visible="false">
         <handler event="oninit">
-          assert.testCaseLabel = 'Visibility';
+          assert.testCaseLabel = 'Visibility false';
           assert.equal(this.visible, false);
           assert.equal(this.sprite.platformObject.style.visibility, 'hidden');
         </handler>
@@ -57,6 +59,7 @@ SOFTWARE. -->
   
       <view bgcolor="lightpink" width="100" height="50" visible="true">
         <handler event="oninit">
+          assert.testCaseLabel = 'Visibility true';
           assert.equal(this.visible, true);
           assert.equal(this.sprite.platformObject.style.visibility, '');
         </handler>
@@ -64,6 +67,7 @@ SOFTWARE. -->
   
       <view bgcolor="thistle" width="100" height="50">
         <handler event="oninit">
+          assert.testCaseLabel = 'Visibility empty';
           assert.equal(this.visible, true);
           assert.equal(this.sprite.platformObject.style.visibility, '');
         </handler>
@@ -81,6 +85,8 @@ SOFTWARE. -->
         <view name="inner" bgcolor="orange" x="25" y="25" width="100" height="50" clickable="true"></view>
         
         <handler event="oninit">
+          var sprite = this.sprite;
+          
           var elem = this.sprite.platformObject,
             innerElem = this.inner.sprite.platformObject;
           
@@ -88,8 +94,8 @@ SOFTWARE. -->
           assert.equal(innerElem.style.visibility, '');
           
           // Scrollable in principle though hidden.
-          assert.equal(125, elem.scrollWidth);
-          assert.equal(75, elem.scrollHeight);
+          assert.equal(125, sprite.getScrollWidth());
+          assert.equal(75, sprite.getScrollHeight());
           
           this.setAttribute('visible', true);
           
@@ -103,8 +109,11 @@ SOFTWARE. -->
           
           setTimeout(function() {
             // No longer scrollable since the view that extended outside is no longer visible.
-            assert.equal(100, elem.scrollWidth);
-            assert.equal(50, elem.scrollHeight);
+            
+            // PhantomJS doesn't adjust the scroll position the way browsers do
+            // so we allow 84 as well.
+            assert.include([100, 84], sprite.getScrollWidth());
+            assert.equal(50, sprite.getScrollHeight());
           }, 300);
         </handler>
       </view>

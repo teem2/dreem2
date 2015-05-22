@@ -220,7 +220,7 @@
 		if(define.MAIN){
 			insertScriptTag(define.expandVariables(define.MAIN), window.location.href)
 		}
-		window.out = console.log.bind(console) // FIXME: Why? This fails in phantomjs 1.9.8
+		window.out = console.log;
 
 		var backoff = 1
 		define.autoreloadConnect = function(){

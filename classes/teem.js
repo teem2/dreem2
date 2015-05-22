@@ -145,8 +145,6 @@ define(function(require, exports, module){
 		}
 	}
 	else if(define.env == 'browser'){
-		console.log('Teem browser module started')
-
 		// web environment
 		var BusClient = require('$CORE/busclient')
 

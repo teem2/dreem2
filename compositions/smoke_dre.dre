@@ -23,6 +23,8 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Dre'>
     <view width="100%" height="100%" scrolling="true" bgcolor="#cccccc" padding="10">
+      <testingtimer>500</testingtimer>
+      
       <spacedlayout axis="y" spacing="1"></spacedlayout>
       
       <!-- Oninit should only fire once for dre classes -->

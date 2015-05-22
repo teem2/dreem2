@@ -23,6 +23,8 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Circular Event'>
     <view width="100%">
+      <expectedoutput>Attempt to refire active event: onheight</expectedoutput>
+
       <view name="redbox" width="100" height="${this.width}" bgcolor="red">
         <handler event="onheight" args="h">
           this.setAttribute('width', h + 100)
