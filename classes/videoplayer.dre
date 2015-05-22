@@ -1,0 +1,164 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+<!--/**
+     * @class dr.videoplayer {UI Components, Media Components}
+     * @extends dr.view
+     * A media component that displays videos.
+     *
+     *     @example wide
+     *
+     *     <spacedlayout axis="x" spacing="5"></spacedlayout>
+     *     <videoplayer id="hplayer" width="200" height="150"
+     *                  src="{'video/mp4' : 'http://www.quirksmode.org/html5/videos/big_buck_bunny.mp4',
+     *                        'video/webm' : 'http://www.quirksmode.org/html5/videos/big_buck_bunny.webm',
+     *                        'video/ogv' : 'http://www.quirksmode.org/html5/videos/big_buck_bunny.ogv'}">
+     *     </videoplayer>
+     *
+     *     <videoplayer id="aplayer" width="200" height="150" controls="false"
+     *                  src="['http://techslides.com/demos/sample-videos/small.mp4',
+     *                        'http://techslides.com/demos/sample-videos/small.webm',
+     *                        'http://techslides.com/demos/sample-videos/small.ogv',
+     *                        'http://techslides.com/demos/sample-videos/small.3gp']">
+     *     </videoplayer>
+     */-->
+
+<!--/**
+    * @attribute {Object} [video]
+    * @readonly
+    * The underlying native video element.
+    */-->
+<class type="coffee" name="videoplayer" extends="view" clickable="true" $runtime="browser">
+  <!--/**
+      * @attribute {Boolean} [controls=true]
+      * Set to false to hide the video controls.
+      */-->
+  <attribute name="controls" type="boolean" value="true"></attribute>
+
+  <!--/**
+      * @attribute {String} [poster]
+      * An image that appears before playing, when no video frame is 
+      * available yet.
+      */-->
+  <attribute name="poster" type="string" value=""></attribute>
+
+  <!--/**
+      * @attribute {Boolean} [preload=true]
+      * Set to false to refrain from preloading video content when the tag loads.
+      */-->
+  <attribute name="preload" type="boolean" value="true"></attribute>
+
+  <!--/**
+      * @attribute {Boolean} [loop=false]
+      * Should be video loop when reaching the end of the video.
+      */-->
+  <attribute name="loop" type="boolean" value="false"></attribute>
+
+  <!--/**
+      * @attribute {Number} [volume=0.5]
+      */-->
+  <attribute name="volume" type="number" value="0.5"></attribute>
+
+  <!--/**
+      * @attribute {Number} [duration=0]
+      * @readonly
+      * The length of the video, is automatically set after the video begins 
+      * to load.
+      */-->
+  <attribute name="duration" type="number" value="0"></attribute>
+
+  <!--/**
+      * @attribute {Number} [currenttime=0]
+      * The current playback index, in seconds. Set to value to seek in the video.
+      */-->
+  <attribute name="currenttime" type="number" value="0"></attribute>
+
+  <!--/**
+      * @attribute {Boolean} [playing=false]
+      * Indicates if the video is currently playing, set to true to 
+      * begin playback.
+      */-->
+  <attribute name="playing" type="boolean" value="false"></attribute>
+
+  <!--/**
+      * @attribute {Object} [src]
+      * The video source, which is either an array of urls with the correct filetype extensions:
+      *
+      *     @example
+      *     <videoplayer id="player" width="300" height="150"
+      *                  src='["http://www.quirksmode.org/html5/videos/big_buck_bunny.mp4",
+      *                        "http://www.quirksmode.org/html5/videos/big_buck_bunny.webm",
+      *                        "http://www.quirksmode.org/html5/videos/big_buck_bunny.ogv"]'>
+      *     </videoplayer>
+      *
+      * Alternatively, a hash of `{mime-type: url}` pairs.
+      *
+      *     @example
+      *     <videoplayer id="player" width="300" height="150"
+      *                  src='{"video/mp4" : "http://www.quirksmode.org/html5/videos/big_buck_bunny.mp4",
+      *                        "video/webm" : "http://www.quirksmode.org/html5/videos/big_buck_bunny.webm",
+      *                        "video/ogg" : "http://www.quirksmode.org/html5/videos/big_buck_bunny.ogv"}'>
+      *     </videoplayer>
+      */-->
+  <attribute name="src" type="expression" value="[]"></attribute>
+  <setter name="src" args="v">
+    if @setActual('src', v, 'expression')
+      srcs = @src
+      if Array.isArray(srcs)
+        sources = {}
+        for src in srcs
+          if match = /^(.*)\.(mp4|ogv|webm|3gp)$/i.exec src
+            mime = "video/" + match[2].replace('ogv', 'ogg')
+            sources[mime] = src
+        @src = sources
+      
+      if @inited then @sprite.loadVideo(@src)
+  </setter>
+
+  <method name="createSprite" args="attrs">
+    return new dr.sprite.VideoPlayer(this, attrs);
+  </method>
+
+  <method name="initNode" args="parent, attrs">
+    @super()
+    
+    @listenToPlatform(@, 'ondurationchange', '_doDurationChange');
+    @listenToPlatform(@, 'ontimeupdate', '_doTimeUpdate');
+    @listenToPlatform(@, 'onplay', '_doPlayChange');
+    @listenToPlatform(@, 'onpause', '_doPlayChange');
+    @listenToPlatform(@, 'onended', '_doPlayChange');
+    
+    if @src then @sprite.loadVideo(@src)
+  </method>
+
+  <method name="_doTimeUpdate" args="event">
+    @setAttribute('currenttime', @sprite.getCurrentTime())
+  </method>
+
+  <method name="_doDurationChange" args="event">
+    @setAttribute('duration', @sprite.getDuration())
+  </method>
+
+  <method name="_doPlayChange" args="event">
+    @setAttribute('playing', event.type is 'play')
+  </method>
+</class>

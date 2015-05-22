@@ -54,7 +54,7 @@ SOFTWARE. -->
   <attribute name="contents" value="" type="string"></attribute>
 
   <method name="createSprite" args="attrs">
-    return new dr.sprite.Webview(this, attrs);
+    return new dr.sprite.Webview(this, attrs)
   </method>
 
   <method name="initNode" args="parent, attrs">
@@ -78,11 +78,11 @@ SOFTWARE. -->
     else
       # Now that we're registered, set it.
       if src
-        @listenToPlatform(@, 'onload', 'doPageLoaded');
+        @listenToPlatform(@, 'onload', 'doPageLoaded')
         @setAttribute('src', src)
   </method>
 
   <method name="doPageLoaded" args="event">
-    @sendEvent('onload', event);
+    @sendEvent('onload', event)
   </method>
 </class>
