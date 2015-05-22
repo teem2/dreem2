@@ -23,10 +23,12 @@ define(function(require, exports, module){
 		  */
 		this.addWebSocket = function(sock){
 			this.sockets.push(sock)
+			console.log('   ADD SOCKET', this.sockets.length);
 
-			sock.onEnd = function(){
+			sock.onClose = function(){
+				console.log('REMOVE SOCKET', this.sockets.length);
 				this.sockets.splice(this.sockets.indexOf(sock), 1)
-				sock.onEnd = undefined
+				sock.onClose = undefined
 			}.bind(this)
 
 			sock.onMessage = function(message){
@@ -42,8 +44,7 @@ define(function(require, exports, module){
 		 * @param {Object} message
 		 * @param {WebSocket} socket
 		 */
-		this.onMessage = function(message, socket){
-		}
+		this.onMessage = function(message, socket){}
 
 		/**
 		 * @event onConnect
@@ -51,14 +52,13 @@ define(function(require, exports, module){
 		 * @param {Object} message
 		 * @param {WebSocket} socket
 		 */
-		this.onConnect = function(message, socket){
-		}
+		this.onConnect = function(message, socket){}
 
-	    /** 
-	      * @method broadcast
-	      * Send a message to all connected sockets
-	      * @param {Object} message
-	      */
+		/** 
+		  * @method broadcast
+		  * Send a message to all connected sockets
+		  * @param {Object} message
+		  */
 		this.broadcast = function(message){
 			message = JSON.stringify(message)
 			for(var i = 0;i<this.sockets.length;i++){

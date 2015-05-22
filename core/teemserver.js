@@ -138,8 +138,13 @@ define(function(require, exports, module){
 			var sock = new NodeWebSocket(req, sock, head)
 			sock.url = req.url
 			var composition = this.getComposition(req.url)
-			if(!composition) this.busserver.addWebSocket(sock)
-			else composition.busserver.addWebSocket(sock)
+			if (composition) {
+				console.log('---- found composition', req.url);
+				composition.busserver.addWebSocket(sock)
+			} else {
+				console.log('---- no composition', req.url);
+				this.busserver.addWebSocket(sock)
+			}
 		}
 
 		/**

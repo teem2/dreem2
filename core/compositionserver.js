@@ -222,11 +222,7 @@ define(function(require, exports, module){
 			var out = 'define(function(require, exports, module){\n' 
 			out += this.makeLocalDeps(js.deps, compname, '\t', errors)
 			out += '\tmodule.exports = ' + js.body + '\n\tmodule.exports.dre = ' + JSON.stringify(jsxml) + '})'
-			try {
-				fs.writeFileSync(define.expandVariables(filename), out)
-			} catch(e){
-				errors.push(new DreemError("Error in writeFilSync: " + e.toString()))
-			}
+			this.writeFileIfChanged(filename, out, errors)
 			return js.name
 		}
 
@@ -271,7 +267,7 @@ define(function(require, exports, module){
 				out += string + '\n\n'
 			}
 			out += 'define.env="v8";var req = define.require("' + root + '");if(define.onMain) define.onMain(req);'
-			fs.writeFileSync(define.expandVariables(output), out)
+			this.writeFileIfChanged(output, out)
 		}
 
 		this.compileLocalClass = function(cls, errors){
@@ -282,7 +278,7 @@ define(function(require, exports, module){
 
 		/* Internal, reloads the composition */
 		this.reload = function(){
-			console.color("~bg~Reloading~~ composition\n")
+			console.color("~bg~Reloading~~ composition: " + this.name + "\n")
 			this.destroy()
 			this.local_classes = {}
 			this.compile_once = {}
@@ -363,7 +359,7 @@ define(function(require, exports, module){
 					var component = "$BUILD/compositions." + this.name +  '.dre.' + js.tag + '.' + js.name + '.js'
 				}
 
-				fs.writeFileSync(define.expandVariables(component), out)
+				this.writeFileIfChanged(component, out, errors)
 			
 				this.modules.push({
 					jsxml:child,
@@ -387,7 +383,7 @@ define(function(require, exports, module){
 						out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) +'\n'
 						out += '})'
 						var component = "$BUILD/compositions." + this.name + '.dre.screens.' + sjs.name + '.js'
-						fs.writeFileSync(define.expandVariables(component), out)
+						this.writeFileIfChanged(component, out, errors)
 
 						if(schild.attr && schild.attr.type == 'dali'){
 							define.SPRITE = '$LIB/dr/sprite_dali'
@@ -535,6 +531,23 @@ define(function(require, exports, module){
 			res.writeHead(200, header)
 			res.write(html)
 			res.end()
+		}
+		
+		this.writeFileIfChanged = function(filePath, newData, errors) {
+			var expandedPath = define.expandVariables(filePath),
+				data;
+			try {
+				data = fs.readFileSync(expandedPath);
+				if (data) data = data.toString();
+			} catch(e) {}
+			
+			if (!data || newData.length !== data.length || newData !== data) {
+				try {
+					fs.writeFileSync(expandedPath, newData)
+				} catch(e){
+					errors.push(new DreemError("Error in writeFilSync: " + e.toString()))
+				}
+			}
 		}
 	}
 })
