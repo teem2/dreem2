@@ -44,6 +44,14 @@ SOFTWARE. -->
         <labeltoggle></labeltoggle>
       </view>
       
+      <!-- Multiline attr support. -->
+      <!--text text="hello
+      there">
+        <handler event="oninit">
+          assert.equal(this.text, 'hello\n      there');
+        </handler>
+      </text-->
+      
       <!-- embedded <'s in the code -->
       <!--view>
         <handler event="oninit">
