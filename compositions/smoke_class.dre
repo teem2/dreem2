@@ -153,11 +153,6 @@ SOFTWARE. -->
         <view width="100" height="25" bgcolor="lightpink"></view>
       </stackview>
     
-      <handler event="oninit">
-        assert.equal(this.st.subviews.length, 1)
-        assert.equal(this.st.subnodes.length, 2)
-      </handler>
-    
       <!-- $tagname -->
       <class name="texta" extends="text"></class>
       <class name="textb" extends="text2">
@@ -247,6 +242,11 @@ SOFTWARE. -->
           assert.equal("test-text", child.$tagname);
         </handler>
       </test-text>
+    
+      <handler event="oninit">
+        assert.equal(this.st.subviews.length, 1)
+        assert.equal(this.st.subnodes.length, 2)
+      </handler>
     </view>
   </screen>
 </screens>

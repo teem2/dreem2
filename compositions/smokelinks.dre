@@ -22,7 +22,7 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - List of Tests'>
-    <view id="main" width="100%" scrollable="true" padding="8">
+    <view width="100%" height="100%">
       <class name="link" extends="text" with="button" width="100%" border="1" bordercolor="black" padding="6" fontsize="12">
         <attribute name="url" type="string" value=""></attribute>
         <handler event="onactivated">
@@ -39,45 +39,77 @@ SOFTWARE. -->
         </method>
       </class>
       
-      <spacedlayout axis="y" spacing="1" updateparent="true"></spacedlayout>
+      <class name="block" width="auto" scrollable="true" rightpadding="8" bottompadding="8" width="250">
+        <spacedlayout axis="y" spacing="1" updateparent="true"></spacedlayout>
+      </class>
       
-      <link url="./smoke_attributes?test">Attributes</link>
-      <link url="./smoke_bitmap?test">Bitmap</link>
-      <link url="./smoke_button?test">Button</link>
-      <link url="./smoke_circularevent?test">Circular Event</link>
-      <link url="./smoke_class?test">Class</link>
-      <link url="./smoke_draggable?test">Draggable</link>
-      <link url="./smoke_dre?test">Dre</link>
-      <link url="./smoke_events?test">Events</link>
-      <link url="./smoke_handlers?test">Handlers</link>
-      <link url="./smoke_idle?test">Idle</link>
-      <link url="./smoke_initialization?test">Initialization</link>
-      <link url="./smoke_inputtext?test">Input Text</link>
-      <link url="./smoke_labelbutton?test">Label Button</link>
-      <link url="./smoke_layout_align?test">Layout Align</link>
-      <link url="./smoke_layout_constant?test">Layout Constant</link>
-      <link url="./smoke_layout_resize?test">Layout Resize</link>
-      <link url="./smoke_layout_spaced?test">Layout Spaced</link>
-      <link url="./smoke_layout_variable?test">Layout Variable</link>
-      <link url="./smoke_layout_wrapping?test">Layout Wrapping</link>
-      <link url="./smoke_misc?test">Misc</link>
-      <link url="./smoke_mixins?test">Mixins</link>
-      <link url="./smoke_node?test">Node</link>
-      <link url="./smoke_scrollable?test">Scrollable</link>
-      <link url="./smoke_sizetoplatform?test">Size to Platform</link>
-      <link url="./smoke_sliders?test">Sliders</link>
-      <!--link url="./smoke_statebutton?test">State Button</link-->
-      <link url="./smoke_super?test">Super</link>
-      <link url="./smoke_text?test">Text</link>
-      <!--link url="./smoke_twojs?test">TwoJS</link-->
-      <link url="./smoke_video?test">Video</link>
-      <link url="./smoke_view?test">View</link>
-      <link url="./smoke_view_border_padding?test">View: Borders and Padding</link>
-      <link url="./smoke_view_bounds_transforms?test">View: Bounds and Transformations</link>
-      <link url="./smoke_view_ordering?test">View: Ordering</link>
-      <link url="./smoke_view_position?test">View: Position</link>
-      <link url="./smoke_view_size?test">View: Size</link>
-      <link url="./smoke_webpage?test">Webpage</link>
+      <view name="header" width="100%" leftpadding="8" height="39" bgcolor="#999999">
+        <text color="white" bold="true" y="9" fontsize="32">Smoke Tests</text>
+      </view>
+      
+      <view y="${this.parent.header.height}" width="100%" height="${this.parent.height - this.y}" 
+        scrollable="true" leftpadding="8" toppadding="8"
+      >
+        <spacedlayout axis="x" spacing="1"></spacedlayout>
+        
+        <block>
+          <text>Foundation</text>
+          <link url="./smoke_class_system?test">Class System</link>
+        </block>
+        
+        <block>
+          <text>Core</text>
+          <link url="./smoke_attributes?test">Attributes</link>
+          <link url="./smoke_circularevent?test">Circular Event</link>
+          <link url="./smoke_class?test">Class</link>
+          <link url="./smoke_dre?test">Dre</link>
+          <link url="./smoke_events?test">Events</link>
+          <link url="./smoke_handlers?test">Handlers</link>
+          <link url="./smoke_idle?test">Idle</link>
+          <link url="./smoke_initialization?test">Initialization</link>
+          <link url="./smoke_misc?test">Misc</link>
+          <link url="./smoke_mixins?test">Mixins</link>
+          <link url="./smoke_node?test">Node</link>
+          <link url="./smoke_super?test">Super</link>
+        </block>
+        
+        <block>
+          <text>View System</text>
+          <link url="./smoke_scrollable?test">Scrollable</link>
+          <link url="./smoke_sizetoplatform?test">Size to Platform</link>
+          <link url="./smoke_view?test">View</link>
+          <link url="./smoke_view_border_padding?test">View: Borders and Padding</link>
+          <link url="./smoke_view_bounds_transforms?test">View: Bounds and Transformations</link>
+          <link url="./smoke_view_ordering?test">View: Ordering</link>
+          <link url="./smoke_view_position?test">View: Position</link>
+          <link url="./smoke_view_size?test">View: Size</link>
+          
+          <text>Layouts</text>
+          <link url="./smoke_layout_align?test">Layout Align</link>
+          <link url="./smoke_layout_constant?test">Layout Constant</link>
+          <link url="./smoke_layout_resize?test">Layout Resize</link>
+          <link url="./smoke_layout_spaced?test">Layout Spaced</link>
+          <link url="./smoke_layout_variable?test">Layout Variable</link>
+          <link url="./smoke_layout_wrapping?test">Layout Wrapping</link>
+        </block>
+        
+        <block>
+          <text>Components</text>
+          <link url="./smoke_bitmap?test">Bitmap</link>
+          <link url="./smoke_button?test">Button</link>
+          <link url="./smoke_draggable?test">Draggable</link>
+          <link url="./smoke_inputtext?test">Input Text</link>
+          <link url="./smoke_labelbutton?test">Label Button</link>
+          <link url="./smoke_sliders?test">Sliders</link>
+          <!--link url="./smoke_statebutton?test">State Button</link-->
+          <link url="./smoke_text?test">Text</link>
+          
+          <text>Browser Only</text>
+          <!--link url="./smoke_twojs?test">TwoJS</link-->
+          <link url="./smoke_video?test">Video</link>
+          <link url="./smoke_webpage?test">Webpage</link>
+        </block>
+      </view>
     </view>
   </screen>
 </screens>
