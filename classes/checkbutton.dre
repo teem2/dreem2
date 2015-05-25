@@ -100,7 +100,7 @@ SOFTWARE. -->
   <method name="handleResize">
     @super()
 
-    return if @_resize_lock
+    return if @_resize_lock or not @inited
     @_resize_lock = true
 
     defaultchecksize = 20

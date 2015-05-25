@@ -60,7 +60,12 @@ SOFTWARE. -->
           <link url="./example_bounds">Bounds</link>
           
           <subhead>Layouts</subhead>
+          <link url="./example_layouts">Standard Layouts</link>
           <link url="./example_evenlayout">Even Layout</link>
+          <link url="./example_spirallayout">Spiral Layout</link>
+          
+          <subhead>Components</subhead>
+          <link url="./example_components">Standard Components</link>
         </block>
         
         <webpage id="display" height="${this.parent.innerheight - 8}"

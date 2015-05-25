@@ -219,6 +219,23 @@ SOFTWARE. -->
       </checkbuttontest>
       
       <checkbutton name="notext" height="30" width="30"></checkbutton>
+      
+      <!-- Verify borders work cleanly. A circular event was occurring when
+           a border was set without an explicit width. -->
+      <checkbutton border="4">
+        <handler event="oninit">
+          assert.equal(this.border, 4);
+          assert.equal(this.selected, false, 'Checkbutton was not initially selected.');
+        </handler>
+      </checkbutton>
+      
+      <!-- Verify a checkbox can be initially selected. -->
+      <checkbutton border="4" selected="true">
+        <handler event="oninit">
+          assert.equal(this.border, 4);
+          assert.equal(this.selected, true, 'Checkbutton was initially selected.');
+        </handler>
+      </checkbutton>
     </view>
   </screen>
 </screens>
