@@ -189,11 +189,15 @@ SOFTWARE. -->
           output.setAttribute('text', output.text + ' testing');
         </handler>
       </view>
+      
       <text id="output" multiline="true"></text>
+      
       <handler event="oninit">
         // Called once for each layout: spaced, and two auto layouts.
         assert.equal(output.text, ' testing testing testing')
       </handler>
+      
+      <class name="foo" bgcolor="green"></class>
     
       <view>
         <handler event="oninit">
@@ -211,6 +215,15 @@ SOFTWARE. -->
           child = this.createChild({class: 'view', bgcolor: 'blue', width: 10, height: 10, opacity: .5})
           assert.equal(this.subnodes.length, 3)
           assert.equal(this.subviews.length, 2)
+          
+          // create a new instance of a declared class that is never used
+          // declaratively. Verifies that classes are available on declaration
+          // not just on useage.
+          child = this.createChild({class: 'foo'})
+          assert.isTrue(child.isA(dr.foo))
+          assert.equal(child.bgcolor, 'green');
+          assert.equal(this.subnodes.length, 4)
+          assert.equal(this.subviews.length, 3)
         </handler>
       </view>
     
