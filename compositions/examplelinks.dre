@@ -66,6 +66,7 @@ SOFTWARE. -->
           
           <subhead>Components</subhead>
           <link url="./example_components">Standard Components</link>
+          <link url="./example_bitmap">Bitmap</link>
         </block>
         
         <webpage id="display" height="${this.parent.innerheight - 8}"
