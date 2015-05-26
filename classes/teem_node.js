@@ -232,7 +232,7 @@ define(function(require, exports, module){
 		this.attribute = function(key, type, init_value){
 			var typeobj = types[type]
 			if (!typeobj) {
-				console.warn("Invalid type '" + type + "' for attribute '" + key + "', Using string type instead. Type must be one of: number, positivenumber, easing_function, json, expression, *, object, function, string, boolean, color.");
+				console.warn("Invalid type '" + type + "' for attribute '" + key + "', Using string type instead. Type must be one of: number, positivenumber, motion, json, expression, *, object, function, string, boolean, color.");
 				typeobj = types['string'];
 			}
 			var attr = new Attribute(typeobj)

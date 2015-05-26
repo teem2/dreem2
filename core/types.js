@@ -20,8 +20,8 @@ define(function(require, exports, module){
 		}
 	}
 
-	exports.easing_function = {
-		name:'easing_function',
+	exports.motion = {
+		name:'motion',
 		parse:function(str){
 			return str
 		}
