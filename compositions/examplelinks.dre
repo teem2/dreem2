@@ -55,6 +55,9 @@ SOFTWARE. -->
         <resizelayout axis="x" spacing="1" outset="8"></resizelayout>
         
         <block>
+          <subhead>Core</subhead>
+          <link url="./example_eventtest">Event Test</link>
+          
           <subhead>View System</subhead>
           <link url="./example_borderpadding">Borders and Padding</link>
           <link url="./example_bounds">Bounds</link>
