@@ -31,20 +31,20 @@ SOFTWARE. -->
       <view bgcolor="darkgrey" width="auto" height="auto">
         <view name="foo" bgcolor='red' x="0" y="0" width="100" height="80">
           <handler event='oninit'>
-            this.animate({x:100, y:10}, 200)
+            this.animateMultiple({x:100, y:10}, 200)
           </handler>
         </view>
   
         <view name="bar" bgcolor='red' x="0" y="100" width="100" height="80">
           <handler event='oninit'>
-            this.animate({x:100, y:100, width:50, height:50, bgcolor:'blue'}, 150)
+            this.animateMultiple({x:100, y:100, width:50, height:50, bgcolor:'blue'}, 150)
           </handler>
         </view>
   
         <!-- Test destroying while an animation is running -->
         <view name="baz" bgcolor='red' x="0" y="200" width="100" height="80">
           <handler event='oninit' type="coffee">
-            this.animate({x:100, width:50, height:100, bgcolor:'green'}, 200)
+            this.animateMultiple({x:100, width:50, height:100, bgcolor:'green'}, 200)
             setTimeout(() =>
               this.destroy()
             ,100)
@@ -55,12 +55,12 @@ SOFTWARE. -->
         <node name="buz">
           <attribute name="x" value="0" type="number"></attribute>
           <handler event='oninit'>
-            this.animate({x:100}, 80)
+            this.animateMultiple({x:100}, 80)
           </handler>
         </node>
   
         <!-- Verify animations ran -->
-        <!--handler event="oninit" type="coffee">
+        <handler event="oninit" type="coffee">
           setTimeout(() =>
             assert.equal(@foo.x, 100)
             assert.equal(@foo.y, 10)
@@ -75,28 +75,29 @@ SOFTWARE. -->
             
             assert.equal(@buz.x, 100)
           500)
-        </handler-->
+        </handler>
       </view>
-  
-      <!--view id="container" bgcolor="lightgrey" width="auto" height="auto">
-        <animator target="koala" attribute="x" to="300" duration="300" control='0.01,1.0' motion="bret" repeat="2" bounce="true">
-          <handler event="onend">
-            assert.equal(koala.x, 100);
-            container.koalaRan = true;
-          </handler> 
-        </animator>
-        <bitmap id="koala" x="100" y="200" width="200" height="200" src="./shoarma.jpg"></bitmap>
-  
-        <bitmap name="foo" x="100" y="0" width="200" height="200" src="./shoarma.jpg">
-          <animator start='500' attribute="x" to="300" duration="300" motion="outBounce" repeat="1">
+      
+      <!-- Test using animator tag. -->
+      <view id="container" bgcolor="lightgrey" width="auto" height="auto">
+        <bitmap name="foo" x="100" y="0" width="200" height="200" src="/img/shoarma.jpg">
+          <animator delay='200' attribute="x" to="300" duration="300" motion="outBounce" repeat="1">
             <handler event="onend">
               assert.equal(this.parent.x, 300);
               container.fooRan = true;
             </handler>
           </animator>
         </bitmap>
-  
-        <bitmap name="bar" x="100" y="400" width="200" height="200" src="./shoarma.jpg">
+        
+        <animator target="koala" attribute="x" to="300" duration="300" control='0.01,1.0' motion="bret" repeat="2" bounce="true">
+          <handler event="onend">
+            assert.equal(koala.x, 100);
+            container.koalaRan = true;
+          </handler> 
+        </animator>
+        <bitmap id="koala" x="100" y="200" width="200" height="200" src="/img/shoarma.jpg"></bitmap>
+        
+        <bitmap name="bar" x="100" y="400" width="200" height="200" src="/img/shoarma.jpg">
           <animator attribute="x" to="300" duration="300" motion="linear" repeat="2" bounce="true">
             <handler event="onend">
               assert.equal(this.parent.x, 100);
@@ -109,13 +110,13 @@ SOFTWARE. -->
           <text text='Relative'></text>
           <animator relative='true' attribute="x" duration="500" to="10" motion="inOutExpo">
             <handler event='onend'>
-              assert.equal(this.parent.x, 20);
+              assert.closeTo(this.parent.x, 20, 0.0001);
               container.bazRan = true;
             </handler>
           </animator>
         </view>
   
-        <bitmap name="buz" x="100" y="600" width="200" height="200" src="./shoarma.jpg">
+        <bitmap name="buz" x="100" y="600" width="200" height="200" src="/img/shoarma.jpg">
           <animator attribute="x" to="300" duration="300" motion="linear" repeat="2" bounce="true">
             <handler event="onend">
               assert.equal(this.parent.x, 100);
@@ -140,7 +141,7 @@ SOFTWARE. -->
             assert.equal(@buzTickRan, true)
           800)
         </handler>
-      </view-->
+      </view>
     </view>
   </screen>
 </screens>
