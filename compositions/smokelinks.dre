@@ -61,6 +61,7 @@ SOFTWARE. -->
         
         <block>
           <subhead>Core</subhead>
+          <link url="./smoke_animation?test">Animation</link>
           <link url="./smoke_attributes?test">Attributes</link>
           <link url="./smoke_circularevent?test">Circular Event</link>
           <link url="./smoke_class?test">Class</link>
