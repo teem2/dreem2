@@ -14,7 +14,6 @@
  * And this method specialized for browser or server elsewhere
  */
 define(function(require, exports, module){
-	
 	var HTMLParser = require('./htmlparser')
 	var DreemError = require('./dreemerror')
 
@@ -183,7 +182,7 @@ define(function(require, exports, module){
 			}
 			
 			for (var name in attributes) {
-				body += '\t\tthis.attribute("' + name + '", "' + attributes[name] + '")\n'
+				body += '\t\tthis.__attribute("' + name + '", "' + attributes[name] + '")\n'
 			}
 		}
 		body += '\t})'

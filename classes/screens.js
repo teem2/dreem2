@@ -11,7 +11,7 @@ define(function(require, exports, module){
 	var RpcPromise = require('$CORE/rpcpromise')
 
 	return Node.extend('screens', function(){
-		this.attribute('init', 'event')
+		this.__attribute('init', 'event')
 
 		this.rpcDef = function(name, rpcdefs, rpcpromise){
 			this.name = name

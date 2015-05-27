@@ -48,8 +48,8 @@ SOFTWARE. -->
       
       <view width="100%" height="100%" border="1" bordercolor="black" bgcolor="#cccccc" clip="true">
         <spirallayout name="layout" locked="true">
-          <animator prop="xfrequency" from="0.05" to="0.15" duration="25000" repeat="4" motion="linear" bounce="true"></animator>
-          <animator prop="scale" from="0.1" to="2" duration="5000" repeat="20" motion="linear" bounce="true"></animator>
+          <animator attribute="xfrequency" from="0.05" to="0.15" duration="25000" repeat="4" motion="linear" bounce="true"></animator>
+          <animator attribute="scale" from="0.1" to="2" duration="5000" repeat="20" motion="linear" bounce="true"></animator>
         </spirallayout>
         
         <handler event="oninit">

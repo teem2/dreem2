@@ -191,8 +191,8 @@
           }
           this.callSuper(width);
         </setter>
-        <animator name="anim_1" prop="x" to="100" repeat="2" running="true"></animator>
-        <animator name="anim_2" prop="y" to="-25" relative="true" running="true"></animator>
+        <animator name="anim_1" attribute="x" to="100" repeat="2" running="true"></animator>
+        <animator name="anim_2" attribute="y" to="-25" relative="true" running="true"></animator>
       </item>
       <handler event="onanother" args="another" reference="this.item_instance">
         console.log('HANDLER:another by reference', another);
@@ -435,8 +435,8 @@
           }
           this.callSuper(width);
         </setter>
-        <animator name="anim_1" prop="x" to="100" repeat="2" running="true"></animator>
-        <animator name="anim_2" prop="y" to="-25" relative="true" running="true"></animator>
+        <animator name="anim_1" attribute="x" to="100" repeat="2" running="true"></animator>
+        <animator name="anim_2" attribute="y" to="-25" relative="true" running="true"></animator>
       </item>
       <handler event="onanother" args="another" reference="this.item_instance">
         console.log('HANDLER:another by reference', another);

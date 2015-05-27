@@ -7,7 +7,7 @@ define(function(require, exports, module)
 	var node = require("$CLASSES/teem_node")
 	return node.extend("huelight", function()
 	{
-		this.attribute("init", "event")
+		this.__attribute("init", "event")
 		this.init = function()
 		{
 			console.log(this);

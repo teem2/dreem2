@@ -120,7 +120,7 @@ SOFTWARE. -->
       
       <!-- Using align with a constant layout for simple switching of alignment. -->
       <block name="special" y="480" width="120" height="120" border="1" bordercolor="black" bgcolor="yellow" padding="2">
-        <constantlayout name="layout1" prop="x" value="'middle'"></constantlayout>
+        <constantlayout name="layout1" attribute="x" value="'middle'"></constantlayout>
         <spacedlayout name="layout2" axis="y" spacing="1"></spacedlayout>
         
         <item name="v1" width="10" height="40"></item>
@@ -288,7 +288,7 @@ SOFTWARE. -->
         
         // Change axis
         layout1.setAttribute('value', "'invalid'"); // Clear out alignments on x
-        layout1.setAttribute('prop', "y");
+        layout1.setAttribute('attribute', "y");
         layout1.setAttribute('value', "'middle'");
         block.setAttribute('width', 130); // Verify alignment on x was cleared
         

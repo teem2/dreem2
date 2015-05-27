@@ -36,9 +36,9 @@ define(function(require, exports, module)
 	return node.extend("arduino", function()
 	{
 		this.portOpened = false;
-				
-		this.attribute("init", "event")
-		this.attribute("connected", "event")
+		
+		this.__attribute("init", "event")
+		this.__attribute("connected", "event")
 		
 		
 		this.connectedOutputs = {};

@@ -155,12 +155,12 @@ define(function(require, exports, module){
 			if(typeof prop == 'object'){
 				if(prop.kind == 'attribute'){
 					// lets make an attribute
-					obj.attribute(key, prop.type)
+					obj.__attribute(key, prop.type)
 				}
 				else if(prop.kind == 'method'){
 					// its a method, lets make an rpc interface for it
 					RpcProxy.defineMethod(obj, key)
-				}			
+				}
 			}
 			else{ // we are a plain value
 				RpcProxy.defineProp(obj, key, prop)

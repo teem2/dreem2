@@ -98,34 +98,34 @@ define(function(require, exports, module){
 				var prop = arg0[key]
 				if(key.indexOf('attr_') == 0){
 					key = key.slice(5)
-					this.attribute(key, prop.type, prop.value)
+					this.__attribute(key, prop.type, prop.value)
 				}
 				else if(key.indexOf('set_') == 0){
 					key = key.slice(4)
-					if(!this.isAttribute(key)){
+					if(!this.__isAttribute(key)){
 						//console.log('Please define attribute type before making a setter '+key)
-						this.attribute(key, 'number')
+						this.__attribute(key, 'number')
 					}
 					this['on_'+key].setter = prop
 				}
 				else if(key.indexOf('get_') == 0){
 					key = key.slice(4)
-					if(!this.isAttribute(key)){
+					if(!this.__isAttribute(key)){
 						//console.log('Please define attribute type before making a getter '+key)
-						this.attribute(key, 'number')
+						this.__attribute(key, 'number')
 					}
 					this['on_'+key].getter = prop
 				}
 				else if(key.indexOf('handle_') == 0){
 					key = key.slice(7)
-					if(!this.isAttribute(key)){
+					if(!this.__isAttribute(key)){
 						//console.log('Please define attribute before making a handler '+key)
-						this.attribute(key, 'event')
+						this.__attribute(key, 'event')
 					}
 					this['on_' + key].addListener(prop)
 				}
 				else if(this.__lookupSetter__(key)){
-					if(this.isAttribute(key)){
+					if(this.__isAttribute(key)){
 						var prop = arg0[key]
 						if(typeof prop == 'function'){
 							this['on_' + key].addListener(prop)
@@ -218,7 +218,7 @@ define(function(require, exports, module){
 			}
 		}
 		
-		this.isAttribute = function(key){
+		this.__isAttribute = function(key){
 			if(this['attr_' + key]) return true
 			else return false
 		}
@@ -229,7 +229,7 @@ define(function(require, exports, module){
 		  * @param {String} key 
 		  * @param {String} type 
 		  */
-		this.attribute = function(key, type, init_value){
+		this.__attribute = function(key, type, init_value){
 			var typeobj = types[type]
 			if (!typeobj) {
 				console.warn("Invalid type '" + type + "' for attribute '" + key + "', Using string type instead. Type must be one of: number, positivenumber, motion, json, expression, *, object, function, string, boolean, color.");

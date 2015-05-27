@@ -31,7 +31,7 @@ define(function(require, exports, module)
 	
 	return node.extend("huebase_old", function()
 	{
-		this.attribute("init", "event");
+		this.__attribute("init", "event");
 		this.setLight = function(id, r,g,b)
 		{
 			if (this.apiObject == undefined) 

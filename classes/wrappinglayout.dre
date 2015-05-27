@@ -46,9 +46,9 @@
       attrs.inset = attrs.value
     delete attrs.value
     
-    if attrs.prop isnt 'x' and attrs.axis is 'x'
-      attrs.axis = attrs.prop
-    delete attrs.prop
+    if attrs.attribute isnt 'x' and attrs.axis is 'x'
+      attrs.axis = attrs.attribute
+    delete attrs.attribute
     
     @super()
   </method>
@@ -148,7 +148,7 @@
   <setter name="axis" args="axis">
     # An alias for attr.
     @setActual('axis', axis, 'string', 'x')
-    @setAttribute('prop', @axis)
+    @setAttribute('attribute', @axis)
   </setter>
   
   <!--/**
@@ -156,15 +156,15 @@
     * @private
     * The axis attribute is an alias for this attribute.
     */-->
-  <setter name="prop" args="prop">
-    if @prop isnt prop
+  <setter name="attribute" args="attribute">
+    if @attribute isnt attribute
       # Stop monitoring since the "axis" changed. This needs to
       # be done before the new "axis" value is set since stopMonitoringSubview
       # needs to know the old values.
       @stopMonitoringAllSubviews()
       
       # Setup private attributes based on axis
-      if prop == 'y'
+      if attribute == 'y'
         # The layout is oriented vertically
         @__parentAttrName = 'width'             # The attr to update on the parent if updateparent is true
         @__innerAttrName = 'innerheight'        # The attr used to get available space
@@ -185,7 +185,7 @@
         @__otherDiffAttrName = 'boundsydiff'
         @__otherAttribute = 'y'
       
-      @setActual('prop', prop, 'string')
+      @setActual('attribute', attribute, 'string')
       
       if @inited
         # Start monitoring again and update since we have a new axis. This needs
@@ -366,7 +366,7 @@
           amount = extra / (itemcount - 1)
           
           # Reposition each item in the line after the first one by the amount
-          attribute = @prop
+          attribute = @attribute
           i = 1
           while itemcount > i
             item = items[i++]
@@ -383,7 +383,7 @@
         extra = -1
     if extra > 0
       # Reposition each item in the line
-      attribute = @prop
+      attribute = @attribute
       for item in items
         @__positionView(item, attribute, item[attribute] + extra)
   </method>

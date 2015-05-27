@@ -213,7 +213,7 @@
 
       @doBeforeUpdate()
 
-      attribute = @prop
+      attribute = @attribute
       value = @value
       svs = @subviews
       len = svs.length

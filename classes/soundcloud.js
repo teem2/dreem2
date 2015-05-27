@@ -5,7 +5,7 @@
 define(function(require, exports, module){
 	var node = require("$CLASSES/teem_node")
 	return node.extend("soundcloud", function(){
-		this.attribute('init', 'event')
+		this.__attribute('init', 'event')
 		
 		this.loadUrl = function(){
 			
