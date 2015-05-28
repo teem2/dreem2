@@ -23,7 +23,10 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - List of Tests'>
     <view width="100%" height="100%" bgcolor="#dddddd">
-      <class name="link" extends="text" with="button" width="100%" border="1" bordercolor="black" padding="6" fontsize="12">
+      <class name="link" extends="text" with="button" width="100%"
+        border="1" bordercolor="#666666" padding="6" fontsize="12"
+        topleftcornerradius="8" bottomrightcornerradius="8"
+      >
         <attribute name="url" type="string" value=""></attribute>
         <handler event="onactivated">
           window.open(this.url, 'test');

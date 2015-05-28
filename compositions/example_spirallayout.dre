@@ -37,7 +37,7 @@ SOFTWARE. -->
           if (view.width !== size) {
             view.setAttribute('width', size);
             view.setAttribute('height', size);
-            view.setAttribute('border-radius', size / 2 + 'px'); // FIXME: rounded corner support
+            view.setAttribute('cornerradius', size / 2);
           }
           view.setAttribute('x', (parent.innerwidth - size) / 2 + Math.round(Math.sin(count * this.xfrequency) * countScale));
           view.setAttribute('y', (parent.innerheight - size) / 2 + Math.round(Math.cos(count * this.yfrequency) * countScale));
