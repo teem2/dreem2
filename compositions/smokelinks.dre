@@ -22,7 +22,9 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - List of Tests'>
-    <view width="100%" height="100%" bgcolor="#dddddd">
+    <view width="100%" height="100%"
+      gradient="['bottom', '#dddddd', '#ffffff 25%', '#bbbbbb']"
+    >
       <class name="link" extends="text" with="button" width="100%"
         border="1" bordercolor="#666666" padding="6" fontsize="12"
         topleftcornerradius="8" bottomrightcornerradius="8"
@@ -48,7 +50,9 @@ SOFTWARE. -->
       
       <class name="subhead" extends="text" color="#888888" bold="true" toppadding="4"></class>
       
-      <view name="header" width="100%" leftpadding="8" height="39" bgcolor="#888888">
+      <view name="header" width="100%" leftpadding="8" height="39"
+        gradient="[180, '#888888 40%', '#666666']"
+      >
         <text color="white" bold="true" y="9" fontsize="32">Smoke Tests</text>
       </view>
       
