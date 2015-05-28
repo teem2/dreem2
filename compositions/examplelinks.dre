@@ -39,11 +39,11 @@ SOFTWARE. -->
         </method>
       </class>
       
-      <class name="block" width="auto" scrollable="true" rightpadding="8" bottompadding="8" width="250">
+      <class name="block" width="auto" rightpadding="8" bottompadding="8" width="250">
         <spacedlayout axis="y" spacing="1" updateparent="true"></spacedlayout>
       </class>
       
-      <class name="subhead" extends="text" color="#888888" bold="true"></class>
+      <class name="subhead" extends="text" color="#888888" bold="true" toppadding="4"></class>
       
       <view name="header" width="100%" leftpadding="8" height="39" bgcolor="#888888">
         <text color="white" bold="true" y="9" fontsize="32">Examples</text>
@@ -55,7 +55,7 @@ SOFTWARE. -->
         <resizelayout axis="x" spacing="1" outset="8"></resizelayout>
         
         <block>
-          <subhead>Core</subhead>
+          <subhead toppadding="0">Core</subhead>
           <link url="./example_eventtest">Event Test</link>
           
           <subhead>View System</subhead>
