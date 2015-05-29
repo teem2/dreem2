@@ -22,7 +22,30 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Example - Even Layout'>
-    <view width="100%" height="100%" bgcolor="#cccccc" clip="true">
+    <view with="button" width="100%" height="100%" clip="true"
+      gradient="${['radial', 'cover', this.reversed ? 'black' : 'white', this.reversed ? 'white' : 'black']}"
+      reversed="${this.count % 2 === 0}"
+      flipped="${this.count % 4 === 0 || this.count % 4 === 1}"
+      cursor="none"
+    >
+      <attribute name="reversed" type="boolean" value="false"></attribute>
+      <attribute name="flipped" type="boolean" value="false"></attribute>
+      <attribute name="count" type="number" value="0"></attribute>
+      
+      <handler event="onactivated">
+        this.setAttribute('count', this.count + 1);
+      </handler>
+      
+      <handler event="onmouseover" args="mouseover">
+        if (mouseover) {
+          anim1.resume();
+          anim2.resume();
+        } else {
+          anim1.pause();
+          anim2.pause();
+        }
+      </handler>
+      
       <class name="spirallayout" extends="variablelayout">
         <attribute name="xfrequency" type="number" value="0.1"></attribute>
         <attribute name="yfrequency" type="number" value="0.1"></attribute>
@@ -44,11 +67,11 @@ SOFTWARE. -->
         </method>
       </class>
       
-      <class name="item" bgcolor="#000000" opacity="0.25"></class>
+      <class name="item" bgcolor="${this.parent.flipped ? 'black' : 'white'}" opacity="0.25"></class>
       
-      <spirallayout name="layout" locked="true">
-        <animator attribute="xfrequency" from="0.05" to="0.15" duration="25000" repeat="4" motion="linear" bounce="true"></animator>
-        <animator attribute="scale" from="0.1" to="2" duration="5000" repeat="20" motion="linear" bounce="true"></animator>
+      <spirallayout name="layout" locked="true" xfrequency="0.05" scale="0.1">
+        <animator id="anim1" paused="true" attribute="xfrequency" from="0.05" to="0.15" duration="25000" repeat="-1" motion="linear" bounce="true"></animator>
+        <animator id="anim2" paused="true" attribute="scale" from="0.1" to="2" duration="5000" repeat="-1" motion="linear" bounce="true"></animator>
       </spirallayout>
       
       <handler event="oninit">
