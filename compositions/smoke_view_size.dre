@@ -378,9 +378,31 @@ SOFTWARE. -->
         assert.equal(block.width, 195);
         assert.equal(block.height, 90);
         
+        // Change padding and borders of an auto sized view
+        assert.equal(block.width, 195);
+        assert.equal(block.height, 90);
+        assert.equal(block.border, 0);
+        assert.equal(block.padding, 0);
+        
+        block.setAttribute('padding', 5);
+        
+        assert.equal(block.width, 205);
+        assert.equal(block.height, 100);
+        
+        block.setAttribute('rightpadding', 10);
+        
+        assert.equal(block.width, 210);
+        assert.equal(block.height, 100);
+        
+        block.setAttribute('border', 1);
+        block.setAttribute('bordercolor', 'yellow');
+        
+        assert.equal(block.width, 212);
+        assert.equal(block.height, 102);
+        
         // Finally, verify root view since we gave it a width of auto
-        assert.equal(this.width, 210);
-        assert.equal(this.height, 752);
+        assert.equal(this.width, 222);
+        assert.equal(this.height, 764);
       </handler>
     </view>
   </screen>

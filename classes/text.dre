@@ -168,11 +168,11 @@
   </setter>
 
   <setter name="data" args="v">
-    @setAttribute('text', v, true)
+    @setActualAttribute('text', v)
   </setter>
 
   <setter name="$textcontent" args="v">
-    @setAttribute('text', v, true)
+    @setActualAttribute('text', v)
   </setter>
 
   <method name="createSprite" args="attrs">

@@ -42,7 +42,7 @@ SOFTWARE. -->
   <attribute name="indicatorsize" type="number" value="10"></attribute>
 
   <setter name="$textcontent" args="v">
-    @setAttribute('text', v, true)
+    @setActualAttribute('text', v)
   </setter>
 
   <handler event="onmousedown" args="mousedown">
