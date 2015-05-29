@@ -22,7 +22,7 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Example - Even Layout'>
-    <view width="100%" height="100%" padding="10">
+    <view width="100%" height="100%" bgcolor="#cccccc" scrollable="true">
       <class name="evenlayout" extends="variablelayout" updateparent="true" type="coffee">
         <attribute name="itemsize" type="number" value="150"></attribute>
         <attribute name="minspacing" type="number" value="15"></attribute>
@@ -94,16 +94,14 @@ SOFTWARE. -->
         </setter>
       </class>
       
-      <view width="100%" height="100%" border="1" bordercolor="black" bgcolor="#cccccc" scrollable="true">
-        <view width="100%">
-          <evenlayout name="layout" locked="true"></evenlayout>
-          
-          <handler event="oninit">
-            var count = 200;
-            while (--count) this.createChild({class: 'item'});
-            this.layout.setAttribute('locked', false);
-          </handler>
-        </view>
+      <view width="100%">
+        <evenlayout name="layout" locked="true"></evenlayout>
+        
+        <handler event="oninit">
+          var count = 200;
+          while (--count) this.createChild({class: 'item'});
+          this.layout.setAttribute('locked', false);
+        </handler>
       </view>
     </view>
   </screen>
