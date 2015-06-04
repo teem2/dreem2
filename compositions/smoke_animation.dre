@@ -87,6 +87,21 @@ SOFTWARE. -->
               container.fooRan = true;
             </handler>
           </animator>
+          
+          <animator name="animY" attribute="y" to="300" duration="400" running="false"></animator>
+          
+          <handler event="oninit" type="coffee">
+            assert.equal(@x, 100)
+            assert.equal(@y, 0)
+            
+            # Run the animation in a little bit
+            assert.equal(@animY.running, false)
+            setTimeout(() =>
+              assert.equal(@animY.running, false)
+              @animY.setAttribute('running', true)
+              assert.equal(@animY.running, true)
+            100)
+          </handler>
         </bitmap>
         
         <animator target="koala" attribute="x" to="300" duration="300" control='0.01,1.0' motion="bret" repeat="2" bounce="true">
@@ -139,6 +154,8 @@ SOFTWARE. -->
             
             assert.equal(@buzRan, undefined)
             assert.equal(@buzTickRan, true)
+            
+            assert.equal(@foo.y, 300)
           800)
         </handler>
       </view>
