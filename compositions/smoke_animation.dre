@@ -84,22 +84,64 @@ SOFTWARE. -->
           <animator delay='200' attribute="x" to="300" duration="300" motion="outBounce" repeat="1">
             <handler event="onend">
               assert.equal(this.parent.x, 300);
-              container.fooRan = true;
+              container.fooRanX = true;
             </handler>
           </animator>
           
-          <animator name="animY" attribute="y" to="300" duration="400" running="false"></animator>
+          <!-- Running set to false initially still runs normally when started. -->
+          <animator name="animY" attribute="y" to="300" duration="400" running="false">
+            <handler event='onstart' args="event">
+              assert.equal(this.parent.y, 0);
+              container.fooRanY_start = true;
+            </handler>
+            <handler event='onloop' args="count">
+              if (container.fooRanY_loop == null) container.fooRanY_loop = 0;
+              container.fooRanY_loop++;
+            </handler>
+            <handler event='onend' args="event">
+              assert.equal(this.parent.y, 300);
+              container.fooRanY_end = true;
+            </handler>
+          </animator>
+          
+          <!-- Pause set to true initially still runs normally when started. -->
+          <animator name="animW" attribute="width" to="300" duration="400" paused="true">
+            <handler event='onstart' args="event">
+              assert.equal(this.parent.width, 200);
+              container.fooRanW_start = true;
+            </handler>
+            <handler event='onloop' args="count">
+              if (container.fooRanW_loop == null) container.fooRanW_loop = 0;
+              container.fooRanW_loop++;
+            </handler>
+            <handler event='onend' args="event">
+              assert.equal(this.parent.width, 300);
+              container.fooRanW_end = true;
+            </handler>
+          </animator>
           
           <handler event="oninit" type="coffee">
             assert.equal(@x, 100)
             assert.equal(@y, 0)
+            assert.equal(@width, 200)
             
             # Run the animation in a little bit
             assert.equal(@animY.running, false)
+            assert.equal(@animY.paused, false)
+            assert.equal(@animW.running, true)
+            assert.equal(@animW.paused, true)
             setTimeout(() =>
               assert.equal(@animY.running, false)
-              @animY.setAttribute('running', true)
+              assert.equal(@animY.paused, false)
+              @animY.play()
               assert.equal(@animY.running, true)
+              assert.equal(@animY.paused, false)
+              
+              assert.equal(@animW.running, true)
+              assert.equal(@animW.paused, true)
+              @animW.resume()
+              assert.equal(@animW.running, true)
+              assert.equal(@animW.paused, false)
             100)
           </handler>
         </bitmap>
@@ -120,13 +162,85 @@ SOFTWARE. -->
             </handler>
           </animator>
         </bitmap>
-  
-        <view name="baz" bgcolor='red' x="10" y="610" width="auto" height="auto">
+        
+        <!-- Relative animation -->
+        <view bgcolor='red' x="10" y="10" width="200" height="auto">
           <text text='Relative'></text>
           <animator relative='true' attribute="x" duration="500" to="10" motion="inOutExpo">
             <handler event='onend'>
               assert.closeTo(this.parent.x, 20, 0.0001);
-              container.bazRan = true;
+              container.bazRanX = true;
+            </handler>
+          </animator>
+          
+          <!-- Relative animation with repeat. Also verify that we get
+               start, loop and end events. -->
+          <animator relative='true' attribute="y" to="10" duration="100" repeat="3">
+            <handler event='onstart' args="event">
+              assert.equal(this.parent.y, 10);
+              container.bazRanY_start = true;
+            </handler>
+            <handler event='onloop' args="count">
+              if (container.bazRanY_loop == null) container.bazRanY_loop = 0;
+              
+              switch (container.bazRanY_loop) {
+                case 0:
+                  assert.closeTo(this.parent.y, 10, 0.0001);
+                  assert.equal(0, count);
+                  container.bazRanY_loop++;
+                  break;
+                case 1:
+                  assert.closeTo(this.parent.y, 20, 0.0001);
+                  assert.equal(1, count);
+                  container.bazRanY_loop++;
+                  break;
+                case 2:
+                  assert.closeTo(this.parent.y, 30, 0.0001);
+                  assert.equal(2, count);
+                  container.bazRanY_loop++;
+                  break;
+                default:
+                  assert.fail(null, null, 'Unexpected onloop event');
+              }
+            </handler>
+            <handler event='onend'>
+              assert.closeTo(this.parent.y, 40, 0.0001);
+              container.bazRanY_end = true;
+            </handler>
+          </animator>
+          
+          <!-- Relative animation with repeat and negative value. -->
+          <animator relative='true' attribute="width" to="-25" duration="100" repeat="3">
+            <handler event='onstart' args="event">
+              assert.equal(this.parent.width, 200);
+              container.bazRanW_start = true;
+            </handler>
+            <handler event='onloop' args="count">
+              if (container.bazRanW_loop == null) container.bazRanW_loop = 0;
+              
+              switch (container.bazRanW_loop) {
+                case 0:
+                  assert.closeTo(this.parent.width, 200, 0.0001);
+                  assert.equal(0, count);
+                  container.bazRanW_loop++;
+                  break;
+                case 1:
+                  assert.closeTo(this.parent.width, 175, 0.0001);
+                  assert.equal(1, count);
+                  container.bazRanW_loop++;
+                  break;
+                case 2:
+                  assert.closeTo(this.parent.width, 150, 0.0001);
+                  assert.equal(2, count);
+                  container.bazRanW_loop++;
+                  break;
+                default:
+                  assert.fail(null, null, 'Unexpected onloop event');
+              }
+            </handler>
+            <handler event='onend'>
+              assert.closeTo(this.parent.width, 125, 0.0001);
+              container.bazRanW_end = true;
             </handler>
           </animator>
         </view>
@@ -143,14 +257,150 @@ SOFTWARE. -->
             </handler>
           </animator>
         </bitmap>
+        
+        <!-- Repeated animation -->
+        <view bgcolor='orange' x="100" y="10" width="50" height="20">
+          <animator attribute="x" to="200" duration="100" repeat="3">
+            <handler event='onstart' args="event">
+              assert.equal(this.parent.x, 100);
+              container.repeaterX_start = true;
+            </handler>
+            <handler event='onloop' args="count">
+              if (container.repeaterX_loop == null) container.repeaterX_loop = 0;
+              
+              switch (container.repeaterX_loop) {
+                case 0:
+                  assert.closeTo(this.parent.x, 100, 0.0001); // 100 because onloop is fired before the first setAttribute and we start at 100
+                  assert.equal(0, count);
+                  container.repeaterX_loop++;
+                  break;
+                case 1:
+                  assert.closeTo(this.parent.x, 200, 0.0001); // 200 because onloop is fired before the first setAttribute and our last position was 200
+                  assert.equal(1, count);
+                  container.repeaterX_loop++;
+                  break;
+                case 2:
+                  assert.closeTo(this.parent.x, 200, 0.0001); // 200 because onloop is fired before the first setAttribute and our last position was 200
+                  assert.equal(2, count);
+                  container.repeaterX_loop++;
+                  break;
+                default:
+                  assert.fail(null, null, 'Unexpected onloop event');
+              }
+            </handler>
+            <handler event='onend'>
+              assert.closeTo(this.parent.x, 200, 0.0001);
+              container.repeaterX_end = true;
+            </handler>
+          </animator>
+          
+          <animator attribute="y" to="50" duration="100" repeat="3" reverse="true">
+            <handler event='onstart' args="event">
+              assert.equal(this.parent.y, 10);
+              container.repeaterY_start = true;
+            </handler>
+            <handler event='onloop' args="count">
+              if (container.repeaterY_loop == null) container.repeaterY_loop = 0;
+              
+              switch (container.repeaterY_loop) {
+                case 0:
+                  assert.closeTo(this.parent.y, 10, 0.0001);
+                  assert.equal(2, count);
+                  container.repeaterY_loop++;
+                  break;
+                case 1:
+                  assert.closeTo(this.parent.y, 10, 0.0001);
+                  assert.equal(1, count);
+                  container.repeaterY_loop++;
+                  break;
+                case 2:
+                  assert.closeTo(this.parent.y, 10, 0.0001);
+                  assert.equal(0, count);
+                  container.repeaterY_loop++;
+                  break;
+                default:
+                  assert.fail(null, null, 'Unexpected onloop event');
+              }
+            </handler>
+            <handler event='onend'>
+              assert.closeTo(this.parent.y, 10, 0.0001);
+              container.repeaterY_end = true;
+            </handler>
+          </animator>
+          
+          <!-- Repeat, reverse and bounce -->
+          <animator attribute="width" to="100" duration="100" repeat="3" reverse="true" bounce="true">
+            <handler event='onstart' args="event">
+              assert.equal(this.parent.width, 50);
+              container.repeaterW_start = true;
+            </handler>
+            <handler event='onloop' args="count">
+              if (container.repeaterW_loop == null) container.repeaterW_loop = 0;
+              
+              switch (container.repeaterW_loop) {
+                case 0:
+                  assert.closeTo(this.parent.width, 50, 0.0001);
+                  assert.equal(2, count);
+                  container.repeaterW_loop++;
+                  break;
+                case 1:
+                  assert.closeTo(this.parent.width, 50, 0.0001);
+                  assert.equal(1, count);
+                  container.repeaterW_loop++;
+                  break;
+                case 2:
+                  assert.closeTo(this.parent.width, 100, 0.0001);
+                  assert.equal(0, count);
+                  container.repeaterW_loop++;
+                  break;
+                default:
+                  assert.fail(null, null, 'Unexpected onloop event');
+              }
+            </handler>
+            <handler event='onend'>
+              assert.closeTo(this.parent.width, 50, 0.0001);
+              container.repeaterW_end = true;
+            </handler>
+          </animator>
+        </view>
   
         <handler event="oninit" type="coffee">
           # Verify animations ran
           setTimeout(() =>
             assert.equal(@koalaRan, true)
-            assert.equal(@fooRan, true)
             assert.equal(@barRan, true)
-            assert.equal(@bazRan, true)
+            
+            assert.equal(@fooRanX, true)
+            
+            assert.equal(@fooRanY_start, true)
+            assert.equal(@fooRanY_loop, 1)
+            assert.equal(@fooRanY_end, true)
+            
+            assert.equal(@fooRanW_start, true)
+            assert.equal(@fooRanW_loop, 1)
+            assert.equal(@fooRanW_end, true)
+            
+            assert.equal(@bazRanX, true)
+            
+            assert.equal(@bazRanY_start, true)
+            assert.equal(@bazRanY_loop, 3)
+            assert.equal(@bazRanY_end, true)
+            
+            assert.equal(@bazRanW_start, true)
+            assert.equal(@bazRanW_loop, 3)
+            assert.equal(@bazRanW_end, true)
+            
+            assert.equal(@repeaterX_start, true)
+            assert.equal(@repeaterX_loop, 3)
+            assert.equal(@repeaterX_end, true)
+            
+            assert.equal(@repeaterY_start, true)
+            assert.equal(@repeaterY_loop, 3)
+            assert.equal(@repeaterY_end, true)
+            
+            assert.equal(@repeaterW_start, true)
+            assert.equal(@repeaterW_loop, 3)
+            assert.equal(@repeaterW_end, true)
             
             assert.equal(@buzRan, undefined)
             assert.equal(@buzTickRan, true)
