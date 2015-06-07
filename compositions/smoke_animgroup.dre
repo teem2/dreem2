@@ -39,6 +39,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').x, 100);
             </handler>
           </animator>
           
@@ -52,6 +53,7 @@ SOFTWARE. -->
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
+                assert.equal(this.getAttribute('target').y, 50);
               </handler>
             </animator>
             <animator name="subanim2" attribute="y" to="100" duration="200" delay="100">
@@ -63,6 +65,7 @@ SOFTWARE. -->
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
+                assert.equal(this.getAttribute('target').y, 100);
               </handler>
             </animator>
             
@@ -74,6 +77,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').y, 100);
             </handler>
           </animgroup>
           
@@ -86,6 +90,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').x, 0);
             </handler>
           </animator>
           
@@ -98,6 +103,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').y, 0);
             </handler>
           </animator>
           
@@ -173,6 +179,9 @@ SOFTWARE. -->
             ];
             
             assert.equal(this.output.join(','), expected.join(','));
+            
+            assert.equal(this.getAttribute('target').x, 0);
+            assert.equal(this.getAttribute('target').y, 0);
           </handler>
           
           <handler event="oninit">
@@ -211,6 +220,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').x, 200);
             </handler>
           </animator>
           
@@ -224,6 +234,7 @@ SOFTWARE. -->
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
+                assert.equal(this.getAttribute('target').y, 0);
               </handler>
             </animator>
             <animator name="subanim2" attribute="y" from="50" to="100" duration="200" delay="100">
@@ -235,6 +246,7 @@ SOFTWARE. -->
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
+                assert.equal(this.getAttribute('target').y, 50);
               </handler>
             </animator>
             
@@ -246,6 +258,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').y, 0);
             </handler>
           </animgroup>
           
@@ -258,6 +271,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').x, 300);
             </handler>
           </animator>
           
@@ -270,6 +284,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').y, 100);
             </handler>
           </animator>
           
@@ -345,6 +360,9 @@ SOFTWARE. -->
             ];
             
             assert.equal(this.output.join(','), expected.join(','));
+            
+            assert.equal(this.getAttribute('target').x, 200);
+            assert.equal(this.getAttribute('target').y, 0);
           </handler>
           
           <handler event="oninit">
@@ -517,6 +535,9 @@ SOFTWARE. -->
             ];
             
             assert.equal(this.output.join(','), expected.join(','));
+            
+            assert.equal(this.getAttribute('target').x, 0);
+            assert.equal(this.getAttribute('target').y, 200);
           </handler>
           
           <handler event="oninit">
@@ -689,6 +710,9 @@ SOFTWARE. -->
             ];
             
             assert.equal(this.output.join(','), expected.join(','));
+            
+            assert.equal(this.getAttribute('target').x, 200);
+            assert.equal(this.getAttribute('target').y, 200);
           </handler>
           
           <handler event="oninit">
@@ -727,6 +751,7 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').x, 100);
             </handler>
           </animator>
           
@@ -740,6 +765,7 @@ SOFTWARE. -->
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
+                assert.equal(this.getAttribute('target').width, 50);
               </handler>
             </animator>
             <animator name="subanim2" attribute="height" from="10" to="50" duration="1200" delay="100">
@@ -751,6 +777,7 @@ SOFTWARE. -->
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
+                assert.equal(this.getAttribute('target').height, 50);
               </handler>
             </animator>
             
@@ -762,6 +789,8 @@ SOFTWARE. -->
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').width, 50);
+              assert.equal(this.getAttribute('target').height, 50);
             </handler>
           </animgroup>
           
@@ -841,6 +870,413 @@ SOFTWARE. -->
             assert.equal(this.anim2.__puppetStart, 0);
             assert.equal(this.anim2.__puppetEnd, 3000);
             assert.equal(this.anim2.totalDuration, 3000);
+            
+            assert.equal(this.totalDuration, 5000 * 2);
+          </handler>
+        </animgroup>
+      </view>
+      
+      <!-- Reversed Parallel Animation -->
+      <view y="450" width="10" height="10" bgcolor="red">
+        <animgroup name="animgroup1" delay="500" parallel="true" repeat="2" reverse="true">
+          <attribute name="output" type="expression" value="[]"></attribute>
+          
+          <animator name="anim1" attribute="x" to="100" duration="1400" delay="100" repeat="3" bounce="true">
+            <handler event="onstart">
+              this.parent.output.push('onstart ' + this.name);
+            </handler>
+            <handler event="onloop" args="count">
+              this.parent.output.push('onloop ' + this.name + ' ' + count);
+            </handler>
+            <handler event="onend">
+              this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').x, 0);
+            </handler>
+          </animator>
+          
+          <animgroup name="anim2" delay="200" sequential="false" repeat="2">
+            <animator name="subanim1" attribute="width" from="10" to="50" duration="500" delay="100">
+              <handler event="onstart">
+                this.parent.parent.output.push('onstart ' + this.name);
+              </handler>
+              <handler event="onloop" args="count">
+                this.parent.parent.output.push('onloop ' + this.name + ' ' + count);
+              </handler>
+              <handler event="onend">
+                this.parent.parent.output.push('onend ' + this.name);
+                assert.equal(this.getAttribute('target').width, 10);
+              </handler>
+            </animator>
+            <animator name="subanim2" attribute="height" from="10" to="50" duration="500" delay="100">
+              <handler event="onstart">
+                this.parent.parent.output.push('onstart ' + this.name);
+              </handler>
+              <handler event="onloop" args="count">
+                this.parent.parent.output.push('onloop ' + this.name + ' ' + count);
+              </handler>
+              <handler event="onend">
+                this.parent.parent.output.push('onend ' + this.name);
+                assert.equal(this.getAttribute('target').height, 10);
+              </handler>
+            </animator>
+            
+            <handler event="onstart">
+              this.parent.output.push('onstart ' + this.name);
+            </handler>
+            <handler event="onloop" args="count">
+              this.parent.output.push('onloop ' + this.name + ' ' + count);
+            </handler>
+            <handler event="onend">
+              this.parent.output.push('onend ' + this.name);
+              assert.equal(this.getAttribute('target').width, 10);
+              assert.equal(this.getAttribute('target').height, 10);
+            </handler>
+          </animgroup>
+          
+          <handler event="onstart">
+            this.output.push('onstart ' + this.name);
+          </handler>
+          <handler event="onloop" args="count">
+            this.output.push('onloop ' + this.name + ' ' + count);
+          </handler>
+          <handler event="onend">
+            this.output.push('onend ' + this.name);
+            
+            var expected = [
+              "onstart animgroup1", 
+                "onloop animgroup1 1", 
+                
+                "onstart anim1", 
+                "onloop anim1 2", 
+                "onloop anim1 1", 
+                "onstart anim2", 
+                "onloop anim2 1", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onloop anim1 0", 
+                "onend subanim2", 
+                "onend subanim1", 
+                "onloop anim2 0", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onend subanim2", 
+                "onend subanim1", 
+                "onend anim2", 
+                "onend anim1", 
+                
+                "onloop animgroup1 0", 
+                
+                "onstart anim1", 
+                "onloop anim1 2", 
+                "onloop anim1 1", 
+                "onstart anim2", 
+                "onloop anim2 1", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onloop anim1 0", 
+                "onend subanim2", 
+                "onend subanim1", 
+                "onloop anim2 0", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onend subanim2", 
+                "onend subanim1", 
+                "onend anim2", 
+                "onend anim1", 
+              "onend animgroup1"
+            ];
+            
+            assert.equal(this.output.join(','), expected.join(','));
+            
+            assert.equal(this.parent.width, 10);
+            assert.equal(this.parent.height, 10);
+            assert.equal(this.parent.x, 0);
+          </handler>
+          
+          <handler event="oninit">
+            assert.equal(this.anim1.__puppetStart, 0);
+            assert.equal(this.anim1.__puppetEnd, 4500);
+            assert.equal(this.anim1.totalDuration, 4500);
+            
+            assert.equal(this.anim2.__puppetStart, 0);
+            assert.equal(this.anim2.__puppetEnd, 1600);
+            assert.equal(this.anim2.totalDuration, 1600);
+            
+            assert.equal(this.totalDuration, 5000 * 2);
+          </handler>
+        </animgroup>
+      </view>
+      
+      <!-- Bounced Parallel Animation -->
+      <view y="500" width="10" height="10" bgcolor="red">
+        <animgroup name="animgroup1" delay="500" parallel="true" repeat="2" bounce="true">
+          <attribute name="output" type="expression" value="[]"></attribute>
+          
+          <animator name="anim1" attribute="x" to="100" duration="1400" delay="100" repeat="3" bounce="true">
+            <handler event="onstart">
+              this.parent.output.push('onstart ' + this.name);
+            </handler>
+            <handler event="onloop" args="count">
+              this.parent.output.push('onloop ' + this.name + ' ' + count);
+            </handler>
+            <handler event="onend">
+              this.parent.output.push('onend ' + this.name);
+            </handler>
+          </animator>
+          
+          <animgroup name="anim2" delay="200" sequential="false" repeat="2">
+            <animator name="subanim1" attribute="width" from="10" to="50" duration="500" delay="100">
+              <handler event="onstart">
+                this.parent.parent.output.push('onstart ' + this.name);
+              </handler>
+              <handler event="onloop" args="count">
+                this.parent.parent.output.push('onloop ' + this.name + ' ' + count);
+              </handler>
+              <handler event="onend">
+                this.parent.parent.output.push('onend ' + this.name);
+              </handler>
+            </animator>
+            <animator name="subanim2" attribute="height" from="10" to="50" duration="500" delay="100">
+              <handler event="onstart">
+                this.parent.parent.output.push('onstart ' + this.name);
+              </handler>
+              <handler event="onloop" args="count">
+                this.parent.parent.output.push('onloop ' + this.name + ' ' + count);
+              </handler>
+              <handler event="onend">
+                this.parent.parent.output.push('onend ' + this.name);
+              </handler>
+            </animator>
+            
+            <handler event="onstart">
+              this.parent.output.push('onstart ' + this.name);
+            </handler>
+            <handler event="onloop" args="count">
+              this.parent.output.push('onloop ' + this.name + ' ' + count);
+            </handler>
+            <handler event="onend">
+              this.parent.output.push('onend ' + this.name);
+            </handler>
+          </animgroup>
+          
+          <handler event="onstart">
+            this.output.push('onstart ' + this.name);
+          </handler>
+          <handler event="onloop" args="count">
+            this.output.push('onloop ' + this.name + ' ' + count);
+          </handler>
+          <handler event="onend">
+            this.output.push('onend ' + this.name);
+            
+            var expected = [
+              "onstart animgroup1", 
+                "onloop animgroup1 0", 
+                
+                "onstart anim1", 
+                "onloop anim1 0", 
+                "onstart anim2", 
+                "onloop anim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onend subanim1", 
+                "onend subanim2", 
+                "onloop anim2 1", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onloop anim1 1", 
+                "onend subanim1", 
+                "onend subanim2", 
+                "onend anim2", 
+                "onloop anim1 2", 
+                "onend anim1", 
+                
+                "onloop animgroup1 1", 
+                
+                "onstart anim1", 
+                "onloop anim1 2", 
+                "onloop anim1 1", 
+                "onstart anim2", 
+                "onloop anim2 1", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onloop anim1 0", 
+                "onend subanim2", 
+                "onend subanim1", 
+                "onloop anim2 0", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onend subanim2", 
+                "onend subanim1", 
+                "onend anim2", 
+                "onend anim1", 
+              "onend animgroup1"
+            ];
+            
+            assert.equal(this.output.join(','), expected.join(','));
+            
+            assert.equal(this.parent.width, 10);
+            assert.equal(this.parent.height, 10);
+            assert.equal(this.parent.x, 0);
+          </handler>
+          
+          <handler event="oninit">
+            assert.equal(this.anim1.__puppetStart, 0);
+            assert.equal(this.anim1.__puppetEnd, 4500);
+            assert.equal(this.anim1.totalDuration, 4500);
+            
+            assert.equal(this.anim2.__puppetStart, 0);
+            assert.equal(this.anim2.__puppetEnd, 1600);
+            assert.equal(this.anim2.totalDuration, 1600);
+            
+            assert.equal(this.totalDuration, 5000 * 2);
+          </handler>
+        </animgroup>
+      </view>
+      
+      <!-- Reversed and Bounced Parallel Animation -->
+      <view y="550" width="10" height="10" bgcolor="red">
+        <animgroup name="animgroup1" delay="500" parallel="true" repeat="2" bounce="true" reverse="true">
+          <attribute name="output" type="expression" value="[]"></attribute>
+          
+          <animator name="anim1" attribute="x" to="100" duration="1400" delay="100" repeat="3" bounce="true">
+            <handler event="onstart">
+              this.parent.output.push('onstart ' + this.name);
+            </handler>
+            <handler event="onloop" args="count">
+              this.parent.output.push('onloop ' + this.name + ' ' + count);
+            </handler>
+            <handler event="onend">
+              this.parent.output.push('onend ' + this.name);
+            </handler>
+          </animator>
+          
+          <animgroup name="anim2" delay="200" sequential="false" repeat="2">
+            <animator name="subanim1" attribute="width" from="10" to="50" duration="500" delay="100">
+              <handler event="onstart">
+                this.parent.parent.output.push('onstart ' + this.name);
+              </handler>
+              <handler event="onloop" args="count">
+                this.parent.parent.output.push('onloop ' + this.name + ' ' + count);
+              </handler>
+              <handler event="onend">
+                this.parent.parent.output.push('onend ' + this.name);
+              </handler>
+            </animator>
+            <animator name="subanim2" attribute="height" from="10" to="50" duration="500" delay="100">
+              <handler event="onstart">
+                this.parent.parent.output.push('onstart ' + this.name);
+              </handler>
+              <handler event="onloop" args="count">
+                this.parent.parent.output.push('onloop ' + this.name + ' ' + count);
+              </handler>
+              <handler event="onend">
+                this.parent.parent.output.push('onend ' + this.name);
+              </handler>
+            </animator>
+            
+            <handler event="onstart">
+              this.parent.output.push('onstart ' + this.name);
+            </handler>
+            <handler event="onloop" args="count">
+              this.parent.output.push('onloop ' + this.name + ' ' + count);
+            </handler>
+            <handler event="onend">
+              this.parent.output.push('onend ' + this.name);
+            </handler>
+          </animgroup>
+          
+          <handler event="onstart">
+            this.output.push('onstart ' + this.name);
+          </handler>
+          <handler event="onloop" args="count">
+            this.output.push('onloop ' + this.name + ' ' + count);
+          </handler>
+          <handler event="onend">
+            this.output.push('onend ' + this.name);
+            
+            var expected = [
+              "onstart animgroup1", 
+                "onloop animgroup1 1", 
+                
+                "onstart anim1", 
+                "onloop anim1 2", 
+                "onloop anim1 1", 
+                "onstart anim2", 
+                "onloop anim2 1", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onloop anim1 0", 
+                "onend subanim2", 
+                "onend subanim1", 
+                "onloop anim2 0", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onend subanim2", 
+                "onend subanim1", 
+                "onend anim2", 
+                "onend anim1", 
+                
+                "onloop animgroup1 0", 
+                
+                "onstart anim1", 
+                "onloop anim1 0", 
+                "onstart anim2", 
+                "onloop anim2 0", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onend subanim1", 
+                "onend subanim2", 
+                "onloop anim2 1", 
+                "onstart subanim1", 
+                "onloop subanim1 0", 
+                "onstart subanim2", 
+                "onloop subanim2 0", 
+                "onloop anim1 1", 
+                "onend subanim1", 
+                "onend subanim2", 
+                "onend anim2", 
+                "onloop anim1 2", 
+                "onend anim1", 
+              "onend animgroup1"
+            ];
+            
+            assert.equal(this.output.join(','), expected.join(','));
+            
+            assert.equal(this.parent.width, 50);
+            assert.equal(this.parent.height, 50);
+            assert.equal(this.parent.x, 100);
+          </handler>
+          
+          <handler event="oninit">
+            assert.equal(this.anim1.__puppetStart, 0);
+            assert.equal(this.anim1.__puppetEnd, 4500);
+            assert.equal(this.anim1.totalDuration, 4500);
+            
+            assert.equal(this.anim2.__puppetStart, 0);
+            assert.equal(this.anim2.__puppetEnd, 1600);
+            assert.equal(this.anim2.totalDuration, 1600);
             
             assert.equal(this.totalDuration, 5000 * 2);
           </handler>
