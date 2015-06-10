@@ -33,8 +33,10 @@ var runTest = function(file, callback) {
       var retarry = [],
         expectedElements = document.getElementsByTagName('expectedoutput');
       if (expectedElements) {
+        var expectedElemFirstChild;
         for (var i = 0, len = expectedElements.length; len > i;) {
-          retarry.push(expectedElements[i++].childNodes[0].nodeValue.trim());
+          expectedElemFirstChild = expectedElements[i++].childNodes[0];
+          if (expectedElemFirstChild) retarry.push(expectedElemFirstChild.nodeValue.trim());
         }
       }
       return retarry;

@@ -24,8 +24,12 @@ SOFTWARE. -->
   <screen type="browser" name="default" title='Smoke Test - Dre'>
     <view width="100%" height="100%" scrolling="true" bgcolor="#cccccc" padding="10">
       <testingtimer>500</testingtimer>
+      <expectedoutput>No nesting of screen tags. Skipping instance.</expectedoutput>
       
       <spacedlayout axis="y" spacing="1"></spacedlayout>
+      
+      <!-- Should give a message about no nesting of screen tags. -->
+      <screen></screen>
       
       <!-- Oninit should only fire once for dre classes -->
       <bitmap width="200" height="200" src="./img/shoarma.jpg">

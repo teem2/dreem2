@@ -24,6 +24,7 @@ SOFTWARE. -->
   <screen type="browser" name="default" title='Smoke Test - Class'>
     <view id="all" width="100%" height="100%" clip="true">
       <testingtimer>200</testingtimer>
+      <expectedoutput></expectedoutput>
       
       <!-- Loading classes from server -->
       <!-- Can load a class from the components directory. Will throw an error if broken -->
