@@ -363,47 +363,73 @@ SOFTWARE. -->
             </handler>
           </animator>
         </view>
+        
+        <!-- Reverse an animation while it's running. -->
+        <view name="reversalTest" width="20" height="20" bgcolor="pink" x="20" y="20">
+          <animator attribute="x" relative="true" to="10" repeat="100" duration="100">
+            <handler event="onstart">
+              assert.equal(this.getAttribute('target').x, 20);
+            </handler>
+            <handler event="onloop" args="count">
+              this.count = count;
+            </handler>
+            <handler event="onend">
+              assert.equal(this.count, 0);
+              assert.closeTo(this.getAttribute('target').x, 20, 0.0001);
+              this.getAttribute('target').testRan = true;
+            </handler>
+            <handler event='oninit' type="coffee">
+              setTimeout(() =>
+                assert.isTrue(this.count > 1, 'At least 2 loops should have occurred by now.')
+                assert.isTrue(this.getAttribute('target').x > 40, 'At least 2 loops should have occurred by now so x should be at least 40.')
+                this.setAttribute('reverse', true)
+              ,250)
+            </handler>
+          </animator>
+        </view>
   
         <handler event="oninit" type="coffee">
           # Verify animations ran
           setTimeout(() =>
-            assert.equal(@koalaRan, true)
-            assert.equal(@barRan, true)
+            assert.isTrue(@koalaRan)
+            assert.isTrue(@barRan)
             
-            assert.equal(@fooRanX, true)
+            assert.isTrue(@fooRanX)
             
-            assert.equal(@fooRanY_start, true)
+            assert.isTrue(@fooRanY_start)
             assert.equal(@fooRanY_loop, 1)
-            assert.equal(@fooRanY_end, true)
+            assert.isTrue(@fooRanY_end)
             
-            assert.equal(@fooRanW_start, true)
+            assert.isTrue(@fooRanW_start)
             assert.equal(@fooRanW_loop, 1)
-            assert.equal(@fooRanW_end, true)
+            assert.isTrue(@fooRanW_end)
             
-            assert.equal(@bazRanX, true)
+            assert.isTrue(@bazRanX)
             
-            assert.equal(@bazRanY_start, true)
+            assert.isTrue(@bazRanY_start)
             assert.equal(@bazRanY_loop, 3)
-            assert.equal(@bazRanY_end, true)
+            assert.isTrue(@bazRanY_end)
             
-            assert.equal(@bazRanW_start, true)
+            assert.isTrue(@bazRanW_start)
             assert.equal(@bazRanW_loop, 3)
-            assert.equal(@bazRanW_end, true)
+            assert.isTrue(@bazRanW_end)
             
-            assert.equal(@repeaterX_start, true)
+            assert.isTrue(@repeaterX_start)
             assert.equal(@repeaterX_loop, 3)
-            assert.equal(@repeaterX_end, true)
+            assert.isTrue(@repeaterX_end)
             
-            assert.equal(@repeaterY_start, true)
+            assert.isTrue(@repeaterY_start)
             assert.equal(@repeaterY_loop, 3)
-            assert.equal(@repeaterY_end, true)
+            assert.isTrue(@repeaterY_end)
             
-            assert.equal(@repeaterW_start, true)
+            assert.isTrue(@repeaterW_start)
             assert.equal(@repeaterW_loop, 3)
-            assert.equal(@repeaterW_end, true)
+            assert.isTrue(@repeaterW_end)
             
             assert.equal(@buzRan, undefined)
-            assert.equal(@buzTickRan, true)
+            assert.isTrue(@buzTickRan)
+            
+            assert.isTrue(@reversalTest.testRan)
             
             assert.equal(@foo.y, 300)
           800)
