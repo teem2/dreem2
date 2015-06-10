@@ -312,7 +312,7 @@ define(function(require, exports, module){
 						if (fn === errors) continue;
 						
 						if (!attr || (!attr.name && !attr.event)) {
-							errors.push(new DreemError('code tag has no name', child.pos))
+							//errors.push(new DreemError('code tag has no name', child.pos))
 							continue
 						}
 						var attrnameset = attr.name || attr.event

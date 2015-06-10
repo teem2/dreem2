@@ -30,6 +30,31 @@ SOFTWARE. -->
       
       <spacedlayout axis="y" spacing="15"></spacedlayout>
       
+      <!-- Incomplete handler definitions will generate messages. -->
+      <expectedoutput>Handler has no attributes.</expectedoutput>
+      <handler></handler>
+      
+      <!-- Handler with no event or name generates a message. -->
+      <expectedoutput>Handler has no name or event attribute.</expectedoutput>
+      <handler method="foo"></handler>
+      
+      <!-- Handler with an empty reference attribute generates a message. -->
+      <expectedoutput>Empty reference attribute in handler.</expectedoutput>
+      <handler event="onwidth" reference=""></handler>
+      
+      <!-- Handler that points to a non-existant reference generates a message. -->
+      <expectedoutput>resolveName failed for: foo at part: 0 foo</expectedoutput>
+      <handler event="onwidth" reference="foo"></handler>
+      
+      <!-- Handler that points to a non-existant method generates a message. -->
+      <expectedoutput>Target method "foo" not found when firing "onwidth" event.</expectedoutput>
+      <handler event="onwidth" method="foo"></handler>
+      
+      <!-- Handler that points to a non-function method generates a message. -->
+      <expectedoutput>Target method "x" not a function when firing "onwidth" event.</expectedoutput>
+      <handler event="onwidth" method="x"></handler>
+      
+      
       <!-- Events are thrown for attributes set in the declaration -->
       <!-- Also verifies that oninit fires after the other on<attr> events -->
       <view bgcolor="AliceBlue" width="50" height="20">
@@ -80,11 +105,30 @@ SOFTWARE. -->
       <handler event="onselected" args="value" reference="greenbox">
         root.hasbeenselected = true
       </handler>
+      
       <handler event="oninit">
         greenbox.setAttribute('selected', true)
+        
+        this.eventAttrWorks = true;
+        
+        var self = this;
         window.setTimeout(function() {
-          assert.equal(root.hasbeenselected, true)
+          assert.isTrue(root.hasbeenselected);
+          
+          assert.isTrue(self.eventAttrWorks);
+          assert.isTrue(self.nameAttrWorks);
+          assert.isTrue(self.secondOninit);
         }, 0);
+      </handler>
+      
+      <!-- Multiple handlers are just fine. -->
+      <handler name="oninit">
+        this.secondOninit = true;
+      </handler>
+      
+      <!-- OK to use name instead of event. -->
+      <handler name="oninit">
+        this.nameAttrWorks = true;
       </handler>
     </view>
   </screen>
