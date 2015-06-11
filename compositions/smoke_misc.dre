@@ -39,7 +39,8 @@ SOFTWARE. -->
         </text>
       </view>
       
-      <!-- Loading component that has multiple levels of inheritance, all dependencies should be loaded, and this should not throw an error -->
+      <!-- Loading component that has multiple levels of inheritance, all 
+           dependencies should be loaded, and this should not throw an error -->
       <view>
         <labeltoggle></labeltoggle>
       </view>
@@ -59,6 +60,18 @@ SOFTWARE. -->
         </handler>
       </text>
       
+      <!-- embedded >'s in the code -->
+      <view>
+        <handler event="oninit">
+          var someArray = [1,2,3];
+          var tots = 0;
+          for(var i=0; someArray.length > i; i++) {
+            tots += someArray[i];
+          }
+          all.totalA = tots;
+        </handler>
+      </view>
+      
       <!-- embedded <'s in the code -->
       <!--view>
         <handler event="oninit">
@@ -67,8 +80,14 @@ SOFTWARE. -->
           for(var i=0; i<someArray.length; i++) {
             tots += someArray[i];
           }
+          all.totalB = tots;
         </handler>
       </view-->
+      
+      <handler event="oninit">
+        assert.equal(this.totalA, 6);
+        //assert.equal(this.totalB, 6);
+      </handler>
     </view>
   </screen>
 </screens>
