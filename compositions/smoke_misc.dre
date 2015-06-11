@@ -45,12 +45,19 @@ SOFTWARE. -->
       </view>
       
       <!-- Multiline attr support. -->
-      <!--text text="hello
+      <text text="hello
       there">
         <handler event="oninit">
           assert.equal(this.text, 'hello\n      there');
         </handler>
-      </text-->
+      </text>
+      <text>
+        <attribute name="text" type="string" value="hello
+      there"></attribute>
+        <handler event="oninit">
+          assert.equal(this.text, 'hello\n      there');
+        </handler>
+      </text>
       
       <!-- embedded <'s in the code -->
       <!--view>

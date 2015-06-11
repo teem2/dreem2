@@ -283,7 +283,7 @@ define(function(require, exports, module){
 						props = '{\n' + myindent
 					}
 					if (value !== 'true' && value !== 'false' && parseFloat(value) != value) {
-						value = '"' + value.split('"').join('\\"') + '"'
+						value = '"' + value.split('"').join('\\"').split('\n').join('\\n') + '"'
 					}
 					props += key + ':' + value
 				}
@@ -334,7 +334,7 @@ define(function(require, exports, module){
 						if (attr && attr.name) {
 							var value = attr.value
 							if (value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) {
-								value = '"' + value.split('"').join('\\"') + '"'
+								value = '"' + value.split('"').join('\\"').split('\n').join('\\n') + '"'
 							}
 							attributes[attr.name.toLowerCase()] = [
 								attr.type.toLowerCase() || 'string',
