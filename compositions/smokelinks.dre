@@ -75,6 +75,7 @@ SOFTWARE. -->
           <link url="./smoke_attributes?test">Attributes</link>
           <link url="./smoke_circularevent?test">Circular Event</link>
           <link url="./smoke_class?test">Class</link>
+          <link url="./smoke_classroot?test">Classroot</link>
           <link url="./smoke_dre?test">Dre</link>
           <link url="./smoke_events?test">Events</link>
           <link url="./smoke_handlers?test">Handlers</link>
