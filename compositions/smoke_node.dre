@@ -202,33 +202,63 @@ SOFTWARE. -->
       <view>
         <handler event="oninit">
           // create a new node
-          child = this.createChild()
-          assert.equal(this.subnodes.length, 1)
-          assert.equal(this.subviews.length, 0)
+          child = this.createChild();
+          assert.equal(this.subnodes.length, 1);
+          assert.equal(this.subviews.length, 0);
           
           // create a new view
-          child = this.createChild({class: 'view'})
-          assert.equal(this.subnodes.length, 2)
-          assert.equal(this.subviews.length, 1)
+          child = this.createChild({class: 'view'});
+          assert.equal(this.subnodes.length, 2);
+          assert.equal(this.subviews.length, 1);
           
           // create a new view with attributes
-          child = this.createChild({class: 'view', bgcolor: 'blue', width: 10, height: 10, opacity: .5})
-          assert.equal(this.subnodes.length, 3)
-          assert.equal(this.subviews.length, 2)
+          child = this.createChild({class: 'view', bgcolor: 'blue', width: 10, height: 10, opacity: .5});
+          assert.equal(this.subnodes.length, 3);
+          assert.equal(this.subviews.length, 2);
           
           // create a new instance of a declared class that is never used
           // declaratively. Verifies that classes are available on declaration
           // not just on useage.
-          child = this.createChild({class: 'foo'})
+          child = this.createChild({class: 'foo'});
           assert.isTrue(child.isA(dr.foo))
           assert.equal(child.bgcolor, 'green');
-          assert.equal(this.subnodes.length, 4)
-          assert.equal(this.subviews.length, 3)
+          assert.equal(this.subnodes.length, 4);
+          assert.equal(this.subviews.length, 3);
+          
+          // Create a new node with a specific parent
+          assert.equal(all.foo.subviews.length, 0);
+          child = this.createChild({class: 'view', parent:all.foo});
+          assert.equal(all.foo.subviews.length, 1);
+          assert.equal(child.parent, all.foo);
+          
+          // Create a new node with the basic constructor
+          child = new dr.Node(this, {name:'hi_there'});
+          assert.equal(this.subnodes.length, 5);
+          assert.equal(this.subviews.length, 3);
+          assert.equal(this.hi_there, child);
+          
+          // Create a new node with the basic constructor and provide a parent
+          // in the attrs
+          child = new dr.Node(this, {name:'hey_there', parent:all.foo});
+          assert.equal(this.subnodes.length, 5);
+          assert.equal(this.subviews.length, 3);
+          assert.equal(this.hey_there, undefined);
+          assert.equal(all.foo.hey_there, child);
+          assert.equal(all.foo.subnodes.length, 2);
+          assert.equal(all.foo.subviews.length, 1);
+          
+          // Destroy a Node
+          child.destroy();
+          assert.isTrue(child.destroyed);
+          assert.equal(child.parent, undefined);
+          assert.equal(all.foo.hey_there, undefined);
+          assert.equal(all.foo.subnodes.length, 1);
+          assert.equal(all.foo.subviews.length, 1);
         </handler>
       </view>
     
       <!-- Ensure setAttribute() and sendEvent() are chainable -->
-      <view>
+      <view name="foo">
         <handler event="oninit">
           var chainable = this.setAttribute('x', 1).sendEvent('foo', true)
           assert.equal(chainable, this)
