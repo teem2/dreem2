@@ -66,6 +66,7 @@ SOFTWARE. -->
         <block>
           <subhead>Foundation</subhead>
           <link url="./smoke_class_system?test">Class System</link>
+          <link url="./smoke_resolve_name?test">Resolve Name</link>
         </block>
         
         <block>

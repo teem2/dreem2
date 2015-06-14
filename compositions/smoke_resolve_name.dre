@@ -1,0 +1,115 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Resolve Name'>
+    <view>
+      <expectedoutput>resolveName failed for: baz.g at part: 1 g
+resolveName failed for: nope at part: 0 nope
+resolveName failed for: baz.nope at part: 1 nope
+resolveName failed for: baz.e.nope at part: 2 nope
+resolveName failed for: nope at part: 0 nope
+resolveName failed for: ["nope"] at part: 0 nope
+resolveName failed for: thing.nope at part: 1 nope</expectedoutput>
+      
+      <view name="thing" id="thing">
+        <view name="subthing" id="subthing" x="10" visible="false"></view>
+      </view>
+      <view name="another" id="another"></view>
+      
+      <handler event="oninit">
+        // Empty, undefined or null cases
+        assert.equal(dr.resolveName(null, null), undefined);
+        assert.equal(dr.resolveName('', null), undefined);
+        assert.equal(dr.resolveName(undefined, null), undefined);
+        
+        assert.equal(dr.resolveName(null, {}), undefined);
+        assert.equal(dr.resolveName('', {}), undefined);
+        assert.equal(dr.resolveName(undefined, {}), undefined);
+        
+        assert.equal(dr.resolveName('', {'':'blah'}), undefined);
+        
+        // Resolve basic types
+        var scopeObj = {
+            foo:'foo',
+            bar:'bar',
+            baz:{
+                'a':'a',
+                'b':0,
+                'c':1,
+                'd':true,
+                'e':false,
+                'f':null,
+                'g':undefined
+            }
+        };
+        
+        assert.equal(dr.resolveName('foo', scopeObj), 'foo');
+        assert.equal(dr.resolveName('baz.a', scopeObj), 'a');
+        assert.equal(dr.resolveName('baz.b', scopeObj), 0);
+        assert.equal(dr.resolveName('baz.c', scopeObj), 1);
+        assert.equal(dr.resolveName('baz.d', scopeObj), true);
+        assert.equal(dr.resolveName('baz.e', scopeObj), false);
+        assert.equal(dr.resolveName('baz.f', scopeObj), null);
+        assert.equal(dr.resolveName('baz.g', scopeObj), undefined);
+        
+        // Expected Resolve failures
+        assert.equal(dr.resolveName('nope', scopeObj), undefined);
+        assert.equal(dr.resolveName('baz.nope', scopeObj), undefined);
+        assert.equal(dr.resolveName('baz.e.nope', scopeObj), undefined);
+        
+        // Resolution path can be an array
+        assert.equal(dr.resolveName(['foo'], scopeObj), 'foo');
+        assert.equal(dr.resolveName(['baz','a'], scopeObj), 'a');
+        
+        
+        // Resolve 'dr' namespace
+        assert.equal(dr.resolveName('dr', scopeObj), dr);
+        assert.equal(dr.resolveName('dr.global', scopeObj), dr.global);
+        assert.equal(dr.resolveName('dr.global.mouse', scopeObj), dr.global.mouse);
+        assert.equal(dr.resolveName('dr.nope', scopeObj), undefined);
+        
+        assert.equal(dr.resolveName(['dr'], scopeObj), dr);
+        assert.equal(dr.resolveName(['dr','global'], scopeObj), dr.global);
+        assert.equal(dr.resolveName(['dr','global','mouse'], scopeObj), dr.global.mouse);
+        assert.equal(dr.resolveName(['dr','nope'], scopeObj), undefined);
+        
+        
+        // Failover to global namespace with success
+        assert.equal(dr.resolveName('thing', scopeObj), this.thing);
+        assert.equal(dr.resolveName('another', scopeObj), this.another);
+        assert.equal(dr.resolveName('thing.x', scopeObj), 0);
+        assert.equal(dr.resolveName('thing.subthing', scopeObj), this.thing.subthing);
+        assert.equal(dr.resolveName('thing.subthing.x', scopeObj), 10);
+        assert.equal(dr.resolveName('thing.subthing.visible', scopeObj), false);
+        assert.equal(dr.resolveName('subthing.x', scopeObj), 10);
+        assert.equal(dr.resolveName('subthing.visible', scopeObj), false);
+        
+        assert.equal(dr.resolveName(['subthing','visible'], scopeObj), false);
+        
+        // Failover to global namespace with failure
+        assert.equal(dr.resolveName('thing.nope', scopeObj), undefined);
+      </handler>
+    </view>
+  </screen>
+</screens>
+</composition>
