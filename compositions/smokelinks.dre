@@ -70,22 +70,25 @@ SOFTWARE. -->
         
         <block>
           <subhead>Core</subhead>
-          <link url="./smoke_animation?test">Animation</link>
-          <link url="./smoke_animgroup?test">Animation Group</link>
           <link url="./smoke_attributes?test">Attributes</link>
           <link url="./smoke_circularevent?test">Circular Event</link>
           <link url="./smoke_class?test">Class</link>
           <link url="./smoke_classroot?test">Classroot</link>
-          <link url="./smoke_dre?test">Dre</link>
+          <link url="./smoke_dre_parser?test">Dre Parser</link>
+          <link url="./smoke_dre?test">Dre Misc</link>
           <link url="./smoke_events?test">Events</link>
           <link url="./smoke_handlers?test">Handlers</link>
           <link url="./smoke_idle?test">Idle</link>
           <link url="./smoke_initialization?test">Initialization</link>
-          <link url="./smoke_misc?test">Misc</link>
           <link url="./smoke_mixins?test">Mixins</link>
+          <link url="./smoke_super?test">Super</link>
+          
+          <subhead>Node</subhead>
+          <link url="./smoke_animation?test">Animation</link>
+          <link url="./smoke_animgroup?test">Animation Group</link>
           <link url="./smoke_node?test">Node</link>
           <link url="./smoke_placement?test">Placement</link>
-          <link url="./smoke_super?test">Super</link>
+          <link url="./smoke_reparenting_and_renaming?test">Reparenting and Renaming</link>
         </block>
         
         <block>

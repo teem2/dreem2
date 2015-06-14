@@ -1,0 +1,163 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Reparenting and Renaming'>
+    <view>
+      <expectedoutput>Name in use:foo
+Name not in use:foo
+Clobbering global reference: hi</expectedoutput>
+      
+      <node>
+        <node name="foo"></node>
+        <node name="bar" id="hey"></node>
+        <node name="baz"></node>
+        
+        <handler event="oninit">
+          var rootNode = this,
+            foo = this.foo,
+            bar = this.bar,
+            baz = this.baz;
+          
+          assert.equal(foo.parent, rootNode);
+          assert.equal(bar.parent, rootNode);
+          assert.equal(baz.parent, rootNode);
+          
+          assert.isTrue(rootNode.hasSubnode(foo));
+          assert.isTrue(rootNode.hasSubnode(bar));
+          assert.isTrue(rootNode.hasSubnode(baz));
+          
+          assert.equal(foo.getSubnodes().length, 0);
+          assert.equal(bar.getSubnodes().length, 0);
+          assert.equal(baz.getSubnodes().length, 0);
+          
+          assert.equal(rootNode.getSubnodes().length, 3);
+          
+          // Reparent a node with setAttribute
+          foo.setAttribute('parent', bar);
+          
+          assert.equal(foo.parent, bar);
+          assert.isTrue(bar.hasSubnode(foo));
+          assert.isFalse(rootNode.hasSubnode(foo));
+          assert.equal(rootNode.getSubnodes().length, 2);
+          assert.equal(bar.getSubnodes().length, 1);
+          assert.equal(this.foo, null);
+          assert.equal(bar.foo, foo);
+          
+          // Reparent a node with addSubnode
+          bar.addSubnode(baz);
+          
+          assert.equal(baz.parent, bar);
+          assert.isTrue(bar.hasSubnode(baz));
+          assert.isFalse(rootNode.hasSubnode(baz));
+          assert.equal(rootNode.getSubnodes().length, 1);
+          assert.equal(bar.getSubnodes().length, 2);
+          assert.equal(this.baz, null);
+          assert.equal(bar.baz, baz);
+          
+          // Orphan a node with setAttribute
+          assert.isFalse(foo.isRoot());
+          
+          foo.setAttribute('parent', null);
+          
+          assert.isTrue(foo.isRoot());
+          assert.equal(foo.parent, null);
+          assert.isFalse(bar.hasSubnode(foo));
+          assert.equal(bar.getSubnodes().length, 1);
+          assert.equal(bar.foo, null);
+          
+          // Orphan a node with removeSubnode
+          assert.isFalse(baz.isRoot());
+          
+          bar.removeSubnode(baz);
+          
+          assert.isTrue(baz.isRoot());
+          assert.equal(baz.parent, null);
+          assert.isFalse(bar.hasSubnode(baz));
+          assert.equal(bar.getSubnodes().length, 0);
+          assert.equal(bar.baz, null);
+          
+          // Have an orphaned node adopt another orphaned node
+          foo.addSubnode(baz);
+          
+          assert.isFalse(baz.isRoot());
+          assert.equal(baz.parent, foo);
+          assert.equal(foo.baz, baz);
+          assert.equal(foo.getSubnodes().length, 1);
+          
+          // Adopt an orphaned node
+          foo.setAttribute('parent', rootNode);
+          
+          assert.isFalse(foo.isRoot());
+          assert.equal(foo.parent, rootNode);
+          assert.equal(rootNode.foo, foo);
+          assert.equal(rootNode.getSubnodes().length, 2);
+          
+          // Adopt a node with a name that will conflict with an existing name.
+          // The reparenting succeeds, but the old reference remains.
+          var foo2 = baz.createChild({name:'foo'});
+          foo2.setAttribute('parent', rootNode);
+          
+          assert.equal(foo2.parent, rootNode);
+          assert.equal(rootNode.getSubnodes().length, 3);
+          assert.equal(rootNode.foo, foo);
+          
+          // Updating the name does not remove the reference to the other
+          // node with the same name.
+          foo2.setAttribute('name', 'blah');
+          assert.equal(rootNode.foo, foo);
+          assert.equal(rootNode.blah, foo2);
+          
+          
+          
+          // IDs
+          var globalScope = dr.getGlobalScope();
+          
+          assert.equal(globalScope, window); // Browser only
+          
+          assert.equal(bar.id, 'hey');
+          assert.equal(hey, bar);
+          assert.equal(globalScope.hey, bar);
+          assert.equal(globalScope.hi, undefined);
+          
+          // Change ID
+          bar.setAttribute('id', 'hi');
+          
+          assert.equal(bar.id, 'hi');
+          assert.equal(hi, bar);
+          assert.equal(globalScope.hi, bar);
+          assert.equal(globalScope.hey, undefined);
+          
+          // Give another view an existing ID. The new global reference will 
+          // clobber the old one.
+          foo.setAttribute('id', 'hi');
+          
+          assert.equal(foo.id, 'hi');
+          assert.equal(bar.id, 'hi');
+          assert.equal(hi, foo);
+          assert.equal(globalScope.hi, foo);
+        </handler>
+      </node>
+    </view>
+  </screen>
+</screens>
+</composition>

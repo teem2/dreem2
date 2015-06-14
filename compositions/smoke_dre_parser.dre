@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <composition>
 <screens>
-  <screen type="browser" name="default" title='Smoke Test - Misc'>
+  <screen type="browser" name="default" title='Smoke Test - Dre Parser'>
     <view id="all" width="100%" height="100%" clip="true">
       <spacedlayout axis="y" spacing="15"></spacedlayout>
       
@@ -37,12 +37,6 @@ SOFTWARE. -->
             assert.equal(this.text, 'Hello');
           </handler>
         </text>
-      </view>
-      
-      <!-- Loading component that has multiple levels of inheritance, all 
-           dependencies should be loaded, and this should not throw an error -->
-      <view>
-        <labeltoggle></labeltoggle>
       </view>
       
       <!-- Multiline attr support. -->
