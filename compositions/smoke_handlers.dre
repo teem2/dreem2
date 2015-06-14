@@ -43,7 +43,7 @@ SOFTWARE. -->
       <handler event="onwidth" reference=""></handler>
       
       <!-- Handler that points to a non-existant reference generates a message. -->
-      <expectedoutput>resolveName failed for: foo at part: 0 foo</expectedoutput>
+      <expectedoutput>resolveName failed for:foo at part:0 "foo"</expectedoutput>
       <handler event="onwidth" reference="foo"></handler>
       
       <!-- Handler that points to a non-existant method generates a message. -->

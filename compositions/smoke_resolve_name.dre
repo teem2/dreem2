@@ -23,18 +23,19 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Resolve Name'>
     <view>
-      <expectedoutput>resolveName failed for: baz.g at part: 1 g
-resolveName failed for: nope at part: 0 nope
-resolveName failed for: baz.nope at part: 1 nope
-resolveName failed for: baz.e.nope at part: 2 nope
-resolveName failed for: nope at part: 0 nope
-resolveName failed for: ["nope"] at part: 0 nope
-resolveName failed for: thing.nope at part: 1 nope</expectedoutput>
+      <expectedoutput>resolveName failed for:baz.g at part:1 "g"
+resolveName failed for:nope at part:0 "nope"
+resolveName failed for:baz.nope at part:1 "nope"
+resolveName failed for:baz.e.nope at part:2 "nope"
+resolveName failed for:nope at part:0 "nope"
+resolveName failed for:nope at part:0 "nope"
+resolveName failed for:thing.nope at part:1 "nope"</expectedoutput>
       
       <view name="thing" id="thing">
         <view name="subthing" id="subthing" x="10" visible="false"></view>
       </view>
       <view name="another" id="another"></view>
+      <view name="mismatch" id="mismatch"></view>
       
       <handler event="oninit">
         // Empty, undefined or null cases
@@ -60,7 +61,8 @@ resolveName failed for: thing.nope at part: 1 nope</expectedoutput>
                 'e':false,
                 'f':null,
                 'g':undefined
-            }
+            },
+            mismatch:'mismatched'
         };
         
         assert.equal(dr.resolveName('foo', scopeObj), 'foo');
@@ -108,6 +110,19 @@ resolveName failed for: thing.nope at part: 1 nope</expectedoutput>
         
         // Failover to global namespace with failure
         assert.equal(dr.resolveName('thing.nope', scopeObj), undefined);
+        
+        
+        // Demonstrate a "this" vs "global" mismatch. This is a situation where
+        // you intend to resolve the name against the global scope but the
+        // provided scope happens to also have a matching name
+        assert.equal(dr.resolveName('mismatch', scopeObj), 'mismatched');
+        
+        // Instead, use 'global.mismatch' to resolve the name the way you
+        // intended
+        assert.equal(dr.resolveName('global.mismatch', scopeObj), this.mismatch);
+        
+        // Specifically match against global namespace
+        assert.equal(dr.resolveName('global', scopeObj), dr.getGlobalScope());
       </handler>
     </view>
   </screen>
