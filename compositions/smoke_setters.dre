@@ -63,6 +63,81 @@ SOFTWARE. -->
       <item name="v1" x="5" y="5" foo="hey"></item>
       <subitem name="v2" x="5" y="25" foo="there"></subitem>
       
+      <!-- Verify setter order and early/late attrs. I mixed up the
+           attr definitions and setter implementations between the class,
+           a subclass and an instance so that the test is 
+           more comprehensive. -->
+      <class name="foo">
+        <attribute name="k" type="number" value="1"></attribute>
+        <attribute name="a" type="number" value="1"></attribute>
+        <attribute name="j" type="number" value="1"></attribute>
+        <attribute name="b" type="number" value="1"></attribute>
+        <attribute name="i" type="number" value="1"></attribute>
+        <attribute name="c" type="number" value="1"></attribute>
+        <attribute name="d" type="number" value="1"></attribute>
+        
+        <setter name="a" args="v">this.output.push('a'); return v;</setter>
+        <setter name="b" args="v">this.output.push('b'); return v;</setter>
+        <setter name="c" args="v">this.output.push('c'); return v;</setter>
+        
+        <method name="initNode" args="parent, attrs">
+          var output = this.output = [];
+          
+          this.appendToEarlyAttrs('j');
+          this.prependToEarlyAttrs('k');
+          
+          this.appendToLateAttrs('a');
+          this.prependToLateAttrs('b');
+          
+          this.super();
+        </method>
+      </class>
+      
+      <class name="subfoo" extends="foo" i="9">
+        <attribute name="g" type="number" value="1"></attribute>
+        <setter name="g" args="v">this.output.push('g'); return v;</setter>
+      </class>
+      
+      <mixin name="bar" d="4">
+        <attribute name="h" type="number" value="1"></attribute>
+        
+        <setter name="h" args="v">this.output.push('h'); return v;</setter>
+        <setter name="d" args="v">this.output.push('d'); return v;</setter>
+      </mixin>
+      
+      <subfoo name="v3" with="bar" a="2" b="3" c="4">
+        <attribute name="e" type="number" value="1"></attribute>
+        <attribute name="f" type="number" value="1"></attribute>
+        
+        <setter name="i" args="v">this.output.push('i'); return v;</setter>
+        <setter name="j" args="v">this.output.push('j'); return v;</setter>
+        <setter name="k" args="v">this.output.push('k'); return v;</setter>
+        
+        <setter name="e" args="v">this.output.push('e'); return v;</setter>
+        <setter name="f" args="v">this.output.push('f'); return v;</setter>
+        
+        <method name="initNode" args="parent, attrs">
+          // Happens before superclass
+          this.prependToEarlyAttrs('f');
+          this.appendToLateAttrs('c');
+          
+          this.super();
+          
+          var expectedEarlyAttrs = ['k','f','j'];
+          var expectedLateAttrs = ['b','c','a'];
+          var expected = [
+            'k','f','j', // Early
+            'd','e','g','h','i', // Normal
+            'b','c','a' // Late
+          ];
+          
+          assert.deepEqual(this.earlyAttrs, expectedEarlyAttrs);
+          assert.deepEqual(this.lateAttrs, expectedLateAttrs);
+          
+          assert.deepEqual(this.output, expected);
+        </method>
+      </subfoo>
+      
       <handler event="oninit">
         var v1 = this.v1,
           v2 = this.v2;
