@@ -510,26 +510,30 @@ define(function(require, exports, module){
 			}
 			
 			var screen = this.screens[app]
-			if(app == 'dali'){
-				var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'))
-				res.writeHead(200, {"Content-Type": "text/html"})
-				stream.pipe(res)
-				return
+			if (screen) {
+				if (app == 'dali') {
+					var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'))
+					res.writeHead(200, {"Content-Type": "text/html"})
+					stream.pipe(res)
+					return
+				}
+				
+				var html = this.loadHTML(
+					screen.attr && screen.attr.title || this.name, 
+					'$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js',
+					query.test === null || query.test === 'true'
+				)
+				
+				res.writeHead(200, {
+					"Cache-control":"max-age=0",
+					"Content-Type": "text/html"
+				})
+				res.write(html)
+			} else {
+				res.writeHead(404, {"Content-Type": "text/html"})
+				res.write('NOT FOUND')
 			}
-
-			var html = this.loadHTML(
-				screen.attr && screen.attr.title || this.name, 
-				'$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js',
-				query.test === null || query.test === 'true'
-			)
-
-			var header = {
-				"Cache-control":"max-age=0",
-				"Content-Type": "text/html"
-			}
-
-			res.writeHead(200, header)
-			res.write(html)
+			
 			res.end()
 		}
 		
