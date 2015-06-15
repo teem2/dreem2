@@ -263,7 +263,7 @@ define(function(require, exports, module){
 			})
 			
 			Object.defineProperty(this, key, {
-				configurable:false,
+				configurable:true,
 				enumerable:true,
 				get:function(){
 					var attr = this[attr_key]
