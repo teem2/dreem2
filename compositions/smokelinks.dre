@@ -82,6 +82,7 @@ SOFTWARE. -->
           <link url="./smoke_idle?test">Idle</link>
           <link url="./smoke_initialization?test">Initialization</link>
           <link url="./smoke_mixins?test">Mixins</link>
+          <link url="./smoke_setters?test">Setters</link>
           <link url="./smoke_super?test">Super</link>
           
           <subhead>Node</subhead>
