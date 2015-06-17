@@ -11,9 +11,9 @@ define(function(require, exports, module) {
 
   function BusServer() {
     this.sockets = [];
-  }
+  };
 
-  body.call(BusServer.prototype)
+  body.call(BusServer.prototype);
 
   function body() {
     /**
@@ -35,7 +35,7 @@ define(function(require, exports, module) {
       
       this.onConnect(sock);
     };
-
+    
     /**
      * @event onMessage
      * Called when a new message appears on any of the sockets
@@ -43,7 +43,7 @@ define(function(require, exports, module) {
      * @param {WebSocket} socket
      */
     this.onMessage = function(message, socket) {};
-
+    
     /**
      * @event onConnect
      * Called when a new socket appears on the bus
@@ -51,7 +51,7 @@ define(function(require, exports, module) {
      * @param {WebSocket} socket
      */
     this.onConnect = function(message, socket) {};
-
+    
     /** 
       * @method broadcast
       * Send a message to all connected sockets
@@ -61,7 +61,7 @@ define(function(require, exports, module) {
       message = JSON.stringify(message);
       for (var i = 0; i < this.sockets.length; i++) this.sockets[i].send(message);
     };
-
+    
     this.closeAll = function() {
       for (var i = 0; i < this.sockets.length; i++) this.sockets[i].close();
       this.sockets = [];

@@ -1,7 +1,4 @@
 <!-- The MIT License (see LICENSE)
      Copyright (C) 2014-2015 Teem2 LLC -->
 <!-- Exposes dr.View from lib/dr -->
-<class name="view">
-  <method name="spawn"></method>
-  <method name="render"></method>
-</class>
+<class name="view"></class>
