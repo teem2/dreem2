@@ -54,33 +54,34 @@ SOFTWARE. -->
         </handler>
       </text>
       
-      <!-- embedded >'s in the code -->
+      <!-- embedded >'s in the code. No following space is needed. -->
       <view>
         <handler event="oninit">
           var someArray = [1,2,3];
           var tots = 0;
-          for(var i=0; someArray.length > i; i++) {
+          for(var i=0; someArray.length >i; i++) {
             tots += someArray[i];
           }
           all.totalA = tots;
         </handler>
       </view>
       
-      <!-- embedded <'s in the code -->
-      <!--view>
+      <!-- embedded <'s in the code. Must be followed by a space to work
+           correctly. -->
+      <view>
         <handler event="oninit">
-          var someArray = [1,2,3];
+          var someArray = [1,2,3,4];
           var tots = 0;
-          for(var i=0; i<someArray.length; i++) {
+          for(var i=0; i< someArray.length; i++) {
             tots += someArray[i];
           }
           all.totalB = tots;
         </handler>
-      </view-->
+      </view>
       
       <handler event="oninit">
         assert.equal(this.totalA, 6);
-        //assert.equal(this.totalB, 6);
+        assert.equal(this.totalB, 10);
       </handler>
     </view>
   </screen>
