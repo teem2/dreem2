@@ -33,9 +33,15 @@ define(function(require, exports, module) {
     
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
-    this.watcher.onChange = function() {
+    this.watcher.onChange = function(file) {
       // lets reload this app
       this.reload();
+      
+      // Tell the client to refresh itself.
+      teemserver.broadcast({
+        type:'filechange',
+        file:file
+      });
     }.bind(this);
     
     this.components = {};
