@@ -67,9 +67,7 @@ SOFTWARE. -->
           <subhead>Foundation</subhead>
           <link url="./smoke_class_system?test">Class System</link>
           <link url="./smoke_resolve_name?test">Resolve Name</link>
-        </block>
-        
-        <block>
+          
           <subhead>Core</subhead>
           <link url="./smoke_attributes?test">Attributes</link>
           <link url="./smoke_circularevent?test">Circular Event</link>
@@ -80,21 +78,25 @@ SOFTWARE. -->
           <link url="./smoke_events?test">Events</link>
           <link url="./smoke_handlers?test">Handlers</link>
           <link url="./smoke_idle?test">Idle</link>
+          <link url="./smoke_include?test">Include</link>
           <link url="./smoke_initialization?test">Initialization</link>
           <link url="./smoke_mixins?test">Mixins</link>
           <link url="./smoke_platform_events?test">Platform Events</link>
+          <link url="./smoke_scriptincludes?test">Script Includes</link>
           <link url="./smoke_setters?test">Setters</link>
           <link url="./smoke_super?test">Super</link>
-          
-          <subhead>Node</subhead>
-          <link url="./smoke_animation?test">Animation</link>
-          <link url="./smoke_animgroup?test">Animation Group</link>
-          <link url="./smoke_node?test">Node</link>
-          <link url="./smoke_placement?test">Placement</link>
-          <link url="./smoke_reparenting_and_renaming?test">Reparenting and Renaming</link>
         </block>
         
         <block>
+          <subhead>Animation</subhead>
+          <link url="./smoke_animation?test">Animation</link>
+          <link url="./smoke_animgroup?test">Animation Group</link>
+          
+          <subhead>Node</subhead>
+          <link url="./smoke_node?test">Node</link>
+          <link url="./smoke_placement?test">Placement</link>
+          <link url="./smoke_reparenting_and_renaming?test">Reparenting and Renaming</link>
+          
           <subhead>View System</subhead>
           <link url="./smoke_scrollable?test">Scrollable</link>
           <link url="./smoke_sizetoplatform?test">Size to Platform</link>
@@ -104,7 +106,9 @@ SOFTWARE. -->
           <link url="./smoke_view_ordering?test">View: Ordering</link>
           <link url="./smoke_view_position?test">View: Position</link>
           <link url="./smoke_view_size?test">View: Size</link>
-          
+        </block>
+        
+        <block>
           <subhead>Layouts</subhead>
           <link url="./smoke_layout_align?test">Layout Align</link>
           <link url="./smoke_layout_constant?test">Layout Constant</link>
@@ -112,9 +116,7 @@ SOFTWARE. -->
           <link url="./smoke_layout_spaced?test">Layout Spaced</link>
           <link url="./smoke_layout_variable?test">Layout Variable</link>
           <link url="./smoke_layout_wrapping?test">Layout Wrapping</link>
-        </block>
-        
-        <block>
+          
           <subhead>Components</subhead>
           <link url="./smoke_bitmap?test">Bitmap</link>
           <link url="./smoke_button?test">Button</link>
