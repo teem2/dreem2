@@ -140,9 +140,6 @@ define(function(require, exports, module) {
     teem.bus = new BusClient(location.pathname);
     var rpcpromise = new RpcPromise(teem.bus);
     
-    // lets put teem on window just as a debuggin tool
-    window.teem = teem;
-    
     define.onMain = function(main) {
       teem.bus.onMessage = function(msg) {
         if (msg.type == 'sessionCheck') {
@@ -195,13 +192,11 @@ define(function(require, exports, module) {
       compiler = new dreemParser.Compiler();
     compiler.execute(main.dre, main.classmap, function(error, pkg) {
       if (error) {
-        for (var i = 0; i < error.length; i++) {
-          console.log(error[i].toString());
-        }
+        for (var i = 0; i < error.length; i++) console.log(error[i].toString());
       } else {
         dreemMaker.makeFromPackage(pkg);
       }
-    })
+    });
   };
 
   return teem;

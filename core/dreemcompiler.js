@@ -72,13 +72,13 @@ define(function(require, exports, module) {
 
   /* Concats all the childnodes of a jsonxml node*/
   exports.concatCode = function(node) {
-    var out = '';
-    var children = node.child;
-    if (!children || !children.length) return '';
-    for (var i = 0; i < children.length; i++) {
-      var child = children[i];
-      if (child.tag == '$text') out += child.value;
-      if (child.tag == '$cdata') out += child.value;
+    var out = '', children = node.child;
+    if (children) {
+      var i = 0, len = children.length, child;
+      for (; i < len; i++) {
+        child = children[i];
+        if (child.tag === '$text' || child.tag === '$cdata') out += child.value;
+      }
     }
     return out;
   };
@@ -150,32 +150,41 @@ define(function(require, exports, module) {
         var child = node.child[i],
           childTagName = child.tag,
           childAttrs = child.attr;
-        if (childTagName === 'attribute') {
-          if (childAttrs) {
-            attributes[childAttrs.name.toLowerCase()] = childAttrs.type.toLowerCase() || 'string';
-          }
-        } else if (childTagName === 'method' || childTagName === 'handler' || childTagName === 'getter' || childTagName === 'setter') {
-          var attrnameset = childAttrs && (childAttrs.name || childAttrs.event);
-          var attrnames = attrnameset.split(/,\s*|\s+/), attrname, j;
-          for (j = 0; j < attrnames.length; j++) {
-            attrname = attrnames[j];
-            if (!attrname) {
-              errors.push(new DreemError('Attribute has no name ', child.pos));
-              return;
+        switch (childTagName) {
+          case 'attribute':
+            if (childAttrs) {
+              attributes[childAttrs.name.toLowerCase()] = childAttrs.type.toLowerCase() || 'string';
             }
-            var fn = this.compileMethod(child, node, language, errors, '\t\t\t\t');
-            if (fn === errors) continue;
-            
-            var args = fn.args;
-            if (!args && childTagName == 'setter') args = ['value'];
-            body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n';
-          }
-        } else if (childTagName.charAt(0) !== '$') { // its our render-node
-          var inst = this.compileInstance(child, errors, '\t\t\t');
-          for (var key in inst.deps) deps[key] = 1;
-          body += '\t\tthis.render = function(){\n';
-          body += '\t\t\treturn ' + inst.body +'\n';
-          body += '\t\t}\n';
+            break;
+          case 'method':
+          case 'handler':
+          case 'getter':
+          case 'setter':
+            var attrnameset = childAttrs && (childAttrs.name || childAttrs.event);
+            var attrnames = attrnameset.split(/,\s*|\s+/), attrname, j;
+            for (j = 0; j < attrnames.length; j++) {
+              attrname = attrnames[j];
+              if (!attrname) {
+                errors.push(new DreemError('Attribute has no name ', child.pos));
+                return;
+              }
+              var fn = this.compileMethod(child, node, language, errors, '\t\t\t\t');
+              if (fn === errors) continue;
+              
+              var args = fn.args;
+              if (!args && childTagName == 'setter') args = ['value'];
+              body += '\t\tthis.' + attrname +' = function(' + args.join(', ') + '){' + fn.comp + '}\n';
+            }
+            break;
+          default:
+            if (childTagName.charAt(0) !== '$') { // its our render-node
+              var inst = this.compileInstance(child, errors, '\t\t\t');
+              for (var key in inst.deps) deps[key] = 1;
+              body += '\t\tthis.render = function(){\n';
+              body += '\t\t\treturn ' + inst.body +'\n';
+              body += '\t\t}\n';
+            }
+            break;
         }
       }
       
@@ -301,63 +310,74 @@ define(function(require, exports, module) {
             tagName = child.tag,
             attr = child.attr;
           
-          if (tagName === 'class' || tagName === 'mixin') {
-            // lets output a local class 
-            if (onLocalClass) {
-              onLocalClass(child, errors);
-            } else {
-              errors.push(new DreemError('Cant support class in this location', node.pos));
-            }
-          } else if (tagName == 'method' || tagName == 'handler' || tagName == 'getter' || tagName == 'setter') {
-            var fn = this.compileMethod(child, parent, language, errors, indent + '\t');
-            if (fn === errors) continue;
-            
-            if (!attr || (!attr.name && !attr.event)) {
-              //errors.push(new DreemError('code tag has no name', child.pos))
-              continue;
-            }
-            var attrnameset = attr.name || attr.event;
-            
-            var attrnames = attrnameset.split(/,\s*|\s+/);
-            for (var j = 0; j < attrnames.length; j++) {
-              var attrname = attrnames[j];
-              
-              if (props) {
-                props += ',\n' + myindent;
+          switch (tagName) {
+            case 'class':
+            case 'mixin':
+              // lets output a local class 
+              if (onLocalClass) {
+                onLocalClass(child, errors);
               } else {
-                props = '{\n' + myindent;
+                errors.push(new DreemError('Cant support class in this location', node.pos));
               }
-              var pre = '', post = '';
-              if (tagName == 'getter') {
-                attrname = 'get_' + attrname;
-              } else if (tagName == 'setter') {
-                attrname = 'set_' + attrname;
-              }
+              break;
+            case 'method':
+            case 'handler':
+            case 'getter':
+            case 'setter':
+              var fn = this.compileMethod(child, parent, language, errors, indent + '\t');
+              if (fn === errors) continue;
               
-              if (tagName == 'handler') attrname = 'handle_' + attrname;
-              props += attrname + ': function(' + fn.args.join(', ') + '){' + fn.comp + '}';
-            }
-          } else if (tagName == 'attribute') {
-            if (attr && attr.name) {
-              var value = attr.value;
-              if (value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) {
-                value = '"' + value.split('"').join('\\"').split('\n').join('\\n') + '"';
+              if (!attr || (!attr.name && !attr.event)) {
+                //errors.push(new DreemError('code tag has no name', child.pos))
+                continue;
               }
-              attributes[attr.name.toLowerCase()] = [
-                attr.type.toLowerCase() || 'string',
-                value
-              ];
-            } else {
-              errors.push(new DreemError('attribute tag has no name', child.pos));
-              continue;
-            }
-          } else if (tagName.charAt(0) != '$') {
-            if (children) {
-              children += ',\n' + myindent;
-            } else {
-              children = '\n' + myindent;
-            }
-            children += walk(child, node, myindent, depth+1, language);
+              var attrnameset = attr.name || attr.event;
+              
+              var attrnames = attrnameset.split(/,\s*|\s+/);
+              for (var j = 0; j < attrnames.length; j++) {
+                var attrname = attrnames[j];
+                
+                if (props) {
+                  props += ',\n' + myindent;
+                } else {
+                  props = '{\n' + myindent;
+                }
+                var pre = '', post = '';
+                if (tagName == 'getter') {
+                  attrname = 'get_' + attrname;
+                } else if (tagName == 'setter') {
+                  attrname = 'set_' + attrname;
+                }
+                
+                if (tagName == 'handler') attrname = 'handle_' + attrname;
+                props += attrname + ': function(' + fn.args.join(', ') + '){' + fn.comp + '}';
+              }
+              break;
+            case 'attribute':
+              if (attr && attr.name) {
+                var value = attr.value;
+                if (value !== undefined && value !== 'true' && value !== 'false' && parseFloat(value) != value) {
+                  value = '"' + value.split('"').join('\\"').split('\n').join('\\n') + '"';
+                }
+                attributes[attr.name.toLowerCase()] = [
+                  attr.type.toLowerCase() || 'string',
+                  value
+                ];
+              } else {
+                errors.push(new DreemError('attribute tag has no name', child.pos));
+                continue;
+              }
+              break;
+            default:
+              if (tagName.charAt(0) != '$') {
+                if (children) {
+                  children += ',\n' + myindent;
+                } else {
+                  children = '\n' + myindent;
+                }
+                children += walk(child, node, myindent, depth+1, language);
+              }
+              break;
           }
         }
         
