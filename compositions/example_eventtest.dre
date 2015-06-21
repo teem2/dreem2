@@ -72,6 +72,9 @@ SOFTWARE. -->
       <text>Global mouse events</text>
       <view width="auto" height="auto">
         <spacedlayout spacing="1"></spacedlayout>
+        
+        <globalmousetest eventname="wheel"></globalmousetest>
+        
         <globalmousetest eventname="mousemove"></globalmousetest>
         <globalmousetest eventname="mouseover"></globalmousetest>
         <globalmousetest eventname="mouseout"></globalmousetest>
