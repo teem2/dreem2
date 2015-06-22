@@ -23,7 +23,8 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Example - Event Test'>
     <view width="100%" height="100%">
-      <class name="tester" width="150" height="70" bgcolor="red">
+      <!--// Class Definitions //-->
+      <class name="tester" width="100" height="40" bgcolor="red" padding="4">
         <attribute name="eventname" type="string" value="onmouseover"></attribute>
         <attribute name="eventvalue" type="expression" value="''"></attribute>
         <attribute name="scope" type="expression" value="dr.mouse"></attribute>
@@ -43,85 +44,122 @@ SOFTWARE. -->
           return this.eventname + (this.eventvalue !== '' ? '\n' + this.eventvalue : '');
         </method>
         
-        <text name="label" multiline="true" width="100%" text="${this.parent.getLabel('')}"></text>
+        <text name="label" multiline="true" width="100%" text="${this.parent.getLabel('')}" fontsize="12" color="white"></text>
       </class>
-    
-      <spacedlayout axis="y"></spacedlayout>
-    
-      <view height="120">
+      
+      <class name="mousetest" extends="tester" scope="mouser"></class>
+      
+      <class name="keyboardtest" extends="tester" scope="mouser">
+        <method name="getLabel" args="event">
+          var charCode = typeof event === 'object' ? dr.sprite.KeyObservable.getKeyCodeFromEvent(event) : event;
+          return this.super() + '\n' + (charCode ? (charCode + ' : ' + String.fromCharCode(charCode)) : '');
+        </method>
+      </class>
+      
+      <class name="globalmousetest" extends="tester" scope="dr.mouse">
+        <!-- Return true to allow event bubbling. -->
+        <method name="callback" args="event">
+          this.super();
+          return true;
+        </method>
+      </class>
+      
+      <class name="globalkeyboardtest" extends="tester" scope="dr.keyboard">
+        <method name="getLabel" args="event">
+          var charCode = typeof event === 'object' ? dr.sprite.KeyObservable.getKeyCodeFromEvent(event) : event;
+          return this.super() + '\n' + (charCode ? (charCode + ' : ' + String.fromCharCode(charCode)) : '');
+        </method>
+      </class>
+      
+      <class name="inputtexttest" extends="keyboardtest" scope="inp"></class>
+      
+      
+      <!--// Views //-->
+      <spacedlayout axis="y" spacing="5"></spacedlayout>
+      
+      <view width="100%" height="120" bgcolor="lightgray">
         <spacedlayout spacing="1"></spacedlayout>
         <view id="mouser" with="button" height="100" width="100" bgcolor="yellow" clickable="true"></view>
         <inputtext id="inp">Input text</inputtext>
       </view>
-    
-      <class name="mousetest" extends="tester" scope="mouser"></class>
-    
-      <text>Mouse events</text>
+      
+      <text>Mouse Events</text>
       <view width="auto" height="auto">
         <spacedlayout spacing="1"></spacedlayout>
+        
+        <mousetest eventname="wheel"></mousetest>
+        <mousetest eventname="mousemove"></mousetest>
         <mousetest eventname="mouseover" eventvalue="true"></mousetest>
-        <mousetest eventname="mouseover" eventvalue="false"></mousetest>
+        <mousetest eventname="mouseover" eventvalue="false"></mousetest><!-- Button handled out -->
         <mousetest eventname="mousedown" eventvalue="true"></mousetest>
-        <mousetest eventname="mousedown" eventvalue="false"></mousetest>
+        <mousetest eventname="mousedown" eventvalue="false"></mousetest><!-- Button handled up -->
         <mousetest eventname="mouseupoutside" eventvalue="true"></mousetest>
+        <mousetest eventname="click"></mousetest>
+      </view>
+      
+      <text>Keyboard Events</text>
+      <view width="auto" height="auto">
+        <spacedlayout spacing="1"></spacedlayout>
+        
+        <keyboardtest eventname="keydown"></keyboardtest>
+        <keyboardtest eventname="keyup"></keyboardtest>
+        <keyboardtest eventname="keypress"></keyboardtest>
+      </view>
+      
+      <text>Other Events</text>
+      <view width="auto" height="auto">
+        <spacedlayout spacing="1"></spacedlayout>
+        
         <mousetest eventname="activated" eventvalue="true"></mousetest>
       </view>
-    
-      <class name="globalmousetest" extends="tester" scope="dr.mouse"></class>
-    
-      <text>Global mouse events</text>
+      
+      <text>Global Mouse Events</text>
       <view width="auto" height="auto">
         <spacedlayout spacing="1"></spacedlayout>
         
         <globalmousetest eventname="wheel"></globalmousetest>
-        
         <globalmousetest eventname="mousemove"></globalmousetest>
         <globalmousetest eventname="mouseover"></globalmousetest>
         <globalmousetest eventname="mouseout"></globalmousetest>
         <globalmousetest eventname="mousedown"></globalmousetest>
         <globalmousetest eventname="mouseup"></globalmousetest>
-        
         <globalmousetest eventname="mouseupoutside"></globalmousetest>
         <globalmousetest eventname="click"></globalmousetest>
       </view>
-    
-      <class name="keyboardtest" extends="tester" scope="dr.keyboard">
-        <method name="getLabel" args="event">
-          return this.super() +  '\n' + event;
-        </method>
-      </class>
-    
-      <text>Keyboard events</text>
+      
+      <text>Global Keyboard Events</text>
       <view width="auto" height="auto">
         <spacedlayout spacing="1"></spacedlayout>
-        <keyboardtest eventname="keydown"></keyboardtest>
-        <keyboardtest eventname="keyup"></keyboardtest>
+        
+        <globalkeyboardtest eventname="keydown"></globalkeyboardtest>
+        <globalkeyboardtest eventname="keyup"></globalkeyboardtest>
+        <globalkeyboardtest eventname="keypress"></globalkeyboardtest>
       </view>
-    
-      <class name="inputtexttest" extends="keyboardtest" scope="inp"></class>
-    
-      <!--text>Input text events</text>
+      
+      <text>Input Text Events</text>
       <view width="auto" height="auto">
         <spacedlayout spacing="1"></spacedlayout>
+        
         <inputtexttest eventname="keydown"></inputtexttest>
         <inputtexttest eventname="keyup"></inputtexttest>
+        <inputtexttest eventname="focus"></inputtexttest>
+        <inputtexttest eventname="blur"></inputtexttest>
         <inputtexttest eventname="text"></inputtexttest>
         <inputtexttest eventname="change"></inputtexttest>
         <inputtexttest eventname="select"></inputtexttest>
-        <inputtexttest eventname="focus"></inputtexttest>
-        <inputtexttest eventname="blur"></inputtexttest>
-      </view-->
-    
+      </view>
+      
       <!--gyro id="gyros"></gyro>
       <class name="gyrotest" extends="tester" scope="gyros">
         <method name="getLabel" args="data">
           return this.eventname + ': ' + data
         </method>
       </class>
-    
+      
       <text visible="${gyros.active}">Gyro events</text>
       <view width="auto" height="auto" visible="${gyros.active}">
         <spacedlayout spacing="1"></spacedlayout>
+        
         <gyrotest eventname="active"></gyrotest>
         <gyrotest eventname="x"></gyrotest>
         <gyrotest eventname="x"></gyrotest>
@@ -133,9 +171,9 @@ SOFTWARE. -->
         <gyrotest eventname="compass"></gyrotest>
         <gyrotest eventname="compassaccuracy"></gyrotest>
       </view-->
-    
-      <view id="follower" bgcolor="purple" width="30" height="30" opacity=".3" 
-        x="${dr.mouse.x - 15}" y="${dr.mouse.y - 15}" ignorelayout="true"
+      
+      <view bgcolor="purple" opacity=".3" ignorelayout="true"
+        width="30" height="30" x="${dr.mouse.x - 15}" y="${dr.mouse.y - 15}"
       ></view>
     </view>
   </screen>
