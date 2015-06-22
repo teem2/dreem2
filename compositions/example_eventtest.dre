@@ -24,7 +24,7 @@ SOFTWARE. -->
   <screen type="browser" name="default" title='Example - Event Test'>
     <view width="100%" height="100%">
       <!--// Class Definitions //-->
-      <class name="tester" width="100" height="40" bgcolor="red" padding="4">
+      <class name="tester" width="100" height="36" bgcolor="red" padding="4">
         <attribute name="eventname" type="string" value="onmouseover"></attribute>
         <attribute name="eventvalue" type="expression" value="''"></attribute>
         <attribute name="scope" type="expression" value="dr.mouse"></attribute>
@@ -90,84 +90,128 @@ SOFTWARE. -->
       
       
       <!--// Views //-->
-      <spacedlayout axis="y" spacing="5"></spacedlayout>
+      <spacedlayout axis="y"></spacedlayout>
       
-      <view width="100%" height="120" bgcolor="lightgray">
-        <spacedlayout spacing="1"></spacedlayout>
-        <view id="mouser" with="button" height="100" width="100" bgcolor="yellow" clickable="true"></view>
+      <view width="100%" height="auto" bgcolor="lightgray" padding="4">
+        <spacedlayout spacing="10"></spacedlayout>
+        
+        <view id="mouser" with="button" height="100" width="100" bgcolor="yellow" clickable="true">
+          <handler event="onclick">
+            if (dr.getGlobalScope().follower) {
+              follower.stopActiveAnimators('opacity');
+              follower.animate({attribute:'opacity', 'to':0}).next(
+                function(success) {follower.destroy();}
+              );
+            }
+          </handler>
+        </view>
         <inputtext id="inp">Input text</inputtext>
       </view>
       
-      <text>Mouse Events</text>
-      <view width="auto" height="auto">
-        <spacedlayout spacing="1"></spacedlayout>
+      <view width="auto" height="auto" padding="4">
+        <spacedlayout axis="y" spacing="2"></spacedlayout>
         
-        <mousetest eventname="wheel"></mousetest>
-        <mousetest eventname="mousemove"></mousetest>
-        <mousetest eventname="mouseover" eventvalue="true"></mousetest>
-        <mousetest eventname="mouseover" eventvalue="false"></mousetest><!-- Button handled out -->
-        <mousetest eventname="mousedown" eventvalue="true"></mousetest>
-        <mousetest eventname="mousedown" eventvalue="false"></mousetest><!-- Button handled up -->
-        <mousetest eventname="mouseupoutside" eventvalue="true"></mousetest>
-        <mousetest eventname="click"></mousetest>
+        <text>View (with Button mixin) Events</text>
+        
+        <text fontsize="12">Mouse</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <mousetest eventname="wheel"></mousetest>
+          <mousetest eventname="mousemove"></mousetest>
+          <mousetest eventname="mouseover" eventvalue="true"></mousetest>
+          <mousetest eventname="mouseover" eventvalue="false"></mousetest><!-- Button handled out -->
+          <mousetest eventname="mousedown" eventvalue="true"></mousetest>
+          <mousetest eventname="mousedown" eventvalue="false"></mousetest><!-- Button handled up -->
+          <mousetest eventname="mouseupoutside" eventvalue="true"></mousetest>
+          <mousetest eventname="click"></mousetest>
+        </view>
+        
+        <text fontsize="12">Keyboard</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <keyboardtest eventname="keydown"></keyboardtest>
+          <keyboardtest eventname="keyup"></keyboardtest>
+          <keyboardtest eventname="keypress"></keyboardtest>
+        </view>
+        
+        <text fontsize="12">Focus</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <tester eventname="focus" scope="mouser"></tester>
+          <tester eventname="blur" scope="mouser"></tester>
+        </view>
+        
+        <text fontsize="12">Other</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <mousetest eventname="activated" eventvalue="true"></mousetest>
+        </view>
       </view>
       
-      <text>Keyboard Events</text>
-      <view width="auto" height="auto">
-        <spacedlayout spacing="1"></spacedlayout>
+      <view width="auto" height="auto" padding="4">
+        <spacedlayout axis="y" spacing="2"></spacedlayout>
         
-        <keyboardtest eventname="keydown"></keyboardtest>
-        <keyboardtest eventname="keyup"></keyboardtest>
-        <keyboardtest eventname="keypress"></keyboardtest>
+        <text>Input Text Events</text>
+        
+        <text fontsize="12">Keyboard</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <keyboardtest eventname="keydown" scope="inp"></keyboardtest>
+          <keyboardtest eventname="keyup" scope="inp"></keyboardtest>
+          <keyboardtest eventname="keypress" scope="inp"></keyboardtest>
+        </view>
+        
+        <text fontsize="12">Focus</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <tester eventname="focus" scope="inp"></tester>
+          <tester eventname="blur" scope="inp"></tester>
+        </view>
+        
+        <text fontsize="12">Input</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <inputtexttest eventname="text" scrollable="true"></inputtexttest>
+          <inputtexttest eventname="value" scrollable="true"></inputtexttest>
+          <inputtexttest eventname="change"></inputtexttest>
+          <inputtexttest eventname="select"></inputtexttest>
+        </view>
       </view>
       
-      <text>Other Events</text>
-      <view width="auto" height="auto">
-        <spacedlayout spacing="1"></spacedlayout>
+      <view width="auto" height="auto" padding="4">
+        <spacedlayout axis="y" spacing="2"></spacedlayout>
         
-        <mousetest eventname="activated" eventvalue="true"></mousetest>
-        <tester eventname="focus" scope="mouser"></tester>
-        <tester eventname="blur" scope="mouser"></tester>
-      </view>
-      
-      <text>Input Text Events</text>
-      <view width="auto" height="auto">
-        <spacedlayout spacing="1"></spacedlayout>
+        <text>Global Events</text>
         
-        <keyboardtest eventname="keydown" scope="inp"></keyboardtest>
-        <keyboardtest eventname="keyup" scope="inp"></keyboardtest>
-        <keyboardtest eventname="keypress" scope="inp"></keyboardtest>
+        <text fontsize="12">Mouse</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <globalmousetest eventname="wheel"></globalmousetest>
+          <globalmousetest eventname="mousemove"></globalmousetest>
+          <globalmousetest eventname="mouseover"></globalmousetest>
+          <globalmousetest eventname="mouseout"></globalmousetest>
+          <globalmousetest eventname="mousedown"></globalmousetest>
+          <globalmousetest eventname="mouseup"></globalmousetest>
+          <globalmousetest eventname="mouseupoutside"></globalmousetest>
+          <globalmousetest eventname="click"></globalmousetest>
+        </view>
         
-        <tester eventname="focus" scope="inp"></tester>
-        <tester eventname="blur" scope="inp"></tester>
-        
-        <inputtexttest eventname="text" scrollable="true"></inputtexttest>
-        <inputtexttest eventname="value" scrollable="true"></inputtexttest>
-        <inputtexttest eventname="change"></inputtexttest>
-        <inputtexttest eventname="select"></inputtexttest>
-      </view>
-      
-      <text>Global Mouse Events</text>
-      <view width="auto" height="auto">
-        <spacedlayout spacing="1"></spacedlayout>
-        
-        <globalmousetest eventname="wheel"></globalmousetest>
-        <globalmousetest eventname="mousemove"></globalmousetest>
-        <globalmousetest eventname="mouseover"></globalmousetest>
-        <globalmousetest eventname="mouseout"></globalmousetest>
-        <globalmousetest eventname="mousedown"></globalmousetest>
-        <globalmousetest eventname="mouseup"></globalmousetest>
-        <globalmousetest eventname="mouseupoutside"></globalmousetest>
-        <globalmousetest eventname="click"></globalmousetest>
-      </view>
-      
-      <text>Global Keyboard Events</text>
-      <view width="auto" height="auto">
-        <spacedlayout spacing="1"></spacedlayout>
-        
-        <globalkeyboardtest eventname="keydown"></globalkeyboardtest>
-        <globalkeyboardtest eventname="keyup"></globalkeyboardtest>
-        <globalkeyboardtest eventname="keypress"></globalkeyboardtest>
+        <text fontsize="12">Keyboard</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <globalkeyboardtest eventname="keydown"></globalkeyboardtest>
+          <globalkeyboardtest eventname="keyup"></globalkeyboardtest>
+          <globalkeyboardtest eventname="keypress"></globalkeyboardtest>
+        </view>
       </view>
       
       <!--gyro id="gyros"></gyro>
@@ -193,7 +237,7 @@ SOFTWARE. -->
         <gyrotest eventname="compassaccuracy"></gyrotest>
       </view-->
       
-      <view bgcolor="purple" opacity=".3" ignorelayout="true"
+      <view id="follower" bgcolor="purple" opacity=".3" ignorelayout="true"
         width="30" height="30" x="${dr.mouse.x - 15}" y="${dr.mouse.y - 15}"
       ></view>
     </view>
