@@ -71,7 +71,22 @@ SOFTWARE. -->
         </method>
       </class>
       
-      <class name="inputtexttest" extends="keyboardtest" scope="inp"></class>
+      <class name="inputtexttest" extends="tester" scope="inp">
+        <method name="getLabel" args="event">
+          var details = '';
+          if (typeof event === 'object') {
+            switch (event.type) {
+              case 'select':
+                details = this.scope.getSelectedText();
+                break;
+            }
+          } else {
+            details = event;
+          }
+          
+          return this.super() + '\n' + details;
+        </method>
+      </class>
       
       
       <!--// Views //-->
@@ -111,6 +126,25 @@ SOFTWARE. -->
         <spacedlayout spacing="1"></spacedlayout>
         
         <mousetest eventname="activated" eventvalue="true"></mousetest>
+        <tester eventname="focus" scope="mouser"></tester>
+        <tester eventname="blur" scope="mouser"></tester>
+      </view>
+      
+      <text>Input Text Events</text>
+      <view width="auto" height="auto">
+        <spacedlayout spacing="1"></spacedlayout>
+        
+        <keyboardtest eventname="keydown" scope="inp"></keyboardtest>
+        <keyboardtest eventname="keyup" scope="inp"></keyboardtest>
+        <keyboardtest eventname="keypress" scope="inp"></keyboardtest>
+        
+        <tester eventname="focus" scope="inp"></tester>
+        <tester eventname="blur" scope="inp"></tester>
+        
+        <inputtexttest eventname="text" scrollable="true"></inputtexttest>
+        <inputtexttest eventname="value" scrollable="true"></inputtexttest>
+        <inputtexttest eventname="change"></inputtexttest>
+        <inputtexttest eventname="select"></inputtexttest>
       </view>
       
       <text>Global Mouse Events</text>
@@ -134,19 +168,6 @@ SOFTWARE. -->
         <globalkeyboardtest eventname="keydown"></globalkeyboardtest>
         <globalkeyboardtest eventname="keyup"></globalkeyboardtest>
         <globalkeyboardtest eventname="keypress"></globalkeyboardtest>
-      </view>
-      
-      <text>Input Text Events</text>
-      <view width="auto" height="auto">
-        <spacedlayout spacing="1"></spacedlayout>
-        
-        <inputtexttest eventname="keydown"></inputtexttest>
-        <inputtexttest eventname="keyup"></inputtexttest>
-        <inputtexttest eventname="focus"></inputtexttest>
-        <inputtexttest eventname="blur"></inputtexttest>
-        <inputtexttest eventname="text"></inputtexttest>
-        <inputtexttest eventname="change"></inputtexttest>
-        <inputtexttest eventname="select"></inputtexttest>
       </view>
       
       <!--gyro id="gyros"></gyro>
