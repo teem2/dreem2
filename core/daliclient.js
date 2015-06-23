@@ -41,11 +41,15 @@ define(function(require, exports, module) {
         var data = '';
         res.on('data', function(buf) {data += buf;});
         res.on('end', function() {
+			console.log('got data!');
+
           // write it and restart it.
           try {
-            fs.writeFileSync('./dali.js', data);
+            console.log('writing dali.js!');
+			fs.writeFileSync('./dali.js', data);
             if (this.child) {
-              var kill = this.child;
+            console.log('child process already running - removing it first.');
+			  var kill = this.child;
               this.child = undefined;
               var i = 0;
               var itv = this.setInterval(function() {
@@ -53,6 +57,7 @@ define(function(require, exports, module) {
                 if (i++ > 20) this.clearInterval(itv);
               },10);
             }
+            console.log('spawning dali process!');
             this.child = child_process.spawn('./scriptrunner.example', ['./dali.js']);
             this.child.on('close', function(code) {
               this.child = undefined;
