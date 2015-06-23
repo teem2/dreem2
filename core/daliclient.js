@@ -29,6 +29,8 @@ define(function(require, exports, module) {
   function body() {
     // connect to server
     this.redownload = function() {
+					console.log('starting redownload...');
+
       // lets fetch the main thing
       http.get({
         host: this.url.hostname,
@@ -47,7 +49,7 @@ define(function(require, exports, module) {
               this.child = undefined;
               var i = 0;
               var itv = this.setInterval(function() {
-                try {kill.kill('SIGTERM');} catch(e) {}
+                try {kill.kill('SIGTERM');console.log('attempting to stop process');} catch(e) {}
                 if (i++ > 20) this.clearInterval(itv);
               },10);
             }
@@ -79,6 +81,7 @@ define(function(require, exports, module) {
           msg = JSON.parse(msg);
         } catch(e){}
         if (msg.type == "sessionCheck") {
+			console.log('attempting redownload!');
           this.redownload();
         }
       }.bind(this);
