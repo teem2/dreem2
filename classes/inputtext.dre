@@ -50,59 +50,49 @@ SOFTWARE. -->
 <class name="inputtext" extends="text" type="coffee"
   clickable="true" focusable="true" width="100"
 >
-<!--/**
-   * @event onselect
-   * Fired when an inputtext is selected
-   * @param {dr.view} view The view that fired the event
-   */
-
-  /**
-   * @event onchange
-   * Fired when an inputtext has changed
-   * @param {dr.view} view The view that fired the event
-   */
-
-  /**
-   * @event onfocus
-   * Fired when an inputtext is focused
-   * @param {dr.view} view The view that fired the event
-   */
-
-  /**
-   * @event onblur
-   * Fired when an inputtext is blurred or loses focus
-   * @param {dr.view} view The view that fired the event
-   */
-
-  /**
-   * @event onkeydown
-   * Fired when a key goes down
-   * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
-   */
-
-  /**
-   * @event onkeyup
-   * Fired when a key goes up
-   * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
-   *
-
-   /**
-     * @event onrows
-     * Fired the rows attribute changes.
-     * @param {number} The number of rows displayed for multiline text input.
-     */-->
+  <!--// Accessors //-->
+  <!--/**
+    * @event onselect
+    * Fired when an inputtext is selected
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onchange
+    * Fired when an inputtext has changed
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onfocus
+    * Fired when an inputtext is focused
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onblur
+    * Fired when an inputtext is blurred or loses focus
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onkeydown
+    * Fired when a key goes down
+    * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
+    * 
+    * @event onkeyup
+    * Fired when a key goes up
+    * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
+    * 
+    * @event onrows
+    * Fired the rows attribute changes.
+    * @param {number} The number of rows displayed for multiline text input.
+    */-->
   <attribute name="rows" type="number" value="3"></attribute>
 
   <attribute name="value" type="string" value=""></attribute>
   <setter name="value" args="v">
     if @setActual('value', v, 'string', '')
-      if this.text isnt this.value then @setActualAttribute('text', this.value);
+      if this.text isnt this.value then @setActualAttribute('text', this.value)
   </setter>
   <setter name="text" args="text">
     @super()
-    @setActualAttribute('value', this.text);
+    @setActualAttribute('value', this.text)
   </setter>
 
+  <!--// Handlers //-->
   <handler event="onchange">
     return unless @replicator
     
@@ -119,6 +109,11 @@ SOFTWARE. -->
     @replicator.updateData(newdata)
   </handler>
 
+  <handler event="oninput" args="event">
+    @setAttribute('value', @sprite.get_value())
+  </handler>
+
+  <!--// Methods //-->
   <method name="initNode" args="parent, attrs">
     # Use whichever attribute or aliased attribute is not the default and
     # delete the unnecessary initial value.
@@ -131,17 +126,49 @@ SOFTWARE. -->
     @super()
   </method>
 
-  <method name="createSprite" args="attrs">
-    return new dr.sprite.InputText(this, attrs);
+  <method name="isPlatformEvent" args="eventType">
+    if dr.sprite.InputObservable.EVENT_TYPES[eventType]
+      return true
+    return @super()
   </method>
 
-  <method name="sendEvent" args="type, value">
-    @super()
-    
-    # send text events for events that could cause text to change
-    if type is 'onkeydown' or type is 'onkeyup' or type is 'onblur' or name is 'onchange'
-      value = @sprite.get_value()
-      if @text isnt value
-        @setActualAttribute('text', value)
+  <method name="createSprite" args="attrs">
+    return new dr.sprite.InputText(this, attrs)
+  </method>
+
+  <method name="getCaretPosition">
+    return @sprite.getCaretPosition()
+  </method>
+
+  <method name="setCaretPosition" args="start, end">
+    return @sprite.setCaretPosition(start, end)
+  </method>
+
+  <method name="setCaretToStart">
+    return @sprite.setCaretToStart()
+  </method>
+
+  <method name="setCaretToEnd">
+    return @sprite.setCaretToEnd()
+  </method>
+
+  <method name="selectAll">
+    return @sprite.selectAll()
+  </method>
+
+  <method name="getSelection">
+    return @sprite.getSelection()
+  </method>
+
+  <method name="setSelection" args="selection">
+    return @sprite.setSelection(selection)
+  </method>
+
+  <method name="clearSelection">
+    return @sprite.clearSelection()
+  </method>
+
+  <method name="getSelectedText">
+    return @sprite.getSelectedText()
   </method>
 </class>
