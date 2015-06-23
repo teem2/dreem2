@@ -186,23 +186,25 @@ define(function(require, exports, module) {
     }
   } else if (define.env == 'v8') {
     // dali environment
-    define.onMain = teem.__startup;
+    define.onMain = function(main) {
+	  log("this is dali in v8 env!\n");
+
+		var dreemParser = require('$LIB/dr/dreemParser.js'),
+				dreemMaker = require('$LIB/dr/dreemMaker.js'),
+				compiler = new dreemParser.Compiler();
+		compiler.execute(main.dre, main.classmap, function(error, pkg) {
+		  if (error) {
+			for (var i = 0; i < error.length; i++) {
+			  console.log(error[i].toString());
+			}
+		  } else {
+			dreemMaker.makeFromPackage(pkg);
+		  }
+		})
+	};
   }
 
-  teem.__startup = function(main) {
-    var dreemParser = require('$LIB/dr/dreemParser.js'),
-      dreemMaker = require('$LIB/dr/dreemMaker.js'),
-      compiler = new dreemParser.Compiler();
-    compiler.execute(main.dre, main.classmap, function(error, pkg) {
-      if (error) {
-        for (var i = 0; i < error.length; i++) {
-          console.log(error[i].toString());
-        }
-      } else {
-        dreemMaker.makeFromPackage(pkg);
-      }
-    })
-  };
+  
 
   return teem;
 })
