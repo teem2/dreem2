@@ -29,8 +29,8 @@ define(function(require, exports, module) {
   function body() {
     // connect to server
     this.redownload = function() {
-					console.log('starting redownload...');
-
+      console.log('starting redownload...');
+      
       // lets fetch the main thing
       http.get({
         host: this.url.hostname,
@@ -41,15 +41,15 @@ define(function(require, exports, module) {
         var data = '';
         res.on('data', function(buf) {data += buf;});
         res.on('end', function() {
-			console.log('got data!');
-
+        console.log('got data!');
+        
           // write it and restart it.
           try {
             console.log('writing dali.js!');
-			fs.writeFileSync('./dali.js', data);
+            fs.writeFileSync('./dali.js', data);
             if (this.child) {
-            console.log('child process already running - removing it first.');
-			  var kill = this.child;
+              console.log('child process already running - removing it first.');
+              var kill = this.child;
               this.child = undefined;
               var i = 0;
               var itv = this.setInterval(function() {
@@ -86,7 +86,7 @@ define(function(require, exports, module) {
           msg = JSON.parse(msg);
         } catch(e){}
         if (msg.type == "sessionCheck") {
-			console.log('attempting redownload!');
+          console.log('attempting redownload!');
           this.redownload();
         }
       }.bind(this);

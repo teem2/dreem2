@@ -140,9 +140,6 @@ define(function(require, exports, module) {
     teem.bus = new BusClient(location.pathname);
     var rpcpromise = new RpcPromise(teem.bus);
     
-    // lets put teem on window just as a debuggin tool
-    window.teem = teem;
-    
     define.onMain = function(main) {
       teem.bus.onMessage = function(msg) {
         if (msg.type == 'sessionCheck') {
@@ -186,40 +183,21 @@ define(function(require, exports, module) {
     }
   } else if (define.env == 'v8') {
     // dali environment
-    define.onMain = function(main) {
-	  
-		var dreemParser = require('$LIB/dr/dreemParser.js'),
-				dreemMaker = require('$LIB/dr/dreemMaker.js'),
-				compiler = new dreemParser.Compiler();
-		compiler.execute(main.dre, main.classmap, function(error, pkg) {
-		  if (error) {
-			for (var i = 0; i < error.length; i++) {
-			  console.log(error[i].toString());
-			}
-		  } else {
-			dreemMaker.makeFromPackage(pkg);
-		  }
-		})
-	};
-  }
-  
-  teem.__startup = function(main)
-  {
-	  var dreemParser = require('$LIB/dr/dreemParser.js'),
-				dreemMaker = require('$LIB/dr/dreemMaker.js'),
-				compiler = new dreemParser.Compiler();
-		compiler.execute(main.dre, main.classmap, function(error, pkg) {
-		  if (error) {
-			for (var i = 0; i < error.length; i++) {
-			  console.log(error[i].toString());
-			}
-		  } else {
-			dreemMaker.makeFromPackage(pkg);
-		  }
-		})
+    define.onMain = teem.__startup;
   }
 
-  
+  teem.__startup = function(main) {
+    var dreemParser = require('$LIB/dr/dreemParser.js'),
+      dreemMaker = require('$LIB/dr/dreemMaker.js'),
+      compiler = new dreemParser.Compiler();
+    compiler.execute(main.dre, main.classmap, function(error, pkg) {
+      if (error) {
+        for (var i = 0; i < error.length; i++) console.log(error[i].toString());
+      } else {
+        dreemMaker.makeFromPackage(pkg);
+      }
+    });
+  };
 
   return teem;
 })

@@ -7,7 +7,6 @@
  * Holder of the dreem <composition> for the server
  * Manages all iOT objects and the BusServer for each Composition
  */
-
 define(function(require, exports, module) {
   module.exports = CompositionServer;
 
