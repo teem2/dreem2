@@ -2,11 +2,10 @@
  The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 */
-define(function(require, exports, module){
+define(function(require, exports, module) {
 	module.exports = Node
 
 	var Attribute = require ('$CORE/attribute')
-	var types = require('$CORE/types')
 
 	/**
 	  * @constructor
@@ -14,9 +13,10 @@ define(function(require, exports, module){
 	function Node(){
 		throw new Error("node is an abstract class, do not new it")
 	}
+
 	body.call(Node.prototype)
 
-	Node.extend = function extend(class_name, class_body){
+	Node.extend = function extend(class_name, class_body) {
 		function DreemClass(){
 			var obj = this
 			if(DreemClass.singleton) obj = DreemClass
@@ -91,8 +91,22 @@ define(function(require, exports, module){
 		Object.defineProperty(this, 'class', {enumerable:false, configurable:true, value:'Node'})
 
 		this.__is_node__ = true
-		this.types = types
-
+		
+		this.types = {
+			number:'number',
+			positivenumber:'positivenumber',
+			motion:'motion',
+			json:'json',
+			expression:'expression',
+			'*':'*',
+			object:'object',
+			function:'function',
+			string:'string',
+			boolean:'boolean',
+			color:'color',
+			event:'event'
+		};
+		
 		this.processArg0 = function(arg0){
 			for(var key in arg0){
 				var prop = arg0[key]
@@ -229,13 +243,13 @@ define(function(require, exports, module){
 		  * @param {String} key 
 		  * @param {String} type 
 		  */
-		this.__attribute = function(key, type, init_value){
-			var typeobj = types[type]
-			if (!typeobj) {
+		this.__attribute = function(key, type, init_value) {
+			var verifiedType = this.types[type]
+			if (!verifiedType) {
 				console.warn("Invalid type '" + type + "' for attribute '" + key + "', Using string type instead. Type must be one of: number, positivenumber, motion, json, expression, *, object, function, string, boolean, color.");
-				typeobj = types['string'];
+				verifiedType = 'string';
 			}
-			var attr = new Attribute(typeobj)
+			var attr = new Attribute(verifiedType)
 
 			attr.owner = this
 			attr.name = key

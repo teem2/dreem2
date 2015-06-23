@@ -2,21 +2,18 @@
  The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 */
-
 /**
  * @class RunMonitor
  * RunMonitor class executes ourselves as a subprocess, receives the dependency file names
  * from the child process and manages restart/killing when files change
  */
-
-define(function(require, exports, module){
+define(function(require, exports, module) {
 	var Node = require('$CLASSES/teem_node')
 
 	// json safety check
-	var RpcProxy = module.exports = Node.extend('RpcProxy', function(){
-	})
+	var RpcProxy = module.exports = Node.extend('RpcProxy', function() {});
 
-	RpcProxy.defineProp = function(obj, key, value){
+	RpcProxy.defineProp = function(obj, key, value) {
 		var store = '__' + key
 		Object.defineProperty(obj, key, {
 			get:function(){
@@ -29,7 +26,7 @@ define(function(require, exports, module){
 		})
 	}
 
-	RpcProxy.defineMethod = function(obj, key){
+	RpcProxy.defineMethod = function(obj, key) {
 		obj[key] = function(){
 			var args = []
 			var msg = {type:'method', rpcid:this._rpcid, method:key, args:args }
@@ -48,7 +45,7 @@ define(function(require, exports, module){
 		}
 	}
 
-	RpcProxy.handleCall = function(object, msg, socket){
+	RpcProxy.handleCall = function(object, msg, socket) {
 		var ret = object[msg.method].apply(object, msg.args)
 		if(ret && ret.then){ // make the promise resolve to a socket send
 			ret.then(function(result){
@@ -66,7 +63,7 @@ define(function(require, exports, module){
 		}		
 	}
 
-	RpcProxy.verifyRpc = function(rpcdef, component, prop, kind){
+	RpcProxy.verifyRpc = function(rpcdef, component, prop, kind) {
 		// lets rip off the array index
 		var def = rpcdef[component]
 		if(!def){
@@ -81,7 +78,7 @@ define(function(require, exports, module){
 		return true
 	}
 
-	RpcProxy.bindSetAttribute = function(object, rpcid, bus){
+	RpcProxy.bindSetAttribute = function(object, rpcid, bus) {
 	// ok lets now wire our mod.vdom.onSetAttribute
 		object._onAttributeSet = function(key, value){
 			// lets broadcast
@@ -105,7 +102,7 @@ define(function(require, exports, module){
 		}		
 	}
 
-	RpcProxy.decodeRpcID = function(onobj, rpcid){
+	RpcProxy.decodeRpcID = function(onobj, rpcid) {
 		if(!rpcid) throw new Error('no RPC ID')
 		var idx = rpcid.split('[')
 		var name = idx[0]
@@ -123,7 +120,7 @@ define(function(require, exports, module){
 		return onobj[name]
 	}
 
-	RpcProxy.isJsonSafe = function(obj, stack){
+	RpcProxy.isJsonSafe = function(obj, stack) {
 		if(!obj) return true
 		if(typeof obj == 'function') return false
 		if(typeof obj !== 'object') return true
@@ -143,7 +140,7 @@ define(function(require, exports, module){
 		return true
 	}
 
-	RpcProxy.createFromDef = function(def, rpcid, rpcpromise){
+	RpcProxy.createFromDef = function(def, rpcid, rpcpromise) {
 		var obj = new RpcProxy()
 
 		obj._rpcpromise = rpcpromise
@@ -170,14 +167,14 @@ define(function(require, exports, module){
 		return obj
 	}
 
-	RpcProxy.createRpcDef = function(object, ignore){
+	RpcProxy.createRpcDef = function(object, ignore) {
 		var def = {}
 		for(var key in object){
 			if(ignore && key in ignore) continue
 			if(object.__lookupGetter__(key)){ // we iz attribute
 				var attr = object['on_' + key]
 				if(attr){
-					def[key] = {kind:'attribute', type: attr.type.name}
+					def[key] = {kind:'attribute', type:attr.type}
 				}
 			}
 			else{

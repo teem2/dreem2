@@ -1,0 +1,6 @@
+<view width="100" height="100" bgcolor="red">
+  <text color="white" text="INCLUDED!"></text>
+  <handler type="coffee" event="oninit">
+    @parent.setAttribute("includedTarget", "SET!")
+  </handler>
+</view>
