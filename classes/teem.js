@@ -137,7 +137,7 @@ define(function(require, exports, module) {
   } else if (define.env == 'browser') {
     // web environment
     var BusClient = require('$CORE/busclient');
-    teem.bus = new BusClient(location.pathname);
+    teem.bus = new BusClient(location.pathname + location.search);
     var rpcpromise = new RpcPromise(teem.bus);
     
     define.onMain = function(main) {
