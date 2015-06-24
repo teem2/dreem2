@@ -27,38 +27,31 @@
      *
      */
 /**
-   * @event onselect
-   * Fired when an inputtext is selected
-   * @param {dr.view} view The view that fired the event
-   */
-/**
-   * @event onchange
-   * Fired when an inputtext has changed
-   * @param {dr.view} view The view that fired the event
-   */
-/**
-   * @event onfocus
-   * Fired when an inputtext is focused
-   * @param {dr.view} view The view that fired the event
-   */
-/**
-   * @event onblur
-   * Fired when an inputtext is blurred or loses focus
-   * @param {dr.view} view The view that fired the event
-   */
-/**
-   * @event onkeydown
-   * Fired when a key goes down
-   * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
-   */
-/**
-   * @event onkeyup
-   * Fired when a key goes up
-   * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
-   *
-
-   /**
-     * @event onrows
-     * Fired the rows attribute changes.
-     * @param {number} The number of rows displayed for multiline text input.
-     */
+    * @event onselect
+    * Fired when an inputtext is selected
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onchange
+    * Fired when an inputtext has changed
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onfocus
+    * Fired when an inputtext is focused
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onblur
+    * Fired when an inputtext is blurred or loses focus
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onkeydown
+    * Fired when a key goes down
+    * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
+    * 
+    * @event onkeyup
+    * Fired when a key goes up
+    * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
+    * 
+    * @event onrows
+    * Fired the rows attribute changes.
+    * @param {number} The number of rows displayed for multiline text input.
+    */

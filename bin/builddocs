@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 
-function abspath() {
-  path=$1
-  echo $(cd ${path%/*} && echo $PWD/${path##*/})
-}
-
-SCRIPT_PATH=$(abspath $(dirname $0))
+RELPATH=$(dirname $0)
+SCRIPT_PATH=$(cd ${RELPATH%/*} && echo $PWD/${RELPATH##*/})
 BASE_PATH=$(dirname $SCRIPT_PATH)
 DOCS_PATH="$BASE_PATH/docs"
 LIB_PATH="$DOCS_PATH/lib"

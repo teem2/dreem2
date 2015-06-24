@@ -16,209 +16,207 @@
 </head>
 <body onload="prettyPrint(); highlight();">
   <pre class="prettyprint lang-js"><span id='global-property-'>/**
-</span>	Copyright (c) 2014 Taylor Hakes
-	Copyright (c) 2014 Forbes Lindesay
+</span>  Copyright (c) 2014 Taylor Hakes
+  Copyright (c) 2014 Forbes Lindesay
 
-	Permission is hereby granted, free of charge, to any person obtaining a copy
-	of this software and associated documentation files (the &quot;Software&quot;), to deal
-	in the Software without restriction, including without limitation the rights
-	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-	copies of the Software, and to permit persons to whom the Software is
-	furnished to do so, subject to the following conditions:
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the &quot;Software&quot;), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
 
-	The above copyright notice and this permission notice shall be included in
-	all copies or substantial portions of the Software.
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
 
-	THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-	THE SOFTWARE.
+  THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
 */
-define(function(require, exports, module){
+define(function(require, exports, module) {
+  module.exports = Promise;
 
-	module.exports = Promise
+  // Use polyfill for setImmediate for performance gains
+  var asap = Promise.immediateFn || (typeof setImmediate === &#39;function&#39; &amp;&amp; setImmediate) || function(fn) {setTimeout(fn, 1);};
 
-	// Use polyfill for setImmediate for performance gains
-	var asap = Promise.immediateFn || (typeof setImmediate === &#39;function&#39; &amp;&amp; setImmediate) ||
-		function(fn) { setTimeout(fn, 1); };
+  // Polyfill for Function.prototype.bind
+  function bind(fn, thisArg) {
+    return function() {
+      fn.apply(thisArg, arguments);
+    }
+  }
 
-	// Polyfill for Function.prototype.bind
-	function bind(fn, thisArg) {
-		return function() {
-			fn.apply(thisArg, arguments);
-		}
-	}
+  var isArray = Array.isArray || function(value) {return Object.prototype.toString.call(value) === &quot;[object Array]&quot;};
 
-	var isArray = Array.isArray || function(value) { return Object.prototype.toString.call(value) === &quot;[object Array]&quot; };
+  function Promise(fn) {
+    if (typeof this !== &#39;object&#39;) throw new TypeError(&#39;Promises must be constructed via new&#39;);
+    if (typeof fn !== &#39;function&#39;) throw new TypeError(&#39;not a function&#39;);
+    this._state = null;
+    this._value = null;
+    this._deferreds = []
+    
+    doResolve(fn, bind(resolve, this), bind(reject, this));
+  }
 
-	function Promise(fn) {
-		if (typeof this !== &#39;object&#39;) throw new TypeError(&#39;Promises must be constructed via new&#39;);
-		if (typeof fn !== &#39;function&#39;) throw new TypeError(&#39;not a function&#39;);
-		this._state = null;
-		this._value = null;
-		this._deferreds = []
+  function handle(deferred) {
+    var me = this;
+    if (this._state === null) {
+      this._deferreds.push(deferred);
+      return;
+    }
+    asap(function() {
+      var cb = me._state ? deferred.onFulfilled : deferred.onRejected;
+      if (cb === null) {
+        (me._state ? deferred.resolve : deferred.reject)(me._value);
+        return;
+      }
+      var ret;
+      try {
+        ret = cb(me._value);
+      } catch (e) {
+        deferred.reject(e);
+        return;
+      }
+      deferred.resolve(ret);
+    })
+  }
 
-		doResolve(fn, bind(resolve, this), bind(reject, this))
-	}
+  function resolve(newValue) {
+    try { //Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
+      if (newValue === this) throw new TypeError(&#39;A promise cannot be resolved with itself.&#39;);
+      if (newValue &amp;&amp; (typeof newValue === &#39;object&#39; || typeof newValue === &#39;function&#39;)) {
+        var then = newValue.then;
+        if (typeof then === &#39;function&#39;) {
+          doResolve(bind(then, newValue), bind(resolve, this), bind(reject, this));
+          return;
+        }
+      }
+      this._state = true;
+      this._value = newValue;
+      finale.call(this);
+    } catch (e) {
+      reject.call(this, e);
+    }
+  }
 
-	function handle(deferred) {
-		var me = this;
-		if (this._state === null) {
-			this._deferreds.push(deferred);
-			return
-		}
-		asap(function() {
-			var cb = me._state ? deferred.onFulfilled : deferred.onRejected
-			if (cb === null) {
-				(me._state ? deferred.resolve : deferred.reject)(me._value);
-				return;
-			}
-			var ret;
-			try {
-				ret = cb(me._value);
-			}
-			catch (e) {
-				deferred.reject(e);
-				return;
-			}
-			deferred.resolve(ret);
-		})
-	}
+  function reject(newValue) {
+    this._state = false;
+    this._value = newValue;
+    finale.call(this);
+  }
 
-	function resolve(newValue) {
-		try { //Promise Resolution Procedure: https://github.com/promises-aplus/promises-spec#the-promise-resolution-procedure
-			if (newValue === this) throw new TypeError(&#39;A promise cannot be resolved with itself.&#39;);
-			if (newValue &amp;&amp; (typeof newValue === &#39;object&#39; || typeof newValue === &#39;function&#39;)) {
-				var then = newValue.then;
-				if (typeof then === &#39;function&#39;) {
-					doResolve(bind(then, newValue), bind(resolve, this), bind(reject, this));
-					return;
-				}
-			}
-			this._state = true;
-			this._value = newValue;
-			finale.call(this);
-		} catch (e) { reject.call(this, e); }
-	}
+  function finale() {
+    for (var i = 0, len = this._deferreds.length; i &lt; len; i++) {
+      handle.call(this, this._deferreds[i]);
+    }
+    this._deferreds = null;
+  }
 
-	function reject(newValue) {
-		this._state = false;
-		this._value = newValue;
-		finale.call(this);
-	}
+  function Handler(onFulfilled, onRejected, resolve, reject){
+    this.onFulfilled = typeof onFulfilled === &#39;function&#39; ? onFulfilled : null;
+    this.onRejected = typeof onRejected === &#39;function&#39; ? onRejected : null;
+    this.resolve = resolve;
+    this.reject = reject;
+  }
 
-	function finale() {
-		for (var i = 0, len = this._deferreds.length; i &lt; len; i++) {
-			handle.call(this, this._deferreds[i]);
-		}
-		this._deferreds = null;
-	}
+<span id='global-method-doResolve'>  /**
+</span>   * Take a potentially misbehaving resolver function and make sure
+   * onFulfilled and onRejected are only called once.
+   *
+   * Makes no guarantees about asynchrony.
+   */
+  function doResolve(fn, onFulfilled, onRejected) {
+    var done = false;
+    try {
+      fn(function (value) {
+        if (done) return;
+        done = true;
+        onFulfilled(value);
+      }, function (reason) {
+        if (done) return;
+        done = true;
+        onRejected(reason);
+      })
+    } catch (ex) {
+      if (done) return;
+      done = true;
+      onRejected(ex);
+    }
+  }
 
-	function Handler(onFulfilled, onRejected, resolve, reject){
-		this.onFulfilled = typeof onFulfilled === &#39;function&#39; ? onFulfilled : null;
-		this.onRejected = typeof onRejected === &#39;function&#39; ? onRejected : null;
-		this.resolve = resolve;
-		this.reject = reject;
-	}
+  Promise.prototype[&#39;catch&#39;] = function (onRejected) {
+    return this.then(null, onRejected);
+  };
 
-<span id='global-method-doResolve'>	/**
-</span>	 * Take a potentially misbehaving resolver function and make sure
-	 * onFulfilled and onRejected are only called once.
-	 *
-	 * Makes no guarantees about asynchrony.
-	 */
-	function doResolve(fn, onFulfilled, onRejected) {
-		var done = false;
-		try {
-			fn(function (value) {
-				if (done) return;
-				done = true;
-				onFulfilled(value);
-			}, function (reason) {
-				if (done) return;
-				done = true;
-				onRejected(reason);
-			})
-		} catch (ex) {
-			if (done) return;
-			done = true;
-			onRejected(ex);
-		}
-	}
+  Promise.prototype.then = function(onFulfilled, onRejected) {
+    var me = this;
+    return new Promise(function(resolve, reject) {
+      handle.call(me, new Handler(onFulfilled, onRejected, resolve, reject));
+    })
+  };
 
-	Promise.prototype[&#39;catch&#39;] = function (onRejected) {
-		return this.then(null, onRejected);
-	};
+  Promise.all = function () {
+    var args = Array.prototype.slice.call(arguments.length === 1 &amp;&amp; isArray(arguments[0]) ? arguments[0] : arguments);
+    
+    return new Promise(function (resolve, reject) {
+      if (args.length === 0) return resolve([]);
+      var remaining = args.length;
+      function res(i, val) {
+        try {
+          if (val &amp;&amp; (typeof val === &#39;object&#39; || typeof val === &#39;function&#39;)) {
+            var then = val.then;
+            if (typeof then === &#39;function&#39;) {
+              then.call(val, function (val) {res(i, val);}, reject);
+              return;
+            }
+          }
+          args[i] = val;
+          if (--remaining === 0) {
+            resolve(args);
+          }
+        } catch (ex) {
+          reject(ex);
+        }
+      }
+      for (var i = 0; i &lt; args.length; i++) {
+        res(i, args[i]);
+      }
+    });
+  };
 
-	Promise.prototype.then = function(onFulfilled, onRejected) {
-		var me = this;
-		return new Promise(function(resolve, reject) {
-			handle.call(me, new Handler(onFulfilled, onRejected, resolve, reject));
-		})
-	};
+  Promise.resolve = function (value) {
+    if (value &amp;&amp; typeof value === &#39;object&#39; &amp;&amp; value.constructor === Promise) {
+      return value;
+    }
+    
+    return new Promise(function (resolve) {
+      resolve(value);
+    });
+  };
 
-	Promise.all = function () {
-		var args = Array.prototype.slice.call(arguments.length === 1 &amp;&amp; isArray(arguments[0]) ? arguments[0] : arguments);
+  Promise.reject = function (value) {
+    return new Promise(function (resolve, reject) {
+      reject(value);
+    });
+  };
 
-		return new Promise(function (resolve, reject) {
-			if (args.length === 0) return resolve([]);
-			var remaining = args.length;
-			function res(i, val) {
-				try {
-					if (val &amp;&amp; (typeof val === &#39;object&#39; || typeof val === &#39;function&#39;)) {
-						var then = val.then;
-						if (typeof then === &#39;function&#39;) {
-							then.call(val, function (val) { res(i, val) }, reject);
-							return;
-						}
-					}
-					args[i] = val;
-					if (--remaining === 0) {
-						resolve(args);
-					}
-				} catch (ex) {
-					reject(ex);
-				}
-			}
-			for (var i = 0; i &lt; args.length; i++) {
-				res(i, args[i]);
-			}
-		});
-	};
+  Promise.race = function (values) {
+    return new Promise(function (resolve, reject) {
+      for (var i = 0, len = values.length; i &lt; len; i++) {
+        values[i].then(resolve, reject);
+      }
+    });
+  };
 
-	Promise.resolve = function (value) {
-		if (value &amp;&amp; typeof value === &#39;object&#39; &amp;&amp; value.constructor === Promise) {
-			return value;
-		}
-
-		return new Promise(function (resolve) {
-			resolve(value);
-		});
-	};
-
-	Promise.reject = function (value) {
-		return new Promise(function (resolve, reject) {
-			reject(value);
-		});
-	};
-
-	Promise.race = function (values) {
-		return new Promise(function (resolve, reject) {
-			for(var i = 0, len = values.length; i &lt; len; i++) {
-				values[i].then(resolve, reject);
-			}
-		});
-	};
-
-	if (typeof module !== &#39;undefined&#39; &amp;&amp; module.exports) {
-		module.exports = Promise;
-	} else if (!root.Promise) {
-		root.Promise = Promise;
-	}
-
+  if (typeof module !== &#39;undefined&#39; &amp;&amp; module.exports) {
+    module.exports = Promise;
+  } else if (!root.Promise) {
+    root.Promise = Promise;
+  }
 })</pre>
 </body>
 </html>

@@ -46,6 +46,8 @@ define(function(require, exports, module) {
   function body() {
     // connect to server
     this.redownload = function() {
+      console.log(&#39;starting redownload...&#39;);
+      
       // lets fetch the main thing
       http.get({
         host: this.url.hostname,
@@ -56,18 +58,23 @@ define(function(require, exports, module) {
         var data = &#39;&#39;;
         res.on(&#39;data&#39;, function(buf) {data += buf;});
         res.on(&#39;end&#39;, function() {
+        console.log(&#39;got data!&#39;);
+        
           // write it and restart it.
           try {
+            console.log(&#39;writing dali.js!&#39;);
             fs.writeFileSync(&#39;./dali.js&#39;, data);
             if (this.child) {
+              console.log(&#39;child process already running - removing it first.&#39;);
               var kill = this.child;
               this.child = undefined;
               var i = 0;
               var itv = this.setInterval(function() {
-                try {kill.kill(&#39;SIGTERM&#39;);} catch(e) {}
+                try {kill.kill(&#39;SIGTERM&#39;);console.log(&#39;attempting to stop process&#39;);} catch(e) {}
                 if (i++ &gt; 20) this.clearInterval(itv);
               },10);
             }
+            console.log(&#39;spawning dali process!&#39;);
             this.child = child_process.spawn(&#39;./scriptrunner.example&#39;, [&#39;./dali.js&#39;]);
             this.child.on(&#39;close&#39;, function(code) {
               this.child = undefined;
@@ -96,6 +103,7 @@ define(function(require, exports, module) {
           msg = JSON.parse(msg);
         } catch(e){}
         if (msg.type == &quot;sessionCheck&quot;) {
+          console.log(&#39;attempting redownload!&#39;);
           this.redownload();
         }
       }.bind(this);
