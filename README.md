@@ -22,6 +22,8 @@ You can open a page with all the examples here: [http://localhost:8080/exampleli
 running smoke tests
 --------------------------
 
+(Important! See the README.md file in /3rd_party for a temporary workaround for phantomjs 2. You will not want to do the npm install if you're on the latest OSX)
+
 The smoke tests docs are run with [http://phantomjs.org/ 2.0](http://phantomjs.org/), so you'll need to install it with:
 
     npm install phantomjs@2.0
