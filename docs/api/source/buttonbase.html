@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-buttonbase'>/**
+</span>   * @class dr.buttonbase {UI Components}
+   * @extends dr.view
+   * Base class for button components. Buttons share common elements,
+   * including their ability to be selected, a visual element to display
+   * their state, and a default and selected color.
+   * The visual element is a dr.view that shows the current state of the
+   * button. For example, in a labelbutton the entire button is the visual
+   * element. For a checkbutton, the visual element is a square dr.view
+   * that is inside the button.
+   *
+   * The following example shows a subclass that has a plain view as the visual 
+   * element, and sets selected to true onmousedown. The selectcolor is 
+   * automatically applied when selected is true.
+   * 
+   *     @example
+   *     &lt;class name=&quot;purplebutton&quot; extends=&quot;buttonbase&quot; defaultcolor=&quot;purple&quot; selectcolor=&quot;plum&quot; width=&quot;100&quot; height=&quot;40&quot; visual=&quot;${this}&quot;&gt;
+   *        &lt;handler event=&quot;onmousedown&quot; args=&quot;mousedown&quot;&gt;
+   *          this.setAttribute(&#39;selected&#39;, mousedown)
+   *        &lt;/handler&gt;
+   *     &lt;/class&gt;
+   *     &lt;purplebutton&gt;&lt;/purplebutton&gt;
+   */
+<span id='dr-buttonbase-attribute-defaultcolor'>/**
+</span>    * @attribute {String} [defaultcolor=&quot;#808080&quot;]
+    * The default color of the visual button element when not selected.
+    */
+<span id='dr-buttonbase-attribute-selectcolor'>/**
+</span>    * @attribute {String} [selectcolor=&quot;#a0a0a0&quot;]
+    * The selected color of the visual button element when selected.
+    */
+<span id='dr-buttonbase-attribute-selected'>/**
+</span>    * @attribute {Boolean} [selected=false]
+    * The current state of the button.
+    */
+<span id='dr-buttonbase-event-onselected'>/**
+</span>    * @event onselected
+    * Fired when the state of the button changes.
+    * @param {dr.buttonbase} view The dr.buttonbase that fired the event
+    */
+<span id='dr-buttonbase-attribute-text'>/**
+</span>    * @attribute {String} [text=&quot;&quot;]
+    * Button text.
+    */
+</pre>
+</body>
+</html>

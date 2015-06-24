@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-slider'>/**
+</span>   * @class dr.slider {UI Components}
+   * @extends dr.view
+   * An input component whose state is changed when the mouse is dragged.
+   *
+   *     @example
+   *
+   *     &lt;slider name=&quot;hslide&quot; y=&quot;5&quot; width=&quot;250&quot; height=&quot;10&quot; value=&quot;50&quot; bgcolor=&quot;#808080&quot;&gt;&lt;/slider&gt;
+   * Slider with a label:
+   *
+   *     @example
+   *
+   *     &lt;spacedlayout spacing=&quot;8&quot;&gt;&lt;/spacedlayout&gt;
+   *     &lt;slider name=&quot;hslide&quot; y=&quot;5&quot; width=&quot;250&quot; height=&quot;10&quot; value=&quot;50&quot; bgcolor=&quot;#808080&quot;&gt;&lt;/slider&gt;
+   *     &lt;text text=&quot;${Math.round(this.parent.hslide.value)}&quot; y=&quot;${this.parent.hslide.y + (this.parent.hslide.height-this.height)/2}&quot;&gt;&lt;/text&gt;
+   */
+<span id='dr-slider-attribute-minvalue'>/**
+</span>    * @attribute {Number} [minvalue=0]
+    * The minimum value of the slider
+    */
+<span id='dr-slider-attribute-maxvalue'>/**
+</span>    * @attribute {Number} [maxvalue=100]
+    * The maximum value of the slider
+    */
+<span id='dr-slider-attribute-value'>/**
+</span>    * @attribute {Number} [value=0]
+    * The current value of the slider.
+    */
+<span id='dr-slider-attribute-axis'>/**
+</span>    * @attribute {&quot;x&quot;/&quot;y&quot;} [axis=x]
+    * The axis to track on
+    */
+<span id='dr-slider-attribute-invert'>/**
+</span>    * @attribute {Boolean} [invert=false]
+    * Set to true to invert the direction of the slider.
+    */
+<span id='dr-slider-attribute-selectcolor'>/**
+</span>    * @attribute {String} [selectcolor=&quot;#cccccc&quot;]
+    * The selected color of the slider.
+    */
+<span id='dr-slider-attribute-progresscolor'>/**
+</span>    * @attribute {String} [progresscolor=&quot;#999999&quot;]
+    * The color of the progress bar.
+    */
+</pre>
+</body>
+</html>

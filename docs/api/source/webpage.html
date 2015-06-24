@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-webpage'>/**
+</span>   * @class dr.webpage {UI Components}
+   * @extends dr.view
+   * iframe component for embedding dreem code or html in a dreem application.
+   * The size of the iframe matches the width/height of the view when the
+   * component is created. The iframe component can show a web page by
+   * using the src attribute, or to show dynamic content using the
+   * contents attribute.
+   *
+   * This example shows how to display a web page in an iframe. The
+   * contents of the iframe are not editable:
+   *
+   *     @example
+   *     &lt;webpage src=&quot;http://en.wikipedia.org/wiki/San_Francisco&quot; width=&quot;300&quot; height=&quot;140&quot;&gt;&lt;/webpage&gt;
+   *
+   * To make the web page clickable, and to add scrolling set either
+   * clickable or scrollable to true:
+   *
+   *     @example
+   *     &lt;webpage src=&quot;http://en.wikipedia.org/wiki/San_Francisco&quot; width=&quot;300&quot; height=&quot;140&quot; scrollable=&quot;true&quot;&gt;&lt;/webpage&gt;
+   *     &lt;webpage src=&quot;http://en.wikipedia.org/wiki/San_Francisco&quot; width=&quot;300&quot; height=&quot;140&quot; clickable=&quot;true&quot;&gt;&lt;/webpage&gt;
+   *
+   */
+<span id='dr-webpage-attribute-src'>/**
+</span>    * @attribute {String} [src=&quot;/iframe_stub.html&quot;]
+    * url to load inside the iframe. By default, a file is loaded that has
+    * an empty body but includes the libraries needed to support Dreem code.
+    */
+</pre>
+</body>
+</html>

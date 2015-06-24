@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-alignlayout'>/**
+</span>      * @class dr.alignlayout {Layout}
+      * @extends dr.variablelayout
+      * A variablelayout that aligns each view vertically or horizontally
+      * relative to all the other views.
+      *
+      * If updateparent is true the parent will be sized to fit the
+      * aligned views such that the view with the greatest extent will have
+      * a position of 0. If instead updateparent is false the views will
+      * be aligned within the inner extent of the parent view.
+      *
+      *     @example
+      *     &lt;alignlayout align=&quot;middle&quot; updateparent=&quot;true&quot;&gt;&lt;/alignlayout&gt;
+      *
+      *     &lt;view x=&quot;0&quot; width=&quot;50&quot; height=&quot;35&quot; bgcolor=&quot;plum&quot;&gt;&lt;/view&gt;
+      *     &lt;view x=&quot;55&quot; width=&quot;50&quot; height=&quot;25&quot; bgcolor=&quot;lightpink&quot;&gt;&lt;/view&gt;
+      *     &lt;view x=&quot;110&quot; width=&quot;50&quot; height=&quot;15&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+      */
+<span id='dr-alignlayout-attribute-align'>/**
+</span>    * @attribute {String} [align=&#39;middle&#39;]
+    * Determines which way the views are aligned. Supported values are 
+    * &#39;left&#39;, &#39;center&#39;, &#39;right&#39; for horizontal alignment and &#39;top&#39;, &#39;middle&#39; 
+    * and &#39;bottom&#39; for vertical alignment.
+    */
+<span id='dr-alignlayout-attribute-inset'>/**
+</span>    * @attribute {boolean} [inset=0]
+    * Determines if the parent will be sized to fit the aligned views such 
+    * that the view with the greatest extent will have a position of 0. If 
+    * instead updateparent is false the views will be aligned within the 
+    * inner extent of the parent view.
+    */
+<span id='dr-alignlayout-method-doBeforeUpdate'>/**
+</span>    * @method doBeforeUpdate
+    * Determine the maximum subview width/height according to the alignment.
+    * This is only necessary if updateparent is true since we will need to
+    * know what size to make the parent as well as what size to align the
+    * subviews within.
+    */
+</pre>
+</body>
+</html>

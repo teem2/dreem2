@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+*/
+<span id='global-property-'>/**
+</span> * Promisify turns a node-callback using function into a promise using function
+ */
+define(function(require, exports, module){
+  module.exports = promisify;
+
+  if (true) {//} Promise === &#39;undefined&#39;){
+    global.Promise = require(&#39;./promisepolyfill&#39;);
+  }
+
+  function promisify(call) {
+    return function() {
+      var arg = Array.prototype.slice.call(arguments);
+      return new Promise(function(resolve, reject) {
+        arg.push(function(err, result) {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(result);
+          }
+        });
+        call.apply(this, arg);
+      }.bind(this));
+    };
+  };
+})</pre>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-markup'>/**
+</span>      * @class dr.markup {UI Components}
+      * @extends dr.view
+      * A view that uses the sizetodom mixin. You can also put HTML inside
+      * the element and it will show up in the page.
+      * 
+      * This example creates a view that contains some HTML text. The view
+      * will be sized to fit the text.
+      * 
+      *     @example
+      *     &lt;markup&gt;
+      *         &lt;b&gt;Here is some text&lt;/b&gt; that is really just HTML.
+      *     &lt;/markup&gt;
+      * 
+      * This example creates a view that contains some HTML text. The view
+      * will flow the text at a width of 50 pixels and have its height
+      * automatically sized to fit the flowed text. If you later want to
+      * let the view size its width to the dom just call 
+      * setAttribute(&#39;width&#39;, &#39;auto&#39;).
+      * 
+      *     @example
+      *     &lt;markup width=&quot;50&quot;&gt;
+      *         &lt;b&gt;Here is some text&lt;/b&gt; that is really just HTML.
+      *     &lt;/markup&gt;
+      */
+<span id='dr-markup-attribute-markup'>/**
+</span>    * @attribute {String} [markup=&#39;&#39;]
+    * Sets the inner HTML of this view. Since the &lt; and &gt; characters are
+    * not typically supported in the places you&#39;ll be configuring this
+    * attributes, you can use [ and ] and they will be transformed into &lt; and &gt;.
+    * If you need to insert a literal [ character use &amp;amp;#91;. If you need
+    * to insert a literal ] character use &amp;amp;#93;.
+    */
+<span id='dr-markup-method-unescape'>/**
+</span>    * @method unescape
+    * Used to support an alternate syntax for markup since the &lt; and &gt;
+    * characters are restricted in most places you will want assign the
+    * markup to this view. The alternte syntax uses the [ and ] characters to
+    * represent &lt; and &gt; respectively. If you need to insert a literal [ or ]
+    * character use &amp;amp;#91; or &amp;amp;#93; respectively.
+    * @param str The string to unescape.
+    * @returns {String} The unescaped string.
+    * @private
+    */
+</pre>
+</body>
+</html>

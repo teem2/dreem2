@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-wrappinglayout'>/**
+</span>      * @class dr.wrappinglayout {Layout}
+      * @extends dr.variablelayout
+      * An extension of variableLayout similar to spaced layout but with the
+      * added functionality of wrapping the views onto a new line (or column
+      * if the axis is &quot;y&quot;) whenever they would overflow the available space. 
+      * This layout positions views horizontally or vertically using an initial
+      * inset and spacing between each view. The outset is used in the 
+      * calculation of available space so that the last view in each line will 
+      * have at least &quot;outset&quot; space after it.
+      *
+      * Lines/Columns are positioned in a similar fashion to the individual views
+      * using lineinset, linespacing and lineoutset. If updateparent is true
+      * the lineoutset is used to leave space after the last line.
+      *
+      * A line break can be forced by using a &quot;break&quot; layouthint on a managed
+      * view. The layout hint &quot;break&quot; will force the subview to start a new
+      * line/column with that subview as the first view in the line/column.
+      *
+      * Since wrappinglayouts rely on the innerwidth/height of the parent view
+      * to determine when to wrap auto sizing on the parent view along the same
+      * axis as the wrappinglayout will result in unexpected behavior and 
+      * should therefore be avoided.
+      * 
+      *     @example
+      *     &lt;view width=&quot;500&quot; height=&quot;150&quot; bgcolor=&quot;#FFF4FC&quot;&gt;
+      *       &lt;wrappinglayout axis=&quot;y&quot; spacing=&quot;2&quot; inset=&quot;5&quot; outset=&quot;5&quot; lineinset=&quot;10&quot; linespacing=&quot;5&quot; lineoutset=&quot;10&quot;&gt;
+      *       &lt;/wrappinglayout&gt;
+      *
+      *       &lt;view width=&quot;120&quot; height=&quot;35&quot; bgcolor=&quot;lightpink&quot;&gt;&lt;/view&gt;
+      *       &lt;view width=&quot;120&quot; height=&quot;45&quot; bgcolor=&quot;plum&quot; layouthint=&#39;{&quot;break&quot;:true}&#39;&gt;&lt;/view&gt;
+      *       &lt;view width=&quot;120&quot; height=&quot;25&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+      *       &lt;view width=&quot;120&quot; height=&quot;25&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+      *       &lt;view width=&quot;120&quot; height=&quot;25&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+      *       &lt;view width=&quot;120&quot; height=&quot;25&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+      *       &lt;view width=&quot;120&quot; height=&quot;25&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+      *     &lt;/view&gt;
+      */
+<span id='dr-wrappinglayout-attribute-spacing'>/**
+</span>    * @attribute {Number} [spacing=0]
+    * The spacing between views.
+    */
+<span id='dr-wrappinglayout-attribute-outset'>/**
+</span>    * @attribute {Number} [outset=0]
+    * Space after the last view.
+    */
+<span id='dr-wrappinglayout-attribute-inset'>/**
+</span>    * @attribute {Number} [inset=0]
+    * Space before the first view. This is an alias for the &quot;value&quot; attribute.
+    */
+<span id='dr-wrappinglayout-attribute-linespacing'>/**
+</span>    * @attribute {Number} [linespacing=0]
+    * The spacing between each line of views.
+    */
+<span id='dr-wrappinglayout-attribute-lineoutset'>/**
+</span>    * @attribute {Number} [lineoutset=0]
+    * Space after the last line of views. Only used when updateparent is true.
+    */
+<span id='dr-wrappinglayout-attribute-lineinset'>/**
+</span>    * @attribute {Number} [lineinset=0]
+    * Space before the first line of views.
+    */
+<span id='dr-wrappinglayout-attribute-justify'>/**
+</span>    * @attribute {boolean} [justify=false]
+    * Justifies lines/columns
+    */
+<span id='dr-wrappinglayout-attribute-align'>/**
+</span>    * @attribute {String} [align=&#39;left&#39;]
+    * Aligns lines/columns left/top, right/bottom or center/middle. If
+    * justification is true this has no effect except on a line or column that
+    * has only one item.
+    */
+<span id='dr-wrappinglayout-attribute-linealign'>/**
+</span>    * @attribute {String} [linealign=&#39;none&#39;]
+    * Aligns the items in a line relative to each other. Supported values are
+    * top/left, bottom/right and middle/center and none. If the value is
+    * none, no line alignment will be performed which means transformed views
+    * may overlap preceeding lines.
+    */
+<span id='dr-wrappinglayout-attribute-axis'>/**
+</span>    * @attribute {String} [axis=&#39;x&#39;]
+    * The orientation of the layout. Supported values are &#39;x&#39; and &#39;y&#39;.
+    * A value of &#39;x&#39; will orient the views horizontally with lines being
+    * positioned vertically below the preceding line. A value of &#39;y&#39; will 
+    * orient the views vertically with columns positioned horizontally to 
+    * the right of the preceding column. This is an alias for the &quot;attribute&quot; 
+    * attribute.
+    */
+<span id='dr-wrappinglayout-attribute-attribute'>/**
+</span>    * @attribute attribute
+    * @private
+    * The axis attribute is an alias for this attribute.
+    */
+<span id='dr-wrappinglayout-method-doLineStart'>/**
+</span>    * @method doLineStart
+    * Called at the start of the laying out of each line.
+    * @param {Number} lineindex The index of the line being layed out.
+    * @param {*} value The value at the start of laying out the line.
+    * @return {void}
+    */
+<span id='dr-wrappinglayout-method-doLineEnd'>/**
+</span>    * @method doLineEnd
+    * Called at the end of the laying out of each line.
+    * @param {Number} lineindex The index of the line being layed out.
+    * @param {Array} items The items layed out in the line in the order they
+    * were layed out.
+    * @param {*} value The value at the end of laying out the line.
+    * @return {void}
+    */
+<span id='dr-wrappinglayout-event-onlinecount'>/**
+</span>    * @event onlinecount
+    * Fired after update.
+    * @param {Number} The number of lines layed out for x-axis layouts or 
+    * columns for layed out for y-axis layouts.
+    */
+<span id='dr-wrappinglayout-event-onmaxsize'>/**
+</span>    * @event onmaxsize
+    * Fired after update.
+    * @param {Number} The maximum width achieved by any line for x-axis layouts
+    * or maximum height achieved by any column for y-axis layouts.
+    */
+</pre>
+</body>
+</html>

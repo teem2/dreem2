@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-variablelayout'>/**
+</span>      * @class dr.variablelayout {Layout}
+      * @extends dr.constantlayout
+      * This layout extends constantlayout adding the capability to control
+      * what value is set on each managed view. The to set on each vies is
+      * controlled by implementing the updateSubview method of this layout.
+      *
+      * The updateSubview method has four arguments: &#39;count&#39;, &#39;view&#39;, 
+      * &#39;attribute&#39; and &#39;value&#39;.
+      *     Count: The 1 based index of the view being updated, i.e. the 
+      *         first view updated will have a count of 1, the second, a count 
+      *         of 2, etc.
+      *     View: The view being updated. Your updateSubview method will
+      *         most likely modify this view in some way.
+      *     Attribute: The name of the attribute this layout is supposedly
+      *         updating. This will be set to the value of 
+      *         the &#39;attribute&#39; attribute of the variablelayout. You can use 
+      *         this value if you wish or ignore it if you want to.
+      *     Value: The suggested value to set on the view. You can use it as
+      *         is or ignore it if you want. The value provided for the first 
+      *         view will be the value of the &#39;value&#39; attribute of the
+      *         variablelayout. Subsequent values will be the return value of
+      *         the updateSubview method for the previous view. This allows
+      *         you to feed values forward as each view is updated.
+      *
+      * This variable layout will position the first view at a y value of 10
+      * and each subsequent view will be positioned with a y value 1 pixel
+      * below the bottom of the previous view. In addition, all views with
+      * an even count will be positioned at an x of 5 and odd views at an
+      * x of 10. Also, updateparent has been set to true so the
+      * updateParent method will be called with the attribute and last value
+      * returned from updateSubview. In this case updateParent will resize
+      * the parent view to a height that fits all the subviews plus an
+      * additional 10 pixels.
+      *
+      *     @example
+      *     &lt;variablelayout attribute=&quot;y&quot; value=&quot;10&quot; updateparent=&quot;true&quot;&gt;
+      *         &lt;method name=&quot;updateSubview&quot; args=&quot;count, view, attribute, value&quot;&gt;
+      *             view.setAttribute(attribute, value);
+      *             view.setAttribute(&#39;x&#39;, count % 2 === 0 ? 5 : 10);
+      *             return value + view.height + 1;
+      *         &lt;/method&gt;
+      *         &lt;method name=&quot;updateParent&quot; args=&quot;attribute, value&quot;&gt;
+      *             this.parent.setAttribute(&#39;height&#39;, value + 10);
+      *         &lt;/method&gt;
+      *     &lt;/variablelayout&gt;
+      *
+      *     &lt;view width=&quot;50&quot; height=&quot;25&quot; bgcolor=&quot;lightpink&quot;&gt;&lt;/view&gt;
+      *     &lt;view width=&quot;50&quot; height=&quot;25&quot; bgcolor=&quot;plum&quot;&gt;&lt;/view&gt;
+      *     &lt;view width=&quot;50&quot; height=&quot;25&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+      *
+      * This variable layout works similar to the one above except it will
+      * skip any view that has an opacity less that 0.5. To accomplish this
+      * the skipSubview method has been implemented. Also, the 
+      * startMonitoringSubview and stopMonitoringSubview methods have been
+      * implemented so that if the opacity of a view changes the layout will
+      * be updated.
+      *
+      *     @example
+      *     &lt;variablelayout attribute=&quot;y&quot; value=&quot;10&quot; updateparent=&quot;true&quot;&gt;
+      *         &lt;method name=&quot;updateSubview&quot; args=&quot;count, view, attribute, value&quot;&gt;
+      *             view.setAttribute(attribute, value);
+      *             view.setAttribute(&#39;x&#39;, count % 2 === 0 ? 5 : 10);
+      *             return value + view.height + 1;
+      *         &lt;/method&gt;
+      *         &lt;method name=&quot;updateParent&quot; args=&quot;attribute, value&quot;&gt;
+      *             this.parent.setAttribute(&#39;height&#39;, value + 10);
+      *         &lt;/method&gt;
+      *         &lt;method name=&quot;startMonitoringSubview&quot; args=&quot;view&quot;&gt;
+      *             this.super();
+      *             this.listenTo(view, &#39;opacity&#39;, this.update)
+      *         &lt;/method&gt;
+      *         &lt;method name=&quot;stopMonitoringSubview&quot; args=&quot;view&quot;&gt;
+      *             this.super();
+      *             this.stopListening(view, &#39;opacity&#39;, this.update)
+      *         &lt;/method&gt;
+      *         &lt;method name=&quot;skipSubview&quot; args=&quot;view&quot;&gt;
+      *             if (0.5 &gt;= view.opacity) return true;
+      *             return this.super();
+      *         &lt;/method&gt;
+      *     &lt;/variablelayout&gt;
+      *
+      *     &lt;view width=&quot;50&quot; height=&quot;25&quot; bgcolor=&quot;lightpink&quot;&gt;&lt;/view&gt;
+      *     &lt;view width=&quot;50&quot; height=&quot;25&quot; bgcolor=&quot;plum&quot;&gt;&lt;/view&gt;
+      *     &lt;view width=&quot;50&quot; height=&quot;25&quot; bgcolor=&quot;black&quot; opacity=&quot;0.25&quot;&gt;&lt;/view&gt;
+      *     &lt;view width=&quot;50&quot; height=&quot;25&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+      */
+<span id='dr-variablelayout-attribute-updateparent'>/**
+</span>    * @attribute {boolean} [updateparent=false]
+    * If true the updateParent method of the variablelayout will be called. 
+    * The updateParent method provides an opportunity for the layout to
+    * modify the parent view in some way each time update completes. A typical
+    * implementation is to resize the parent to fit the newly layed out child 
+    * views.
+    */
+<span id='dr-variablelayout-attribute-reverse'>/**
+</span>    * @attribute {boolean} [reverse=false]
+    * If true the layout will run through the views in the opposite order when
+    * calling updateSubview. For subclasses of variablelayout this will
+    * typically result in views being layed out in the opposite direction,
+    * right to left instead of left to right, bottom to top instead of top to
+    * bottom, etc.
+    */
+<span id='dr-variablelayout-method-doBeforeUpdate'>/**
+</span>    * @method doBeforeUpdate
+    * Called by the update method before any processing is done. This method 
+    * gives the variablelayout a chance to do any special setup before update is 
+    * processed for each view. This is a good place to calculate any values
+    * that will be needed during the calls to updateSubview.
+    * @return {void}
+    */
+<span id='dr-variablelayout-method-doAfterUpdate'>/**
+</span>    * @method doAfterUpdate
+    * Called by the update method after any processing is done but before the
+    * optional updateParent method is called. This method gives the variablelayout
+    * a chance to do any special teardown after updateSubview has been called
+    * for each managed view.
+    * @param {*} value The last value calculated by the updateSubview calls.
+    * @return {void}
+    */
+<span id='dr-variablelayout-method-startMonitoringSubview'>/**
+</span>    * @method startMonitoringSubview
+    * Provides a default implementation that calls update when the
+    * visibility of a subview changes. Monitoring the visible attribute of
+    * a view is useful since most layouts will want to &quot;reflow&quot; as views
+    * become visible or hidden.
+    * @param {dr.view} view
+    */
+<span id='dr-variablelayout-method-stopMonitoringSubview'>/**
+</span>    * @method stopMonitoringSubview
+    * Provides a default implementation that calls update when the
+    * visibility of a subview changes.
+    * @param {dr.view} view
+    */
+<span id='dr-variablelayout-method-updateSubview'>/**
+</span>    * @method updateSubview
+    * Called for each subview in the layout.
+    * @param {Number} count The number of subviews that have been layed out
+    *   including the current one. i.e. count will be 1 for the first
+    *   subview layed out.
+    * @param {dr.view} view The subview being layed out.
+    * @param {String} attribute The name of the attribute to update.
+    * @param {*} value The value to set on the subview.
+    * @return {*} The value to use for the next subview.
+    */
+<span id='dr-variablelayout-method-skipSubview'>/**
+</span>    * @method skipSubview
+    * Called for each subview in the layout to determine if the view should
+    * be updated or not. The default implementation returns true if the
+    * subview is not visible since views that can&#39;t be seen don&#39;t typically 
+    * need to be positioned. You could implement your own skipSubview method
+    * to use other attributes of a view to determine if a view should be
+    * updated or not. An important point is that skipped views are still
+    * monitored by the layout. Therefore, if you use a different attribute to
+    * determine wether to skip a view or not you should probably also provide
+    * custom implementations of startMonitoringSubview and stopMonitoringSubview
+    * so that when the attribute changes to/from a value that would result in
+    * the view being skipped the layout will update.
+    * @param {dr.view} view The subview to check.
+    * @return {Boolean} True if the subview should be skipped during
+    *   layout updates.
+    */
+<span id='dr-variablelayout-method-updateParent'>/**
+</span>    * @method updateParent
+    * Called if the updateparent attribute is true. Subclasses should
+    * implement this if they want to modify the parent view.
+    * @param {String} attribute The name of the attribute to update.
+    * @param {*} value The value to set on the parent.
+    * @return {void}
+    */
+</pre>
+</body>
+</html>

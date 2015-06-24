@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+*/
+<span id='BusClient'>/**
+</span> * @class BusClient
+ * Auto (re)connecting always writable socket
+ */
+define(function(require, exports, module) {
+  module.exports = BusClient;
+
+  function BusClient(url) {
+    this.url = url || &#39;&#39;;
+    this.backoff = 1;
+    this.reconnect();
+  }
+
+  body.call(BusClient.prototype);
+
+  function body() {
+<span id='BusClient-method-disconnect'>    /**
+</span>     * @method disconnect
+     * Disconnect from the server
+     */
+    this.disconnect = function() {
+      if (this.socket) {
+        this.socket.onclose = undefined;
+        this.socket.onerror = undefined;
+        this.socket.onmessage = undefined;
+        this.socket.onopen = undefined;
+        this.socket.close();
+        this.socket = undefined;
+      }
+    };
+    
+    /* Reconnect to server (used internally and automatically)*/
+    this.reconnect = function() {
+      this.disconnect();
+      if (!this.queue) this.queue = [];
+      
+      this.socket = new WebSocket(&#39;ws://&#39; + window.location.host + this.url);
+      
+      this.socket.onopen = function() {
+        this.backoff = 1;
+        for (var i = 0; i &lt; this.queue.length; i++) {
+          this.socket.send(this.queue[i]);
+        }
+        this.queue = undefined;
+      }.bind(this);
+      
+      this.socket.onerror = function() {
+        //this.reconnect()
+      }.bind(this);
+      
+      this.socket.onclose = function() {
+        this.backoff *= 2;
+        if (this.backoff &gt; 1000) this.backoff = 1000;
+        setTimeout(function() {
+          this.reconnect();
+        }.bind(this), this.backoff);
+      }.bind(this);
+      
+      this.socket.onmessage = function(event) {
+        var msg = JSON.parse(event.data);
+        this.onMessage(msg);
+      }.bind(this);
+    }
+    
+<span id='BusClient-method-send'>    /**
+</span>     * @method send
+     * Send a message to the server
+     * @param {Object} msg JSON.stringifyable message to send
+     */
+    this.send = function(msg) {
+      msg = JSON.stringify(msg);
+      if (this.queue) {
+        this.queue.push(msg);
+      } else {
+        this.socket.send(msg);
+      }
+    }
+    
+<span id='BusClient-method-color'>    /**
+</span>     * @method color
+     * Causes a console.color on the server
+     * @param {String} data Data to send
+     */
+    this.color = function(data) {
+      this.send({type:&#39;color&#39;, value:data});
+    }
+    
+<span id='BusClient-method-color'>    /**
+</span>     * @method color
+     * Causes a console.log on the server
+     * @param {String} data Data to send
+     */
+    this.log = function(data) {
+      this.send({type:&#39;log&#39;, value:data});
+    }
+    
+<span id='BusClient-event-onMessage'>    /**
+</span>     * @event onMessage
+     * Called when a message arrives from the server
+     * @param {Object} message The received message
+     */
+    this.onMessage = function(message) {};
+  }
+})</pre>
+</body>
+</html>

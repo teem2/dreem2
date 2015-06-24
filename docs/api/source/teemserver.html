@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+*/
+<span id='TeemServer'>/**
+</span> * @class TeemServer {}
+ * Main NodeJS HTTP server with support for WebSockets, static file handling and 
+ * Composition objects
+ */
+define(function(require, exports, module) {
+  module.exports = TeemServer;
+
+  var http = require(&#39;http&#39;),
+    os = require(&#39;os&#39;),
+    path = require(&#39;path&#39;),
+    fs = require(&#39;fs&#39;),
+    
+    FileWatcher = require(&#39;$CORE/filewatcher&#39;),
+    ExternalApps = require(&#39;$CORE/externalapps&#39;),
+    BusServer = require(&#39;$CORE/busserver&#39;),
+    CompositionServer = require(&#39;$CORE/compositionserver&#39;),
+    NodeWebSocket = require(&#39;$CORE/nodewebsocket&#39;);
+
+  // Create a function to determine a mime type for a file.
+  var mimeFromFile = (function() {
+    var mimeTypes = {
+      htm:&quot;text/html&quot;,
+      html:&quot;text/html&quot;,
+      js:&quot;application/javascript&quot;,
+      jpg:&quot;image/jpeg&quot;,
+      jpeg:&quot;image/jpeg&quot;,
+      txt:&quot;text/plain&quot;,
+      css:&quot;text/css&quot;,
+      ico:&quot;image/x-icon&quot;,
+      png:&quot;image/png&quot;,
+      gif:&quot;image/gif&quot;
+    };
+    var regex = RegExp(&quot;\\.(&quot; + Object.keys(mimeTypes).join(&quot;|&quot;) + &quot;)$&quot;);
+    return function(name) {
+      var ext = name.match(regex);
+      return ext &amp;&amp; mimeTypes[ext[1]] || &quot;text/plain&quot;;
+    }
+  })();
+
+<span id='TeemServer-method-constructor'><span id='TeemServer'>  /**
+</span></span>    * @constructor
+    */
+  function TeemServer(args) {
+    this.compositions = {};
+
+    this.args = args;
+    var port = this.args[&#39;-port&#39;] || 8080,
+      iface = this.args[&#39;-iface&#39;] || &#39;0.0.0.0&#39;;
+
+    this.server = http.createServer(this.request.bind(this));
+    this.server.listen(port, iface);
+    this.server.on(&#39;upgrade&#39;, this.upgrade.bind(this));
+
+    if (iface == &#39;0.0.0.0&#39;) {
+      var ifaces = os.networkInterfaces(),
+        txt = &#39;&#39;, firstTime = true;
+      Object.keys(ifaces).forEach(function(ifname) {
+        var alias = 0;
+        ifaces[ifname].forEach(function(iface) {
+          if (&#39;IPv4&#39; !== iface.family) return;
+          var addr = &#39;http://&#39; + iface.address + &#39;:&#39; + port + &#39;/&#39;;
+          if (!this.address) this.address = addr;
+          txt += &#39; ~~&#39; + (firstTime ? &#39;on&#39; : &#39;and&#39;) + &#39; ~c~&#39; + addr;
+          firstTime = false;
+        }.bind(this));
+      }.bind(this));
+      console.color(&#39;Server running&#39; + txt + &#39;~~ Ready to go!\n&#39;);
+    } else {
+      this.address = &#39;http://&#39; + iface + &#39;:&#39; + port + &#39;/&#39;;
+      console.color(&#39;Server running on ~c~&#39; + this.address+&quot;~~\n&quot;);
+    }
+    
+    // Spawn a browser if so indicated
+    var browser = this.args[&#39;-browser&#39;];
+    if (browser &amp;&amp; (!this.args[&#39;-delay&#39;] || this.args[&#39;-count&#39;] == 0)) {
+      ExternalApps.browser(this.address + (browser === true ? &#39;&#39; : browser), this.args[&#39;-devtools&#39;]);
+    }
+    
+    this.watcher = new FileWatcher();
+    this.watcher.onChange = function(file) {
+      if (!args[&#39;-nodreem&#39;] &amp;&amp; file.indexOf(&#39;dreem.js&#39;) !== -1) {
+        return this.broadcast({type:&#39;delay&#39;});
+      }
+      this.broadcast({
+        type:&#39;filechange&#39;,
+        file:file
+      })
+    }.bind(this);
+    
+    this.busserver = new BusServer();
+    
+    process.on(&#39;SIGHUP&#39;, function() {
+      if (this.args[&#39;-close&#39;]) this.broadcast({type:&#39;close&#39;});
+      if (this.args[&#39;-delay&#39;]) this.broadcast({type:&#39;delay&#39;});
+    }.bind(this))
+    
+    if (this.args[&#39;-web&#39;]) this.getComposition(this.args[&#39;-web&#39;]);
+  }
+
+  body.call(TeemServer.prototype)
+
+  function body() {
+    this.COMP_DIR = &#39;compositions&#39;;
+    
+<span id='TeemServer-method-broadcast'>    /** 
+</span>      * @method broadcast
+      * Send a message to all my connected websockets and those on the compositions
+      * @param {Object} msg JSON Serializable message to send
+      */
+    this.broadcast = function(msg) {
+      this.busserver.broadcast(msg);
+      for (var k in this.compositions) {
+        this.compositions[k].busserver.broadcast(msg);
+      }
+    }
+
+<span id='TeemServer-attribute-default_comp'>    /** 
+</span>      * @attribute {String} default_comp
+      * Default composition name 
+      */
+    this.default_composition = null;
+
+<span id='TeemServer-method-getComposition'>    /** 
+</span>      * @method getComposition
+      * Find composition object by url 
+      * @param {String} url 
+      * @return {Composition|undefined} 
+      */
+    this.getComposition = function(url) {
+      if (url.indexOf(&#39;.&#39;) !== -1) return;
+      
+      // Strip Query
+      var queryIndex = url.indexOf(&#39;?&#39;);
+      if (queryIndex !== -1) url = url.substring(0, queryIndex);
+      
+      var path = url.split(&#39;/&#39;);
+      var name = path[1] || path[0] || this.default_composition;
+      if (name) {
+        // lets find the composition either in define.COMPOSITIONS
+        if (!this.compositions[name]) this.compositions[name] = new CompositionServer(this.args, name, this);
+        return this.compositions[name];
+      }
+    };
+
+<span id='TeemServer-method-upgrade'>    /** 
+</span>      * @method upgrade
+      * Handle protocol upgrade to WebSocket
+      * @param {Request} req 
+      * @param {Socket} sock
+      * @param {Object} head 
+      */
+    this.upgrade = function(req, sock, head) {
+      // lets connect the sockets to the app
+      var sock = new NodeWebSocket(req, sock, head);
+      sock.url = req.url;
+      var composition = this.getComposition(req.url);
+      if (composition) {
+        composition.busserver.addWebSocket(sock);
+      } else {
+        this.busserver.addWebSocket(sock);
+      }
+    }
+
+<span id='TeemServer-method-request'>    /**
+</span>      * @method request
+      * Handle main http server request
+      * @param {Request} req 
+      * @param {Response} res
+      */
+    this.request = function(req, res) {
+      // lets delegate to
+      var host = req.headers.host,
+        url = req.url,
+        composition = this.getComposition(url);
+      
+      // if we are a composition request, send it to composition
+      if (composition) return composition.request(req, res)
+      
+      // otherwise handle as static file
+      var url = req.url, file;
+      if (url.indexOf(&#39;_extlib_&#39;) != -1) {
+        file = url.replace(/\_extlib\_/,define.expandVariables(define.EXTLIB));
+      } else {
+        file = path.join(define.expandVariables(define.ROOT), req.url);
+      }
+      
+      fs.stat(file, function(err, stat) {
+        if (err || !stat.isFile()) {
+          if (url == &#39;/favicon.ico&#39;) {
+            res.writeHead(200);
+            res.end();
+          } else {
+            res.writeHead(404);
+            res.end();
+            console.color(&#39;~br~Error~y~ &#39; + file + &#39;~~ File not found, returning 404\n&#39;);
+          }
+        } else {
+          var header = {
+            &quot;Cache-control&quot;:&quot;max-age=0&quot;,
+            &quot;Content-Type&quot;: mimeFromFile(file),
+            &quot;ETag&quot;: stat.mtime.getTime() + &#39;_&#39; + stat.ctime.getTime() + &#39;_&#39; + stat.size
+          };
+          
+          this.watcher.watch(file);
+          
+          if (req.headers[&#39;if-none-match&#39;] == header.ETag) {
+            res.writeHead(304, header);
+            res.end();
+          } else {
+            var stream = fs.createReadStream(file)
+            res.writeHead(200, header)
+            stream.pipe(res)
+            // ok so we get a filechange right?
+          }
+        }
+      }.bind(this))
+    }
+  }
+})</pre>
+</body>
+</html>
