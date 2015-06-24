@@ -65,20 +65,20 @@ SOFTWARE. -->
         
         <block>
           <subhead toppadding="0">Core</subhead>
-          <link url="./example_eventtest">Event Test</link>
+          <link url="./example/eventtest">Event Test</link>
           
           <subhead>View System</subhead>
-          <link url="./example_borderpadding">Borders and Padding</link>
-          <link url="./example_bounds">Bounds</link>
+          <link url="./example/borderpadding">Borders and Padding</link>
+          <link url="./example/bounds">Bounds</link>
           
           <subhead>Layouts</subhead>
-          <link url="./example_layouts">Standard Layouts</link>
-          <link url="./example_evenlayout">Even Layout</link>
-          <link url="./example_spirallayout">Spiral Layout</link>
+          <link url="./example/layouts">Standard Layouts</link>
+          <link url="./example/evenlayout">Even Layout</link>
+          <link url="./example/spirallayout">Spiral Layout</link>
           
           <subhead>Components</subhead>
-          <link url="./example_components">Standard Components</link>
-          <link url="./example_bitmap">Bitmap</link>
+          <link url="./example/components">Standard Components</link>
+          <link url="./example/bitmap">Bitmap</link>
         </block>
         
         <view height="${this.parent.innerheight - 8}"
