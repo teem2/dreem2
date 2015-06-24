@@ -1,3 +1,4 @@
+--- Notes ---
 Dreem2 uses websockets so we need to use phantomjs 2 for testing since that is the first version that supports websockets.
 
 There is an issue getting the official version of phantomJS 2 to run correctly on OSX 10.10 so we need to use a forked version until the issue is resolved. 
@@ -6,6 +7,18 @@ The version I've checked in here was pulled from: https://github.com/eugene1g/ph
 
 Another options is if you have upx you can just re-unpack the official binary (i.e. 'upx -d phantomjs-2.0.0-macosx/bin/phantomjs’) and it seems to work.
 
+--- Installation ---
+To install this version:
+
+1) Unzip it.
+2) Figure out where your phantomjs is installed
+    > which phantomjs
+3) Backup your existing phantomjs from /usr/local/bin/phantomjs or whereever yours was found.
+4) Copy the new one to /usr/local/bin/phantomjs or whereever yours was found.
+5) Verify the version by typing:
+    > phantomjs -v
+
+--- Todo ---
 Once these issues are resolved we should remove this from our repo.
 
 <!-- The MIT License (MIT)
