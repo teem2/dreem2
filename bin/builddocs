@@ -11,16 +11,14 @@ DOCS_PATH="$BASE_PATH/docs"
 LIB_PATH="$DOCS_PATH/lib"
 API_PATH="$DOCS_PATH/api"
 
-echo $BASE_PATH
-echo $SCRIPT_PATH
-echo $DOCS_PATH
-echo $LIB_PATH
-echo $API_PATH
+echo
+echo "BUILDING DOCS:" $BASE_PATH
+echo
 
 rm -rf $API_PATH
 $LIB_PATH/config.rb
 rm -rf $DOCS_PATH/classdocs/*.js
 $LIB_PATH/findocomments.rb
 jsduck $BASE_PATH/core/*.js $DOCS_PATH/classdocs/*.js --tags $LIB_PATH/custom_tags.rb --guides=$DOCS_PATH/guides.json --categories=$DOCS_PATH/categories.json --output=$API_PATH/ --eg-iframe=$DOCS_PATH/jsduck_iframe.html --title="Dreem API documentation" --footer="Copyright (c) 2014-2015 Teem2 LLC"
-#$LIB_PATH/buildsourcedocs.rb
-#cp $DOCS_PATH/gitattributes-tmpl $API_PATH/.gitattributes
+$LIB_PATH/buildsourcedocs.rb
+cp $DOCS_PATH/gitattributes-tmpl $API_PATH/.gitattributes
