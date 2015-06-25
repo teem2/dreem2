@@ -166,7 +166,7 @@ define(function(require, exports, module) {
           teem.__startup(main);
         } else if (msg.type == 'join') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
-          obj._addNewProxy(msg.index, msg.rpcid, rpcpromise);
+          if (obj) obj._addNewProxy(msg.index, msg.rpcid, rpcpromise);
         } else if (msg.type == 'attribute') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
           if (obj) obj[msg.attribute] = msg.value;

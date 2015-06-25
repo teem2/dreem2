@@ -79,6 +79,9 @@ SOFTWARE. -->
           <subhead>Components</subhead>
           <link url="./example/components">Standard Components</link>
           <link url="./example/bitmap">Bitmap</link>
+          
+          <subhead>Multiple Screens</subhead>
+          <link url="./example/multiscreen/basic">Basic</link>
         </block>
         
         <view height="${this.parent.innerheight - 8}"
