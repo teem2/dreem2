@@ -30,6 +30,7 @@ define(function(require, exports, module) {
     this.teemserver = teemserver;
     this.args = args;
     this.name = name;
+    this.pathName = name.split('|').join('/');
     
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
@@ -263,13 +264,13 @@ define(function(require, exports, module) {
     
     this.compileLocalClass = function(cls, errors) {
       var classname = cls.attr && cls.attr.name || 'unknown';
-      this.compileAndWriteDreToJS(cls, '$BUILD/compositions.' + this.name + '.dre.' + classname + '.js' , this.name,  errors);
+      this.compileAndWriteDreToJS(cls, '$BUILD/compositions.' + this.name + '.dre.' + classname + '.js' , this.name, errors);
       this.local_classes[classname] = 1;
     };
     
     /* Internal, reloads the composition */
     this.reload = function() {
-      console.color("~bg~Reloading~~ composition: " + this.name + "\n");
+      console.color("~bg~Reloading~~ composition: " + this.pathName + "\n");
       this.destroy();
       this.local_classes = {};
       this.compile_once = {};
@@ -285,14 +286,14 @@ define(function(require, exports, module) {
       define.SPRITE = '$LIB/dr/sprite_browser';
       
       // scan our EXTLIB for compositions firstƒ
-      var filepath = '$COMPOSITIONS/' + this.name + '.dre';
+      var filepath = '$COMPOSITIONS/' + this.pathName + '.dre';
       
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
           var dir = fs.readdirSync(extpath);
           for (var i = 0; i < dir.length; i++) {
-            var mypath = '$EXTLIB/' + dir[i] + '/compositions/'+this.name+'.dre';
+            var mypath = '$EXTLIB/' + dir[i] + '/compositions/'+this.pathName+'.dre';
             if (fs.existsSync(define.expandVariables(mypath))) {
               filepath = mypath;
               break;
@@ -332,7 +333,7 @@ define(function(require, exports, module) {
         
         // lets compile the JS
         var js = dreem_compiler.compileInstance(child, errors, '\t\t', this.compileLocalClass.bind(this));
-
+        
         // ok now the instances..
         var out = 'define(function(require, exports, module){\n';
         out += this.makeLocalDeps(js.deps, this.name, '\t', errors);
@@ -462,9 +463,10 @@ define(function(require, exports, module) {
         }
       }
       
-      var app = url.split('/')[2] || 'default';
-      // ok lets serve our Composition device 
+      // Extract screen name
+      var screenName = query.screen || 'default';
       
+      // ok lets serve our Composition device 
       if (req.method == 'POST') {
         // lets do an RPC call
         var buf = ''
@@ -484,35 +486,32 @@ define(function(require, exports, module) {
             return;
           }
         }.bind(this));
-        return;
-      }
-      
-      var screen = this.screens[app];
-      if (screen) {
-        if (app == 'dali') {
-          var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'));
-          res.writeHead(200, {"Content-Type": "text/html"});
-          stream.pipe(res);
-          return;
-        }
-        
-        var html = this.loadHTML(
-          screen.attr && screen.attr.title || this.name, 
-          '$BUILD/compositions.' + this.name + '.dre.screens.' + app + '.js',
-          query.test === null || query.test === 'true'
-        );
-        
-        res.writeHead(200, {
-          "Cache-control":"max-age=0",
-          "Content-Type": "text/html"
-        });
-        res.write(html)
       } else {
-        res.writeHead(404, {"Content-Type": "text/html"})
-        res.write('NOT FOUND')
+        var screen = this.screens[screenName];
+        if (screen) {
+          if (screenName === 'dali') {
+            var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'));
+            res.writeHead(200, {"Content-Type": "text/html"});
+            stream.pipe(res);
+          } else {
+            var html = this.loadHTML(
+              screen.attr && screen.attr.title || this.name, 
+              '$BUILD/compositions.' + this.name + '.dre.screens.' + screenName + '.js',
+              query.test === null || query.test === 'true'
+            );
+            res.writeHead(200, {
+              "Cache-control":"max-age=0",
+              "Content-Type": "text/html"
+            });
+            res.write(html);
+            res.end();
+          }
+        } else {
+          res.writeHead(404, {"Content-Type": "text/html"});
+          res.write('NOT FOUND');
+          res.end();
+        }
       }
-      
-      res.end();
     };
     
     this.writeFileIfChanged = function(filePath, newData, errors) {

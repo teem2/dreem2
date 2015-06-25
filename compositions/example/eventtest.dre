@@ -1,0 +1,246 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Example - Event Test'>
+    <view width="100%" height="100%">
+      <!--// Class Definitions //-->
+      <class name="tester" width="100" height="36" bgcolor="red" padding="4">
+        <attribute name="eventname" type="string" value="onmouseover"></attribute>
+        <attribute name="eventvalue" type="expression" value="''"></attribute>
+        <attribute name="scope" type="expression" value="dr.mouse"></attribute>
+        
+        <handler event="oninit">
+          this.listenTo(this.scope, 'on' + this.eventname, this.callback)
+        </handler>
+        
+        <method name="callback" args="event">
+          if (this.eventvalue === '' || event === this.eventvalue) {
+            this.label.setAttribute('text', this.getLabel(event));
+            this.setAttribute('bgcolor', 'green');
+          }
+        </method>
+        
+        <method name="getLabel" args="data">
+          return this.eventname + (this.eventvalue !== '' ? '\n' + this.eventvalue : '');
+        </method>
+        
+        <text name="label" multiline="true" width="100%" text="${this.parent.getLabel('')}" fontsize="12" color="white"></text>
+      </class>
+      
+      <class name="mousetest" extends="tester" scope="mouser"></class>
+      
+      <class name="keyboardtest" extends="tester" scope="mouser">
+        <method name="getLabel" args="event">
+          var charCode = typeof event === 'object' ? dr.sprite.KeyObservable.getKeyCodeFromEvent(event) : event;
+          return this.super() + '\n' + (charCode ? (charCode + ' : ' + String.fromCharCode(charCode)) : '');
+        </method>
+      </class>
+      
+      <class name="globalmousetest" extends="tester" scope="dr.mouse">
+        <!-- Return true to allow event bubbling. -->
+        <method name="callback" args="event">
+          this.super();
+          return true;
+        </method>
+      </class>
+      
+      <class name="globalkeyboardtest" extends="tester" scope="dr.keyboard">
+        <method name="getLabel" args="event">
+          var charCode = typeof event === 'object' ? dr.sprite.KeyObservable.getKeyCodeFromEvent(event) : event;
+          return this.super() + '\n' + (charCode ? (charCode + ' : ' + String.fromCharCode(charCode)) : '');
+        </method>
+      </class>
+      
+      <class name="inputtexttest" extends="tester" scope="inp">
+        <method name="getLabel" args="event">
+          var details = '';
+          if (typeof event === 'object') {
+            switch (event.type) {
+              case 'select':
+                details = this.scope.getSelectedText();
+                break;
+            }
+          } else {
+            details = event;
+          }
+          
+          return this.super() + '\n' + details;
+        </method>
+      </class>
+      
+      
+      <!--// Views //-->
+      <spacedlayout axis="y"></spacedlayout>
+      
+      <view width="100%" height="auto" bgcolor="lightgray" padding="4">
+        <spacedlayout spacing="10"></spacedlayout>
+        
+        <view id="mouser" with="button" height="100" width="100" bgcolor="yellow" clickable="true">
+          <handler event="onclick">
+            if (dr.getGlobalScope().follower) {
+              follower.stopActiveAnimators('opacity');
+              follower.animate({attribute:'opacity', 'to':0}).next(
+                function(success) {follower.destroy();}
+              );
+            }
+          </handler>
+        </view>
+        <inputtext id="inp">Input text</inputtext>
+      </view>
+      
+      <view width="auto" height="auto" padding="4">
+        <spacedlayout axis="y" spacing="2"></spacedlayout>
+        
+        <text>View (with Button mixin) Events</text>
+        
+        <text fontsize="12">Mouse</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <mousetest eventname="wheel"></mousetest>
+          <mousetest eventname="mousemove"></mousetest>
+          <mousetest eventname="mouseover" eventvalue="true"></mousetest>
+          <mousetest eventname="mouseover" eventvalue="false"></mousetest><!-- Button handled out -->
+          <mousetest eventname="mousedown" eventvalue="true"></mousetest>
+          <mousetest eventname="mousedown" eventvalue="false"></mousetest><!-- Button handled up -->
+          <mousetest eventname="mouseupoutside" eventvalue="true"></mousetest>
+          <mousetest eventname="click"></mousetest>
+        </view>
+        
+        <text fontsize="12">Keyboard</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <keyboardtest eventname="keydown"></keyboardtest>
+          <keyboardtest eventname="keyup"></keyboardtest>
+          <keyboardtest eventname="keypress"></keyboardtest>
+        </view>
+        
+        <text fontsize="12">Focus</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <tester eventname="focus" scope="mouser"></tester>
+          <tester eventname="blur" scope="mouser"></tester>
+        </view>
+        
+        <text fontsize="12">Other</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <mousetest eventname="activated" eventvalue="true"></mousetest>
+        </view>
+      </view>
+      
+      <view width="auto" height="auto" padding="4">
+        <spacedlayout axis="y" spacing="2"></spacedlayout>
+        
+        <text>Input Text Events</text>
+        
+        <text fontsize="12">Keyboard</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <keyboardtest eventname="keydown" scope="inp"></keyboardtest>
+          <keyboardtest eventname="keyup" scope="inp"></keyboardtest>
+          <keyboardtest eventname="keypress" scope="inp"></keyboardtest>
+        </view>
+        
+        <text fontsize="12">Focus</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <tester eventname="focus" scope="inp"></tester>
+          <tester eventname="blur" scope="inp"></tester>
+        </view>
+        
+        <text fontsize="12">Input</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <inputtexttest eventname="text" scrollable="true"></inputtexttest>
+          <inputtexttest eventname="value" scrollable="true"></inputtexttest>
+          <inputtexttest eventname="change"></inputtexttest>
+          <inputtexttest eventname="select"></inputtexttest>
+        </view>
+      </view>
+      
+      <view width="auto" height="auto" padding="4">
+        <spacedlayout axis="y" spacing="2"></spacedlayout>
+        
+        <text>Global Events</text>
+        
+        <text fontsize="12">Mouse</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <globalmousetest eventname="wheel"></globalmousetest>
+          <globalmousetest eventname="mousemove"></globalmousetest>
+          <globalmousetest eventname="mouseover"></globalmousetest>
+          <globalmousetest eventname="mouseout"></globalmousetest>
+          <globalmousetest eventname="mousedown"></globalmousetest>
+          <globalmousetest eventname="mouseup"></globalmousetest>
+          <globalmousetest eventname="mouseupoutside"></globalmousetest>
+          <globalmousetest eventname="click"></globalmousetest>
+        </view>
+        
+        <text fontsize="12">Keyboard</text>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <globalkeyboardtest eventname="keydown"></globalkeyboardtest>
+          <globalkeyboardtest eventname="keyup"></globalkeyboardtest>
+          <globalkeyboardtest eventname="keypress"></globalkeyboardtest>
+        </view>
+      </view>
+      
+      <!--gyro id="gyros"></gyro>
+      <class name="gyrotest" extends="tester" scope="gyros">
+        <method name="getLabel" args="data">
+          return this.eventname + ': ' + data
+        </method>
+      </class>
+      
+      <text visible="${gyros.active}">Gyro events</text>
+      <view width="auto" height="auto" visible="${gyros.active}">
+        <spacedlayout spacing="1"></spacedlayout>
+        
+        <gyrotest eventname="active"></gyrotest>
+        <gyrotest eventname="x"></gyrotest>
+        <gyrotest eventname="x"></gyrotest>
+        <gyrotest eventname="y"></gyrotest>
+        <gyrotest eventname="z"></gyrotest>
+        <gyrotest eventname="alpha"></gyrotest>
+        <gyrotest eventname="beta"></gyrotest>
+        <gyrotest eventname="gamma"></gyrotest>
+        <gyrotest eventname="compass"></gyrotest>
+        <gyrotest eventname="compassaccuracy"></gyrotest>
+      </view-->
+      
+      <view id="follower" bgcolor="purple" opacity=".3" ignorelayout="true"
+        width="30" height="30" x="${dr.mouse.x - 15}" y="${dr.mouse.y - 15}"
+      ></view>
+    </view>
+  </screen>
+</screens>
+</composition>

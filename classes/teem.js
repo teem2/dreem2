@@ -137,7 +137,12 @@ define(function(require, exports, module) {
   } else if (define.env == 'browser') {
     // web environment
     var BusClient = require('$CORE/busclient');
-    teem.bus = new BusClient(location.pathname);
+    
+    // Strip off .dre extension if found so that /foo and /foo.dre work the same.
+    var pathname = location.pathname;
+    if (pathname.endsWith('.dre')) pathname = pathname.substring(0, pathname.length - 4);
+    
+    teem.bus = new BusClient(pathname + location.search);
     var rpcpromise = new RpcPromise(teem.bus);
     
     define.onMain = function(main) {
@@ -166,7 +171,7 @@ define(function(require, exports, module) {
           teem.__startup(main);
         } else if (msg.type == 'join') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
-          obj._addNewProxy(msg.index, msg.rpcid, rpcpromise);
+          if (obj) obj._addNewProxy(msg.index, msg.rpcid, rpcpromise);
         } else if (msg.type == 'attribute') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
           if (obj) obj[msg.attribute] = msg.value;

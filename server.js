@@ -6,6 +6,9 @@
 */
 require = require('./define'); // support define.js modules
 
+// Pull in the language shim
+require('$LIB/dr/shim/language.js');
+
 if (process.argv.indexOf('-nomoni') != -1) {
   define.onRequire = function(filename) {
     process.stderr.write('\x0F' + filename + '\n', function(){});
@@ -18,33 +21,33 @@ var fs = require('fs'),
 // Create a colorization function (ANSI output) use ~rb~ to set color in string
 // and ~~ to end colorization.
 console.color = (function colorize() {
-    var colors = {
-      bl:"30",   // black
-      bo:"1",    // bold current color
-      r:"0;31",  // red
-      g:"0;32",  // green
-      y:"0;33",  // yellow
-      b:"0;34",  // blue
-      m:"0;35",  // magenta
-      c:"0;36",  // cyan
-      w:"0;37",  // white
-      br:"1;31", // bold red
-      bg:"1;32", // bold green
-      by:"1;33", // bold yellow
-      bb:"1;34", // bold blue
-      bm:"1;35", // bold magenta
-      bc:"1;36", // bold cyan
-      bw:"1;37"  // bold white
-    };
-    return function() {
-      for (var v = Array.prototype.slice.call(arguments), i = 0; i < v.length; i++) {
-        v[i] = String(v[i]).replace(/~(\w*)~/g, function(m, a) {
-          return "\033[" + (colors[a] || 0) + "m";
-        }) + "\033[0m";
-        process.stdout.write(v[i]);
-      }
+  var colors = {
+    bl:"30",   // black
+    bo:"1",    // bold current color
+    r:"0;31",  // red
+    g:"0;32",  // green
+    y:"0;33",  // yellow
+    b:"0;34",  // blue
+    m:"0;35",  // magenta
+    c:"0;36",  // cyan
+    w:"0;37",  // white
+    br:"1;31", // bold red
+    bg:"1;32", // bold green
+    by:"1;33", // bold yellow
+    bb:"1;34", // bold blue
+    bm:"1;35", // bold magenta
+    bc:"1;36", // bold cyan
+    bw:"1;37"  // bold white
+  };
+  return function() {
+    for (var v = Array.prototype.slice.call(arguments), i = 0; i < v.length; i++) {
+      v[i] = String(v[i]).replace(/~(\w*)~/g, function(m, a) {
+        return "\033[" + (colors[a] || 0) + "m";
+      }) + "\033[0m";
+      process.stdout.write(v[i]);
     }
-  })();
+  }
+})();
 
 function main() {
   var argv = process.argv,
