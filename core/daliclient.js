@@ -52,7 +52,7 @@ define(function(require, exports, module) {
 			  var kill = this.child;
               this.child = undefined;
               var i = 0;
-              var itv = this.setInterval(function() {
+              var itv = setInterval(function() {
                 try {kill.kill('SIGTERM');console.log('attempting to stop process');} catch(e) {}
                 if (i++ > 20) this.clearInterval(itv);
               },10);
