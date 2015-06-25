@@ -410,6 +410,7 @@ define(function(require, exports, module) {
         ' <head>\n'+
         '  <title>' + title + '</title>\n'+
         '  <!-- TODO: remove --><script type"text/javascript" src="/lib/json-path+json-ptr-0.1.3.min.js"></script>\n'+
+        '  <!-- TODO: remove --><script type"text/javascript" src="/lib/json.async.js"></script>\n'+
         (isTest ?
         '  <script type"text/javascript" src="/lib/chai.js"></script>\n'+
         '  <script type"text/javascript" src="/lib/smoke_helper.js"></script>\n'
