@@ -137,7 +137,14 @@ define(function(require, exports, module) {
   } else if (define.env == 'browser') {
     // web environment
     var BusClient = require('$CORE/busclient');
-    teem.bus = new BusClient(location.pathname + location.search);
+    
+    // Strip off .dre extension if found so that /foo and /foo.dre work the same.
+    var pathname = location.pathname;
+    if (pathname.indexOf('.dre', pathname.length - 4) !== -1) {
+      pathname = pathname.substring(0, pathname.length - 4);
+    }
+    
+    teem.bus = new BusClient(pathname + location.search);
     var rpcpromise = new RpcPromise(teem.bus);
     
     define.onMain = function(main) {

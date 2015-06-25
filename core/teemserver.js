@@ -173,9 +173,21 @@ define(function(require, exports, module) {
       * @param {Response} res
       */
     this.request = function(req, res) {
-      // if we are a composition request, send it to composition
+      // Strip off .dre extension if found so that /foo and /foo.dre work the same.
       var url = req.url,
-        composition = this.getComposition(url);
+        query = '',
+        queryIndex = url.indexOf('?');
+      if (queryIndex !== -1) {
+        query = url.substring(queryIndex);
+        url = url.substring(0, queryIndex);
+      }
+      if (url.indexOf('.dre', url.length - 4) !== -1) {
+        url = url.substring(0, url.length - 4);
+      }
+      req.url = url = url + query;
+      
+      // if we are a composition request, send it to composition
+      var composition = this.getComposition(url);
       if (composition) return composition.request(req, res)
       
       // otherwise handle as static file
