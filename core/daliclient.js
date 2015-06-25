@@ -54,7 +54,7 @@ define(function(require, exports, module) {
               var i = 0;
               var itv = setInterval(function() {
                 try {kill.kill('SIGTERM');console.log('attempting to stop process');} catch(e) {}
-                if (i++ > 20) this.clearInterval(itv);
+                if (i++ > 20) clearInterval(itv);
               },10);
             }
             console.log('spawning dali process!');
