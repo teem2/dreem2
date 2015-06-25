@@ -64,8 +64,8 @@ SOFTWARE. -->
       <handler event="oninit">
         var dataset = dr.dataset.datasets.example
         assert.equal(dataset.name, 'example', 'Dataset should be addressible by name.');
-        var data = Object.keys(dataset.data)
-        assert.equal(data.join(','), 'store', 'Data attribute should contain a single child named store.');
+        var json = JSON.stringify(dataset.data)
+        assert.equal(json.length, 466, 'Serialized JSON should be a specific size.');
       </handler>
     </view>
   </screen>
