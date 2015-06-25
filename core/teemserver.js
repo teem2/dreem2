@@ -181,9 +181,7 @@ define(function(require, exports, module) {
         query = url.substring(queryIndex);
         url = url.substring(0, queryIndex);
       }
-      if (url.indexOf('.dre', url.length - 4) !== -1) {
-        url = url.substring(0, url.length - 4);
-      }
+      if (url.endsWith('.dre')) url = url.substring(0, url.length - 4);
       req.url = url = url + query;
       
       // if we are a composition request, send it to composition

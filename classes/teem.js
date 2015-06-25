@@ -140,9 +140,7 @@ define(function(require, exports, module) {
     
     // Strip off .dre extension if found so that /foo and /foo.dre work the same.
     var pathname = location.pathname;
-    if (pathname.indexOf('.dre', pathname.length - 4) !== -1) {
-      pathname = pathname.substring(0, pathname.length - 4);
-    }
+    if (pathname.endsWith('.dre')) pathname = pathname.substring(0, pathname.length - 4);
     
     teem.bus = new BusClient(pathname + location.search);
     var rpcpromise = new RpcPromise(teem.bus);
