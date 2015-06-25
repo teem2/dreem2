@@ -411,6 +411,7 @@ define(function(require, exports, module) {
         (isTest ?
         '  <script type"text/javascript" src="/lib/chai.js"></script>\n'+
         '  <script type"text/javascript" src="/lib/smoke_helper.js"></script>\n'
+        '  <!-- TODO: remove --><script type"text/javascript" src="lib/json-path+json-ptr-0.1.3.min.js"></script>\n'
         : '' ) +
         '  <script type"text/javascript">\n'+
         '    window.define = {\n'+
