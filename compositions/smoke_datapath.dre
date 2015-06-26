@@ -23,57 +23,96 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Datapath'>
     <view width="100%" height="100%" clip="true">
-      <handler event="oninit">
-        var data = {
-          // Strings
-          a:"value a",
-          b:"value b",
-          c:"value c",
-          
-          // Numbers
-          d:10,
-          e:0,
-          f:1,
-          
-          // Booleans
-          g:true,
-          h:false,
-          
-          // Other
-          i:null,
-          j:undefined,
-          
-          // Arrays
-          k:["A","B","C"],
-          
-          // Objects
-          l:{a:"A", b:"B", c:"C"},
-          
-          // Deeper Nesting of object and arrays
-          m:[
-            "A","B",[67,65,32,24]
+      <dataset name="testdata">
+        {
+          "a": "value a",
+          "b": "value b",
+          "c": "value c",
+          "d": 10,
+          "e": 0,
+          "f": 1,
+          "g": true,
+          "h": false,
+          "i": null,
+          "k": [
+            "A",
+            "B",
+            "C"
           ],
-          n:[
-            "A","B",{foo:"FOO", bar:"BAR", baz:"BAZ"}
+          "l": {
+            "a": "A",
+            "b": "B",
+            "c": "C"
+          },
+          "m": [
+            "A",
+            "B",
+            [
+              67,
+              65,
+              32,
+              24
+            ]
           ],
-          o:{
-            foo:"FOO",
-            bar:"BAR",
-            baz:{
-              a:"A",
-              b:"B",
-              c:"C"
+          "n": [
+            "A",
+            "B",
+            {
+              "foo": "FOO",
+              "bar": "BAR",
+              "baz": "BAZ"
+            }
+          ],
+          "o": {
+            "foo": "FOO",
+            "bar": "BAR",
+            "baz": {
+              "a": "A",
+              "b": "B",
+              "c": "C"
             }
           },
-          p:{
-            foo:"FOO",
-            bar:"BAR",
-            baz:["A",true,23,null]
-          },
-        };
-        
-        console.log(data);
-      </handler>
+          "p": {
+            "foo": "FOO",
+            "bar": "BAR",
+            "baz": [
+              "A",
+              true,
+              23,
+              null
+            ]
+          }
+        }
+      </dataset>
+
+      <!-- Test for initial state -->
+      <datapath>
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual([], result, 'result should be an empty array')
+        </handler>
+        <handler event="oninit">
+          assert.deepEqual(null, this.data, 'data should be null')
+          assert.equal(true, this.onresultfired, 'there should be an onresult event')
+        </handler>
+      </datapath>
+      <!-- Test for filterfunction and initial data -->
+      <datapath data="['x',1,'y',2,'z',3,4,5]">
+        <handler event="onresult" args="result">
+          if (this.inited) {
+            this.onresultfired = true
+            assert.deepEqual(result, ['x',1,'y',2,'z',3,4,5], 'result should equal expected result')
+          }
+        </handler>
+        <handler event="ondata" args="data">
+          this.ondatafired = true
+          assert.deepEqual(data, ['x',1,'y',2,'z',3,4,5], 'data should equal expected result')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.equal(true, this.ondatafired, 'There should be a data event')
+        </handler>
+      </datapath>
     </view>
   </screen>
 </screens>

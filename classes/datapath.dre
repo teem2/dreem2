@@ -62,12 +62,11 @@ SOFTWARE. -->
         * @attribute {Object} data
         * A pointer to the data to be evaluated
         */-->
-      <attribute name="data" value="{}" type="expression"></attribute>
+      <attribute name="data" value="null" type="expression"></attribute>
       <!--/**
         * @attribute {Array} results
         * The results of the path expression exaluated on data
         */-->
-      <attribute name="results" value="[]" type="expression"></attribute>
       <!--/**
         * @attribute {String} path
         * The datapath expression to be replicated.
@@ -75,7 +74,7 @@ SOFTWARE. -->
         */-->
       <setter name="path" args="path">
         unless path
-          @parsedpath = null
+          @_parsedpath = @_datasetname = null
           return path 
         # console.log('evaluating path', path)
 
@@ -84,17 +83,15 @@ SOFTWARE. -->
         match = path.match(/^\$([^\/]+)/)
         if match and match[1]
           # found absolute path, e.g. $mydataset/, store name for lookup
-          @datasetname = match[1]
+          @_datasetname = match[1]
 
           # remove dataset declaration from the path
           newpath = path.replace(re, '')
-        else
-          @datasetname = null
 
         # store the parsed path (with dataset stripped) for evaluation later
-        @parsedpath = JsonPath.parseSelector(newpath)
+        @_parsedpath = JsonPath.parseSelector(newpath)
 
-        # console.log('evaluated datapath', path, @parsedpath)
+        # console.log('evaluated datapath', path, @_parsedpath)
         return path
       </setter>
 
@@ -107,11 +104,13 @@ SOFTWARE. -->
           @stopListening(@dataset, 'ondata', @_datasetupdater)
           @dataset = null
 
-        if @datasetname
-          @dataset = dr.dataset.datasets[@datasetname]
+        if @_datasetname
+          @dataset = dr.dataset.datasets[@_datasetname]
 
-          # console.log('listening to dataset', dataset, dr.datasets, @dataset, @_dataset)
-          @listenTo(@dataset, 'ondata', @_datasetupdater)
+          if @dataset?
+            # console.log('listening to dataset', dataset, dr.datasets, @dataset, @_dataset)
+            @listenTo(@dataset, 'ondata', @_datasetupdater)
+            @setAttribute('data', @dataset.data)
       </method>
 
       <!-- TODO: make this a relative datapath -->
@@ -138,20 +137,20 @@ SOFTWARE. -->
         # console.log('filtering on', regex, _filterexpression)
         @_filterexpressionfunc = (value) ->
           return (value + '').match(_filterexpression) if (value)
-        @processData()
+        @_processData()
         return regex
       </setter>
 
       <handler event="onsortfield">
         # console.log 'onsortfield', @sortfield, @data
         @_buildsortfunc()
-        @processData()
+        @_processData()
       </handler>
 
       <handler event="onsortasc">
         # console.log 'onsortasc', @sortasc, @data
         @_buildsortfunc()
-        @processData()
+        @_processData()
       </handler>
 
       <method name="_buildsortfunc">
@@ -175,25 +174,6 @@ SOFTWARE. -->
           @sortfunc = null
       </method>
 
-      <handler event="onpath,ondata,oninit" method="refresh"></handler>
-
-      <method name="updateData" args="data">
-        # remove dataset declaration
-        re = /^\$([^\/]+)/
-        # Apply the data back to the dataset
-        @dataset.updateData(@path.replace(re, ''), data);
-      </method>
-
-      <!--/**
-        * @method refresh
-        * Refreshes the results manually
-        */-->
-      <method name="refresh">
-        return unless @inited
-        @applyData()
-        @processData()
-      </method>
-
       <!--/**
         * @method filterfunction
         * @abstract
@@ -203,32 +183,40 @@ SOFTWARE. -->
         * @returns {Object[]} The accum array. Must be returned otherwise results will be lost.
         */-->
 
-      <method name="applyData">
+      <handler event="onpath,ondata,oninit" method="refresh"></handler>
+      <!--/**
+        * @method refresh
+        * Refreshes the results manually
+        */-->
+      <method name="refresh">
         return unless @inited
-        # console.log('applyData', @data, @classname, @parent, @children, @, @inited)
+        # console.log('refresh', @data, @classname, @parent, @children, @, @inited)
 
-        _findDataset()
+        @_findDataset()
 
-        if @parsedpath
+        if @_parsedpath
           # found datapath
-          if @datasetname
+          if @_datasetname
             # absolute datapath, evaluate relative to dataset
             # console.log 'evaluating absolute datapath', @path, @_dataset
             if @path == '$' + @dataset.name
               # console.log('dataset only', @path, @dataset)
               # return an instance with data attribute set to the dataset
               # this allows relative datapath children to find this dataset
-              @result = @dataset.data
+              if Array.isArray(@data)
+                @result = @data
+              else
+                @result = [@data]
             else
               # found dataset, evaluate relative to it
-              # console.log('evaluating absolute selector', @path, @dataset.data, @parsedpath)
-              @result = JsonPath.executeSelectors(@dataset.data, @parsedpath, @filterfunction?.bind(@))
+              # console.log('evaluating absolute selector', @path, @dataset.data, @_parsedpath)
+              @result = JsonPath.executeSelectors(@data, @_parsedpath, @filterfunction?.bind(@))
           else
             # relative datapath, look for data in parents
             parentdata = @_findInParents('data')
             if parentdata?
-              # console.log('executing relative selector', @path, @parsedpath, parentdata)
-              @result = JsonPath.executeSelectors(parentdata, @parsedpath, @filterfunction?.bind(@))
+              # console.log('executing relative selector', @path, @_parsedpath, parentdata)
+              @result = JsonPath.executeSelectors(parentdata, @_parsedpath, @filterfunction?.bind(@))
               # console.log('looking for data', @path, parentdata, @result)
             else
               console.warn('No parent data attribute found for', @path, @)
@@ -241,18 +229,38 @@ SOFTWARE. -->
             for datum in @data
               accum = filterfunction(datum, accum)
             @result = accum
+          else if @data
+            if Array.isArray(@data)
+              @result = @data
+            else
+              @result = [@data]
+          else
+            @result = []
 
         @_origresult = @result
+        @_processData()
       </method>
 
-      <method name="processData">
-        return unless @inited and @_origresult
+      <method name="_processData">
+        return unless @inited
+        @result = @_origresult
 
-        if @filterexpression and @_filterexpressionfunc
-          @result = @_origresult.filter(@_filterexpressionfunc)
-          # console.log('_filterexpressionfunc', @_filterexpressionfunc, @data, @result)
+        if @_origresult
+          if @filterexpression and @_filterexpressionfunc
+            @result = @_origresult.filter(@_filterexpressionfunc)
+            # console.log('_filterexpressionfunc', @_filterexpressionfunc, @data, @result)
 
-        @result.sort(@sortfunc) if (@sortfunc)
+        if @sortfunc?
+          @result.sort(@sortfunc)
+
         @sendEvent('onresult', @result)
+        # console.log('onresult', @result)
+      </method>
+
+      <method name="updateData" args="data">
+        # remove dataset declaration
+        re = /^\$([^\/]+)/
+        # Apply the data back to the dataset
+        @dataset.updateData(@path.replace(re, ''), data);
       </method>
     </class>
