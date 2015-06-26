@@ -85,6 +85,10 @@ SOFTWARE. -->
         }
       </dataset>
 
+      <dataset name="sample">
+        {"text" : [ {"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"} ]}
+      </dataset>
+
       <!-- Test for initial state -->
       <datapath>
         <handler event="onresult" args="result">
@@ -133,9 +137,7 @@ SOFTWARE. -->
       </datapath>
 
       <!-- Path with just a dataset -->
-      <dataset name="sample">
-        {"text" : [ {"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"} ]}
-      </dataset>
+
       <datapath path="$sample">
         <handler event="onresult" args="result">
           if (this.inited) {
@@ -178,13 +180,28 @@ SOFTWARE. -->
         </handler>
       </datapath>
 
-      <!-- Relative path with data and lookup -->
+      <!-- Relative path with data -->
       <datapath data="{text: [0,1,2,3]}">
         <datapath path="/text[*]">
           <handler event="onresult" args="result">
             if (this.inited) {
               this.onresultfired = true
               assert.deepEqual(this.result, [0,1,2,3], 'Results should match relative path')
+            }
+          </handler>
+          <handler event="oninit">
+            assert.equal(true, this.onresultfired, 'There should be a result event')
+          </handler>
+        </datapath>
+      </datapath>
+      
+      <!-- Relative path with a dataset -->
+      <datapath path="$sample">
+        <datapath path="/text[*]">
+          <handler event="onresult" args="result">
+            if (this.inited) {
+              this.onresultfired = true
+              assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"} ], 'Results should match relative path')
             }
           </handler>
           <handler event="oninit">

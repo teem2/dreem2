@@ -72,9 +72,11 @@ SOFTWARE. -->
         * The datapath expression to be replicated.
         * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for details.
         */-->
+      <attribute name="path" value="" type="string"></attribute>
       <setter name="path" args="path">
         unless path
-          @_parsedpath = @_datasetname = null
+          @_parsedpath = null
+          @_findDataset()
           return path 
         # console.log('evaluating path', path)
 
@@ -84,7 +86,7 @@ SOFTWARE. -->
         match = path.match(re)
         if match and match[1]
           # found absolute path, e.g. $mydataset/, store name for lookup
-          @_datasetname = match[1]
+          @_findDataset(match[1])
 
           # remove dataset declaration from the path
           newpath = path.replace(re, '')
@@ -96,7 +98,7 @@ SOFTWARE. -->
         return path
       </setter>
 
-      <method name="_findDataset">
+      <method name="_findDataset" args="datasetname">
         @_datasetupdater ?= (data) =>
           # console.log('callback', @, data)
           @setAttribute('data', data)
@@ -105,11 +107,11 @@ SOFTWARE. -->
           @stopListening(@dataset, 'ondata', @_datasetupdater)
           @dataset = null
 
-        if @_datasetname
-          @dataset = dr.dataset.datasets[@_datasetname]
+        if datasetname
+          @dataset = dr.dataset.datasets[datasetname]
 
           if @dataset?
-            # console.log('listening to dataset', dataset, dr.datasets, @dataset, @_dataset)
+            # console.log('listening to dataset', datasetname, @dataset.name, @dataset.data)
             @listenTo(@dataset, 'ondata', @_datasetupdater)
             @setAttribute('data', @dataset.data)
       </method>
@@ -184,33 +186,30 @@ SOFTWARE. -->
         * @returns {Object[]} The accum array. Must be returned otherwise results will be lost.
         */-->
 
-      <handler event="onpath,ondata,oninit" method="refresh"></handler>
-      <!--/**
-        * @method refresh
-        * Refreshes the results manually
-        */-->
-
       <method name="_findInParents" args="name" type="js">
         var p;
         p = this.parent;
         while (p) {
           // console.log('_findInParents', p, p.name, p[name], p.inited)
           if (name in p) {
-            return p[name];
+            return p;
           }
           p = p.parent;
         }
       </method>
 
+      <handler event="onpath,ondata,oninit" method="refresh"></handler>
+      <!--/**
+        * @method refresh
+        * Refreshes the results manually
+        */-->
       <method name="refresh">
         return unless @inited
         # console.log('refresh', @data, @classname, @parent, @children, @, @inited)
 
-        @_findDataset()
-
         if @_parsedpath
           # found datapath
-          if @_datasetname
+          if @dataset
             # absolute datapath, evaluate relative to dataset
             # console.log 'evaluating absolute datapath', @path, @_dataset
             if @path == '$' + @dataset.name
@@ -228,12 +227,12 @@ SOFTWARE. -->
           else
             # relative datapath, look for data in parents
             parentdata = @_findInParents('data')
-            if parentdata?
+            if parentdata?.data
               # console.log('executing relative selector', @path, parentdata, @_parsedpath)
-              @result = JsonPath.executeSelectors(parentdata, @_parsedpath, @filterfunction?.bind(@))
+              @result = JsonPath.executeSelectors(parentdata.data, @_parsedpath, @filterfunction?.bind(@))
               # console.log('found data', @path, parentdata, @result)
             else
-              console.warn('No parent data attribute found for', @path, @)
+              console.warn('No parent data found for', @path, @)
         else
           # no datapath
           filterfunction = @filterfunction
