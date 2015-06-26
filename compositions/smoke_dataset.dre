@@ -23,6 +23,27 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Dataset'>
     <view>
+      <!-- Verify that a warning occurs when no name is provided. -->
+      <expectedoutput>No name provided to dataset.</expectedoutput>
+      <dataset>
+        <handler event="oninit">
+          assert.isUndefined(this.data);
+          assert.isUndefined(this.name);
+        </handler>
+      </dataset>
+      
+      <!-- Verify that a dataset with no initial data has undefined data.
+           Also checks that the dataset gets stored in dr.dataset.datasets. -->
+      <dataset name="empty">
+        <handler event="oninit">
+          var dataset = dr.dataset.datasets.empty
+          assert.equal(dataset, this);
+          assert.equal(dataset.name, 'empty', 'Dataset should be addressible by name.');
+          assert.isUndefined(dataset.data);
+        </handler>
+      </dataset>
+      
+      <!-- Verify that data can be provided as text content. -->
       <dataset name="example">
         {
           "store": {
@@ -60,12 +81,63 @@ SOFTWARE. -->
             }
           }
         }
+        <handler event="oninit">
+          var dataset = dr.dataset.datasets.example
+          assert.equal(dataset, this);
+          assert.equal(dataset.name, 'example', 'Dataset should be addressible by name.');
+          var json = JSON.stringify(dataset.data)
+          assert.equal(json.length, 466, 'Serialized JSON should be a specific size.');
+        </handler>
       </dataset>
+      
+      <!-- Verify direct data assignment. Also check that data deeply equals
+           what was provided. -->
+      <dataset name="example2" data='{"foo":5,"bar":false,"baz":"hey"}'>
+        <handler event="oninit">
+          assert.deepEqual(this.data, {"foo":5,"bar":false,"baz":"hey"});
+        </handler>
+      </dataset>
+      
+      <!-- Verify direct data assignment using a constraint. Also verifies
+           that we can change the data and name afterwards. -->
+      <expectedoutput>Clobbering existing dataset named: "empty".</expectedoutput>
+      <expectedoutput>No name provided to dataset.</expectedoutput>
+      <attribute name="examplevalue" type="expression" value='{"foo":5,"bar":false,"baz":"hey"}'></attribute>
+      <dataset name="example3" data="${this.parent.examplevalue}">
+        <handler event="oninit">
+          assert.deepEqual(this.data, {"foo":5,"bar":false,"baz":"hey"});
+          
+          // Change data
+          this.setAttribute('data', [5,3,9]);
+          assert.deepEqual(this.data, [5,3,9]);
+          
+          // Change name to a new valid value
+          assert.equal(dr.dataset.datasets.example3, this);
+          assert.equal(this.name, 'example3');
+          
+          this.setAttribute('name', 'different');
+          assert.isUndefined(dr.dataset.datasets.example3);
+          assert.equal(dr.dataset.datasets.different, this);
+          assert.equal(this.name, 'different');
+          
+          // Change name to a value that is already in use
+          this.setAttribute('name', 'empty');
+          assert.equal(dr.dataset.datasets.empty, this);
+          assert.equal(this.name, 'empty');
+          
+          // Change name to '' will not be stored in datasets, nor will old
+          // clobbered dataset be restored
+          this.setAttribute('name', '');
+          assert.isUndefined(dr.dataset.datasets.empty);
+          assert.equal(this.name, '');
+        </handler>
+      </dataset>
+      
+      <!-- Verify the stored datasets. This indirectly verifies
+           that the unnamed dataset at the beginning of this test was not
+           stored. -->
       <handler event="oninit">
-        var dataset = dr.dataset.datasets.example
-        assert.equal(dataset.name, 'example', 'Dataset should be addressible by name.');
-        var json = JSON.stringify(dataset.data)
-        assert.equal(json.length, 466, 'Serialized JSON should be a specific size.');
+        assert.sameMembers(Object.keys(dr.dataset.datasets), ['example', 'example2']);
       </handler>
     </view>
   </screen>
