@@ -177,6 +177,21 @@ SOFTWARE. -->
           assert.equal(true, this.onresultfired, 'There should be a result event')
         </handler>
       </datapath>
+
+      <!-- Relative path with data and lookup -->
+      <datapath data="{text: [0,1,2,3]}">
+        <datapath path="/text[*]">
+          <handler event="onresult" args="result">
+            if (this.inited) {
+              this.onresultfired = true
+              assert.deepEqual(this.result, [0,1,2,3], 'Results should match relative path')
+            }
+          </handler>
+          <handler event="oninit">
+            assert.equal(true, this.onresultfired, 'There should be a result event')
+          </handler>
+        </datapath>
+      </datapath>
     </view>
   </screen>
 </screens>

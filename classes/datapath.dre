@@ -189,6 +189,19 @@ SOFTWARE. -->
         * @method refresh
         * Refreshes the results manually
         */-->
+
+      <method name="_findInParents" args="name" type="js">
+        var p;
+        p = this.parent;
+        while (p) {
+          // console.log('_findInParents', p, p.name, p[name], p.inited)
+          if (name in p) {
+            return p[name];
+          }
+          p = p.parent;
+        }
+      </method>
+
       <method name="refresh">
         return unless @inited
         # console.log('refresh', @data, @classname, @parent, @children, @, @inited)
@@ -216,9 +229,9 @@ SOFTWARE. -->
             # relative datapath, look for data in parents
             parentdata = @_findInParents('data')
             if parentdata?
-              # console.log('executing relative selector', @path, @_parsedpath, parentdata)
+              # console.log('executing relative selector', @path, parentdata, @_parsedpath)
               @result = JsonPath.executeSelectors(parentdata, @_parsedpath, @filterfunction?.bind(@))
-              # console.log('looking for data', @path, parentdata, @result)
+              # console.log('found data', @path, parentdata, @result)
             else
               console.warn('No parent data attribute found for', @path, @)
         else
