@@ -25,6 +25,7 @@ SOFTWARE. -->
     <view id="main" width="100%" height="100%" clip="true">
       <expectedoutput>
 Invalid type 'text' for attribute 'something', Using string type instead. Type must be one of: number, positivenumber, motion, json, expression, *, object, function, string, boolean, color.
+Attribute named: barHa converted to: barha
 error parsing json value '{'test': 'invalid'}' for attribute 'foo'
       </expectedoutput>
     
