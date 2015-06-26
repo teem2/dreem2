@@ -74,6 +74,7 @@ SOFTWARE. -->
           <link url="./smoke_class?test">Class</link>
           <link url="./smoke_classroot?test">Classroot</link>
           <link url="./smoke_datapath?test">Datapath</link>
+          <link url="./smoke_dataset?test">Dataset</link>
           <link url="./smoke_dre_parser?test">Dre Parser</link>
           <link url="./smoke_dre?test">Dre Misc</link>
           <link url="./smoke_events?test">Events</link>
