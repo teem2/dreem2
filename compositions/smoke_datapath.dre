@@ -98,6 +98,7 @@ SOFTWARE. -->
         <handler event="oninit">
           assert.deepEqual(null, this.data, 'data should be null')
           assert.equal(true, this.onresultfired, 'there should be an onresult event')
+          assert.deepEqual(this.result, [], 'The result property should be set.')
         </handler>
       </datapath>
 
@@ -114,6 +115,7 @@ SOFTWARE. -->
         <handler event="oninit">
           assert.equal(true, this.onresultfired, 'There should be a result event')
           assert.equal(true, this.ondatafired, 'There should be a data event')
+          assert.deepEqual(this.result, ['x',1,'y',2,'z',3,4,5], 'The result property should be set.')
         </handler>
       </datapath>
 
@@ -145,13 +147,12 @@ SOFTWARE. -->
           return accum;
         </method>
         <handler event="onresult" args="result">
-          if (this.inited) {
-            this.onresultfired = true
-            assert.deepEqual(result, [5,4,3,'z',2,'y',1,'x'], 'result should be reversed per filterfunction()')
-          }
+          this.onresultfired = true
+          assert.deepEqual(result, [5,4,3,'z',2,'y',1,'x'], 'result should be reversed per filterfunction()')
         </handler>
         <handler event="oninit">
           assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [5,4,3,'z',2,'y',1,'x'], 'The result property should be set.')
         </handler>
       </datapath>
 
@@ -163,6 +164,7 @@ SOFTWARE. -->
         </handler>
         <handler event="oninit">
           assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, ['x','y','z'], 'The result property should be set.')
         </handler>
       </datapath>
 
@@ -174,6 +176,7 @@ SOFTWARE. -->
         </handler>
         <handler event="oninit">
           assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [dr.dataset.datasets.sample.data], 'The result property should be set.')
         </handler>
       </datapath>
 
@@ -185,6 +188,7 @@ SOFTWARE. -->
         </handler>
         <handler event="oninit">
           assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [dr.dataset.datasets.sample.data.text], 'The result property should be set.')
         </handler>
       </datapath>
 
@@ -200,6 +204,7 @@ SOFTWARE. -->
         </handler>
         <handler event="oninit">
           assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [{"a":"d"}, {"a":"c"}, {"a":"b"}, {"a":"a"}], 'The result property should be set.')
         </handler>
       </datapath>
 
@@ -212,6 +217,7 @@ SOFTWARE. -->
           </handler>
           <handler event="oninit">
             assert.equal(true, this.onresultfired, 'There should be a result event')
+            assert.deepEqual(this.result, [0,1,2,3], 'The result property should be set.')
           </handler>
         </datapath>
       </datapath>
@@ -221,47 +227,62 @@ SOFTWARE. -->
         <datapath path="/text[*]">
           <handler event="onresult" args="result">
             this.onresultfired = true
-            assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"} ], 'Results should match relative path')
+            assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}], 'Results should match relative path')
           </handler>
           <handler event="oninit">
             assert.equal(true, this.onresultfired, 'There should be a result event')
+            assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}], 'The result property should be set.')
           </handler>
         </datapath>
       </datapath>
 
-     <dataset name="bikeshop">
-      {
-        "bicycle": [
-          {
-           "color": "red",
-           "price": 19.95
-          },
-          {
-           "color": "green",
-           "price": 29.95
-          },
-          {
-           "color": "blue",
-           "price": 59.95
-          }
-        ]
-      }
-     </dataset>
-     <datapath path="$bikeshop/bicycle[*][@]">
-       <method name="filterfunction" args="obj, accum">
-         // add the color to the beginning of the results if the price is greater than 20
-         if (obj.price > 20)
-           accum.unshift(obj.color);
-         return accum
-       </method>
-       <handler event="onresult" args="result">
-        this.onresultfired = true
-        assert.deepEqual(this.result, ['blue', 'green'], 'Results should match relative path')
-      </handler>
-      <handler event="oninit">
-        assert.equal(true, this.onresultfired, 'There should be a result event')
-      </handler>
-     </datapath>
+      <dataset name="bikeshop">
+        {
+          "bicycle": [
+            {
+             "color": "red",
+             "price": 19.95
+            },
+            {
+             "color": "green",
+             "price": 29.95
+            },
+            {
+             "color": "blue",
+             "price": 59.95
+            }
+          ]
+        }
+      </dataset>
+      <datapath path="$bikeshop/bicycle[*][@]">
+        <method name="filterfunction" args="obj, accum">
+          // add the color to the beginning of the results if the price is greater than 20
+          if (obj.price > 20)
+            accum.unshift(obj.color);
+          return accum
+        </method>
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(this.result, ['blue', 'green'], 'Results should match relative path')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+        </handler>
+      </datapath>
+      
+      <!-- Data and a path -->
+      <datapath data='{text: [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}]}'
+        path="/text[*]"
+      >
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}], 'Results should match relative path')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}], 'The result property should be set.')
+        </handler>
+      </datapath>
     </view>
   </screen>
 </screens>
