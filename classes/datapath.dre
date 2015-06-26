@@ -186,18 +186,6 @@ SOFTWARE. -->
         * @returns {Object[]} The accum array. Must be returned otherwise results will be lost.
         */-->
 
-      <method name="_findInParents" args="name" type="js">
-        var p;
-        p = this.parent;
-        while (p) {
-          // console.log('_findInParents', p, p.name, p[name], p.inited)
-          if (name in p) {
-            return p;
-          }
-          p = p.parent;
-        }
-      </method>
-
       <handler event="onpath,ondata,oninit" method="refresh"></handler>
       <!--/**
         * @method refresh
@@ -226,7 +214,7 @@ SOFTWARE. -->
               @result = JsonPath.executeSelectors(@data, @_parsedpath, @filterfunction?.bind(@))
           else
             # relative datapath, look for data in parents
-            parentdata = @_findInParents('data')
+            parentdata = @getAncestorWithProperty('data')
             if parentdata?.data
               # console.log('executing relative selector', @path, parentdata, @_parsedpath)
               @result = JsonPath.executeSelectors(parentdata.data, @_parsedpath, @filterfunction?.bind(@))
