@@ -87,14 +87,16 @@ SOFTWARE. -->
         * @readonly
         * The data inside the dataset
         */-->
-      <handler event="oninit">
-        dr.dataset.datasets[@name] = @
-      </handler>
+      <setter name="name" args="name">
+        dr.dataset.datasets[name] = @
+        return name
+      </setter>
 
       <setter name="$textcontent" args="textcontent">
         textcontent = textcontent?.trim()
         if textcontent?
           @setAttribute('data', JSON.parse(textcontent))
+        return textcontent
       </setter>
 
       <!--/**
