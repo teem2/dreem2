@@ -80,7 +80,8 @@ SOFTWARE. -->
 
         # Find the dataset if this is an absolute path
         newpath = path
-        match = path.match(/^\$([^\/]+)/)
+        re = /^\$([^\/]+)/
+        match = path.match(re)
         if match and match[1]
           # found absolute path, e.g. $mydataset/, store name for lookup
           @_datasetname = match[1]

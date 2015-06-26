@@ -96,7 +96,8 @@ SOFTWARE. -->
           assert.equal(true, this.onresultfired, 'there should be an onresult event')
         </handler>
       </datapath>
-      <!-- Test for filterfunction and initial data -->
+
+      <!-- Test for initial data -->
       <datapath data="['x',1,'y',2,'z',3,4,5]">
         <handler event="onresult" args="result">
           if (this.inited) {
@@ -111,6 +112,69 @@ SOFTWARE. -->
         <handler event="oninit">
           assert.equal(true, this.onresultfired, 'There should be a result event')
           assert.equal(true, this.ondatafired, 'There should be a data event')
+        </handler>
+      </datapath>
+
+      <!-- Test filter function on raw data -->
+      <datapath data="['x',1,'y',2,'z',3,4,5]">
+        <method name="filterfunction" args="obj, accum">
+          accum.unshift(obj);
+          return accum;
+        </method>
+        <handler event="onresult" args="result">
+          if (this.inited) {
+            this.onresultfired = true
+            assert.deepEqual(result, [5,4,3,'z',2,'y',1,'x'], 'result should be reversed per filterfunction()')
+          }
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+        </handler>
+      </datapath>
+
+      <!-- Path with just a dataset -->
+      <dataset name="sample">
+        {"text" : [ {"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"} ]}
+      </dataset>
+      <datapath path="$sample">
+        <handler event="onresult" args="result">
+          if (this.inited) {
+            this.onresultfired = true
+            assert.deepEqual(result, [dr.dataset.datasets.sample.data], 'result should match dataset.data')
+          }
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+        </handler>
+      </datapath>
+
+      <!-- Path with a dataset and lookup -->
+      <datapath path="$sample/text">
+        <handler event="onresult" args="result">
+          if (this.inited) {
+            this.onresultfired = true
+            assert.deepEqual(result, [dr.dataset.datasets.sample.data.text], 'result should match dataset.data.text')
+          }
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+        </handler>
+      </datapath>
+
+      <!-- Path with a dataset, lookup and filterfunction -->
+      <datapath path="$sample/text[*][@]">
+        <method name="filterfunction" args="obj, accum">
+          accum.unshift(obj);
+          return accum;
+        </method>
+        <handler event="onresult" args="result">
+          if (this.inited) {
+            this.onresultfired = true
+            assert.deepEqual(result, [{"a":"d"}, {"a":"c"}, {"a":"b"}, {"a":"a"}], 'result should match dataset.data.text, reversed per filterfunction()')
+          }
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
         </handler>
       </datapath>
     </view>
