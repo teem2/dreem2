@@ -130,6 +130,16 @@ SOFTWARE. -->
       <handler name="oninit">
         this.nameAttrWorks = true;
       </handler>
+      
+      <!-- Verify that on$textcontent handler gets called. -->
+      <view>asdf
+        <handler event="on$textcontent" args="textcontent">
+          this._tc = textcontent;
+        </handler>
+        <handler event="oninit">
+          assert.equal(this._tc, 'asdf');
+        </handler>
+      </view>
     </view>
   </screen>
 </screens>
