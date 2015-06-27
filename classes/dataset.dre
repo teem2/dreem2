@@ -120,7 +120,7 @@ SOFTWARE. -->
     cb = (json) =>
       @setAttribute('data', json)
 
-    dr.global.requestor.fetch(url).success((data) ->
+    dr.global.requestor.fetch(url).success((data) =>
       if (@async)
         JSON.parseAsync(data, cb)
       else
