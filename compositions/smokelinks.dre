@@ -29,17 +29,33 @@ SOFTWARE. -->
         focusembellishment="false"
       >
         <attribute name="url" type="string" value=""></attribute>
+        <attribute name="status" type="string" value="pass"></attribute>
+        <handler event="oninit">
+          if (this.status === 'fail') this.setAttribute('text', this.text + ' (Fails)');
+        </handler>
         <handler event="onactivated">
-          window.open(this.url, 'test');
+          window.open(this.url + '?test', 'test');
         </handler>
         <method name="drawHoverState">
-          this.setAttribute('gradient', ['right', '#ffffff', '#aaaaaa']);
+          if (this.status === 'fail') {
+            this.setAttribute('gradient', ['right', '#ffcccc', '#aa6666']);
+          } else {
+            this.setAttribute('gradient', ['right', '#ffffff', '#aaaaaa']);
+          }
         </method>
         <method name="drawActiveState">
-          this.setAttribute('gradient', ['right', '#eeeeee', '#888888']);
+          if (this.status === 'fail') {
+            this.setAttribute('gradient', ['right', '#eebbbb', '#884444']);
+          } else {
+            this.setAttribute('gradient', ['right', '#eeeeee', '#888888']);
+          }
         </method>
         <method name="drawReadyState">
-          this.setAttribute('gradient', ['right', '#f8f8f8', '#999999']);
+          if (this.status === 'fail') {
+            this.setAttribute('gradient', ['right', '#f8dddd', '#995555']);
+          } else {
+            this.setAttribute('gradient', ['right', '#f8f8f8', '#999999']);
+          }
         </method>
       </class>
       
@@ -65,79 +81,79 @@ SOFTWARE. -->
         
         <block>
           <subhead>Foundation</subhead>
-          <link url="./smoke_class_system?test">Class System</link>
-          <link url="./smoke_resolve_name?test">Resolve Name</link>
+          <link url="./smoke/class_system">Class System</link>
+          <link url="./smoke/resolve_name">Resolve Name</link>
         </block>
         
         <block>
           <subhead>Core</subhead>
-          <link url="./smoke_attributes?test">Attributes</link>
-          <link url="./smoke_circularevent?test">Circular Event</link>
-          <link url="./smoke_class?test">Class</link>
-          <link url="./smoke_classroot?test">Classroot</link>
-          <link url="./smoke_datapath?test">Datapath</link>
-          <link url="./smoke_dataset?test">Dataset</link>
-          <link url="./smoke_dre_parser?test">Dre Parser</link>
-          <link url="./smoke_dre?test">Dre Misc</link>
-          <link url="./smoke_events?test">Events</link>
-          <link url="./smoke_handlers?test">Handlers</link>
-          <link url="./smoke_idle?test">Idle</link>
-          <link url="./smoke_include?test">Include</link>
-          <link url="./smoke_initialization?test">Initialization</link>
-          <link url="./smoke_mixins?test">Mixins</link>
-          <link url="./smoke_platform_events?test">Platform Events</link>
-          <link url="./smoke_requestor?test">Requestor</link>
-          <link url="./smoke_scriptincludes?test">Script Includes</link>
-          <link url="./smoke_setters?test">Setters</link>
-          <link url="./smoke_super?test">Super</link>
+          <link url="./smoke/attributes">Attributes</link>
+          <link url="./smoke/circularevent">Circular Event</link>
+          <link url="./smoke/class">Class</link>
+          <link url="./smoke/classroot">Classroot</link>
+          <link url="./smoke/datapath">Datapath</link>
+          <link url="./smoke/dataset">Dataset</link>
+          <link url="./smoke/dre_parser">Dre Parser</link>
+          <link url="./smoke/dre">Dre Misc</link>
+          <link url="./smoke/events">Events</link>
+          <link url="./smoke/handlers">Handlers</link>
+          <link url="./smoke/idle">Idle</link>
+          <link url="./smoke/failing/include" status="fail">Include</link>
+          <link url="./smoke/initialization">Initialization</link>
+          <link url="./smoke/mixins">Mixins</link>
+          <link url="./smoke/platform_events">Platform Events</link>
+          <link url="./smoke/requestor">Requestor</link>
+          <link url="./smoke/failing/scriptincludes" status="fail">Script Includes</link>
+          <link url="./smoke/setters">Setters</link>
+          <link url="./smoke/super">Super</link>
         </block>
         
         <block>
           <subhead>Animation</subhead>
-          <link url="./smoke_animation?test">Animation</link>
-          <link url="./smoke_animgroup?test">Animation Group</link>
+          <link url="./smoke/animation">Animation</link>
+          <link url="./smoke/animgroup">Animation Group</link>
           
           <subhead>Node</subhead>
-          <link url="./smoke_node?test">Node</link>
-          <link url="./smoke_placement?test">Placement</link>
-          <link url="./smoke_reparenting_and_renaming?test">Reparenting and Renaming</link>
+          <link url="./smoke/node">Node</link>
+          <link url="./smoke/placement">Placement</link>
+          <link url="./smoke/reparenting_and_renaming">Reparenting and Renaming</link>
           
           <subhead>View System</subhead>
-          <link url="./smoke_scrollable?test">Scrollable</link>
-          <link url="./smoke_sizetoplatform?test">Size to Platform</link>
-          <link url="./smoke_view?test">View</link>
-          <link url="./smoke_view_border_padding?test">View: Borders and Padding</link>
-          <link url="./smoke_view_bounds_transforms?test">View: Bounds and Transformations</link>
-          <link url="./smoke_view_ordering?test">View: Ordering</link>
-          <link url="./smoke_view_position?test">View: Position</link>
-          <link url="./smoke_view_size?test">View: Size</link>
+          <link url="./smoke/scrollable">Scrollable</link>
+          <link url="./smoke/sizetoplatform">Size to Platform</link>
+          <link url="./smoke/view">View</link>
+          <link url="./smoke/view_border_padding">View: Borders and Padding</link>
+          <link url="./smoke/view_bounds_transforms">View: Bounds and Transformations</link>
+          <link url="./smoke/view_ordering">View: Ordering</link>
+          <link url="./smoke/view_position">View: Position</link>
+          <link url="./smoke/view_size">View: Size</link>
         </block>
         
         <block>
           <subhead>Layouts</subhead>
-          <link url="./smoke_layout_align?test">Layout Align</link>
-          <link url="./smoke_layout_constant?test">Layout Constant</link>
-          <link url="./smoke_layout_resize?test">Layout Resize</link>
-          <link url="./smoke_layout_spaced?test">Layout Spaced</link>
-          <link url="./smoke_layout_variable?test">Layout Variable</link>
-          <link url="./smoke_layout_wrapping?test">Layout Wrapping</link>
+          <link url="./smoke/layout_align">Layout Align</link>
+          <link url="./smoke/layout_constant">Layout Constant</link>
+          <link url="./smoke/layout_resize">Layout Resize</link>
+          <link url="./smoke/layout_spaced">Layout Spaced</link>
+          <link url="./smoke/layout_variable">Layout Variable</link>
+          <link url="./smoke/layout_wrapping">Layout Wrapping</link>
           
           <subhead>Components</subhead>
-          <link url="./smoke_bitmap?test">Bitmap</link>
-          <link url="./smoke_button?test">Button</link>
-          <link url="./smoke_draggable?test">Draggable</link>
-          <link url="./smoke_inputtext?test">Input Text</link>
-          <link url="./smoke_labelbutton?test">Label Button</link>
-          <link url="./smoke_sliders?test">Sliders</link>
-          <!--link url="./smoke_statebutton?test">State Button</link-->
-          <link url="./smoke_text?test">Text</link>
+          <link url="./smoke/bitmap">Bitmap</link>
+          <link url="./smoke/button">Button</link>
+          <link url="./smoke/draggable">Draggable</link>
+          <link url="./smoke/inputtext">Input Text</link>
+          <link url="./smoke/labelbutton">Label Button</link>
+          <link url="./smoke/sliders">Sliders</link>
+          <!--link url="./smoke/statebutton">State Button</link-->
+          <link url="./smoke/text">Text</link>
         </block>
         
         <block>
           <subhead>Browser Only</subhead>
-          <!--link url="./smoke_twojs?test">TwoJS</link-->
-          <link url="./smoke_video?test">Video</link>
-          <link url="./smoke_webpage?test">Webpage</link>
+          <!--link url="./smoke/twojs">TwoJS</link-->
+          <link url="./smoke/video">Video</link>
+          <link url="./smoke/webpage">Webpage</link>
         </block>
       </view>
     </view>

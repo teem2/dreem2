@@ -26,7 +26,7 @@ SOFTWARE. -->
       <testingtimer>1000</testingtimer>
       
       <wrappinglayout spacing="1"></wrappinglayout>
-      <bitmap id="koala" width="150" height="100" bgcolor="red" src="./img/shoarma.jpg">
+      <bitmap id="koala" width="150" height="100" bgcolor="red" src="/img/shoarma.jpg">
         <handler event="onload" args="size">
           if (this.src) {
             assert.equal(size.width, 259, 'test 1')
@@ -46,14 +46,14 @@ SOFTWARE. -->
         </handler>
       </bitmap>
       
-      <bitmap width="150" height="100" bgcolor="red" src="./img/shoarma.jpg" stretches="scale">
+      <bitmap width="150" height="100" bgcolor="red" src="/img/shoarma.jpg" stretches="scale">
         <handler event="onload" args="size">
           assert.equal(size.width, 259, 'test 3')
           assert.equal(size.height, 194, 'test 3')
         </handler>
       </bitmap>
       
-      <bitmap width="150" height="100" bgcolor="red" src="./img/shoarma.jpg" naturalsize="true">
+      <bitmap width="150" height="100" bgcolor="red" src="/img/shoarma.jpg" naturalsize="true">
         <handler event="onload" args="size">
           assert.equal(this.width, 259, 'test 4')
           assert.equal(this.height, 194, 'test 4')
@@ -61,16 +61,16 @@ SOFTWARE. -->
       </bitmap>
       
       <!-- window test -->
-      <bitmap bgcolor="red" src="./img/shoarma.jpg" window="50,60,70,80">
+      <bitmap bgcolor="red" src="/img/shoarma.jpg" window="50,60,70,80">
         <handler event="onload" args="size">
           assert.equal(this.width, 70, 'test 5')
           assert.equal(this.height, 80, 'test 5')
         </handler>
       </bitmap>
       
-      <bitmap bgcolor="red" src="./img/shoarma.jpg" window="50,60,70,80">
+      <bitmap bgcolor="red" src="/img/shoarma.jpg" window="50,60,70,80">
         <handler event="onload" args="size">
-          assert.equal(this.src, './img/shoarma.jpg');
+          assert.equal(this.src, '/img/shoarma.jpg');
           assert.equal(this.window, '50,60,70,80');
           assert.equal(this.naturalsize, false);
           
@@ -108,7 +108,7 @@ SOFTWARE. -->
       </bitmap>
       
       <!-- stretches test -->
-      <bitmap width="350" height="100" bgcolor="red" src="./img/shoarma.jpg" stretches="scale">
+      <bitmap width="350" height="100" bgcolor="red" src="/img/shoarma.jpg" stretches="scale">
         <handler event="onload" args="size">
           assert.equal(this.stretches, 'scale', 'test stretches');
           assert.equal(size.width, 259, 'test stretches');
@@ -138,7 +138,7 @@ SOFTWARE. -->
         var foo = this.foo;
         assert.equal(foo.width, 150);
         assert.equal(foo.height, 100);
-        foo.setAttribute('src', './img/shoarma.jpg');
+        foo.setAttribute('src', '/img/shoarma.jpg');
         
         setTimeout(function() {
           assert.equal(foo.width, 259, 'oninit timer test');

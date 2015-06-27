@@ -248,7 +248,7 @@ error parsing json value '{'test': 'invalid'}' for attribute 'foo'
         <handler event="oninit">
           assert.testCaseLabel = "attribute of type 'expression'";
           
-          assert.isTrue(this.location.indexOf('smoke_attributes') >= 0, 'location is set to window.location')
+          assert.isTrue(this.location.indexOf('smoke/attributes') >= 0, 'location is set to window.location')
         </handler>
       </view>
     </view>

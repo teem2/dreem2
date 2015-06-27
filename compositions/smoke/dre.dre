@@ -32,7 +32,7 @@ SOFTWARE. -->
       <screen></screen>
       
       <!-- Oninit should only fire once for dre classes -->
-      <bitmap width="200" height="200" src="./img/shoarma.jpg">
+      <bitmap width="200" height="200" src="/img/shoarma.jpg">
         <handler event="oninit">
           window.initCount = !!window.initCount ? window.initCount + 1 : 1
           

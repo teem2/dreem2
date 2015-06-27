@@ -27,7 +27,7 @@ SOFTWARE. -->
       
       <attribute name="includedTarget" type="string" value="not yet"></attribute>
       
-      <include href="./included.dre"></include>
+      <include href="./includes/included.dre"></include>
       
       <handler event="oninit">
         assert.equal('SET!', this.includedTarget, "The included target has not been set! (has it not been included?)")

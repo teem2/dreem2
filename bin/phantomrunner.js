@@ -15,11 +15,11 @@ if (args[1]) {
 }
 
 // Get the list of tests to run
-var list = fs.list("./compositions/"),
+var list = fs.list("./compositions/smoke/"),
   files = [], file, i = list.length;
 while (i) {
   file = list[--i]
-  if (file.indexOf('smoke_') === 0) files.push(file);
+  if (fs.isFile("./compositions/smoke/" + file)) files.push("/smoke/" + file);
 }
 
 var runTest = function(file, callback) {
