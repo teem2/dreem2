@@ -67,7 +67,9 @@ SOFTWARE. -->
           <subhead>Foundation</subhead>
           <link url="./smoke_class_system?test">Class System</link>
           <link url="./smoke_resolve_name?test">Resolve Name</link>
-          
+        </block>
+        
+        <block>
           <subhead>Core</subhead>
           <link url="./smoke_attributes?test">Attributes</link>
           <link url="./smoke_circularevent?test">Circular Event</link>
@@ -84,6 +86,7 @@ SOFTWARE. -->
           <link url="./smoke_initialization?test">Initialization</link>
           <link url="./smoke_mixins?test">Mixins</link>
           <link url="./smoke_platform_events?test">Platform Events</link>
+          <link url="./smoke_requestor?test">Requestor</link>
           <link url="./smoke_scriptincludes?test">Script Includes</link>
           <link url="./smoke_setters?test">Setters</link>
           <link url="./smoke_super?test">Super</link>
@@ -128,7 +131,9 @@ SOFTWARE. -->
           <link url="./smoke_sliders?test">Sliders</link>
           <!--link url="./smoke_statebutton?test">State Button</link-->
           <link url="./smoke_text?test">Text</link>
-          
+        </block>
+        
+        <block>
           <subhead>Browser Only</subhead>
           <!--link url="./smoke_twojs?test">TwoJS</link-->
           <link url="./smoke_video?test">Video</link>
