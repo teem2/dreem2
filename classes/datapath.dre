@@ -124,7 +124,7 @@ SOFTWARE. -->
 
       <!--/**
         * @attribute {Expression} [sortasc=true]
-        * If null, don't sort. Otherwise, sort ascending if true.
+        * If null, don't sort. Otherwise, sort ascending if true, descending if false.
         */-->
       <attribute name="sortasc" value="null" type="expression"></attribute>
 
@@ -143,20 +143,14 @@ SOFTWARE. -->
         return regex
       </setter>
 
-      <handler event="onsortfield">
-        # console.log 'onsortfield', @sortfield, @data
-        @_buildsortfunc()
-        @_processData()
-      </handler>
-
-      <handler event="onsortasc">
-        # console.log 'onsortasc', @sortasc, @data
+      <handler event="onsortfield,onsortasc">
         @_buildsortfunc()
         @_processData()
       </handler>
 
       <method name="_buildsortfunc">
         if @sortfield or @sortasc?
+          # sort, optionaly by @sortfield
           sortfield = @sortfield
           sortasc = @sortasc
           @sortfunc = (keyA, keyB) ->
@@ -196,50 +190,39 @@ SOFTWARE. -->
         return unless @inited
         # console.log('refresh', @data, @classname, @parent, @children, @, @inited)
 
+        result = @data
+        filterfunction = @filterfunction?.bind(@)
+
         if @_parsedpath
-          # found datapath
-          if @dataset
-            # absolute datapath, evaluate relative to dataset
-            # console.log 'evaluating absolute datapath', @path, @_dataset
-            if @path == '$' + @dataset.name
-              # console.log('dataset only', @path, @dataset)
-              # return an instance with data attribute set to the dataset
-              # this allows relative datapath children to find this dataset
-              if Array.isArray(@data)
-                @result = @data
-              else
-                @result = [@data]
+          # have a datapath, run on data by default
+          rundata = @data
+          if @dataset and @path == "$#{@dataset.name}"
+            # console.log('dataset only', @path, @dataset)
+            # absolute datapath to dataset only, no need to executeSelectors
+            rundata = null
+          else unless @data
+            # relative datapath with no data, look for data in parents
+            parentdata = @getAncestorWithProperty('data')
+            if parentdata?.data
+              # execute selectors relative to parent data
+              rundata = parentdata.data
             else
-              # found dataset, evaluate relative to it
-              # console.log('evaluating absolute selector', @path, @dataset.data, @_parsedpath)
-              @result = JsonPath.executeSelectors(@data, @_parsedpath, @filterfunction?.bind(@))
-          else
-            if @data
-              @result = JsonPath.executeSelectors(@data, @_parsedpath, @filterfunction?.bind(@))
-            else
-              # relative datapath, look for data in parents
-              parentdata = @getAncestorWithProperty('data')
-              if parentdata?.data
-                # console.log('executing relative selector', @path, parentdata.data, @_parsedpath)
-                @result = JsonPath.executeSelectors(parentdata.data, @_parsedpath, @filterfunction?.bind(@))
-              else
-                console.warn('No parent data found for', @path, @)
+              console.warn('No parent data found for', @path, @)
+
+          if rundata
+            # console.log('executing selector', @path, rundata, @_parsedpath)
+            result = JsonPath.executeSelectors(rundata, @_parsedpath, filterfunction)
+        else if @data and filterfunction
+          # no datapath, run filterfunction on data
+          accum = []
+          for datum in @data
+            accum = filterfunction(datum, accum)
+          result = accum
+
+        unless result?
+          @result = []
         else
-          # no datapath
-          filterfunction = @filterfunction
-          if filterfunction? and @data?
-            filterfunction = filterfunction.bind(@)
-            accum = []
-            for datum in @data
-              accum = filterfunction(datum, accum)
-            @result = accum
-          else if @data
-            if Array.isArray(@data)
-              @result = @data
-            else
-              @result = [@data]
-          else
-            @result = []
+          @result = if Array.isArray(result) then result else [result]
 
         @_origresult = @result
         @_processData()
