@@ -123,10 +123,10 @@ SOFTWARE. -->
       <attribute name="sortfield" value="" type="string"></attribute>
 
       <!--/**
-        * @attribute {Boolean} [sortasc=true]
-        * If true, sort ascending.
+        * @attribute {Expression} [sortasc=true]
+        * If null, don't sort. Otherwise, sort ascending if true.
         */-->
-      <attribute name="sortasc" value="true" type="boolean"></attribute>
+      <attribute name="sortasc" value="null" type="expression"></attribute>
 
       <!--/**
         * @attribute {String} [filterexpression=""]
@@ -156,12 +156,14 @@ SOFTWARE. -->
       </handler>
 
       <method name="_buildsortfunc">
-        if @sortfield
+        if @sortfield or @sortasc?
           sortfield = @sortfield
           sortasc = @sortasc
-          @sortfunc = (a, b) ->
-            keyA = a[sortfield]
-            keyB = b[sortfield]
+          @sortfunc = (keyA, keyB) ->
+            if sortfield
+              # look keys up in object
+              keyA = keyA[sortfield]
+              keyB = keyB[sortfield]
             # Compare the 2 sort fields
             result = 0
             if keyA > keyB

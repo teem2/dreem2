@@ -140,6 +140,34 @@ SOFTWARE. -->
         </handler>
       </datapath>
 
+      <!-- Test sorting -->
+      <datapath data="[0,2,27,1,4]">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [0,2,27,1,4], 'Results should not be sorted')
+          this.setAttribute('sortasc', true)
+          assert.deepEqual(this.result, [0,1,2,4,27], 'Results should be sorted in ascending order')
+          this.setAttribute('sortasc', false)
+          assert.deepEqual(this.result, [27,4,2,1,0], 'Results should be sorted in descending order')
+        </handler>
+      </datapath>
+
+      <!-- Test key sorting -->
+      <datapath data="[{count: 2},{count:1},{count: 4}]" sortasc="false" sortfield="count">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [{count:4},{count:2},{count:1}], 'Results should be sorted in descending order by key')
+          this.setAttribute('sortasc', true)
+          assert.deepEqual(this.result, [{count:1},{count:2},{count:4}], 'Results should be sorted in descending order by key')
+        </handler>
+      </datapath>
+      
       <!-- Test filter function on raw data -->
       <datapath data="['x',1,'y',2,'z',3,4,5]">
         <method name="filterfunction" args="obj, accum">
@@ -263,10 +291,11 @@ SOFTWARE. -->
         </method>
         <handler event="onresult" args="result">
           this.onresultfired = true
-          assert.deepEqual(this.result, ['blue', 'green'], 'Results should match relative path')
+          assert.deepEqual(result, ['blue', 'green'], 'Results should match per filterfunction')
         </handler>
         <handler event="oninit">
           assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, ['blue', 'green'], 'Results should match per filterfunction')
         </handler>
       </datapath>
       
