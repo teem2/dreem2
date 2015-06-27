@@ -133,11 +133,17 @@ SOFTWARE. -->
         </handler>
       </dataset>
       
+      <dataset name="remotedata" url="/data/top_movies.json">
+        <handler event="ondata" args="data">
+          assert.equal('searchResponse' in data, true, 'Data should be loaded')
+        </handler>
+      </dataset>
+
       <!-- Verify the stored datasets. This indirectly verifies
            that the unnamed dataset at the beginning of this test was not
            stored. -->
       <handler event="oninit">
-        assert.sameMembers(Object.keys(dr.dataset.datasets), ['example', 'example2']);
+        assert.sameMembers(Object.keys(dr.dataset.datasets), ['example', 'example2', 'remotedata']);
       </handler>
     </view>
   </screen>
