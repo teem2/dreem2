@@ -102,15 +102,10 @@ SOFTWARE. -->
           
           
           // Success with json
-          var successObj = {
-              "foo":1,
-              "bar":2,
-              "baz":3,
-              "buz":"hey!"
-          };
+          var successObj = '{\n    "foo":1,\n    "bar":2,\n    "baz":3,\n    "buz":"hey!"\n}';
           
           assert.equal(req2.success_status, 200);
-          assert.deepEqual(req2.success_data, successObj);
+          assert.equal(req2.success_data, successObj);
           
           assert.isUndefined(req2.error_status, 'Request succeeded so the success error should not be called.');
           assert.isUndefined(req2.error_data, 'Request succeeded so the success error should not be called.');

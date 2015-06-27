@@ -117,8 +117,14 @@ SOFTWARE. -->
     return unless url
     # console.log('loading url', url)
 
-    dr.global.requestor.fetch(url).success((data) =>
-      @setAttribute('data', data)
+    cb = (json) =>
+      @setAttribute('data', json)
+
+    dr.global.requestor.fetch(url).success((data) ->
+      if (@async)
+        JSON.parseAsync(data, cb)
+      else
+        cb(JSON.parse(data))
     ).error((error) ->
       console.error('Failed to load data', url, @, error)
     )
