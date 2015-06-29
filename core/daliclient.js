@@ -25,31 +25,6 @@ define(function(require, exports, module) {
     this.reconnect();
   };
 
-  function killDaliProcessTree(pid, killTree, signal, callback) {
-    signal   = signal   || 'SIGKILL';
-    callback = callback || function () {};
-
-    if (killTree && process.platform !== 'win32') {
-      psTree(pid, function (err, children) {
-        [pid].concat(
-          children.map(function (p) {
-            return p.PID;
-          })
-        ).forEach(function (tpid) {
-            try { process.kill(tpid, signal) }
-            catch (ex) { }
-          });
-
-        callback();
-      });
-    }
-    else {
-      try { process.kill(pid, signal) }
-      catch (ex) { }
-      callback();
-    }
-  }
-
   body.call(DaliClient.prototype);
 
   function body() {
@@ -93,14 +68,14 @@ define(function(require, exports, module) {
                 console.log('Spawning forever-monitor instance for Dali: pid=', this.child.child.pid);
                 this.child.on('start', function() {
                   that.curProcId = that.child.child.pid;
-                  console.log("forever process started: curProcId=" + that.curProcId);
+                  console.log("forever-monitor process started: curProcId=" + that.curProcId);
                 });
                 this.child.on('restart', function() {
                   that.curProcId = that.child.child.pid;
-                  console.log("forever process started: curProcId=" + that.curProcId);
+                  console.log("forever-monitor process started: curProcId=" + that.curProcId);
                 });
                 this.child.on('exit', function() {
-                  console.log("forever process with PID " + that.curProcId + " exited");
+                  console.log("forever-monitor process with PID " + that.curProcId + " exited");
                 });
               }
 
