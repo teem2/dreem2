@@ -102,6 +102,7 @@ SOFTWARE. -->
           <link url="./smoke/initialization">Initialization</link>
           <link url="./smoke/mixins">Mixins</link>
           <link url="./smoke/platform_events">Platform Events</link>
+          <link url="./smoke/failing/replicator" status="fail">Replicator</link>
           <link url="./smoke/requestor">Requestor</link>
           <link url="./smoke/failing/scriptincludes" status="fail">Script Includes</link>
           <link url="./smoke/setters">Setters</link>
