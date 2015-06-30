@@ -30,7 +30,6 @@ define(function(require, exports, module) {
     this.teemserver = teemserver;
     this.args = args;
     this.name = name;
-    this.pathName = name.split('|').join('/');
     
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
@@ -270,7 +269,7 @@ define(function(require, exports, module) {
     
     /* Internal, reloads the composition */
     this.reload = function() {
-      console.color("~bg~Reloading~~ composition: " + this.pathName + "\n");
+      console.color("~bg~Reloading~~ composition: " + this.name + "\n");
       this.destroy();
       this.local_classes = {};
       this.compile_once = {};
@@ -286,14 +285,14 @@ define(function(require, exports, module) {
       define.SPRITE = '$LIB/dr/sprite_browser';
       
       // scan our EXTLIB for compositions firstƒ
-      var filepath = '$COMPOSITIONS/' + this.pathName + '.dre';
+      var filepath = '$COMPOSITIONS/' + this.name + '.dre';
       
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
           var dir = fs.readdirSync(extpath);
           for (var i = 0; i < dir.length; i++) {
-            var mypath = '$EXTLIB/' + dir[i] + '/compositions/'+this.pathName+'.dre';
+            var mypath = '$EXTLIB/' + dir[i] + '/compositions/'+this.name+'.dre';
             if (fs.existsSync(define.expandVariables(mypath))) {
               filepath = mypath;
               break;
@@ -515,6 +514,17 @@ define(function(require, exports, module) {
       }
     };
     
+    this.mkdirParent = function(dirPath) {
+      try {
+        fs.mkdirSync(dirPath);
+      } catch(e) {
+        if (e.code === 'EISDIR') {
+          fs.mkdirParent(path.dirname(dirPath));
+          fs.mkdirParent(dirPath);
+        }
+      }
+    };
+    
     this.writeFileIfChanged = function(filePath, newData, errors) {
       var expandedPath = define.expandVariables(filePath),
         data;
@@ -525,12 +535,13 @@ define(function(require, exports, module) {
       
       if (!data || newData.length !== data.length || newData !== data) {
         try {
+          var dirPath = path.dirname(expandedPath);
+          if (!fs.existsSync(dirPath)) this.mkdirParent(dirPath);
           fs.writeFileSync(expandedPath, newData);
         } catch(e) {
           errors.push(new DreemError("Error in writeFilSync: " + e.toString()));
         }
       }
-    }
+    };
   }
-
 })
