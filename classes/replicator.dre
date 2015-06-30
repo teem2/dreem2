@@ -162,7 +162,7 @@ SOFTWARE. -->
      *
      * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
      */-->
-    <class name="replicator" type="coffee" extends="node">
+    <class name="replicator" type="coffee" extends="node" requires="datapath">
       <!--/**
         * @attribute {Boolean} [pooling=false]
         * If true, reuse views when replicating.
@@ -188,7 +188,7 @@ SOFTWARE. -->
       <handler event="onpath" args="path">
         @data = null
         unless @datapath?
-          @datapath = new @dr.datapath(@parent, {ondata: (data) ->
+          @datapath = new dr.datapath(@parent, {ondata: (data) ->
             console.log()
           })
         @datapath.setAttribute('path')

@@ -23,6 +23,7 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Replicator'>
     <view width="100%" height="100%" clip="true">
+      <expectedoutput>missing class for replicator node skipping replication</expectedoutput>
       <replicator></replicator>
     </view>
   </screen>

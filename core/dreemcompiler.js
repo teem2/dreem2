@@ -28,6 +28,8 @@ define(function(require, exports, module) {
     setter: true
   };
 
+  exports.SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
+
   exports.charPos = function(source, line, col) {
     var myline = 0, mycol = 0;
     for (var i = 0; i < source.length; i++, mycol++) {
@@ -134,11 +136,17 @@ define(function(require, exports, module) {
     body += exports.classnameToJS(baseclass) + '.extend("' + clsname + '", function(){\n';
     
     if (nodeAttrs && nodeAttrs.with) {
-      nodeAttrs.with.split(/,\s*|\s+/).forEach(function(cls) {
+      nodeAttrs.with.split(this.SEPARATOR_REGEX).forEach(function(cls) {
         if (cls) {
           deps[cls] = 1;
           body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n';
         }
+      });
+    }
+    
+    if (nodeAttrs && nodeAttrs.requires) {
+      nodeAttrs.requires.split(this.SEPARATOR_REGEX).forEach(function(cls) {
+        if (cls) deps[cls] = 1;
       });
     }
     
@@ -161,7 +169,7 @@ define(function(require, exports, module) {
           case 'getter':
           case 'setter':
             var attrnameset = childAttrs && (childAttrs.name || childAttrs.event);
-            var attrnames = attrnameset.split(/,\s*|\s+/), attrname, j;
+            var attrnames = attrnameset.split(this.SEPARATOR_REGEX), attrname, j;
             for (j = 0; j < attrnames.length; j++) {
               attrname = attrnames[j];
               if (!attrname) {
@@ -221,7 +229,7 @@ define(function(require, exports, module) {
     
     //node.method_id = output.methods.length
     var lang = this.languages[language];
-    var args = node.attr && node.attr.args ? node.attr.args.split(/,\s*|\s+/): [];
+    var args = node.attr && node.attr.args ? node.attr.args.split(this.SEPARATOR_REGEX): [];
     var compiled = lang.compile(this.concatCode(node), args);
     
     if (compiled instanceof DreemError) { // the compiler returned an error
@@ -276,7 +284,7 @@ define(function(require, exports, module) {
       
       if (node.attr) {
         if (node.attr.with) {
-          node.attr.with.split(/,\s*|\s+/).forEach(function(cls) {
+          node.attr.with.split(this.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
           })
         }
@@ -333,7 +341,7 @@ define(function(require, exports, module) {
               }
               var attrnameset = attr.name || attr.event;
               
-              var attrnames = attrnameset.split(/,\s*|\s+/);
+              var attrnames = attrnameset.split(this.SEPARATOR_REGEX);
               for (var j = 0; j < attrnames.length; j++) {
                 var attrname = attrnames[j];
                 
