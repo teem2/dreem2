@@ -131,7 +131,15 @@ define(function(require, exports, module) {
         var queryIndex = url.indexOf('?');
         if (queryIndex !== -1) url = url.substring(0, queryIndex);
         
-        var compName = path.normalize(url);
+        var pathParts = url.split('/'),
+          i = pathParts.length,
+          part, compName;
+        while (i) {
+          part = pathParts[--i];
+          if (!part) pathParts.splice(i, 1);
+        }
+        compName = pathParts.join('/');
+        
         if (compName) {
           var compositions = this.compositions;
           return compositions[compName] || (compositions[compName] = new CompositionServer(this.args, compName, this));
