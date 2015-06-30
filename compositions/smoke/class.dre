@@ -87,25 +87,47 @@ SOFTWARE. -->
         <view></view>
       </initme2>
       
-      <!-- Verify requires on a class or mixin definition actually pulls in
+      <!-- Verify that a class defined inline that is not used explicitly is
+           still included. -->
+      <class name="foo0">
+        <attribute name="fooexists" type="boolean" value="true"></attribute>
+      </class>
+      <view>
+        <handler event="oninit">
+          assert.isFunction(dr.foo0, 'Required class should be stored in the dr package.');
+          
+          // Programtically make an instance
+          var instance = new dr.foo0(this);
+          
+          assert.isTrue(instance.fooexists);
+        </handler>
+      </view>
+      
+      <!-- Verify requires on a class, mixin or instance actually pulls in
            the class. -->
       <class name="foo1" requires="test-requiredclass1"></class>
       <mixin name="foo2" requires="test-requiredclass2"></mixin>
-      
-      <test-requiredclass1>
+      <view requires="test-requiredclass3">
         <handler event="oninit">
           assert.isFunction(dr.test.requiredclass1, 'Required class should be stored in the dr.test package.');
           assert.isFunction(dr['test-requiredclass1'], 'Required class should also be stored in the dr package under the full tagname.');
-          assert.isTrue(this.classloaded1, 'Required class was not loaded for a class that requires it.')
-        </handler>
-      </test-requiredclass1>
-      <test-requiredclass2>
-        <handler event="oninit">
+          
           assert.isFunction(dr.test.requiredclass2, 'Required class should be stored in the dr.test package.');
           assert.isFunction(dr['test-requiredclass2'], 'Required class should also be stored in the dr package under the full tagname.');
-          assert.isTrue(this.classloaded2, 'Required class was not loaded for a mixin that requires it.')
+          
+          assert.isFunction(dr.test.requiredclass3, 'Required class should be stored in the dr.test package.');
+          assert.isFunction(dr['test-requiredclass3'], 'Required class should also be stored in the dr package under the full tagname.');
+          
+          // Programtically make some instances
+          var instance1 = new dr.test.requiredclass1(this);
+          var instance2 = new dr.test.requiredclass2(this);
+          var instance3 = new dr.test.requiredclass3(this);
+          
+          assert.isTrue(instance1.classloaded1);
+          assert.isTrue(instance2.classloaded2);
+          assert.isTrue(instance3.classloaded3);
         </handler>
-      </test-requiredclass2>
+      </view>
     
       <!-- Setting a sub view's attribute with a constraint -->
       <class name="labelview" width="${this.label.width}" height="${this.label.height}" bgcolor="#808080">

@@ -273,24 +273,31 @@ define(function(require, exports, module) {
     };
   };
 
-  exports.compileInstance = function(node, errors, indent, onLocalClass){
+  exports.compileInstance = function(node, errors, indent, onLocalClass) {
     var deps = Object.create(this.default_deps);
     
     var walk = function(node, parent, indent, depth, language) {
       deps[node.tag] = 1;
-      var myindent = indent + '\t';
-      var props = '';
-      var children = '';
+      var myindent = indent + '\t',
+        props = '',
+        children = '',
+        nodeAttrs = node.attr;
       
-      if (node.attr) {
-        if (node.attr.with) {
-          node.attr.with.split(this.SEPARATOR_REGEX).forEach(function(cls) {
+      if (nodeAttrs) {
+        if (nodeAttrs.with) {
+          nodeAttrs.with.split(this.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
           })
         }
         
-        for (var key in node.attr) {
-          var value = node.attr[key];
+        if (nodeAttrs && nodeAttrs.requires) {
+          nodeAttrs.requires.split(this.SEPARATOR_REGEX).forEach(function(cls) {
+            if (cls) deps[cls] = 1;
+          });
+        }
+        
+        for (var key in nodeAttrs) {
+          var value = nodeAttrs[key];
           
           if (props) {
             props += ',\n' + myindent;
@@ -306,7 +313,7 @@ define(function(require, exports, module) {
         // screen and attribute nodes also have types so we don't want 
         // to look at them for a compiler language
         if (node.tag !== 'screen' && node.tag !== 'attribute') {
-          language = node.attr.type ? node.attr.type : language;
+          language = nodeAttrs.type ? nodeAttrs.type : language;
         }
       }
       
@@ -321,6 +328,7 @@ define(function(require, exports, module) {
           switch (tagName) {
             case 'class':
             case 'mixin':
+              if (attr.name) deps[attr.name] = 1;
               // lets output a local class 
               if (onLocalClass) {
                 onLocalClass(child, errors);
