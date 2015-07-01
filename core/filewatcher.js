@@ -44,12 +44,21 @@ define(function(require, exports, module) {
   // (global) Display stats to the console (for debugging)
   function debug() {
     var unique_files = Object.keys(filemap).length;
+    var uuids = Object.keys(watchers).length;
     var total_files = 0
     for (var uid in watchers) {
       total_files += Object.keys(watchers[uid].files).length;
     }
 
-    console.log(unique_files + ' unique. ' + total_files + ' total files');
+    console.log(uuids + ' uuids. ' + unique_files + ' unique. ' + total_files + ' total files');
+    //if (total_files > 1420) {
+    //  for (var uid in watchers) {
+    //    for (var file in watchers[uid].files) {
+    //      console.log(uid, file);
+    //    }
+    //  }
+    //}
+
   }
 
   // (global) Scan the master filemap for changes
@@ -177,6 +186,7 @@ define(function(require, exports, module) {
      * @param {String} file File to watch
      */
     this.watch = function(file) {
+      file = define.expandVariables(file);
       if (!(file in this.files)) this.files[file] = null;
       addmaster(file, this.uid);
     };
