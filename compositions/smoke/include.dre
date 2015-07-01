@@ -23,14 +23,25 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Include'>
     <view id="all" width="100%" height="100%" clip="true">
-      <spacedlayout axis="y" spacing="15"></spacedlayout>
+      <spacedlayout axis="y" spacing="2"></spacedlayout>
       
-      <attribute name="includedTarget" type="string" value="not yet"></attribute>
+      <attribute name="includedTarget1" type="string" value="not yet"></attribute>
+      <attribute name="includedTarget2" type="string" value="not yet"></attribute>
+      <attribute name="includedTarget3" type="string" value="not yet"></attribute>
+      <attribute name="includedTarget4" type="string" value="not yet"></attribute>
+      <attribute name="nested" type="string" value="not yet"></attribute>
       
       <include href="./includes/included.dre"></include>
       
+      <!-- Verify absolute path for includes and nested includes. -->
+      <include href="/compositions/smoke/includes/included2.dre"></include>
+      
       <handler event="oninit">
-        assert.equal('SET!', this.includedTarget, "The included target has not been set! (has it not been included?)")
+        assert.equal('SET!', this.includedTarget1, "The included target has not been set! (has it not been included?)");
+        assert.equal('SET!', this.includedTarget2, "The included target has not been set! (has it not been included?)");
+        assert.equal('SET!', this.includedTarget3, "The included target has not been set! (has it not been included?)");
+        assert.equal('SET!', this.includedTarget4, "The included target has not been set! (has it not been included?)");
+        assert.equal('SET!', this.nested, "The included target has not been set! (has it not been included?)");
       </handler>
     </view>
   </screen>

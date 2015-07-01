@@ -106,7 +106,7 @@ define(function(require, exports, module) {
       try {
         var data = fs.readFileSync(define.expandVariables(drefile));
       } catch(e) {
-        errors.push(new DreemError("Error in readFileSync: " + e.toString()));
+        errors.push(new DreemError("Error during readFileSync in parseDreSync: " + e.toString()));
         return;
       }
       
@@ -267,6 +267,25 @@ define(function(require, exports, module) {
       this.local_classes[classname] = 1;
     };
     
+    this.handleInclude = function(errors, filePathStack) {
+      var src, i = 0, len = filePathStack.length,
+        resolvedPath = '';
+      
+      for (; len > i; i++) {
+          src = filePathStack[i];
+          
+          if (src.indexOf('/') === 0) {
+              // User src as is since it's from root
+              resolvedPath = define.expandVariables('$ROOT/' + src);
+          } else {
+              resolvedPath = (resolvedPath ? path.dirname(resolvedPath) : resolvedPath) + '/' + define.expandVariables(src);
+          }
+      }
+      
+      var dre = this.parseDreSync(resolvedPath, errors);
+      return dre ? dre.child : [];
+    };
+    
     /* Internal, reloads the composition */
     this.reload = function() {
       console.color("~bg~Reloading~~ composition: " + this.name + "\n");
@@ -298,7 +317,7 @@ define(function(require, exports, module) {
               break;
             }
           }
-        } 
+        }
       }
       
       var errors = [];
@@ -318,6 +337,7 @@ define(function(require, exports, module) {
       
       for (var i = 0, children = root.child, len = children.length; i < len; i++) {
         var child = children[i];
+        
         // ok lets spawn up our tags into our local object pool.
         var tag = child.tag;
         if (tag.charAt(0) == '$') continue;
@@ -331,7 +351,9 @@ define(function(require, exports, module) {
         }
         
         // lets compile the JS
-        var js = dreem_compiler.compileInstance(child, errors, '\t\t', this.compileLocalClass.bind(this));
+        var js = dreem_compiler.compileInstance(
+          child, errors, '\t\t', this.compileLocalClass.bind(this), this.handleInclude.bind(this), filepath
+        );
         
         // ok now the instances..
         var out = 'define(function(require, exports, module){\n';
@@ -369,7 +391,9 @@ define(function(require, exports, module) {
             var schild = schilds[j];
             
             if (schild.tag !== 'screen') continue;
-            var sjs = dreem_compiler.compileInstance(schild, errors, '\t\t', this.compileLocalClass.bind(this));
+            var sjs = dreem_compiler.compileInstance(
+              schild, errors, '\t\t', this.compileLocalClass.bind(this), this.handleInclude.bind(this), filepath
+            );
             
             // ok now the instances..
             var out = 'define(function(require, exports, module){\n';

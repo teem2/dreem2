@@ -16,18 +16,6 @@ define(function(require, exports, module) {
   var HTMLParser = require('./htmlparser'),
     DreemError = require('./dreemerror');
 
-  // Builtin modules, belongs here
-  exports.system = {
-    /* Built in tags that dont resolve to class files */
-    class: true,
-    method: true,
-    attribute: true,
-    handler: true,
-    state: true,
-    getter: true,
-    setter: true
-  };
-
   exports.SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
 
   exports.charPos = function(source, line, col) {
@@ -273,8 +261,10 @@ define(function(require, exports, module) {
     };
   };
 
-  exports.compileInstance = function(node, errors, indent, onLocalClass) {
+  exports.compileInstance = function(node, errors, indent, onLocalClass, onInclude, filePath) {
     var deps = Object.create(this.default_deps);
+    
+    var filePathStack = [filePath];
     
     var walk = function(node, parent, indent, depth, language) {
       deps[node.tag] = 1;
@@ -326,6 +316,17 @@ define(function(require, exports, module) {
             attr = child.attr;
           
           switch (tagName) {
+            case 'include':
+              if (onInclude) {
+                filePathStack.push(attr.href);
+                var newNodes = onInclude(errors, filePathStack);
+                newNodes.push({tag:'$filePathStackPop'});
+                node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+                i--;
+              } else {
+                errors.push(new DreemError('Cant support include in this location', node.pos));
+              }
+              break;
             case 'class':
             case 'mixin':
               if (attr.name) deps[attr.name] = 1;
@@ -385,7 +386,12 @@ define(function(require, exports, module) {
               }
               break;
             default:
-              if (tagName.charAt(0) != '$') {
+              if (tagName.charAt(0) === '$') {
+                if (tagName === '$filePathStackPop') {
+                  filePathStack.pop();
+                  node.child.splice(i, 1);
+                }
+              } else {
                 if (children) {
                   children += ',\n' + myindent;
                 } else {
