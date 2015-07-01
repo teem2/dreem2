@@ -149,7 +149,7 @@ SOFTWARE. -->
         </text-->
   
         <!-- Setting text via Replication -->
-        <!--dataset name="book">[
+        <dataset name="book">[
           {
             "title": "Text from data"
           },
@@ -159,7 +159,7 @@ SOFTWARE. -->
           {
             "title": "Text from data"
           }
-        ]</dataset-->
+        ]</dataset>
   
         <class name="titletext" extends="text">
           <handler event="oninit">
@@ -167,13 +167,14 @@ SOFTWARE. -->
           </handler>
         </class>
   
-        <!--replicator classname="titletext" datapath="$book/title">
-          <handler event="oninit">
-            assert.equal(this.children[0].text, 'Text from data', 'replication test');
-            assert.equal(this.children[1].text, 'Text from data', 'replication test');
-            assert.equal(this.children[2].text, 'Text from data', 'replication test');
+        <replicator classname="titletext" datapath="$book/title">
+          <handler event="onreplicated">
+            var children = this.children;
+            assert.equal(children[0].text, 'Text from data', 'replication test');
+            assert.equal(children[1].text, 'Text from data', 'replication test');
+            assert.equal(children[2].text, 'Text from data', 'replication test');
           </handler>
-        </replicator-->
+        </replicator>
       </view>
   
       <!-- TEXT STYLING -->
