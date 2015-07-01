@@ -69,6 +69,7 @@ define(function(require, exports, module) {
      * @param {String} file File to watch
      */
     this.watch = function(file) {
+      file = define.expandVariables(file);
       if (!(file in this.files)) this.files[file] = null;
     };
   }
