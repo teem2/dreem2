@@ -163,6 +163,7 @@ SOFTWARE. -->
      * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
      */-->
     <class name="replicator" type="coffee" extends="node" requires="datapath">
+      <attribute name="_arrayidentity" type="expression" value="[]" allocation="class"></attribute>
       <!--/**
         * @attribute {Boolean} [pooling=false]
         * If true, reuse views when replicating.
@@ -179,21 +180,22 @@ SOFTWARE. -->
         * @attribute {Array} [data=[]]
         * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
         */-->
-      <attribute name="data" value="[]" type="expression"></attribute>
+      <attribute name="data" value="dr.replicator._arrayidentity" type="expression"></attribute>
       <!--/**
         * @attribute {String} [path=]
         * If set, a {@link #datapath datapath} will be used to look up the value.
         */-->
-      <attribute name="path" value="" type="string"></attribute>
-      <handler event="onpath" args="path">
-        if path
-          unless @datapath?
-            @datapath = new dr.datapath(@parent, {path: path})
-            @listenTo(@datapath, 'onresult', (data) =>
+      <attribute name="datapath" value="" type="string"></attribute>
+      <handler event="ondatapath" args="datapath">
+        if datapath
+          unless @_datapath?
+            @_datapath = new dr.datapath(@parent)
+            @listenTo(@_datapath, 'onresult', (data) =>
               @setAttribute('data', data)
               #console.log('data callback', data, @)
             )
-            # console.log('new datapath', @datapath)
+            # console.log('new datapath', @_datapath)
+          @_datapath.setAttribute('path', datapath)
       </handler>
 
       <!--/**
@@ -256,7 +258,7 @@ SOFTWARE. -->
         */-->
       <method name="doReplication">
         return if @locked
-        return unless @data and @parent
+        return unless @data and @data != dr.replicator._arrayidentity
 
         locked = @locked
         @locked = true
@@ -301,7 +303,7 @@ SOFTWARE. -->
             for layout in @parent.layouts
               layout.setAttribute('locked', false) # Updates automatically since the layout was already locked.
           @locked = locked
-          @sendEvent('replicated', @)
+          @sendEvent('onreplicated', @)
 
         if @async
           dr.idle.callOnIdle(finalize)

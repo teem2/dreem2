@@ -26,10 +26,11 @@ SOFTWARE. -->
       <expectedoutput>missing classname for replicator [object Object]</expectedoutput>
       <replicator></replicator>
 
+      <wrappinglayout></wrappinglayout>
       <!-- Replicate over the data array -->
       <replicator classname="text" data="[0,1,2,3]"></replicator>
 
-      <!-- Replicate over a path -->
+      <!-- Replicate over a datapath -->
 	  <dataset name="example">
         {
           "store": {
@@ -68,7 +69,7 @@ SOFTWARE. -->
           }
         }
       </dataset>
-      <replicator classname="text" path="$example/store/book[*]/title"></replicator>
+      <replicator classname="text" datapath="$example/store/book[*]/title"></replicator>
     </view>
   </screen>
 </screens>
