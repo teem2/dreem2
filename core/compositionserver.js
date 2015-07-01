@@ -303,7 +303,7 @@ define(function(require, exports, module) {
         if (src.indexOf('/') === 0) {
           resolvedPath = define.expandVariables('$ROOT/' + src);
         } else {
-          resolvedPath = (resolvedPath ? path.dirname(resolvedPath) : resolvedPath) + '/' + define.expandVariables(src);
+          resolvedPath = (resolvedPath ? path.dirname(resolvedPath) + '/' : '') + define.expandVariables(src);
         }
       }
       
