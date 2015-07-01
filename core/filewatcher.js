@@ -10,6 +10,10 @@ define(function(require, exports, module) {
 
   fs.statPromise = Promisify(fs.stat);
 
+  // file watching is handled by consolidating all files, from each application,
+  // and only the unique files are watched. When a change is detected, an update
+  // is passed to every application that includes the file.
+  
   var uid = 0;
   var timeout = 500; // Frequency (msec) of checking
   var firelimit = 1000; // Maximum frequency of reloading
@@ -24,11 +28,8 @@ define(function(require, exports, module) {
   function addmaster(file, uid) {
     if (!(file in filemap)) {    
       filemap[file] = {uids:{}, stats:null, lastfire:0};
-      filemap[file]['uids'][uid] = true;
     }
-    else {
-      filemap[file]['uids'][uid] = true;
-    }
+    filemap[file]['uids'][uid] = true;
   }
 
   // (global) Rebuild the filemap from the separate watcher lists
@@ -51,14 +52,6 @@ define(function(require, exports, module) {
     }
 
     console.log(uuids + ' uuids. ' + unique_files + ' unique. ' + total_files + ' total files');
-    //if (total_files > 1420) {
-    //  for (var uid in watchers) {
-    //    for (var file in watchers[uid].files) {
-    //      console.log(uid, file);
-    //    }
-    //  }
-    //}
-
   }
 
   // (global) Scan the master filemap for changes
@@ -70,7 +63,7 @@ define(function(require, exports, module) {
       stats.push(fs.statPromise(define.expandVariables(file)));
     }
 
-    debug();
+    //debug();
     
     // Compute the list of changes (map uid to array of changed files)
     var changes = {};
@@ -132,9 +125,9 @@ define(function(require, exports, module) {
     this.timeout = args['timeout'] || 500;
     this.poll = this.poll.bind(this);
     this.itv = setTimeout(this.poll, 0);
-    this.lastfire = 0;
-    this.firelimit = 1000;
     this.uid = uid++;
+
+    // Record this object with the static scanner
     watchers[this.uid] = this;
   };
 
@@ -149,36 +142,8 @@ define(function(require, exports, module) {
     
     /* Internal poll method */
     this.poll = function(file) {
+      //TODO: What should the behavior of the individual polling methods be?
       return;
-      //DEBUG
-      test();
-
-      var stats = [];
-      var names = [];
-      for (var k in this.files) {
-        names.push(k);
-        stats.push(fs.statPromise(define.expandVariables(k)));
-      }
-      Promise.all(stats).then(function(results) {
-        setTimeout(this.poll, this.timeout);
-        for (var i = 0; i < results.length; i++) {
-          var file = names[i];
-          var res = results[i];
-          res.atime = null;
-          var str = JSON.stringify(res);
-          // lets make sure we dont fire too often
-          if (this.files[file] !== null && this.files[file] !== str) {
-            var now = Date.now();
-            if (now - this.lastfire > this.firelimit) {
-              this.lastfire = now;
-              this.onChange(file);
-            }
-          }
-          this.files[file] = str;
-        }
-      }.bind(this)).catch(function(err) {
-        // TODO lets unwatch the files that errored?
-      })
     };
     
     /**
