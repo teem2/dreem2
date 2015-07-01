@@ -183,6 +183,11 @@
     # setup default to reduce events during initialization.
     @fontsize = @fontfamily = ''
     @bold = @italic = @underline = @strike = @smallcaps = @multiline = @ellipsis = false
+
+    # allow data attribute to override unset text attribute
+    if (attrs.data? and not attrs.text)
+      attrs.text = attrs.data
+      delete attrs.data
     
     @super()
   </method>

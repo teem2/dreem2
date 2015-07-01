@@ -279,6 +279,11 @@ define(function(require, exports, module) {
             if (cls) deps[cls] = 1;
           })
         }
+
+        if (node.tag === 'replicator' && nodeAttrs.classname) {
+          var cls = nodeAttrs.classname;
+          if (cls) deps[cls] = 1;
+        }
         
         if (nodeAttrs && nodeAttrs.requires) {
           nodeAttrs.requires.split(this.SEPARATOR_REGEX).forEach(function(cls) {

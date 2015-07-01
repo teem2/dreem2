@@ -186,20 +186,21 @@ SOFTWARE. -->
         */-->
       <attribute name="path" value="" type="string"></attribute>
       <handler event="onpath" args="path">
-        @data = null
-        unless @datapath?
-          @datapath = new dr.datapath(@parent, {ondata: (data) ->
-            console.log()
-          })
-        @datapath.setAttribute('path')
-        @data = @datapath.data
+        if path
+          unless @datapath?
+            @datapath = new dr.datapath(@parent, {path: path})
+            @listenTo(@datapath, 'onresult', (data) =>
+              @setAttribute('data', data)
+              #console.log('data callback', data, @)
+            )
+            # console.log('new datapath', @datapath)
       </handler>
 
       <!--/**
         * @attribute {String} classname (required)
         * The name of the class to be replicated.
         */-->
-      <attribute name="classname" value="node" type="string"></attribute>
+      <attribute name="classname" value="" type="string"></attribute>
 
       <handler event="onclassname,ondata,oninit" method="applyData"></handler>
 
@@ -229,19 +230,14 @@ SOFTWARE. -->
         # @parent.setAttribute('display', null)
       </method>
 
-      <!--/**
-        * @method filterfunction
-        * @abstract
-        * Called to filter data.
-        * @param obj An individual item to be processed.
-        * @param {Object[]} accum The array of items that have been accumulated. To keep a processed item, it must be added to the accum array.
-        * @returns {Object[]} The accum array. Must be returned otherwise results will be lost.
-        */-->
       <method name="applyData">
-        return unless @inited and @parent and @classname
+        return unless @inited and @parent
+        unless @classname
+          console.warn 'missing classname for replicator', @
+          return
         # console.log('applyData', @data, @classname, @parent, @children, @, @inited)
 
-        unless @classname of dr
+        unless dr.lookupClass(@classname)
           console.warn 'missing class for replicator', @classname, 'skipping replication'
           return
 
@@ -289,18 +285,18 @@ SOFTWARE. -->
             i = @children.length;
             while @data.length > @children.length
               datum = @data[i++]
-              @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}, @async))
+              @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
               # console.log 'replicator created', @classname, @children[@children.length - 1]
         else
           @clear()
           for datum in @data
             # console.log 'replicator creating', @classname, 'in', @parent
-            @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}, @async))
+            @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
             # console.log 'replicator created', @classname, @children[@children.length - 1]
 
         finalize = () =>
           # init constraints for all children created
-          dr.initConstraints()
+          # dr.initConstraints()
           if @parent.layouts
             for layout in @parent.layouts
               layout.setAttribute('locked', false) # Updates automatically since the layout was already locked.
