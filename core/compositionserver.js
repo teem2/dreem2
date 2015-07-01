@@ -60,12 +60,13 @@ define(function(require, exports, module) {
 
   function body() {
     /**
-      * @method showErrors
+      * @method __showErrors
       * Shows error array and responds with notifications/opening editors
       * @param {Array} errors
       * @param {String} prefix Output prefix
+      * @private
       */
-    this.showErrors = function(errors, filepath, source) {
+    this.__showErrors = function(errors, filepath, source) {
       var w = 0;
       if (!Array.isArray(errors)) errors = [errors];
       errors.forEach(function(err) {
@@ -101,22 +102,23 @@ define(function(require, exports, module) {
       this.myteem = undefined;
     };
     
-    this.parseDreSync = function(drefile, errors) {
+    /** @private */
+    this.__parseDreSync = function(drefile, errors) {
       // read our composition file
       try {
         var data = fs.readFileSync(define.expandVariables(drefile));
       } catch(e) {
-        errors.push(new DreemError("Error during readFileSync in parseDreSync: " + e.toString()));
+        errors.push(new DreemError("Error during readFileSync in __parseDreSync: " + e.toString()));
         return;
       }
       
       // watch it
       this.watcher.watch(drefile);
       
-      // and then showErrors
-      var htmlParser = new HTMLParser();
-      var source = data.toString();
-      var jsobj = htmlParser.parse(source);
+      // and then show errors
+      var htmlParser = new HTMLParser(),
+        source = data.toString(),
+        jsobj = htmlParser.parse(source);
       
       // forward the parser errors 
       if (htmlParser.errors.length) {
@@ -126,11 +128,11 @@ define(function(require, exports, module) {
       }
       
       jsobj.source = source;
-      
       return jsobj;
     };
     
-    this.lookupDep = function(classname, compname, errors) {
+    /** @private */
+    this.__lookupDep = function(classname, compname, errors) {
       if (classname in this.local_classes) {
         // lets scan the -project subdirectories
         return '$BUILD/compositions.' + compname + '.dre.' + classname + '.js';
@@ -156,21 +158,24 @@ define(function(require, exports, module) {
           if (!this.compile_once[drefile]) {
             // lets parse and compile this dre file
             var local_err = [];
-            var dre = this.parseDreSync(drefile, local_err);
+            var dre = this.__parseDreSync(drefile, local_err);
             if (!dre.child) return '';
             var root;
             for (var j = 0; j < dre.child.length; j++) {
               var tag = dre.child[j].tag
               if (tag == 'class' || tag == 'mixin') root = dre.child[j];
             }
-            if (root) { // lets output this class
+            
+            // Output this class
+            if (root) {
               jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase()+'.'+ dreem_compiler.classnameToBuild(classname) + ".js";
               this.compile_once[drefile] = jsfile;
-              this.compileAndWriteDreToJS(root, jsfile, null, local_err);
+              this.__compileAndWriteDreToJS(root, jsfile, null, local_err);
               ignore_watch = true;
             }
+            
             if (local_err.length) {
-              this.showErrors(local_err, drefile, dre.source);
+              this.__showErrors(local_err, drefile, dre.source);
             }
           } else {
             jsfile = this.compile_once[drefile];
@@ -186,10 +191,11 @@ define(function(require, exports, module) {
       console.color("~br~Error~~ finding class " + classname + '\n');
     };
     
-    this.makeLocalDeps = function(deps, compname, indent, errors) {
+    /** @private */
+    this.__makeLocalDeps = function(deps, compname, indent, errors) {
       var out = '';
       for (var key in deps) {
-        var incpath = this.lookupDep(key, compname, errors);
+        var incpath = this.__lookupDep(key, compname, errors);
         this.classmap[key] = incpath;
         if (incpath) {
           out += indent + 'var ' + dreem_compiler.classnameToJS(key) + ' = require("' + incpath + '")\n';
@@ -198,91 +204,42 @@ define(function(require, exports, module) {
       return out;
     };
     
-    /* Internal, compiles and writes dre .js class */
-    this.compileAndWriteDreToJS = function(jsxml, filename, compname, errors) {
+    /** Compiles and writes dre .js class
+        @private */
+    this.__compileAndWriteDreToJS = function(jsxml, filename, compname, errors) {
       var js = dreem_compiler.compileClass(jsxml, errors);
       if (js) {
         // write out our composition classes
         var out = 'define(function(require, exports, module){\n';
-        out += this.makeLocalDeps(js.deps, compname, '\t', errors);
+        out += this.__makeLocalDeps(js.deps, compname, '\t', errors);
         out += '\tmodule.exports = ' + js.body + '\n\tmodule.exports.dre = ' + JSON.stringify(jsxml) + '})';
-        this.writeFileIfChanged(filename, out, errors);
+        this.__writeFileIfChanged(filename, out, errors);
         return js.name;
       }
     };
     
-    /* Internal, packages and writes a dali application */
-    this.packageDali = function(root, output) {
-      // lets load define
-      var definejs = fs.readFileSync(define.expandVariables('$ROOT/define.js')).toString();
-      
-      // lets recursively load all our dependencies.
-      var files = {};
-      var recur = function(file, parent) {
-        if (files[file]) return;
-        try {
-          var filepath = define.expandVariables(file);
-          var data = fs.readFileSync(filepath);
-          if (file.indexOf('$BUILD') == -1) {
-            this.watcher.watch(filepath);
-          }
-        } catch(e) {
-          console.log('Dali build: Error opening file '+file+' from '+parent);
-          return;
-        }
-        var string = files[file] = data.toString();
-        var root = define.filePath(file);
-        
-        define.findRequires(string).forEach(function(req) {
-          var sub;
-          if (req.charAt(0) == '$') {
-            sub = req;
-          } else {
-            sub = define.joinPath(root, req);
-          }
-          
-          if (sub.lastIndexOf('.js') !== sub.length - 3) sub = sub + '.js';
-          recur(sub, file);
-        });
-      }.bind(this);
-      
-      recur(root,'absolute root');
-      
-      // lets write out our dali.js
-      var out = 'var define = {packaged:1}\ndefine = ' + definejs + '\n\n';
-      for (var key in files) {
-        var string = files[key];
-        string = string.replace(/define\(\s*function\s*\(/, function() {
-          return 'define("' + key + '", function(';
-        });
-        out += string + '\n\n';
-      }
-      out += 'define.env="v8";var req = define.require("' + root + '");if(define.onMain) define.onMain(req);';
-      this.writeFileIfChanged(output, out);
-    };
-    
-    this.compileLocalClass = function(cls, errors) {
+    /** @private */
+    this.__compileLocalClass = function(cls, errors) {
       var classname = cls.attr && cls.attr.name || 'unknown';
-      this.compileAndWriteDreToJS(cls, '$BUILD/compositions.' + this.name + '.dre.' + classname + '.js' , this.name, errors);
+      this.__compileAndWriteDreToJS(cls, '$BUILD/compositions.' + this.name + '.dre.' + classname + '.js' , this.name, errors);
       this.local_classes[classname] = 1;
     };
     
-    this.handleInclude = function(errors, filePathStack) {
+    /** @private */
+    this.__handleInclude = function(errors, filePathStack) {
       var src, i = 0, len = filePathStack.length,
         resolvedPath = '';
       
       for (; len > i; i++) {
-          src = filePathStack[i];
-          
-          if (src.indexOf('/') === 0) {
-              // User src as is since it's from root
-              resolvedPath = define.expandVariables('$ROOT/' + src);
-          } else {
-              resolvedPath = (resolvedPath ? path.dirname(resolvedPath) : resolvedPath) + '/' + define.expandVariables(src);
-          }
+        src = filePathStack[i];
+        if (src.indexOf('/') === 0) {
+          resolvedPath = define.expandVariables('$ROOT/' + src);
+        } else {
+          resolvedPath = (resolvedPath ? path.dirname(resolvedPath) : resolvedPath) + '/' + define.expandVariables(src);
+        }
       }
       
-      var dre = this.parseDreSync(resolvedPath, errors);
+      var dre = this.__parseDreSync(resolvedPath, errors);
       return dre ? dre.child : [];
     };
     
@@ -322,8 +279,8 @@ define(function(require, exports, module) {
       
       var errors = [];
       
-      var dre = this.parseDreSync(filepath, errors);
-      if (errors.length) return this.showErrors(errors, filepath, dre && dre.source);
+      var dre = this.__parseDreSync(filepath, errors);
+      if (errors.length) return this.__showErrors(errors, filepath, dre && dre.source);
       
       // lets walk the XML and spawn up our composition objects.
       var root;
@@ -332,7 +289,7 @@ define(function(require, exports, module) {
       }
       
       if (!root || root.tag != 'composition') {
-        return this.showErrors(new DreemError('Root tag is not composition', root.pos), filepath, dre.source);
+        return this.__showErrors(new DreemError('Root tag is not composition', root.pos), filepath, dre.source);
       }
       
       for (var i = 0, children = root.child, len = children.length; i < len; i++) {
@@ -345,19 +302,19 @@ define(function(require, exports, module) {
           // lets compile our local classes
           for (var j = 0, classes = child.child, clen = classes.length; j < clen; j++) {
             var cls = classes[j];
-            this.compileLocalClass(classes[j]);
+            this.__compileLocalClass(classes[j]);
           }
           continue;
         }
         
         // lets compile the JS
         var js = dreem_compiler.compileInstance(
-          child, errors, '\t\t', this.compileLocalClass.bind(this), this.handleInclude.bind(this), filepath
+          child, errors, '\t\t', this.__compileLocalClass.bind(this), this.__handleInclude.bind(this), filepath
         );
         
         // ok now the instances..
         var out = 'define(function(require, exports, module){\n';
-        out += this.makeLocalDeps(js.deps, this.name, '\t', errors);
+        out += this.__makeLocalDeps(js.deps, this.name, '\t', errors);
         out += '\n\tmodule.exports = function(){\n\t\treturn ' + js.body + '\n\t}\n';
         out += '\tmodule.exports.dre = '+ JSON.stringify(child) +'\n})';
         
@@ -377,7 +334,7 @@ define(function(require, exports, module) {
           var component = "$BUILD/compositions." + this.name +  '.dre.' + js.tag + '.' + js.name + '.js';
         }
         
-        this.writeFileIfChanged(component, out, errors);
+        this.__writeFileIfChanged(component, out, errors);
         
         this.modules.push({
           jsxml:child,
@@ -392,22 +349,22 @@ define(function(require, exports, module) {
             
             if (schild.tag !== 'screen') continue;
             var sjs = dreem_compiler.compileInstance(
-              schild, errors, '\t\t', this.compileLocalClass.bind(this), this.handleInclude.bind(this), filepath
+              schild, errors, '\t\t', this.__compileLocalClass.bind(this), this.__handleInclude.bind(this), filepath
             );
             
             // ok now the instances..
             var out = 'define(function(require, exports, module){\n';
-            out += this.makeLocalDeps(sjs.deps, this.name, '\t', errors);
+            out += this.__makeLocalDeps(sjs.deps, this.name, '\t', errors);
             out += '\n\tmodule.exports = function(){\n\t\treturn ' + sjs.body + '\n\t}\n';
             out += '\n\tmodule.exports.dre = '+ JSON.stringify(schild) +'\n';
             out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) +'\n';
             out += '})';
             var component = "$BUILD/compositions." + this.name + '.dre.screens.' + sjs.name + '.js';
-            this.writeFileIfChanged(component, out, errors);
+            this.__writeFileIfChanged(component, out, errors);
             
             if (schild.attr && schild.attr.type == 'dali') {
               define.SPRITE = '$LIB/dr/sprite_dali';
-              this.packageDali(component, component.slice(0,-3)+".dali.js");
+              this.__packageDali(component, component.slice(0,-3)+".dali.js");
               define.SPRITE = '$LIB/dr/sprite_browser';
             }
             
@@ -415,7 +372,7 @@ define(function(require, exports, module) {
           }
         }
         
-        if (errors.length) return this.showErrors(errors, filepath, dre.source);
+        if (errors.length) return this.__showErrors(errors, filepath, dre.source);
       }
       
       // require our teem tag
@@ -426,40 +383,6 @@ define(function(require, exports, module) {
       }
       // send a reload on the busserver
       if (define.onMain) define.onMain(this.modules, this.busserver);
-    }
-    
-    this.loadHTML = function(title, boot, isTest) {
-      return '<html lang="en">\n'+
-        ' <head>\n'+
-        '  <title>' + title + '</title>\n'+
-        '  <!-- TODO: remove --><script type"text/javascript" src="/lib/json-path+json-ptr-0.1.3.min.js"></script>\n'+
-        '  <!-- TODO: remove --><script type"text/javascript" src="/lib/json.async.js"></script>\n'+
-        (isTest ?
-        '  <script type"text/javascript" src="/lib/chai.js"></script>\n'+
-        '  <script type"text/javascript" src="/lib/smoke_helper.js"></script>\n'
-        : '' ) +
-        '  <script type"text/javascript">\n'+
-        '    window.define = {\n'+
-        '      MAIN:"' + boot + '"\n'+
-        '    }\n'+
-        '  </script>\n'+
-        '  <script type="text/javascript" src="/define.js"></script>\n'+
-        '  <style type="text/css">\n'+
-        '    html,body {\n'+
-        '      height:100%;\n'+
-        '      margin:0px;\n'+
-        '      padding:0px;\n'+
-        '      border:0px none;\n'+
-        '    }\n'+
-        '    body {\n'+
-        '      font-family:Arial, Helvetica, sans-serif;\n'+
-        '      font-size:14px;\n'+
-        '    }\n'+
-        '  </style>'+
-        ' </head>\n'+
-        ' <body>\n'+
-        ' </body>\n'+
-        '</html>\n';
     };
     
     /**
@@ -518,7 +441,7 @@ define(function(require, exports, module) {
             res.writeHead(200, {"Content-Type": "text/html"});
             stream.pipe(res);
           } else {
-            var html = this.loadHTML(
+            var html = this.__loadHTML(
               screen.attr && screen.attr.title || this.name, 
               '$BUILD/compositions.' + this.name + '.dre.screens.' + screenName + '.js',
               query.test === null || query.test === 'true'
@@ -538,18 +461,109 @@ define(function(require, exports, module) {
       }
     };
     
-    this.mkdirParent = function(dirPath) {
+    /** Packages and writes a dali application.
+        @private */
+    this.__packageDali = function(root, output) {
+      // lets load define
+      var definejs = fs.readFileSync(define.expandVariables('$ROOT/define.js')).toString();
+      
+      // lets recursively load all our dependencies.
+      var files = {};
+      var recur = function(file, parent) {
+        if (files[file]) return;
+        try {
+          var filepath = define.expandVariables(file);
+          var data = fs.readFileSync(filepath);
+          if (file.indexOf('$BUILD') == -1) {
+            this.watcher.watch(filepath);
+          }
+        } catch(e) {
+          console.log('Dali build: Error opening file '+file+' from '+parent);
+          return;
+        }
+        var string = files[file] = data.toString();
+        var root = define.filePath(file);
+        
+        define.findRequires(string).forEach(function(req) {
+          var sub;
+          if (req.charAt(0) == '$') {
+            sub = req;
+          } else {
+            sub = define.joinPath(root, req);
+          }
+          
+          if (sub.lastIndexOf('.js') !== sub.length - 3) sub = sub + '.js';
+          recur(sub, file);
+        });
+      }.bind(this);
+      
+      recur(root,'absolute root');
+      
+      // lets write out our dali.js
+      var out = 'var define = {packaged:1}\ndefine = ' + definejs + '\n\n';
+      for (var key in files) {
+        var string = files[key];
+        string = string.replace(/define\(\s*function\s*\(/, function() {
+          return 'define("' + key + '", function(';
+        });
+        out += string + '\n\n';
+      }
+      out += 'define.env="v8";var req = define.require("' + root + '");if(define.onMain) define.onMain(req);';
+      this.__writeFileIfChanged(output, out);
+    };
+    
+    /** The html response template for browser composition requests.
+        @private */
+    this.__loadHTML = function(title, boot, isTest) {
+      return '<html lang="en">\n'+
+        ' <head>\n'+
+        '  <title>' + title + '</title>\n'+
+        '  <!-- TODO: remove --><script type"text/javascript" src="/lib/json-path+json-ptr-0.1.3.min.js"></script>\n'+
+        '  <!-- TODO: remove --><script type"text/javascript" src="/lib/json.async.js"></script>\n'+
+        (isTest ?
+        '  <script type"text/javascript" src="/lib/chai.js"></script>\n'+
+        '  <script type"text/javascript" src="/lib/smoke_helper.js"></script>\n'
+        : '' ) +
+        '  <script type"text/javascript">\n'+
+        '    window.define = {\n'+
+        '      MAIN:"' + boot + '"\n'+
+        '    }\n'+
+        '  </script>\n'+
+        '  <script type="text/javascript" src="/define.js"></script>\n'+
+        '  <style type="text/css">\n'+
+        '    html,body {\n'+
+        '      height:100%;\n'+
+        '      margin:0px;\n'+
+        '      padding:0px;\n'+
+        '      border:0px none;\n'+
+        '    }\n'+
+        '    body {\n'+
+        '      font-family:Arial, Helvetica, sans-serif;\n'+
+        '      font-size:14px;\n'+
+        '    }\n'+
+        '  </style>'+
+        ' </head>\n'+
+        ' <body>\n'+
+        ' </body>\n'+
+        '</html>\n';
+    };
+    
+    /** Recursively makes directories for a path.
+        @private */
+    this.__mkdirParent = function(dirPath) {
       try {
         fs.mkdirSync(dirPath);
       } catch(e) {
-        if (e.code === 'EISDIR') {
-          fs.mkdirParent(path.dirname(dirPath));
-          fs.mkdirParent(dirPath);
+        if (e.code === 'ENOENT') {
+          this.__mkdirParent(path.dirname(dirPath));
+          this.__mkdirParent(dirPath);
         }
       }
     };
     
-    this.writeFileIfChanged = function(filePath, newData, errors) {
+    /** Writes a file to disk if the contents of the file will have changed.
+        @private */
+    this.__writeFileIfChanged = function(filePath, newData, errors) {
       var expandedPath = define.expandVariables(filePath),
         data;
       try {
@@ -560,7 +574,7 @@ define(function(require, exports, module) {
       if (!data || newData.length !== data.length || newData !== data) {
         try {
           var dirPath = path.dirname(expandedPath);
-          if (!fs.existsSync(dirPath)) this.mkdirParent(dirPath);
+          if (!fs.existsSync(dirPath)) this.__mkdirParent(dirPath);
           fs.writeFileSync(expandedPath, newData);
         } catch(e) {
           errors.push(new DreemError("Error in writeFilSync: " + e.toString()));
