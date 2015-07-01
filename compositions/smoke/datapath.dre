@@ -155,8 +155,8 @@ SOFTWARE. -->
         </handler>
       </datapath>
 
-      <!-- Test key sorting -->
-      <datapath data="[{count: 2},{count:1},{count: 4}]" sortasc="false" sortfield="count">
+      <!-- Test sortpath -->
+      <datapath data="[{count: 2},{count:1},{count: 4}]" sortasc="false" sortpath="/count">
         <handler event="onresult" args="result">
           this.onresultfired = true
         </handler>
@@ -208,7 +208,7 @@ SOFTWARE. -->
         </handler>
       </datapath>
 
-      <!-- Path with a dataset and lookup -->
+      <!-- Path with a dataset and path -->
       <datapath path="$sample/text">
         <handler event="onresult" args="result">
           this.onresultfired = true
@@ -220,7 +220,7 @@ SOFTWARE. -->
         </handler>
       </datapath>
 
-      <!-- Path with a dataset, lookup and filterfunction -->
+      <!-- Path with a dataset path and filterfunction -->
       <datapath path="$sample/text[*][@]">
         <method name="filterfunction" args="obj, accum">
           accum.unshift(obj);

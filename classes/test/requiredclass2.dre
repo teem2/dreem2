@@ -1,0 +1,5 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<class name="test-requiredclass2">
+  <attribute name="classloaded2" type="boolean" value="true"></attribute>
+</class>

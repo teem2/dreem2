@@ -1,0 +1,6 @@
+<class name="foo" extends="text" text="FOO!">
+  <handler event="oninit">
+    this.classroot.setAttribute("nested", "SET!")
+  </handler>
+</class>
+<foo y="30"></foo>

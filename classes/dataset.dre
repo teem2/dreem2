@@ -101,7 +101,7 @@ SOFTWARE. -->
   <attribute name="url" type="string" value=""></attribute>
 
   <!--/**
-    * @attribute {Boolean} [async=false]
+    * @attribute {Boolean} [async=true]
     * If true, parse json in a worker thread
     */-->
   <attribute name="async" value="true" type="boolean"></attribute>

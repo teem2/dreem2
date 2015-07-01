@@ -35,7 +35,7 @@ SOFTWARE. -->
       <handler></handler>
       
       <!-- Handler with no event or name generates a message. -->
-      <expectedoutput>Handler has no name or event attribute.</expectedoutput>
+      <expectedoutput>Handler has no event attribute.</expectedoutput>
       <handler method="foo"></handler>
       
       <!-- Handler with an empty reference attribute generates a message. -->
@@ -116,20 +116,51 @@ SOFTWARE. -->
           assert.isTrue(root.hasbeenselected);
           
           assert.isTrue(self.eventAttrWorks);
-          assert.isTrue(self.nameAttrWorks);
           assert.isTrue(self.secondOninit);
+          
+          // Call a handler by name
+          assert.equal(self.handlerAsMethod(5), 5);
+          assert.equal(self.handlerAsMethod(3), 8);
         }, 0);
       </handler>
       
       <!-- Multiple handlers are just fine. -->
-      <handler name="oninit">
+      <handler event="oninit">
         this.secondOninit = true;
       </handler>
       
-      <!-- OK to use name instead of event. -->
-      <handler name="oninit">
-        this.nameAttrWorks = true;
+      <!-- Verify named handlers are useable as methods and that you can
+           pass in and return values from them. -->
+      <attribute name="baz" type="number" value="0"></attribute>
+      <handler event="onbaz" name="handlerAsMethod" args="baz">
+        this.bar = (this.bar != null ? this.bar : 0) + baz;
+        return this.bar;
       </handler>
+      
+      <!-- Verify a named handler can be defined on a class and overridden on
+           and instance -->
+      <class name="foo">
+        <attribute name="bar" type="number" value="0"></attribute>
+        <handler event="onbar" name="hello">
+          return "hey";
+        </handler>
+      </class>
+      
+      <foo>
+        <handler event="oninit">
+          assert.equal(this.hello(), "hey");
+        </handler>
+      </foo>
+      
+      <foo>
+        <method name="hello">
+          return this.super() + " there!";
+        </method>
+        
+        <handler event="oninit">
+          assert.equal(this.hello(), "hey there!");
+        </handler>
+      </foo>
       
       <!-- Verify that on$textcontent handler gets called. -->
       <view>asdf

@@ -98,10 +98,11 @@ SOFTWARE. -->
           <link url="./smoke/events">Events</link>
           <link url="./smoke/handlers">Handlers</link>
           <link url="./smoke/idle">Idle</link>
-          <link url="./smoke/failing/include" status="fail">Include</link>
+          <link url="./smoke/include">Include</link>
           <link url="./smoke/initialization">Initialization</link>
           <link url="./smoke/mixins">Mixins</link>
           <link url="./smoke/platform_events">Platform Events</link>
+          <link url="./smoke/replicator">Replicator</link>
           <link url="./smoke/requestor">Requestor</link>
           <link url="./smoke/failing/scriptincludes" status="fail">Script Includes</link>
           <link url="./smoke/setters">Setters</link>

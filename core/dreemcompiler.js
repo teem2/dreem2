@@ -16,17 +16,7 @@ define(function(require, exports, module) {
   var HTMLParser = require('./htmlparser'),
     DreemError = require('./dreemerror');
 
-  // Builtin modules, belongs here
-  exports.system = {
-    /* Built in tags that dont resolve to class files */
-    class: true,
-    method: true,
-    attribute: true,
-    handler: true,
-    state: true,
-    getter: true,
-    setter: true
-  };
+  exports.SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
 
   exports.charPos = function(source, line, col) {
     var myline = 0, mycol = 0;
@@ -134,11 +124,17 @@ define(function(require, exports, module) {
     body += exports.classnameToJS(baseclass) + '.extend("' + clsname + '", function(){\n';
     
     if (nodeAttrs && nodeAttrs.with) {
-      nodeAttrs.with.split(/,\s*|\s+/).forEach(function(cls) {
+      nodeAttrs.with.split(this.SEPARATOR_REGEX).forEach(function(cls) {
         if (cls) {
           deps[cls] = 1;
           body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n';
         }
+      });
+    }
+    
+    if (nodeAttrs && nodeAttrs.requires) {
+      nodeAttrs.requires.split(this.SEPARATOR_REGEX).forEach(function(cls) {
+        if (cls) deps[cls] = 1;
       });
     }
     
@@ -161,7 +157,7 @@ define(function(require, exports, module) {
           case 'getter':
           case 'setter':
             var attrnameset = childAttrs && (childAttrs.name || childAttrs.event);
-            var attrnames = attrnameset.split(/,\s*|\s+/), attrname, j;
+            var attrnames = attrnameset.split(this.SEPARATOR_REGEX), attrname, j;
             for (j = 0; j < attrnames.length; j++) {
               attrname = attrnames[j];
               if (!attrname) {
@@ -221,7 +217,7 @@ define(function(require, exports, module) {
     
     //node.method_id = output.methods.length
     var lang = this.languages[language];
-    var args = node.attr && node.attr.args ? node.attr.args.split(/,\s*|\s+/): [];
+    var args = node.attr && node.attr.args ? node.attr.args.split(this.SEPARATOR_REGEX): [];
     var compiled = lang.compile(this.concatCode(node), args);
     
     if (compiled instanceof DreemError) { // the compiler returned an error
@@ -265,24 +261,38 @@ define(function(require, exports, module) {
     };
   };
 
-  exports.compileInstance = function(node, errors, indent, onLocalClass){
+  exports.compileInstance = function(node, errors, indent, onLocalClass, onInclude, filePath) {
     var deps = Object.create(this.default_deps);
+    
+    var filePathStack = [filePath];
     
     var walk = function(node, parent, indent, depth, language) {
       deps[node.tag] = 1;
-      var myindent = indent + '\t';
-      var props = '';
-      var children = '';
+      var myindent = indent + '\t',
+        props = '',
+        children = '',
+        nodeAttrs = node.attr;
       
-      if (node.attr) {
-        if (node.attr.with) {
-          node.attr.with.split(/,\s*|\s+/).forEach(function(cls) {
+      if (nodeAttrs) {
+        if (nodeAttrs.with) {
+          nodeAttrs.with.split(this.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
           })
         }
+
+        if (node.tag === 'replicator' && nodeAttrs.classname) {
+          var cls = nodeAttrs.classname;
+          if (cls) deps[cls] = 1;
+        }
         
-        for (var key in node.attr) {
-          var value = node.attr[key];
+        if (nodeAttrs && nodeAttrs.requires) {
+          nodeAttrs.requires.split(this.SEPARATOR_REGEX).forEach(function(cls) {
+            if (cls) deps[cls] = 1;
+          });
+        }
+        
+        for (var key in nodeAttrs) {
+          var value = nodeAttrs[key];
           
           if (props) {
             props += ',\n' + myindent;
@@ -298,7 +308,7 @@ define(function(require, exports, module) {
         // screen and attribute nodes also have types so we don't want 
         // to look at them for a compiler language
         if (node.tag !== 'screen' && node.tag !== 'attribute') {
-          language = node.attr.type ? node.attr.type : language;
+          language = nodeAttrs.type ? nodeAttrs.type : language;
         }
       }
       
@@ -311,8 +321,20 @@ define(function(require, exports, module) {
             attr = child.attr;
           
           switch (tagName) {
+            case 'include':
+              if (onInclude) {
+                filePathStack.push(attr.href);
+                var newNodes = onInclude(errors, filePathStack);
+                newNodes.push({tag:'$filePathStackPop'});
+                node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+                i--;
+              } else {
+                errors.push(new DreemError('Cant support include in this location', node.pos));
+              }
+              break;
             case 'class':
             case 'mixin':
+              if (attr.name) deps[attr.name] = 1;
               // lets output a local class 
               if (onLocalClass) {
                 onLocalClass(child, errors);
@@ -333,7 +355,7 @@ define(function(require, exports, module) {
               }
               var attrnameset = attr.name || attr.event;
               
-              var attrnames = attrnameset.split(/,\s*|\s+/);
+              var attrnames = attrnameset.split(this.SEPARATOR_REGEX);
               for (var j = 0; j < attrnames.length; j++) {
                 var attrname = attrnames[j];
                 
@@ -369,7 +391,12 @@ define(function(require, exports, module) {
               }
               break;
             default:
-              if (tagName.charAt(0) != '$') {
+              if (tagName.charAt(0) === '$') {
+                if (tagName === '$filePathStackPop') {
+                  filePathStack.pop();
+                  node.child.splice(i, 1);
+                }
+              } else {
                 if (children) {
                   children += ',\n' + myindent;
                 } else {

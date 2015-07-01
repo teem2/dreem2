@@ -64,12 +64,12 @@ SOFTWARE. -->
         */-->
       <attribute name="data" value="null" type="expression"></attribute>
       <!--/**
-        * @attribute {Array} results
-        * The results of the path expression exaluated on data
+        * @attribute {Array} result
+        * The result of evaluating the path
         */-->
       <!--/**
         * @attribute {String} path
-        * The datapath expression to be replicated.
+        * A jsonpath expression to be evaluated on local data if available, or data in a parent node.
         * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for details.
         */-->
       <attribute name="path" value="" type="string"></attribute>
@@ -115,12 +115,12 @@ SOFTWARE. -->
             @setAttribute('data', @dataset.data)
       </method>
 
-      <!-- TODO: make this a relative datapath -->
       <!--/**
-        * @attribute {String} [sortfield=""]
-        * The field in the data to use for sorting. Only sort then this
+        * @attribute {String} [sortpath=""]
+        * A jsonpath expression used to select values for sorting.
+        * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for details.
         */-->
-      <attribute name="sortfield" value="" type="string"></attribute>
+      <attribute name="sortpath" value="" type="string"></attribute>
 
       <!--/**
         * @attribute {Expression} [sortasc=true]
@@ -149,15 +149,17 @@ SOFTWARE. -->
       </handler>
 
       <method name="_buildsortfunc">
-        if @sortfield or @sortasc?
-          # sort, optionaly by @sortfield
-          sortfield = @sortfield
+        if @sortpath or @sortasc?
+          # sort, optionally by @sortpath
+          sortselector = JsonPath.parseSelector(@sortpath) if @sortpath
           sortasc = @sortasc
           @sortfunc = (keyA, keyB) ->
-            if sortfield
-              # look keys up in object
-              keyA = keyA[sortfield]
-              keyB = keyB[sortfield]
+            if sortselector
+              # execute selectors to look up @sortpath
+              keyA = JsonPath.executeSelectors(keyA, sortselector)
+              keyB = JsonPath.executeSelectors(keyB, sortselector)
+              # console.log('sortpath', keyA, keyB)
+
             # Compare the 2 sort fields
             result = 0
             if keyA > keyB
@@ -165,8 +167,8 @@ SOFTWARE. -->
             else if keyA < keyB
               result = -1
 
-            # console.log sortfield, sortasc
-            result = -result if (not sortasc)
+            # console.log sortpath, sortasc
+            result = -result unless sortasc
             result
         else
           @sortfunc = null
@@ -220,11 +222,10 @@ SOFTWARE. -->
           result = accum
 
         unless result?
-          @result = []
+          @_origresult = []
         else
-          @result = if Array.isArray(result) then result else [result]
+          @_origresult = if Array.isArray(result) then result else [result]
 
-        @_origresult = @result
         @_processData()
       </method>
 
@@ -232,10 +233,9 @@ SOFTWARE. -->
         return unless @inited
         @result = @_origresult
 
-        if @_origresult
-          if @filterexpression and @_filterexpressionfunc
-            @result = @_origresult.filter(@_filterexpressionfunc)
-            # console.log('_filterexpressionfunc', @_filterexpressionfunc, @data, @result)
+        if @filterexpression
+          @result = @result.filter(@_filterexpressionfunc)
+          # console.log('_filterexpressionfunc', @_filterexpressionfunc, @data, @result)
 
         if @sortfunc?
           @result.sort(@sortfunc)
