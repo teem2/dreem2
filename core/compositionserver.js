@@ -35,7 +35,7 @@ define(function(require, exports, module) {
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
       // lets reload this app
-      this.reload();
+      this.__reload();
       
       // Tell the client to refresh itself.
       teemserver.broadcast({
@@ -53,12 +53,94 @@ define(function(require, exports, module) {
       this.watcher.watch(filename);
     }.bind(this);
     
-    this.reload();
+    this.__reload();
   }
 
   body.call(CompositionServer.prototype)
 
   function body() {
+    /**
+      * @method request
+      * Handle server request for this Composition
+      * @param {Request} req
+      * @param {Response} res
+      */
+    this.request = function(req, res) {
+      var url = req.url;
+      
+      // Extract Query
+      var query = {}, queryIndex = url.indexOf('?');
+      if (queryIndex !== -1) {
+        query = url.substring(queryIndex + 1);
+        url = url.substring(0, queryIndex);
+        
+        if (query) {
+          var parts = query.split('&'), pair;
+          query = {};
+          for (var i = 0, len = parts.length; len > i; i++) {
+            pair = parts[i].split('=');
+            query[pair[0]] = pair[1] == null ? null : pair[1]; // Clobber instead of support for multivalue query params
+          }
+        }
+      }
+      
+      // Extract screen name
+      var screenName = query.screen || 'default';
+      
+      // ok lets serve our Composition device 
+      if (req.method == 'POST') {
+        // lets do an RPC call
+        var buf = ''
+        req.on('data', function(data) {buf += data.toString();});
+        req.on('end', function() {
+          try {
+            this.myteem.postAPI(JSON.parse(buf), {
+              send:function(msg) {
+                res.writeHead(200, {"Content-Type":"text/json"});
+                res.write(JSON.stringify(msg));
+                res.end();
+              }
+            });
+          } catch(e) {
+            res.writeHead(500, {"Content-Type":"text/html"});
+            res.write('FAIL');
+            res.end();
+          }
+        }.bind(this));
+      } else {
+        var screen = this.screens[screenName];
+        if (screen) {
+          var name = this.name;
+          if (screenName === 'dali') {
+            var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + name + '.dre.screens.dali.dali.js'));
+            res.writeHead(200, {"Content-Type":"text/html"});
+            stream.pipe(res);
+          } else {
+            res.writeHead(200, {
+              "Cache-control":"max-age=0",
+              "Content-Type":"text/html"
+            });
+            res.write(this.__loadHTML(
+              screen.attr && screen.attr.title || name, 
+              '$BUILD/compositions.' + name + '.dre.screens.' + screenName + '.js',
+              query.test === null || query.test === 'true'
+            ));
+            res.end();
+          }
+        } else {
+          res.writeHead(404, {"Content-Type":"text/html"});
+          res.write('NOT FOUND');
+          res.end();
+        }
+      }
+    };
+    
+    /**
+      * @event onChange
+      * Called when any of the dependent files change for this composition
+      */
+    this.onChange = function() {};
+    
     /**
       * @method __showErrors
       * Shows error array and responds with notifications/opening editors
@@ -84,22 +166,6 @@ define(function(require, exports, module) {
           }
         }
       }
-    };
-    
-    /**
-      * @event onChange
-      * Called when any of the dependent files change for this composition
-      */
-    this.onChange = function() {};
-    
-    /**
-      * @method destroy
-      * Destroys all objects maintained by the composition
-      * @param {Function} callback(error, package)
-      */
-    this.destroy = function() {
-      if (this.myteem && this.myteem.destroy) this.myteem.destroy();
-      this.myteem = undefined;
     };
     
     /** @private */
@@ -132,28 +198,45 @@ define(function(require, exports, module) {
     };
     
     /** @private */
+    this.__makeLocalDeps = function(deps, compname, indent, errors) {
+      var out = '';
+      for (var key in deps) {
+        var incpath = this.__lookupDep(key, compname, errors);
+        this.classmap[key] = incpath;
+        if (incpath) {
+          out += indent + 'var ' + dreem_compiler.classnameToJS(key) + ' = require("' + incpath + '")\n';
+        }
+      }
+      return out;
+    };
+    
+    /** @private */
     this.__lookupDep = function(classname, compname, errors) {
       if (classname in this.local_classes) {
         // lets scan the -project subdirectories
         return '$BUILD/compositions.' + compname + '.dre.' + classname + '.js';
       }
-      var extpath = define.expandVariables(define.EXTLIB), paths = [];
+      
+      var extpath = define.expandVariables(define.EXTLIB),
+        paths = [];
       if (fs.existsSync(extpath)) {
         try {
           var dir = fs.readdirSync(extpath);
           dir.forEach(function(value) {
             paths.push('$EXTLIB/' + value)
             paths.push('$EXTLIB/' + value + '/classes')
-          })
+          });
         } catch(e) {}
       }
       
       paths.unshift('$CLASSES');
       
       for (var i = 0; i < paths.length; i++) {
-        var drefile = paths[i] + '/' + dreem_compiler.classnameToPath(classname) + '.dre';
-        var jsfile =  paths[i] + '/' + dreem_compiler.classnameToPath(classname) + '.js';
-        var ignore_watch = false;
+        var path = paths[i] + '/' + dreem_compiler.classnameToPath(classname),
+          drefile = path + '.dre',
+          jsfile =  path + '.js',
+          ignore_watch = false;
+        
         if (fs.existsSync(define.expandVariables(drefile))) {
           if (!this.compile_once[drefile]) {
             // lets parse and compile this dre file
@@ -168,15 +251,13 @@ define(function(require, exports, module) {
             
             // Output this class
             if (root) {
-              jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase()+'.'+ dreem_compiler.classnameToBuild(classname) + ".js";
+              jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + dreem_compiler.classnameToBuild(classname) + ".js";
               this.compile_once[drefile] = jsfile;
               this.__compileAndWriteDreToJS(root, jsfile, null, local_err);
               ignore_watch = true;
             }
             
-            if (local_err.length) {
-              this.__showErrors(local_err, drefile, dre.source);
-            }
+            if (local_err.length) this.__showErrors(local_err, drefile, dre.source);
           } else {
             jsfile = this.compile_once[drefile];
           }
@@ -189,19 +270,6 @@ define(function(require, exports, module) {
       }
       
       console.color("~br~Error~~ finding class " + classname + '\n');
-    };
-    
-    /** @private */
-    this.__makeLocalDeps = function(deps, compname, indent, errors) {
-      var out = '';
-      for (var key in deps) {
-        var incpath = this.__lookupDep(key, compname, errors);
-        this.classmap[key] = incpath;
-        if (incpath) {
-          out += indent + 'var ' + dreem_compiler.classnameToJS(key) + ' = require("' + incpath + '")\n';
-        }
-      }
-      return out;
     };
     
     /** Compiles and writes dre .js class
@@ -243,10 +311,18 @@ define(function(require, exports, module) {
       return dre ? dre.child : [];
     };
     
-    /* Internal, reloads the composition */
-    this.reload = function() {
-      console.color("~bg~Reloading~~ composition: " + this.name + "\n");
-      this.destroy();
+    /** Reloads the composition.
+        @private */
+    this.__reload = function() {
+      var errors = [],
+        compositionName = this.name,
+        filepath = '$COMPOSITIONS/' + compositionName + '.dre';
+      
+      console.color("~bg~Reloading~~ composition: " + compositionName + "\n");
+      
+      // Destroy all objects maintained by the composition
+      if (this.myteem && this.myteem.destroy) this.myteem.destroy();
+      this.myteem = undefined;
       this.local_classes = {};
       this.compile_once = {};
       this.components = {};
@@ -254,21 +330,19 @@ define(function(require, exports, module) {
       this.modules = [];
       this.classmap = {};
       
-      // lets clear our module cache
+      // Clear the module cache
       require.clearCache();
       define.onMain = undefined;
       
       define.SPRITE = '$LIB/dr/sprite_browser';
       
-      // scan our EXTLIB for compositions firstƒ
-      var filepath = '$COMPOSITIONS/' + this.name + '.dre';
-      
+      // scan our EXTLIB for compositions first
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
           var dir = fs.readdirSync(extpath);
           for (var i = 0; i < dir.length; i++) {
-            var mypath = '$EXTLIB/' + dir[i] + '/compositions/'+this.name+'.dre';
+            var mypath = '$EXTLIB/' + dir[i] + '/compositions/' + compositionName + '.dre';
             if (fs.existsSync(define.expandVariables(mypath))) {
               filepath = mypath;
               break;
@@ -276,8 +350,6 @@ define(function(require, exports, module) {
           }
         }
       }
-      
-      var errors = [];
       
       var dre = this.__parseDreSync(filepath, errors);
       if (errors.length) return this.__showErrors(errors, filepath, dre && dre.source);
@@ -314,12 +386,13 @@ define(function(require, exports, module) {
         
         // ok now the instances..
         var out = 'define(function(require, exports, module){\n';
-        out += this.__makeLocalDeps(js.deps, this.name, '\t', errors);
+        out += this.__makeLocalDeps(js.deps, compositionName, '\t', errors);
         out += '\n\tmodule.exports = function(){\n\t\treturn ' + js.body + '\n\t}\n';
         out += '\tmodule.exports.dre = '+ JSON.stringify(child) +'\n})';
         
+        var component;
         if (js.tag === 'screens') {
-          var component = "$BUILD/compositions." + this.name + '.dre.screens.js';
+          component = "$BUILD/compositions." + compositionName + '.dre.screens.js';
         } else {
           var collide = '';
           while (this.components[js.name + collide]) {
@@ -331,7 +404,7 @@ define(function(require, exports, module) {
           }
           js.name += collide;
           this.components[js.name] = 1;
-          var component = "$BUILD/compositions." + this.name +  '.dre.' + js.tag + '.' + js.name + '.js';
+          component = "$BUILD/compositions." + compositionName +  '.dre.' + js.tag + '.' + js.name + '.js';
         }
         
         this.__writeFileIfChanged(component, out, errors);
@@ -354,12 +427,12 @@ define(function(require, exports, module) {
             
             // ok now the instances..
             var out = 'define(function(require, exports, module){\n';
-            out += this.__makeLocalDeps(sjs.deps, this.name, '\t', errors);
+            out += this.__makeLocalDeps(sjs.deps, compositionName, '\t', errors);
             out += '\n\tmodule.exports = function(){\n\t\treturn ' + sjs.body + '\n\t}\n';
             out += '\n\tmodule.exports.dre = '+ JSON.stringify(schild) +'\n';
             out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) +'\n';
             out += '})';
-            var component = "$BUILD/compositions." + this.name + '.dre.screens.' + sjs.name + '.js';
+            var component = "$BUILD/compositions." + compositionName + '.dre.screens.' + sjs.name + '.js';
             this.__writeFileIfChanged(component, out, errors);
             
             if (schild.attr && schild.attr.type == 'dali') {
@@ -383,82 +456,6 @@ define(function(require, exports, module) {
       }
       // send a reload on the busserver
       if (define.onMain) define.onMain(this.modules, this.busserver);
-    };
-    
-    /**
-      * @method request
-      * Handle server request for this Composition
-      * @param {Request} req
-      * @param {Response} res
-      */
-    this.request = function(req, res) {
-      var url = req.url;
-      
-      // Extract Query
-      var query = {}, queryIndex = url.indexOf('?');
-      if (queryIndex !== -1) {
-        query = url.substring(queryIndex + 1);
-        url = url.substring(0, queryIndex);
-        
-        if (query) {
-          var parts = query.split('&'), pair;
-          query = {};
-          for (var i = 0, len = parts.length; len > i; i++) {
-            pair = parts[i].split('=');
-            query[pair[0]] = pair[1] == null ? null : pair[1]; // Clobber instead of support for multivalue query params
-          }
-        }
-      }
-      
-      // Extract screen name
-      var screenName = query.screen || 'default';
-      
-      // ok lets serve our Composition device 
-      if (req.method == 'POST') {
-        // lets do an RPC call
-        var buf = ''
-        req.on('data', function(data) {buf += data.toString();});
-        req.on('end', function() {
-          try {
-            var json = JSON.parse(buf);
-            this.myteem.postAPI(json, {send:function(msg) {
-              res.writeHead(200, {"Content-Type":"text/json"});
-              res.write(JSON.stringify(msg));
-              res.end();
-            }})
-          } catch(e) {
-            res.writeHead(500, {"Content-Type": "text/html"});
-            res.write('FAIL');
-            res.end();
-            return;
-          }
-        }.bind(this));
-      } else {
-        var screen = this.screens[screenName];
-        if (screen) {
-          if (screenName === 'dali') {
-            var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + this.name + '.dre.screens.dali.dali.js'));
-            res.writeHead(200, {"Content-Type": "text/html"});
-            stream.pipe(res);
-          } else {
-            var html = this.__loadHTML(
-              screen.attr && screen.attr.title || this.name, 
-              '$BUILD/compositions.' + this.name + '.dre.screens.' + screenName + '.js',
-              query.test === null || query.test === 'true'
-            );
-            res.writeHead(200, {
-              "Cache-control":"max-age=0",
-              "Content-Type": "text/html"
-            });
-            res.write(html);
-            res.end();
-          }
-        } else {
-          res.writeHead(404, {"Content-Type": "text/html"});
-          res.write('NOT FOUND');
-          res.end();
-        }
-      }
     };
     
     /** Packages and writes a dali application.
