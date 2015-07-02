@@ -419,7 +419,7 @@ define(function(require, exports, module) {
       }
       // send a reload on the busserver
       if (define.onMain) define.onMain(this.modules, this.busserver);
-    }
+    };
     
     this.loadHTML = function(title, boot, isTest) {
       return &#39;&lt;html lang=&quot;en&quot;&gt;\n&#39;+
@@ -483,7 +483,7 @@ define(function(require, exports, module) {
       
       if (req.method == &#39;POST&#39;) {
         // lets do an RPC call
-        var buf = &#39;&#39;
+        var buf = &#39;&#39;;
         req.on(&#39;data&#39;, function(data) {buf += data.toString();});
         req.on(&#39;end&#39;, function() {
           try {
@@ -524,7 +524,7 @@ define(function(require, exports, module) {
         });
         res.write(html)
       } else {
-        res.writeHead(404, {&quot;Content-Type&quot;: &quot;text/html&quot;})
+        res.writeHead(404, {&quot;Content-Type&quot;: &quot;text/html&quot;});
         res.write(&#39;NOT FOUND&#39;)
       }
       

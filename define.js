@@ -94,9 +94,9 @@
     }
     str.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path) {
       req.push(path);
-    })
+    });
     return req;
-  }
+  };
 
   define.localRequire = function(base_path) {
     return function(dep_path) {
@@ -120,7 +120,7 @@
       if (ret !== undefined) module.exports = ret;
       return module.exports;
     };
-  }
+  };
 
   // storage structures
   define.module = {};
@@ -158,7 +158,7 @@
         if (ret !== undefined) module.exports = ret;
         return module.exports;
       };
-    }
+    };
     
     define.require = define.localRequire('');
     return define;
