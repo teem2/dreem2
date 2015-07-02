@@ -20,6 +20,14 @@ define(function(require, exports, module) {
     DreemError = require('./dreemerror'),
     dreemCompiler = require('./dreemcompiler');
 
+  function classnameToBuild(name) {
+    return name.replace(/-/g,'.');
+  };
+
+  function classnameToPath(name) {
+    return name.replace(/-/g,'/');
+  };
+
   /**
     * @constructor
     * @param {Object} args Process arguments
@@ -199,10 +207,10 @@ define(function(require, exports, module) {
     };
     
     /** @private */
-    this.__makeLocalDeps = function(deps, compname, indent, errors) {
+    this.__makeLocalDeps = function(deps, compname, indent) {
       var out = '';
       for (var key in deps) {
-        var incpath = this.__lookupDep(key, compname, errors);
+        var incpath = this.__lookupDep(key, compname);
         this.classmap[key] = incpath;
         if (incpath) {
           out += indent + 'var ' + dreemCompiler.classnameToJS(key) + ' = require("' + incpath + '")\n';
@@ -212,7 +220,7 @@ define(function(require, exports, module) {
     };
     
     /** @private */
-    this.__lookupDep = function(classname, compname, errors) {
+    this.__lookupDep = function(classname, compname) {
       if (classname in this.local_classes) {
         // lets scan the -project subdirectories
         return this.__buildPath(compname, classname);
@@ -233,7 +241,7 @@ define(function(require, exports, module) {
       paths.unshift('$CLASSES');
       
       for (var i = 0; i < paths.length; i++) {
-        var path = paths[i] + '/' + dreemCompiler.classnameToPath(classname),
+        var path = paths[i] + '/' + classnameToPath(classname),
           drefile = path + '.dre',
           jsfile =  path + '.js',
           ignore_watch = false;
@@ -252,7 +260,7 @@ define(function(require, exports, module) {
             
             // Output this class
             if (root) {
-              jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + dreemCompiler.classnameToBuild(classname) + ".js";
+              jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + classnameToBuild(classname) + ".js";
               this.compile_once[drefile] = jsfile;
               this.__compileAndWriteDreToJS(root, jsfile, null, local_err);
               ignore_watch = true;
@@ -280,7 +288,7 @@ define(function(require, exports, module) {
       if (js) {
         // write out our composition classes
         var out = 'define(function(require, exports, module){\n';
-        out += this.__makeLocalDeps(js.deps, compname, '\t', errors);
+        out += this.__makeLocalDeps(js.deps, compname, '\t');
         out += '\tmodule.exports = ' + js.body + '\n\tmodule.exports.dre = ' + JSON.stringify(jsxml) + '})';
         this.__writeFileIfChanged(filename, out, errors);
         return js.name;
@@ -290,8 +298,7 @@ define(function(require, exports, module) {
     /** @private */
     this.__compileLocalClass = function(cls, errors) {
       var classname = cls.attr && cls.attr.name || 'unknown';
-      this.__compileAndWriteDreToJS(cls, this.__buildPath(this.name, classname), this.name, errors
-      );
+      this.__compileAndWriteDreToJS(cls, this.__buildPath(this.name, classname), this.name, errors);
       this.local_classes[classname] = 1;
     };
     
@@ -428,7 +435,7 @@ define(function(require, exports, module) {
       
       // ok now the instances.
       var out = 'define(function(require, exports, module){\n';
-      out += this.__makeLocalDeps(componentJson.deps, this.name, '\t', errors);
+      out += this.__makeLocalDeps(componentJson.deps, this.name, '\t');
       out += '\n\tmodule.exports = function(){\n\t\treturn ' + componentJson.body + '\n\t}\n';
       out += '\tmodule.exports.dre = '+ JSON.stringify(componentNode) +'\n})';
       
@@ -476,7 +483,7 @@ define(function(require, exports, module) {
       );
       
       var out = 'define(function(require, exports, module){\n';
-      out += this.__makeLocalDeps(screenJson.deps, this.name, '\t', errors);
+      out += this.__makeLocalDeps(screenJson.deps, this.name, '\t');
       out += '\n\tmodule.exports = function(){\n\t\treturn ' + screenJson.body + '\n\t}\n';
       out += '\n\tmodule.exports.dre = '+ JSON.stringify(screenNode) + '\n';
       out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) + '\n';
