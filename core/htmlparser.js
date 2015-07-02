@@ -38,7 +38,7 @@ define(function(require, exports, module){
 			}
 		}
 		if(!node.tag) return child
-		if(node.tag.charAt(0) !== '$'){
+		if(!node.tag.startsWith('$')){
 			ret += indent + '<' + node.tag
 			var attr = node.attr
 			if(attr) for(var k in attr){

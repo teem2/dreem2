@@ -173,7 +173,7 @@ define(function(require, exports, module) {
             }
             break;
           default:
-            if (childTagName.charAt(0) !== '$') { // its our render-node
+            if (!childTagName.startsWith('$')) { // its our render-node
               var inst = this.compileInstance(child, errors, '\t\t\t');
               for (var key in inst.deps) deps[key] = 1;
               body += '\t\tthis.render = function(){\n';
@@ -391,7 +391,7 @@ define(function(require, exports, module) {
               }
               break;
             default:
-              if (tagName.charAt(0) === '$') {
+              if (tagName.startsWith('$')) {
                 if (tagName === '$filePathStackPop') {
                   filePathStack.pop();
                   node.child.splice(i, 1);

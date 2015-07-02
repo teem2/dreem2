@@ -18,7 +18,7 @@ define(function(require, exports, module) {
     FileWatcher = require('./filewatcher'),
     HTMLParser = require('./htmlparser'),
     DreemError = require('./dreemerror'),
-    dreem_compiler = require('./dreemcompiler');
+    dreemCompiler = require('./dreemcompiler');
 
   /**
     * @constructor
@@ -34,17 +34,11 @@ define(function(require, exports, module) {
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
-      // lets reload this app
-      this.__reload();
+      this.__reloadComposition();
       
       // Tell the client to refresh itself.
-      teemserver.broadcast({
-        type:'filechange',
-        file:file
-      });
+      teemserver.broadcast({type:'filechange', file:file});
     }.bind(this);
-    
-    this.components = {};
     
     // lets compile and run the dreem composition
     define.onRequire = function(filename) {
@@ -53,10 +47,10 @@ define(function(require, exports, module) {
       this.watcher.watch(filename);
     }.bind(this);
     
-    this.__reload();
-  }
+    this.__reloadComposition();
+  };
 
-  body.call(CompositionServer.prototype)
+  body.call(CompositionServer.prototype);
 
   function body() {
     /**
@@ -66,28 +60,24 @@ define(function(require, exports, module) {
       * @param {Response} res
       */
     this.request = function(req, res) {
-      var url = req.url;
-      
-      // Extract Query
-      var query = {}, queryIndex = url.indexOf('?');
+      // Extract Query and remove it from URL
+      var url = req.url,
+        query = {}, 
+        queryIndex = url.indexOf('?');
       if (queryIndex !== -1) {
-        query = url.substring(queryIndex + 1);
+        var queryStr = url.substring(queryIndex + 1);
         url = url.substring(0, queryIndex);
         
-        if (query) {
-          var parts = query.split('&'), pair;
-          query = {};
-          for (var i = 0, len = parts.length; len > i; i++) {
-            pair = parts[i].split('=');
-            query[pair[0]] = pair[1] == null ? null : pair[1]; // Clobber instead of support for multivalue query params
+        if (queryStr) {
+          var parts = queryStr.split('&'), i = 0, len = parts.length, nvp;
+          for (; len > i; i++) {
+            nvp = parts[i].split('=');
+            query[nvp[0]] = nvp[1] == null ? null : nvp[1]; // Clobber instead of support for multivalue query params
           }
         }
       }
       
-      // Extract screen name
-      var screenName = query.screen || 'default';
-      
-      // ok lets serve our Composition device 
+      // Serve our Composition device
       if (req.method == 'POST') {
         // lets do an RPC call
         var buf = ''
@@ -108,11 +98,12 @@ define(function(require, exports, module) {
           }
         }.bind(this));
       } else {
-        var screen = this.screens[screenName];
+        var screenName = query.screen || 'default',
+          screen = this.screens[screenName];
         if (screen) {
           var name = this.name;
           if (screenName === 'dali') {
-            var stream = fs.createReadStream(define.expandVariables('$BUILD/compositions.' + name + '.dre.screens.dali.dali.js'));
+            var stream = fs.createReadStream(define.expandVariables(this.__buildScreenPath('dali.dali')));
             res.writeHead(200, {"Content-Type":"text/html"});
             stream.pipe(res);
           } else {
@@ -120,9 +111,9 @@ define(function(require, exports, module) {
               "Cache-control":"max-age=0",
               "Content-Type":"text/html"
             });
-            res.write(this.__loadHTML(
+            res.write(this.__renderHTMLTemplate(
               screen.attr && screen.attr.title || name, 
-              '$BUILD/compositions.' + name + '.dre.screens.' + screenName + '.js',
+              this.__buildScreenPath(screenName),
               query.test === null || query.test === 'true'
             ));
             res.end();
@@ -140,6 +131,16 @@ define(function(require, exports, module) {
       * Called when any of the dependent files change for this composition
       */
     this.onChange = function() {};
+    
+    /** @private */
+    this.__buildScreenPath = function(screenName) {
+      return this.__buildPath(this.name, 'screens.' + screenName);
+    };
+    
+    /** @private */
+    this.__buildPath = function(compName, className) {
+      return '$BUILD/compositions.' + compName + '.dre.' + className + '.js';
+    };
     
     /**
       * @method __showErrors
@@ -204,7 +205,7 @@ define(function(require, exports, module) {
         var incpath = this.__lookupDep(key, compname, errors);
         this.classmap[key] = incpath;
         if (incpath) {
-          out += indent + 'var ' + dreem_compiler.classnameToJS(key) + ' = require("' + incpath + '")\n';
+          out += indent + 'var ' + dreemCompiler.classnameToJS(key) + ' = require("' + incpath + '")\n';
         }
       }
       return out;
@@ -214,7 +215,7 @@ define(function(require, exports, module) {
     this.__lookupDep = function(classname, compname, errors) {
       if (classname in this.local_classes) {
         // lets scan the -project subdirectories
-        return '$BUILD/compositions.' + compname + '.dre.' + classname + '.js';
+        return this.__buildPath(compname, classname);
       }
       
       var extpath = define.expandVariables(define.EXTLIB),
@@ -232,7 +233,7 @@ define(function(require, exports, module) {
       paths.unshift('$CLASSES');
       
       for (var i = 0; i < paths.length; i++) {
-        var path = paths[i] + '/' + dreem_compiler.classnameToPath(classname),
+        var path = paths[i] + '/' + dreemCompiler.classnameToPath(classname),
           drefile = path + '.dre',
           jsfile =  path + '.js',
           ignore_watch = false;
@@ -251,7 +252,7 @@ define(function(require, exports, module) {
             
             // Output this class
             if (root) {
-              jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + dreem_compiler.classnameToBuild(classname) + ".js";
+              jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + dreemCompiler.classnameToBuild(classname) + ".js";
               this.compile_once[drefile] = jsfile;
               this.__compileAndWriteDreToJS(root, jsfile, null, local_err);
               ignore_watch = true;
@@ -275,7 +276,7 @@ define(function(require, exports, module) {
     /** Compiles and writes dre .js class
         @private */
     this.__compileAndWriteDreToJS = function(jsxml, filename, compname, errors) {
-      var js = dreem_compiler.compileClass(jsxml, errors);
+      var js = dreemCompiler.compileClass(jsxml, errors);
       if (js) {
         // write out our composition classes
         var out = 'define(function(require, exports, module){\n';
@@ -289,7 +290,8 @@ define(function(require, exports, module) {
     /** @private */
     this.__compileLocalClass = function(cls, errors) {
       var classname = cls.attr && cls.attr.name || 'unknown';
-      this.__compileAndWriteDreToJS(cls, '$BUILD/compositions.' + this.name + '.dre.' + classname + '.js' , this.name, errors);
+      this.__compileAndWriteDreToJS(cls, this.__buildPath(this.name, classname), this.name, errors
+      );
       this.local_classes[classname] = 1;
     };
     
@@ -311,151 +313,184 @@ define(function(require, exports, module) {
       return dre ? dre.child : [];
     };
     
-    /** Reloads the composition.
-        @private */
-    this.__reload = function() {
-      var errors = [],
-        compositionName = this.name,
+    /** @private */
+    this.__getCompositionPath = function() {
+      var compositionName = this.name,
         filepath = '$COMPOSITIONS/' + compositionName + '.dre';
+      if (define.EXTLIB) {
+        var extpath = define.expandVariables(define.EXTLIB);
+        if (fs.existsSync(extpath)) {
+          var dir = fs.readdirSync(extpath), mypath;
+          for (var i = 0; i < dir.length; i++) {
+            mypath = '$EXTLIB/' + dir[i] + '/compositions/' + compositionName + '.dre';
+            if (fs.existsSync(define.expandVariables(mypath))) return mypath;
+          }
+        }
+      }
+      return filepath;
+    };
+    
+    /** @private */
+    this.__reloadComposition = function() {
+      var errors = [],
+        compositionPath = this.__getCompositionPath();
       
-      console.color("~bg~Reloading~~ composition: " + compositionName + "\n");
+      console.color("~bg~Reloading~~ composition: " + this.name + "\n");
       
       // Destroy all objects maintained by the composition
-      if (this.myteem && this.myteem.destroy) this.myteem.destroy();
-      this.myteem = undefined;
+      if (this.myteem && this.myteem.destroy) {
+        this.myteem.destroy();
+        this.myteem = undefined;
+      }
       this.local_classes = {};
       this.compile_once = {};
       this.components = {};
       this.screens = {};
       this.modules = [];
       this.classmap = {};
-      
-      // Clear the module cache
       require.clearCache();
       define.onMain = undefined;
       
       define.SPRITE = '$LIB/dr/sprite_browser';
       
-      // scan our EXTLIB for compositions first
-      if (define.EXTLIB) {
-        var extpath = define.expandVariables(define.EXTLIB);
-        if (fs.existsSync(extpath)) {
-          var dir = fs.readdirSync(extpath);
-          for (var i = 0; i < dir.length; i++) {
-            var mypath = '$EXTLIB/' + dir[i] + '/compositions/' + compositionName + '.dre';
-            if (fs.existsSync(define.expandVariables(mypath))) {
-              filepath = mypath;
-              break;
-            }
-          }
+      var dre = this.__parseDreSync(compositionPath, errors);
+      
+      // An error occured parsing the composition dre file so abort.
+      if (errors.length) {
+        this.__showErrors(errors, compositionPath, dre && dre.source);
+        return;
+      }
+      
+      // Find the composition node
+      var compositionNode, i = 0, children = dre.child, len = children.length, child;
+      for (; i < len; i++) {
+        child = children[i];
+        if (child.tag === 'composition') {
+          compositionNode = child;
+          break;
         }
       }
       
-      var dre = this.__parseDreSync(filepath, errors);
-      if (errors.length) return this.__showErrors(errors, filepath, dre && dre.source);
-      
-      // lets walk the XML and spawn up our composition objects.
-      var root;
-      for (var i = 0; i < dre.child.length; i++) {
-        if (dre.child[i].tag == 'composition') root = dre.child[i];
+      // No composition node found so abort.
+      if (!compositionNode) {
+        this.__showErrors(new DreemError('Root tag is not composition', compositionNode.pos), compositionPath, dre.source);
+        return;
       }
       
-      if (!root || root.tag != 'composition') {
-        return this.__showErrors(new DreemError('Root tag is not composition', root.pos), filepath, dre.source);
-      }
-      
-      for (var i = 0, children = root.child, len = children.length; i < len; i++) {
-        var child = children[i];
-        
-        // ok lets spawn up our tags into our local object pool.
-        var tag = child.tag;
-        if (tag.charAt(0) == '$') continue;
-        if (tag == 'classes') { // generate local classes
-          // lets compile our local classes
+      // Process the composition
+      i = 0;
+      children = compositionNode.child;
+      len = children.length;
+      var tag;
+      for (; i < len; i++) {
+        child = children[i];
+        tag = child.tag;
+        if (tag.startsWith('$')) {
+          // Ignore $pecial nodes
+        } else if (tag === 'classes') {
+          // generate local classes
           for (var j = 0, classes = child.child, clen = classes.length; j < clen; j++) {
-            var cls = classes[j];
             this.__compileLocalClass(classes[j]);
           }
-          continue;
-        }
-        
-        // lets compile the JS
-        var js = dreem_compiler.compileInstance(
-          child, errors, '\t\t', this.__compileLocalClass.bind(this), this.__handleInclude.bind(this), filepath
-        );
-        
-        // ok now the instances..
-        var out = 'define(function(require, exports, module){\n';
-        out += this.__makeLocalDeps(js.deps, compositionName, '\t', errors);
-        out += '\n\tmodule.exports = function(){\n\t\treturn ' + js.body + '\n\t}\n';
-        out += '\tmodule.exports.dre = '+ JSON.stringify(child) +'\n})';
-        
-        var component;
-        if (js.tag === 'screens') {
-          component = "$BUILD/compositions." + compositionName + '.dre.screens.js';
         } else {
-          var collide = '';
-          while (this.components[js.name + collide]) {
-            if (collide === '') {
-              collide = 1;
-            } else {
-              collide++;
-            }
-          }
-          js.name += collide;
-          this.components[js.name] = 1;
-          component = "$BUILD/compositions." + compositionName +  '.dre.' + js.tag + '.' + js.name + '.js';
-        }
-        
-        this.__writeFileIfChanged(component, out, errors);
-        
-        this.modules.push({
-          jsxml:child,
-          name: js.name,// the base name of the component
-          path: component
-        });
-        
-        // if we compile a screen, we need to compile the children in screen separate
-        if (js.tag == 'screens') {
-          for (var j = 0, schilds = child.child, slen = schilds.length; j < slen; j++) {
-            var schild = schilds[j];
-            
-            if (schild.tag !== 'screen') continue;
-            var sjs = dreem_compiler.compileInstance(
-              schild, errors, '\t\t', this.__compileLocalClass.bind(this), this.__handleInclude.bind(this), filepath
-            );
-            
-            // ok now the instances..
-            var out = 'define(function(require, exports, module){\n';
-            out += this.__makeLocalDeps(sjs.deps, compositionName, '\t', errors);
-            out += '\n\tmodule.exports = function(){\n\t\treturn ' + sjs.body + '\n\t}\n';
-            out += '\n\tmodule.exports.dre = '+ JSON.stringify(schild) +'\n';
-            out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) +'\n';
-            out += '})';
-            var component = "$BUILD/compositions." + compositionName + '.dre.screens.' + sjs.name + '.js';
-            this.__writeFileIfChanged(component, out, errors);
-            
-            if (schild.attr && schild.attr.type == 'dali') {
-              define.SPRITE = '$LIB/dr/sprite_dali';
-              this.__packageDali(component, component.slice(0,-3)+".dali.js");
-              define.SPRITE = '$LIB/dr/sprite_browser';
-            }
-            
-            this.screens[sjs.name] = schild;
+          this.__makeComponentJS(child, compositionPath, errors);
+          
+          // An error occured while making the parts of the composition such
+          // as screens.
+          if (errors.length) {
+            this.__showErrors(errors, compositionPath, dre.source);
+            return;
           }
         }
-        
-        if (errors.length) return this.__showErrors(errors, filepath, dre.source);
       }
       
-      // require our teem tag
+      // Always require the teem tag
       try {
         this.myteem = require('$CLASSES/teem.js');
       } catch(e) {
-        console.error(e.stack+'\x0E');
+        console.error(e.stack + '\x0E');
       }
+      
       // send a reload on the busserver
       if (define.onMain) define.onMain(this.modules, this.busserver);
+    };
+    
+    /** @private */
+    this.__makeComponentJS = function(componentNode, compositionPath, errors) {
+      // Compile the JS and save it in the build directory
+      var componentJson = dreemCompiler.compileInstance(
+          componentNode, errors, '\t\t', 
+          this.__compileLocalClass.bind(this), 
+          this.__handleInclude.bind(this), 
+          compositionPath
+        ),
+        componentName = componentJson.name;
+      
+      // ok now the instances.
+      var out = 'define(function(require, exports, module){\n';
+      out += this.__makeLocalDeps(componentJson.deps, this.name, '\t', errors);
+      out += '\n\tmodule.exports = function(){\n\t\treturn ' + componentJson.body + '\n\t}\n';
+      out += '\tmodule.exports.dre = '+ JSON.stringify(componentNode) +'\n})';
+      
+      var componentPath;
+      if (componentJson.tag === 'screens') {
+        componentPath = this.__buildPath(this.name, 'screens');
+      } else {
+        var collide = '';
+        while (this.components[componentName + collide]) {
+          collide = collide === '' ? 1 : collide++;
+        }
+        componentName += collide;
+        this.components[componentName] = 1;
+        componentPath = this.__buildPath(this.name, componentJson.tag + '.' + componentName);
+      }
+      
+      this.__writeFileIfChanged(componentPath, out, errors);
+      
+      this.modules.push({
+        jsxml:componentNode,
+        name:componentName,
+        path:componentPath
+      });
+      
+      // If this is a "screens" component we also need to compile the 
+      // individual screen children into their own js files.
+      if (componentJson.tag === 'screens') {
+        var i = 0, screenNodes = componentNode.child, len = screenNodes.length, screenNode;
+        for (; i < len; i++) {
+          screenNode = screenNodes[i];
+          if (screenNode.tag === 'screen') {
+            this.__makeScreenJS(screenNode, compositionPath, errors);
+          }
+        }
+      }
+    };
+    
+    /** @private */
+    this.__makeScreenJS = function(screenNode, compositionPath, errors) {
+      var screenJson = dreemCompiler.compileInstance(
+        screenNode, errors, '\t\t', 
+        this.__compileLocalClass.bind(this), 
+        this.__handleInclude.bind(this), 
+        compositionPath
+      );
+      
+      var out = 'define(function(require, exports, module){\n';
+      out += this.__makeLocalDeps(screenJson.deps, this.name, '\t', errors);
+      out += '\n\tmodule.exports = function(){\n\t\treturn ' + screenJson.body + '\n\t}\n';
+      out += '\n\tmodule.exports.dre = '+ JSON.stringify(screenNode) + '\n';
+      out += '\tmodule.exports.classmap = '+ JSON.stringify(this.classmap) + '\n';
+      out += '})';
+      var screenPath = this.__buildScreenPath(screenJson.name);
+      this.__writeFileIfChanged(screenPath, out, errors);
+      
+      if (screenNode.attr && screenNode.attr.type == 'dali') {
+        define.SPRITE = '$LIB/dr/sprite_dali';
+        this.__packageDali(screenPath, screenPath.slice(0, -3) + ".dali.js");
+        define.SPRITE = '$LIB/dr/sprite_browser';
+      }
+      
+      this.screens[screenJson.name] = screenNode;
     };
     
     /** Packages and writes a dali application.
@@ -482,13 +517,7 @@ define(function(require, exports, module) {
         var root = define.filePath(file);
         
         define.findRequires(string).forEach(function(req) {
-          var sub;
-          if (req.charAt(0) == '$') {
-            sub = req;
-          } else {
-            sub = define.joinPath(root, req);
-          }
-          
+          var sub = req.startsWith('$') ? req : define.joinPath(root, req);
           if (sub.lastIndexOf('.js') !== sub.length - 3) sub = sub + '.js';
           recur(sub, file);
         });
@@ -511,7 +540,7 @@ define(function(require, exports, module) {
     
     /** The html response template for browser composition requests.
         @private */
-    this.__loadHTML = function(title, boot, isTest) {
+    this.__renderHTMLTemplate = function(title, boot, isTest) {
       return '<html lang="en">\n'+
         ' <head>\n'+
         '  <title>' + title + '</title>\n'+
@@ -578,5 +607,5 @@ define(function(require, exports, module) {
         }
       }
     };
-  }
+  };
 })
