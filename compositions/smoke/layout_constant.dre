@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Constant Layout'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view id="root" width="100%" height="100%" bgcolor="#cccccc">
       <attribute name="uc_x" type="number" value="0"></attribute>
       <attribute name="uc_y" type="number" value="0"></attribute>

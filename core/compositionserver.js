@@ -121,8 +121,7 @@ define(function(require, exports, module) {
             });
             res.write(this.__renderHTMLTemplate(
               screen.attr && screen.attr.title || name, 
-              this.__buildScreenPath(screenName),
-              query.test === null || query.test === 'true'
+              this.__buildScreenPath(screenName)
             ));
             res.end();
           }
@@ -551,35 +550,26 @@ define(function(require, exports, module) {
     
     /** The html response template for browser composition requests.
         @private */
-    this.__renderHTMLTemplate = function(title, boot, isTest) {
+    this.__renderHTMLTemplate = function(title, boot) {
       return '<html lang="en">\n'+
-        ' <head>\n'+
-        '  <title>' + title + '</title>\n'+
-        (isTest ?
-        '  <script type"text/javascript" src="/lib/chai.js"></script>\n'+
-        '  <script type"text/javascript" src="/lib/smoke_helper.js"></script>\n'
-        : '' ) +
-        '  <script type"text/javascript">\n'+
-        '    window.define = {\n'+
-        '      MAIN:"' + boot + '"\n'+
-        '    }\n'+
-        '  </script>\n'+
-        '  <script type="text/javascript" src="/define.js"></script>\n'+
-        '  <style type="text/css">\n'+
-        '    html,body {\n'+
-        '      height:100%;\n'+
-        '      margin:0px;\n'+
-        '      padding:0px;\n'+
-        '      border:0px none;\n'+
-        '    }\n'+
-        '    body {\n'+
-        '      font-family:Arial, Helvetica, sans-serif;\n'+
-        '      font-size:14px;\n'+
-        '    }\n'+
-        '  </style>'+
-        ' </head>\n'+
-        ' <body>\n'+
-        ' </body>\n'+
+        '  <head>\n'+
+        '    <title>' + title + '</title>\n'+
+        '    <script type="text/javascript">window.define = {MAIN:"' + boot + '"}</script>\n'+
+        '    <script type="text/javascript" src="/define.js"></script>\n'+
+        '    <style type="text/css">\n'+
+        '      html,body {\n'+
+        '        height:100%;\n'+
+        '        margin:0px;\n'+
+        '        padding:0px;\n'+
+        '        border:0px none;\n'+
+        '      }\n'+
+        '      body {\n'+
+        '        font-family:Arial, Helvetica, sans-serif;\n'+
+        '        font-size:14px;\n'+
+        '      }\n'+
+        '    </style>'+
+        '  </head>\n'+
+        '  <body></body>\n'+
         '</html>\n';
     };
     

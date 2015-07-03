@@ -113,7 +113,7 @@ var runTest = function(file, callback) {
     }
   };
   
-  page.open('http://127.0.0.1:8080/' + file.substring(0, file.length - 4) + '?test'); // 4 is remove '.dre'
+  page.open('http://127.0.0.1:8080/' + file.substring(0, file.length - 4)); // 4 is remove '.dre'
 }
 
 // Runs the next test if possible. This function is provided as the callback

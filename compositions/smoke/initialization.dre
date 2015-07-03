@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Initialization'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view id="all" width="100%" height="100%" clip="true">
       <!-- Oninit fires after children have been inited -->
       <!-- Here when the container has no "special" children (attributes, handlers, methods, etc) -->

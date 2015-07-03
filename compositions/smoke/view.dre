@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - View Size'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <!-- InputText smoke tests. See spec/features/inputtext_spec.rb for interactive tests -->
     <view width="auto" height="auto" padding="25">
       <testingtimer>500</testingtimer>

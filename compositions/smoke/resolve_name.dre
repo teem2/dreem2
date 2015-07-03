@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Resolve Name'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view>
       <expectedoutput>resolveName failed for:baz.g at part:1 "g"
 resolveName failed for:nope at part:0 "nope"

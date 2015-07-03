@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Node'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view id="all" width="100%" height="100%" clip="true">
       <class name="item" x="5" width="10" height="10" bgcolor="#cccccc" clickable="true">
       </class>

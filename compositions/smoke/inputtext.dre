@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Input Text'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <!-- InputText smoke tests. See spec/features/inputtext_spec.rb for interactive tests -->
     <view width="100%" height="100%" scrollable="true" bgcolor="#999999" padding="20">
       <wrappinglayout spacing="5" linespacing="5"></wrappinglayout>

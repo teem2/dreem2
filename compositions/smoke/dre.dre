@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Dre Misc'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="100%" height="100%" scrolling="true" bgcolor="#cccccc" padding="10">
       <testingtimer>500</testingtimer>
       <expectedoutput>No nesting of screen tags. Skipping instance.</expectedoutput>

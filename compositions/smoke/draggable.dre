@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Draggable'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="100%" height="100%" bgcolor="#cccccc" scrollable="true">
       <mixin name="commonDragBehavior" with="draggable" bgcolor="red" border="1" bordercolor="white">
         <handler event="onisdragging" args="isdragging">

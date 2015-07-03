@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - View Border and Padding'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view name="root" width="auto" height="auto" bgcolor="#eeeeee" padding="5">
       <class name="block" x="10" y="5" width="100" height="50" bgcolor="#999999" bordercolor="black"></class>
       <class name="item" width="20" height="20" bgcolor="#666666"></class>

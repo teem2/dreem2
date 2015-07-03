@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Super Calls'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view id="root" width="100%" height="100%" bgcolor="#eeeeee" scrollable="true">
       <!--// CLASSES //-->
       <class name="item" with="button" x="5" width="100" height="100" bgcolor="#cccccc">

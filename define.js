@@ -195,6 +195,7 @@
         
         script.type = 'text/javascript';
         script.src = script_url;
+        script.async = false;
         define.script_tags[script_url] = script;
         
         downloads++;

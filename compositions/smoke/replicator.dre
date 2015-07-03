@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Replicator'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="100%" height="100%" clip="true">
       <expectedoutput>missing classname for replicator [object Object]</expectedoutput>
       <replicator>

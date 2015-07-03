@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Scrollability'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <!-- scrollable true, clickable false, clip false -->
     <view x="50" y="50" width="${dr.global.viewportResize.width - 100}" height="${dr.global.viewportResize.height - 100}"
       bgcolor="#cccccc" scrollable="true"

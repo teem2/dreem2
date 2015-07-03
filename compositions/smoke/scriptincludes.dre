@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Script Includes'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view id="all" width="100%" height="100%">
       <expectedoutput>INCLUDED SCRIPT
 Warning: scriptincludes not found: /compositions/smoke/notfound.js

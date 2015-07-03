@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Size to Platform'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="100%" height="auto" bgcolor="#eeeeee" padding="5">
       <style>
           body {

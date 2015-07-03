@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Webpage'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="100%" height="100%" clip="true">
       <testingtimer>7000</testingtimer>
       <expectedoutput>Test skipped on PhantomJS</expectedoutput>

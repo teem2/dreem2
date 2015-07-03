@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Placement'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <node>
       <class name="foo" extends="node" defaultplacement="bar">
         <node name="bar"></node>

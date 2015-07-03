@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Circular Event'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="100%">
       <expectedoutput>Attempt to refire active event: onheight</expectedoutput>
 

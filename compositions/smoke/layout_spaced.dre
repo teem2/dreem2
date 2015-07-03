@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Spaced Layout'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="100%" height="100%" bgcolor="#cccccc">
       <expectedoutput>Name in use:layoutX</expectedoutput>
       

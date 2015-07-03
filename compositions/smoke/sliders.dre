@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Sliders'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view type="coffee" width="100%" height="100%" padding="25">
       <spacedlayout axis="y" spacing="15"></spacedlayout>
     

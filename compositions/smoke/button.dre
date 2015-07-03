@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Button'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view id="all" width="100%" bgcolor="orange" padding="10">
       <spacedlayout axis="y" spacing="4" updateparent="true"></spacedlayout>
       

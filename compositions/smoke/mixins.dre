@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Mixins'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view id="container" width="100%" height="100%">
       <mixin name="sizemixin" type="coffee" width="100" height="10">
         <attribute name="misc" type="string" value="hello"></attribute>

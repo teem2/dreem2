@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Webpage'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="auto" height="auto" bgcolor="#cccccc" padding="5">
       <testingtimer>5000</testingtimer>
       

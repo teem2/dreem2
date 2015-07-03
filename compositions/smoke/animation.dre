@@ -22,6 +22,8 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Animation'>
+    <include href="./includes/boilerplate.dre"></include>
+    
     <view width="100%" height="100%" scrollable="true">
       <testingtimer>1000</testingtimer>
       
