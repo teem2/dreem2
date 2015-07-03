@@ -24,14 +24,12 @@ SOFTWARE. -->
   <screen type="browser" name="default" title='Smoke Test - Script Includes'>
     <view id="all" width="100%" height="100%">
       <expectedoutput>INCLUDED SCRIPT
-Error: scriptincludes not found: /compositions/notfound.js
-This is a custom message.
+Warning: scriptincludes not found: /compositions/smoke/notfound.js
       </expectedoutput>
       
       <spacedlayout axis="y" spacing="15"></spacedlayout>
-      <view scriptincludes="../scriptincludes/test.js,./notfound.js" scriptincludeserror="This is a custom message."></view>
-      
-      <node scriptincludes="../scriptincludes/two.js"></node>
+      <view scriptincludes="../../scriptincludes/test.js,./notfound.js"></view>
+      <node scriptincludes="../../scriptincludes/two.js"></node>
       
       <handler event="oninit">
         // The two.js constructor should exists since we included it via scriptincludes.

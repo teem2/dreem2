@@ -13,7 +13,8 @@
  * And this method specialized for browser or server elsewhere
  */
 define(function(require, exports, module) {
-  var HTMLParser = require('./htmlparser'),
+  var path = require('path'),
+    HTMLParser = require('./htmlparser'),
     DreemError = require('./dreemerror'),
     SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
 
@@ -143,8 +144,29 @@ define(function(require, exports, module) {
   exports.classnameToJS = function(name) {
     return name.replace(/-/g,'_');
   };
+  
+  exports.resolveFilePathStack = function(filePathStack, useRootPrefix) {
+    var src, i = 0, len = filePathStack.length,
+      resolvedPath = '';
+    for (; len > i; i++) {
+      src = filePathStack[i];
+      if (src.indexOf('/') === 0) {
+        resolvedPath = define.expandVariables('$ROOT/' + src);
+      } else {
+        resolvedPath = (resolvedPath ? path.dirname(resolvedPath) + '/' : '') + define.expandVariables(src);
+      }
+    }
+    resolvedPath = path.normalize(resolvedPath);
+    
+    if (useRootPrefix) {
+      var rootPath = define.expandVariables('$ROOT');
+      if (resolvedPath.startsWith(rootPath)) resolvedPath = '$ROOT' + resolvedPath.substring(rootPath.length);
+    }
+    
+    return resolvedPath;
+  };
 
-  exports.compileClass = function(node, errors) {
+  exports.compileClass = function(node, errors, filename) {
     var body = '',
       deps = getDefaultDeps(),
       nodeAttrs = node.attr;
@@ -178,19 +200,29 @@ define(function(require, exports, module) {
     
     body += exports.classnameToJS(baseclass) + '.extend("' + clsname + '", function(){\n';
     
-    if (nodeAttrs && nodeAttrs.with) {
-      nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
-        if (cls) {
-          deps[cls] = 1;
-          body += '\t\tthis.mixin('+exports.classnameToJS(cls)+')\n';
-        }
-      });
-    }
-    
-    if (nodeAttrs && nodeAttrs.requires) {
-      nodeAttrs.requires.split(SEPARATOR_REGEX).forEach(function(cls) {
-        if (cls) deps[cls] = 1;
-      });
+    if (nodeAttrs) {
+      if (nodeAttrs.with) {
+        nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
+          if (cls) {
+            deps[cls] = 1;
+            body += '\t\tthis.mixin(' + exports.classnameToJS(cls)+')\n';
+          }
+        });
+      }
+      
+      if (nodeAttrs.scriptincludes) {
+        nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
+          if (cls) {
+            deps[exports.resolveFilePathStack([filename, cls], true)] = 2;
+          }
+        })
+      }
+      
+      if (nodeAttrs.requires) {
+        nodeAttrs.requires.split(SEPARATOR_REGEX).forEach(function(cls) {
+          if (cls) deps[cls] = 1;
+        });
+      }
     }
     
     // ok lets compile a dreem class to a module
@@ -230,7 +262,7 @@ define(function(require, exports, module) {
           default:
             if (!childTagName.startsWith('$')) { // its our render-node
               var inst = this.compileInstance(child, errors, '\t\t\t');
-              for (var key in inst.deps) deps[key] = 1;
+              for (var key in inst.deps) deps[key] = inst.deps[key];
               body += '\t\tthis.render = function(){\n';
               body += '\t\t\treturn ' + inst.body +'\n';
               body += '\t\t}\n';
@@ -268,6 +300,16 @@ define(function(require, exports, module) {
         if (nodeAttrs.with) {
           nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
+          })
+        }
+        
+        if (nodeAttrs.scriptincludes) {
+          nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
+            if (cls) {
+              filePathStack.push(cls);
+              deps[exports.resolveFilePathStack(filePathStack, true)] = 2;
+              filePathStack.pop();
+            }
           })
         }
         

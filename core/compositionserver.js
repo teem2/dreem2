@@ -208,73 +208,89 @@ define(function(require, exports, module) {
     
     /** @private */
     this.__makeLocalDeps = function(deps, compname, indent) {
-      var out = '';
+      var out = [];
       for (var key in deps) {
-        var incpath = this.__lookupDep(key, compname);
-        this.classmap[key] = incpath;
+        var type = deps[key],
+          incpath = this.__lookupDep(type, key, compname, out);
         if (incpath) {
-          out += indent + 'var ' + dreemCompiler.classnameToJS(key) + ' = require("' + incpath + '")\n';
+          this.classmap[key] = incpath;
+          if (type === 2) {
+            out.push(indent + 'if (define.env == "browser") require("' + incpath + '")\n');
+          } else {
+            out.push(indent + 'var ' + dreemCompiler.classnameToJS(key) + ' = require("' + incpath + '")\n');
+          }
         }
       }
-      return out;
+      return out.join('');
     };
     
     /** @private */
-    this.__lookupDep = function(classname, compname) {
-      if (classname in this.local_classes) {
-        // lets scan the -project subdirectories
-        return this.__buildPath(compname, classname);
-      }
-      
-      var extpath = define.expandVariables(define.EXTLIB),
-        paths = [];
-      if (fs.existsSync(extpath)) {
-        try {
-          var dir = fs.readdirSync(extpath);
-          dir.forEach(function(value) {
-            paths.push('$EXTLIB/' + value)
-            paths.push('$EXTLIB/' + value + '/classes')
-          });
-        } catch(e) {}
-      }
-      
-      paths.unshift('$CLASSES');
-      
-      for (var i = 0; i < paths.length; i++) {
-        var path = paths[i] + '/' + classnameToPath(classname),
-          drefile = path + '.dre',
-          jsfile =  path + '.js',
-          ignore_watch = false;
-        
-        if (fs.existsSync(define.expandVariables(drefile))) {
-          if (!this.compile_once[drefile]) {
-            // lets parse and compile this dre file
-            var local_err = [];
-            var dre = this.__parseDreSync(drefile, local_err);
-            if (!dre.child) return '';
-            var root;
-            for (var j = 0; j < dre.child.length; j++) {
-              var tag = dre.child[j].tag
-              if (tag == 'class' || tag == 'mixin') root = dre.child[j];
-            }
-            
-            // Output this class
-            if (root) {
-              jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + classnameToBuild(classname) + ".js";
-              this.compile_once[drefile] = jsfile;
-              this.__compileAndWriteDreToJS(root, jsfile, null, local_err);
-              ignore_watch = true;
-            }
-            
-            if (local_err.length) this.__showErrors(local_err, drefile, dre.source);
-          } else {
-            jsfile = this.compile_once[drefile];
-          }
+    this.__lookupDep = function(type, classname, compname, out) {
+      // Scriptincludes are type 2
+      if (type === 2) {
+        var expandedPath = define.expandVariables(classname);
+        if (fs.existsSync(expandedPath)) {
+          return classname;
+        } else {
+          out.push('console.warn("Warning: scriptincludes not found: " + define.expandVariables("' + classname + '"))\n');
+          return;
+        }
+      } else {
+        if (classname in this.local_classes) {
+          // lets scan the -project subdirectories
+          return this.__buildPath(compname, classname);
         }
         
-        if (fs.existsSync(define.expandVariables(jsfile))) {
-          if (!ignore_watch) this.watcher.watch(jsfile);
-          return jsfile;
+        var extpath = define.expandVariables(define.EXTLIB),
+          paths = [];
+        if (fs.existsSync(extpath)) {
+          try {
+            var dir = fs.readdirSync(extpath);
+            dir.forEach(function(value) {
+              paths.push('$EXTLIB/' + value)
+              paths.push('$EXTLIB/' + value + '/classes')
+            });
+          } catch(e) {}
+        }
+        
+        paths.unshift('$CLASSES');
+        
+        for (var i = 0; i < paths.length; i++) {
+          var thePath = paths[i] + '/' + classnameToPath(classname),
+            drefile = thePath + '.dre',
+            jsfile =  thePath + '.js',
+            ignore_watch = false;
+          
+          if (fs.existsSync(define.expandVariables(drefile))) {
+            if (!this.compile_once[drefile]) {
+              // lets parse and compile this dre file
+              var local_err = [];
+              var dre = this.__parseDreSync(drefile, local_err);
+              if (!dre.child) return '';
+              var root;
+              for (var j = 0; j < dre.child.length; j++) {
+                var tag = dre.child[j].tag
+                if (tag == 'class' || tag == 'mixin') root = dre.child[j];
+              }
+              
+              // Output this class
+              if (root) {
+                jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + classnameToBuild(classname) + ".js";
+                this.compile_once[drefile] = jsfile;
+                this.__compileAndWriteDreToJS(root, jsfile, null, local_err);
+                ignore_watch = true;
+              }
+              
+              if (local_err.length) this.__showErrors(local_err, drefile, dre.source);
+            } else {
+              jsfile = this.compile_once[drefile];
+            }
+          }
+          
+          if (fs.existsSync(define.expandVariables(jsfile))) {
+            if (!ignore_watch) this.watcher.watch(jsfile);
+            return jsfile;
+          }
         }
       }
       
@@ -284,7 +300,7 @@ define(function(require, exports, module) {
     /** Compiles and writes dre .js class
         @private */
     this.__compileAndWriteDreToJS = function(jsxml, filename, compname, errors) {
-      var js = dreemCompiler.compileClass(jsxml, errors);
+      var js = dreemCompiler.compileClass(jsxml, errors, filename);
       if (js) {
         // write out our composition classes
         var out = 'define(function(require, exports, module){\n';
@@ -304,19 +320,7 @@ define(function(require, exports, module) {
     
     /** @private */
     this.__handleInclude = function(errors, filePathStack) {
-      var src, i = 0, len = filePathStack.length,
-        resolvedPath = '';
-      
-      for (; len > i; i++) {
-        src = filePathStack[i];
-        if (src.indexOf('/') === 0) {
-          resolvedPath = define.expandVariables('$ROOT/' + src);
-        } else {
-          resolvedPath = (resolvedPath ? path.dirname(resolvedPath) + '/' : '') + define.expandVariables(src);
-        }
-      }
-      
-      var dre = this.__parseDreSync(resolvedPath, errors);
+      var dre = this.__parseDreSync(dreemCompiler.resolveFilePathStack(filePathStack), errors);
       return dre ? dre.child : [];
     };
     
@@ -551,8 +555,6 @@ define(function(require, exports, module) {
       return '<html lang="en">\n'+
         ' <head>\n'+
         '  <title>' + title + '</title>\n'+
-        '  <!-- TODO: remove --><script type"text/javascript" src="/lib/json-path+json-ptr-0.1.3.min.js"></script>\n'+
-        '  <!-- TODO: remove --><script type"text/javascript" src="/lib/json.async.js"></script>\n'+
         (isTest ?
         '  <script type"text/javascript" src="/lib/chai.js"></script>\n'+
         '  <script type"text/javascript" src="/lib/smoke_helper.js"></script>\n'

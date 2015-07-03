@@ -161,7 +161,7 @@
     // browser implementation
     (function() {
       // if define was already defined use it as a config store
-      define.ROOT = window.location.origin;
+      define.ROOT = '/'; //window.location.origin;
       define.environment == 'browser|modules';
       
       // storage structures
