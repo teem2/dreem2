@@ -162,7 +162,6 @@
     (function() {
       // if define was already defined use it as a config store
       define.ROOT = '/'; //window.location.origin;
-      define.environment == 'browser|modules';
       
       // storage structures
       define.script_tags = {};
@@ -270,7 +269,6 @@
     // nodeJS implementation
     (function() {
       module.exports = global.define = define;
-      define.environment = 'node';
       
       define.ROOT = define.filePath(module.filename.replace(/\\/g,'/'));
       
