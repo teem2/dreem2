@@ -159,11 +159,11 @@ define(function(require, exports, module) {
     resolvedPath = path.normalize(resolvedPath);
     
     if (useRootPrefix) {
-      var rootPath = define.expandVariables('$ROOT');
+      var rootPath = path.normalize(define.expandVariables('$ROOT'));
       if (resolvedPath.startsWith(rootPath)) resolvedPath = '$ROOT' + resolvedPath.substring(rootPath.length);
     }
     
-    return resolvedPath;
+    return define.cleanPath(resolvedPath);
   };
 
   exports.compileClass = function(node, errors, filename) {
