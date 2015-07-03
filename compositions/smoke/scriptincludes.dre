@@ -30,8 +30,8 @@ Warning: scriptincludes not found: /compositions/smoke/notfound.js
       </expectedoutput>
       
       <spacedlayout axis="y" spacing="15"></spacedlayout>
-      <view scriptincludes="../../scriptincludes/test.js,./notfound.js"></view>
-      <node scriptincludes="../../scriptincludes/two.js"></node>
+      <view scriptincludes="../../lib/test.js,./notfound.js"></view>
+      <node scriptincludes="../../lib/two.js"></node>
       
       <handler event="oninit">
         // The two.js constructor should exists since we included it via scriptincludes.
