@@ -276,7 +276,7 @@ define(function(require, exports, module) {
               if (root) {
                 jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + classnameToBuild(classname) + ".js";
                 this.compile_once[drefile] = jsfile;
-                this.__compileAndWriteDreToJS(root, jsfile, null, local_err);
+                this.__compileAndWriteDreToJS(root, jsfile, null, local_err, [drefile]);
                 ignore_watch = true;
               }
               
@@ -298,8 +298,8 @@ define(function(require, exports, module) {
     
     /** Compiles and writes dre .js class
         @private */
-    this.__compileAndWriteDreToJS = function(jsxml, filename, compname, errors) {
-      var js = dreemCompiler.compileClass(jsxml, errors, filename);
+    this.__compileAndWriteDreToJS = function(jsxml, filename, compname, errors, filePathStack) {
+      var js = dreemCompiler.compileClass(jsxml, errors, this.__handleInclude.bind(this), filePathStack);
       if (js) {
         // write out our composition classes
         var out = 'define(function(require, exports, module){\n';
@@ -311,9 +311,9 @@ define(function(require, exports, module) {
     };
     
     /** @private */
-    this.__compileLocalClass = function(cls, errors) {
+    this.__compileLocalClass = function(cls, errors, filePathStack) {
       var classname = cls.attr && cls.attr.name || 'unknown';
-      this.__compileAndWriteDreToJS(cls, this.__buildPath(this.name, classname), this.name, errors);
+      this.__compileAndWriteDreToJS(cls, this.__buildPath(this.name, classname), this.name, errors, filePathStack);
       this.local_classes[classname] = 1;
     };
     
@@ -400,7 +400,7 @@ define(function(require, exports, module) {
         } else if (tag === 'classes') {
           // generate local classes
           for (var j = 0, classes = child.child, clen = classes.length; j < clen; j++) {
-            this.__compileLocalClass(classes[j]);
+              this.__compileLocalClass(classes[j], errors, [compositionPath]);
           }
         } else {
           this.__makeComponentJS(child, compositionPath, errors);
@@ -432,7 +432,7 @@ define(function(require, exports, module) {
           componentNode, errors, '\t\t', 
           this.__compileLocalClass.bind(this), 
           this.__handleInclude.bind(this), 
-          compositionPath
+          [compositionPath]
         ),
         componentName = componentJson.name;
       
@@ -482,7 +482,7 @@ define(function(require, exports, module) {
         screenNode, errors, '\t\t', 
         this.__compileLocalClass.bind(this), 
         this.__handleInclude.bind(this), 
-        compositionPath
+        [compositionPath]
       );
       
       var out = 'define(function(require, exports, module){\n';

@@ -166,7 +166,7 @@ define(function(require, exports, module) {
     return define.cleanPath(resolvedPath);
   };
 
-  exports.compileClass = function(node, errors, filename) {
+  exports.compileClass = function(node, errors, onInclude, filePathStack) {
     var body = '',
       deps = getDefaultDeps(),
       nodeAttrs = node.attr;
@@ -213,7 +213,9 @@ define(function(require, exports, module) {
       if (nodeAttrs.scriptincludes) {
         nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
           if (cls) {
-            deps[exports.resolveFilePathStack([filename, cls], true)] = 2;
+            filePathStack.push(cls);
+            deps[exports.resolveFilePathStack(filePathStack, true)] = 2;
+            filePathStack.pop();
           }
         })
       }
@@ -234,6 +236,18 @@ define(function(require, exports, module) {
           childTagName = child.tag,
           childAttrs = child.attr;
         switch (childTagName) {
+          case 'include':
+            if (onInclude) {
+              filePathStack.push(childAttrs.href);
+              var newNodes = onInclude(errors, filePathStack);
+              console.log(filePathStack.join(' | '));
+              newNodes.push({tag:'$filePathStackPop'});
+              node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+              i--;
+            } else {
+              errors.push(new DreemError('Cant support include in this location', node.pos));
+            }
+            break;
           case 'attribute':
             if (childAttrs) {
               attributes[childAttrs.name.toLowerCase()] = childAttrs.type.toLowerCase() || 'string';
@@ -260,8 +274,13 @@ define(function(require, exports, module) {
             }
             break;
           default:
-            if (!childTagName.startsWith('$')) { // its our render-node
-              var inst = this.compileInstance(child, errors, '\t\t\t');
+            if (childTagName.startsWith('$')) {
+              if (childTagName === '$filePathStackPop') {
+                filePathStack.pop();
+                node.child.splice(i, 1);
+              }
+            } else { // its our render-node
+              var inst = this.compileInstance(child, errors, '\t\t\t', onInclude, filePathStack);
               for (var key in inst.deps) deps[key] = inst.deps[key];
               body += '\t\tthis.render = function(){\n';
               body += '\t\t\treturn ' + inst.body +'\n';
@@ -284,9 +303,8 @@ define(function(require, exports, module) {
     };
   };
 
-  exports.compileInstance = function(node, errors, indent, onLocalClass, onInclude, filePath) {
-    var deps = getDefaultDeps(),
-      filePathStack = [filePath];
+  exports.compileInstance = function(node, errors, indent, onLocalClass, onInclude, filePathStack) {
+    var deps = getDefaultDeps();
     
     var walk = function(node, parent, indent, depth, language) {
       deps[node.tag] = 1;
@@ -370,7 +388,7 @@ define(function(require, exports, module) {
               if (attr.name) deps[attr.name] = 1;
               // lets output a local class 
               if (onLocalClass) {
-                onLocalClass(child, errors);
+                onLocalClass(child, errors, filePathStack);
               } else {
                 errors.push(new DreemError('Cant support class in this location', node.pos));
               }

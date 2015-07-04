@@ -38,12 +38,17 @@ SOFTWARE. -->
       <!-- Verify absolute path for includes and nested includes. -->
       <include href="/compositions/smoke/includes/included2.dre"></include>
       
+      <!-- Verify that an include from a class definition works. -->
+      <test-classwithinclude name="foo"></test-classwithinclude>
+      
       <handler event="oninit">
         assert.equal('SET!', this.includedTarget1, "The included target has not been set! (has it not been included?)");
         assert.equal('SET!', this.includedTarget2, "The included target has not been set! (has it not been included?)");
         assert.equal('SET!', this.includedTarget3, "The included target has not been set! (has it not been included?)");
         assert.equal('SET!', this.includedTarget4, "The included target has not been set! (has it not been included?)");
         assert.equal('SET!', this.nested, "The included target has not been set! (has it not been included?)");
+        
+        assert.isTrue(this.foo.classwasloaded);
       </handler>
     </view>
   </screen>
