@@ -16,10 +16,7 @@
       // continue calling
       if (define.define) define.define(factory);
     }
-  }
-  
-  // prototyping
-  //define.amd = true
+  };
 
   // default config variables
   define.ROOT = '';
@@ -31,11 +28,12 @@
   define.BUILD = "$ROOT/build";
   define.SPRITE = "$ROOT/lib/dr/sprite_browser";
 
+  // The path to the main module to load.
+  define.MAIN = '';
+
   // copy configuration onto define
   if (typeof config_define == 'object') {
-    for (var key in config_define) {
-      define[key] = config_define[key];
-    }
+    for (var key in config_define) define[key] = config_define[key];
   }
 
   define.filePath = function(file) {
@@ -78,6 +76,13 @@
         }
       )
     );
+  };
+
+  // Resolve the MAIN module
+  define.MAIN = define.expandVariables(define.MAIN);
+  
+  define.onMain = function() {
+    // A non-empty implementation is set by teem.js
   };
 
   define.findRequires = function(str){
@@ -161,28 +166,10 @@
     // browser implementation
     (function() {
       // if define was already defined use it as a config store
-      define.ROOT = '/'; //window.location.origin;
+      define.ROOT = '/';
       
       // storage structures
       define.script_tags = {};
-      
-      // the require function passed into the factory is local
-      var app_root = define.filePath(window.location.href);
-      
-      function startMain() {
-        // lets find our main and execute the factory
-        var main_mod = define.expandVariables(define.MAIN);
-        
-        var factory = define.factory[main_mod];
-        if (!factory) throw new Error("Cannot find main: " + main_mod);
-        
-        // lets boot up
-        var module = {exports:{}, id:main_mod, filename:main_mod};
-        define.module[main_mod] = module;
-        var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module);
-        if (ret !== undefined) module.exports = ret;
-        if (define.onMain) define.onMain(module.exports);
-      }
       
       // the main dependency download queue counter
       var downloads = 0;
@@ -199,21 +186,37 @@
         
         downloads++;
         function onLoad() {
-          // pull out the last factor
+          // pull out the last factory
           var factory = define.factory[script_url] = define.last_factory || null;
           define.last_factory = undefined;
           
           // parse the function for other requires
-          if (factory) define.findRequires(factory.toString()).forEach(function(path) {
-            // Make path absolute and process variables
-            var dep_path = define.joinPath(base_path, define.expandVariables(path));
-            
-            // automatic .js appending if not given
-            if (dep_path.indexOf(".js") != dep_path.length -3) dep_path += '.js';
-            // load it
-            if (!define.script_tags[dep_path]) insertScriptTag(dep_path, script_url);
-          });
-          if (!--downloads) startMain(); // no more deps
+          if (factory) {
+            define.findRequires(factory.toString()).forEach(function(path) {
+              // Make path absolute and process variables
+              var dep_path = define.joinPath(base_path, define.expandVariables(path));
+              
+              // automatic .js appending if not given
+              if (dep_path.indexOf(".js") != dep_path.length -3) dep_path += '.js';
+              
+              // load it
+              if (!define.script_tags[dep_path]) insertScriptTag(dep_path, script_url);
+            });
+          }
+          
+          // All dependencies loaded so start the main module
+          if (!--downloads) {
+            var main = define.MAIN,
+              mainFactory = define.factory[main];
+            if (mainFactory) {
+              var module = define.module[main] = {exports:{}, id:main, filename:main};
+              var ret = mainFactory(define.localRequire(define.filePath(main)), module.exports, module);
+              if (ret !== undefined) module.exports = ret;
+              define.onMain(module.exports);
+            } else {
+              throw new Error("Cannot find main: " + main);
+            }
+          }
         }
         script.onerror = function() {console.error("Error loading " + script.src + " from " + from_file);};
         script.onload = onLoad;
@@ -221,16 +224,13 @@
           if (s.readyState == 'loaded' || s.readyState == 'complete') onLoad();
         };
         document.getElementsByTagName('head')[0].appendChild(script);
-      }
+      };
       
-      // make it available globally
+      // make it available globally. Overwrites existing config_define
       window.define = define;
       
       // boot up using the MAIN property
-      if (define.MAIN) {
-        insertScriptTag(define.expandVariables(define.MAIN), window.location.href);
-      }
-      window.out = console.log;
+      if (define.MAIN) insertScriptTag(define.MAIN, window.location.href);
       
       var backoff = 1;
       define.autoreloadConnect = function() {

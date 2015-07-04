@@ -195,15 +195,8 @@ define(function(require, exports, module) {
 
   teem.__startup = function(main) {
     var dreemParser = require('$LIB/dr/dreemParser.js'),
-      dreemMaker = require('$LIB/dr/dreemMaker.js'),
       compiler = new dreemParser.Compiler();
-    compiler.execute(main.dre, main.classmap, function(error, pkg) {
-      if (error) {
-        for (var i = 0; i < error.length; i++) console.log(error[i].toString());
-      } else {
-        dreemMaker.makeFromPackage(pkg);
-      }
-    });
+    compiler.execute(main.dre, main.classmap);
   };
 
   return teem;
