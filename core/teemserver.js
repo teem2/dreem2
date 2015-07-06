@@ -19,7 +19,6 @@ define(function(require, exports, module) {
     ExternalApps = require('$CORE/externalapps'),
     BusServer = require('$CORE/busserver'),
     CompositionServer = require('$CORE/compositionserver'),
-    CompileJob = require('$CORE/compilejob'),
     NodeWebSocket = require('$CORE/nodewebsocket');
 
   // Create a function to determine a mime type for a file.
@@ -121,18 +120,6 @@ define(function(require, exports, module) {
     }
 
     /**
-     * @method getCompileJob
-     * Find compile job object by url
-     * @param {String} url
-     * @return {CompileJob|undefined}
-     */
-    this.getCompileJob = function(url) {
-      if (url.split('?')[0] === '/compile') {
-        return new CompileJob(this.args, this);
-      }
-    };
-
-    /**
       * @method getComposition
       * Find composition object by url 
       * @param {String} url 
@@ -199,10 +186,6 @@ define(function(require, exports, module) {
       }
       if (url.endsWith('.dre')) url = url.substring(0, url.length - 4);
       req.url = url = url + query;
-
-      // if we are a compilation request, send it to the compiler
-      var job = this.getCompileJob(url);
-      if (job) return job.request(req, res);
 
       // if we are a composition request, send it to composition
       var composition = this.getComposition(url);
