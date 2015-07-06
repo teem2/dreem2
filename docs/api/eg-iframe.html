@@ -1,12 +1,15 @@
 <html lang="en">
-  <head>
+<head>
     <title>Doc Examples</title>
+
     <script type="text/javascript">
         window.define = {
             MAIN:"$BUILD/compositions.docexamples.dre.screens.default.js"
         }
     </script>
+
     <script type="text/javascript" src="/define.js"></script>
+
     <style type="text/css">
         html,body {
             height:100%;
@@ -19,7 +22,18 @@
             font-size:14px;
         }
     </style>
-  </head>
-  <body>
-  </body>
+
+    <script type="text/javascript">
+        function loadInlineExample(code, options, callback) {
+            try {
+                console.log('CODE IS:', code, 'OPTIONS:', options);
+                callback && callback(true);
+            } catch (e) {
+                console.log('CODE IS:', code, 'OPTIONS:', options, 'ERROR IS:', e);
+                callback && callback(false, e);
+            }
+        }
+    </script>
+</head>
+<body></body>
 </html>

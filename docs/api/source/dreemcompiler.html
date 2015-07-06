@@ -30,22 +30,16 @@
  * And this method specialized for browser or server elsewhere
  */
 define(function(require, exports, module) {
-  var HTMLParser = require(&#39;./htmlparser&#39;),
-    DreemError = require(&#39;./dreemerror&#39;);
+  var path = require(&#39;path&#39;),
+    HTMLParser = require(&#39;./htmlparser&#39;),
+    DreemError = require(&#39;./dreemerror&#39;),
+    SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
 
-  // Builtin modules, belongs here
-  exports.system = {
-    /* Built in tags that dont resolve to class files */
-    class: true,
-    method: true,
-    attribute: true,
-    handler: true,
-    state: true,
-    getter: true,
-    setter: true
+  function getDefaultDeps() {
+    return {teem:1};
   };
-
-  exports.charPos = function(source, line, col) {
+  
+  function charPos(source, line, col) {
     var myline = 0, mycol = 0;
     for (var i = 0; i &lt; source.length; i++, mycol++) {
       if (source.charCodeAt(i) == 10) myline++, mycol = 0;
@@ -55,8 +49,21 @@ define(function(require, exports, module) {
     return -1;
   };
 
+  /* Concats all the childnodes of a jsonxml node*/
+  function concatCode(node) {
+    var out = &#39;&#39;, children = node.child;
+    if (children) {
+      var i = 0, len = children.length, child;
+      for (; i &lt; len; i++) {
+        child = children[i];
+        if (child.tag === &#39;$text&#39; || child.tag === &#39;$cdata&#39;) out += child.value;
+      }
+    }
+    return out;
+  };
+
   /* Supported languages, these are lazily loaded */
-  exports.languages = {
+  var languages = {
     js:{
       compiler: require(&#39;$LIB/acorn&#39;),
       compile: function(string, args) {
@@ -66,7 +73,7 @@ define(function(require, exports, module) {
         try { // we parse it just for errors
           this.compiler.parse(src);
         } catch(e) {
-          var at = exports.charPos(src, e.loc &amp;&amp; e.loc.line - 1, e.loc &amp;&amp; e.loc.column + 1);
+          var at = charPos(src, e.loc &amp;&amp; e.loc.line - 1, e.loc &amp;&amp; e.loc.column + 1);
           return new DreemError(&quot;JS Compilation Error: &quot; + e.message, at - head.length);
         }
         return string;
@@ -79,7 +86,7 @@ define(function(require, exports, module) {
         try {
           var out = this.compiler.compile(string);
         } catch(e) { // we have an exception. throw it back
-          return new DreemError(&quot;CoffeeScript compilation Error: &quot; + e.message, exports.charPos(string, e.location &amp;&amp; e.location.first_line, e.location &amp;&amp; e.location.first_column));
+          return new DreemError(&quot;CoffeeScript compilation Error: &quot; + e.message, charPos(string, e.location &amp;&amp; e.location.first_line, e.location &amp;&amp; e.location.first_column));
         }
         // lets return the blob without the function headers
         return out.split(&#39;\n&#39;).slice(1,-2).join(&#39;\n&#39;);
@@ -87,145 +94,14 @@ define(function(require, exports, module) {
     }
   };
 
-  /* Concats all the childnodes of a jsonxml node*/
-  exports.concatCode = function(node) {
-    var out = &#39;&#39;, children = node.child;
-    if (children) {
-      var i = 0, len = children.length, child;
-      for (; i &lt; len; i++) {
-        child = children[i];
-        if (child.tag === &#39;$text&#39; || child.tag === &#39;$cdata&#39;) out += child.value;
-      }
-    }
-    return out;
-  };
-
-  exports.default_deps = {
-    teem:1
-  };
-
-  exports.classnameToJS = function(name) {
-    return name.replace(/-/g,&#39;_&#39;);
-  };
-
-  exports.classnameToPath = function(name) {
-    return name.replace(/-/g,&#39;/&#39;);
-  };
-
-  exports.classnameToBuild = function(name) {
-    return name.replace(/-/g,&#39;.&#39;);
-  };
-
-  exports.compileClass = function(node, errors) {
-    var body = &#39;&#39;,
-      deps = Object.create(this.default_deps),
-      nodeAttrs = node.attr;
-    
-    if (node.tag !== &#39;class&#39; &amp;&amp; node.tag !== &#39;mixin&#39;) {
-      errors.push(new DreemError(&#39;compileClass on non class&#39;, node.pos));
-      return;
-    }
-    
-    // ok lets iterate the class children
-    var clsname = nodeAttrs &amp;&amp; nodeAttrs.name;
-    if (!clsname) {
-      errors.push(new DreemError(&#39;Class has no name &#39;, node.pos));
-      return;
-    }
-    clsname = clsname.toLowerCase();
-    
-    var language = nodeAttrs &amp;&amp; nodeAttrs.type ? nodeAttrs.type : &#39;js&#39;;
-    
-    // lets fetch our base class
-    var baseclass = &#39;teem_node&#39;;
-    deps[&#39;teem_node&#39;] = 1;
-    if (nodeAttrs &amp;&amp; nodeAttrs.extends) {
-      if (nodeAttrs.extends.indexOf(&#39;,&#39;) != -1) {
-        errors.push(new DreemError(&#39;Cant use multiple baseclasses &#39;, node.pos));
-        return;
-      }
-      baseclass = nodeAttrs.extends;
-      deps[baseclass] = 1;
-    }
-    
-    body += exports.classnameToJS(baseclass) + &#39;.extend(&quot;&#39; + clsname + &#39;&quot;, function(){\n&#39;;
-    
-    if (nodeAttrs &amp;&amp; nodeAttrs.with) {
-      nodeAttrs.with.split(/,\s*|\s+/).forEach(function(cls) {
-        if (cls) {
-          deps[cls] = 1;
-          body += &#39;\t\tthis.mixin(&#39;+exports.classnameToJS(cls)+&#39;)\n&#39;;
-        }
-      });
-    }
-    
-    // ok lets compile a dreem class to a module
-    if (node.child) {
-      var attributes = {};
-      
-      for (var i = 0; i &lt; node.child.length; i++) {
-        var child = node.child[i],
-          childTagName = child.tag,
-          childAttrs = child.attr;
-        switch (childTagName) {
-          case &#39;attribute&#39;:
-            if (childAttrs) {
-              attributes[childAttrs.name.toLowerCase()] = childAttrs.type.toLowerCase() || &#39;string&#39;;
-            }
-            break;
-          case &#39;method&#39;:
-          case &#39;handler&#39;:
-          case &#39;getter&#39;:
-          case &#39;setter&#39;:
-            var attrnameset = childAttrs &amp;&amp; (childAttrs.name || childAttrs.event);
-            var attrnames = attrnameset.split(/,\s*|\s+/), attrname, j;
-            for (j = 0; j &lt; attrnames.length; j++) {
-              attrname = attrnames[j];
-              if (!attrname) {
-                errors.push(new DreemError(&#39;Attribute has no name &#39;, child.pos));
-                return;
-              }
-              var fn = this.compileMethod(child, node, language, errors, &#39;\t\t\t\t&#39;);
-              if (fn === errors) continue;
-              
-              var args = fn.args;
-              if (!args &amp;&amp; childTagName == &#39;setter&#39;) args = [&#39;value&#39;];
-              body += &#39;\t\tthis.&#39; + attrname +&#39; = function(&#39; + args.join(&#39;, &#39;) + &#39;){&#39; + fn.comp + &#39;}\n&#39;;
-            }
-            break;
-          default:
-            if (childTagName.charAt(0) !== &#39;$&#39;) { // its our render-node
-              var inst = this.compileInstance(child, errors, &#39;\t\t\t&#39;);
-              for (var key in inst.deps) deps[key] = 1;
-              body += &#39;\t\tthis.render = function(){\n&#39;;
-              body += &#39;\t\t\treturn &#39; + inst.body +&#39;\n&#39;;
-              body += &#39;\t\t}\n&#39;;
-            }
-            break;
-        }
-      }
-      
-      for (var name in attributes) {
-        body += &#39;\t\tthis.__attribute(&quot;&#39; + name + &#39;&quot;, &quot;&#39; + attributes[name] + &#39;&quot;)\n&#39;;
-      }
-    }
-    body += &#39;\t})&#39;;
-    
-    return {
-      name:clsname,
-      deps:deps,
-      body:body
-    };
-  };
-
-  exports.compileMethod = function(node, parent, language, errors, indent) {
+  function compileMethod(node, parent, language, errors, indent) {
     // Method type overrides class or instanceof type which is what is
     // what the language arg is.
     language = language || &#39;js&#39;;
     if (node.attr &amp;&amp; node.attr.type) language = node.attr.type;
     
     // lets on-demand load the language
-    var langproc = this.languages[language];
+    var langproc = languages[language];
     if (!langproc) {
       errors.push(new DreemError(&#39;Unknown language used &#39; + language, node.pos));
       return errors;
@@ -237,9 +113,9 @@ define(function(require, exports, module) {
     name = exports.classnameToJS(name);
     
     //node.method_id = output.methods.length
-    var lang = this.languages[language];
-    var args = node.attr &amp;&amp; node.attr.args ? node.attr.args.split(/,\s*|\s+/): [];
-    var compiled = lang.compile(this.concatCode(node), args);
+    var lang = languages[language];
+    var args = node.attr &amp;&amp; node.attr.args ? node.attr.args.split(SEPARATOR_REGEX): [];
+    var compiled = lang.compile(concatCode(node), args);
     
     if (compiled instanceof DreemError) { // the compiler returned an error
       compiled.where += node.child[0].pos;
@@ -282,24 +158,209 @@ define(function(require, exports, module) {
     };
   };
 
-  exports.compileInstance = function(node, errors, indent, onLocalClass){
-    var deps = Object.create(this.default_deps);
+  exports.classnameToJS = function(name) {
+    return name.replace(/-/g,&#39;_&#39;);
+  };
+  
+  exports.resolveFilePathStack = function(filePathStack, useRootPrefix) {
+    var src, i = 0, len = filePathStack.length,
+      resolvedPath = &#39;&#39;;
+    for (; len &gt; i; i++) {
+      src = filePathStack[i];
+      if (src.indexOf(&#39;/&#39;) === 0) {
+        resolvedPath = define.expandVariables(&#39;$ROOT/&#39; + src);
+      } else {
+        resolvedPath = (resolvedPath ? path.dirname(resolvedPath) + &#39;/&#39; : &#39;&#39;) + define.expandVariables(src);
+      }
+    }
+    resolvedPath = path.normalize(resolvedPath);
+    
+    if (useRootPrefix) {
+      var rootPath = path.normalize(define.expandVariables(&#39;$ROOT&#39;));
+      if (resolvedPath.startsWith(rootPath)) resolvedPath = &#39;$ROOT&#39; + resolvedPath.substring(rootPath.length);
+    }
+    
+    return define.cleanPath(resolvedPath);
+  };
+
+  exports.compileClass = function(node, errors, onInclude, filePathStack) {
+    var body = &#39;&#39;,
+      deps = getDefaultDeps(),
+      nodeAttrs = node.attr;
+    
+    if (node.tag !== &#39;class&#39; &amp;&amp; node.tag !== &#39;mixin&#39;) {
+      errors.push(new DreemError(&#39;compileClass on non class&#39;, node.pos));
+      return;
+    }
+    
+    // ok lets iterate the class children
+    var clsname = nodeAttrs &amp;&amp; nodeAttrs.name;
+    if (!clsname) {
+      errors.push(new DreemError(&#39;Class has no name &#39;, node.pos));
+      return;
+    }
+    clsname = clsname.toLowerCase();
+    
+    var language = nodeAttrs &amp;&amp; nodeAttrs.type ? nodeAttrs.type : &#39;js&#39;;
+    
+    // lets fetch our base class
+    var baseclass = &#39;teem_node&#39;;
+    deps[&#39;teem_node&#39;] = 1;
+    if (nodeAttrs &amp;&amp; nodeAttrs.extends) {
+      if (nodeAttrs.extends.indexOf(&#39;,&#39;) != -1) {
+        errors.push(new DreemError(&#39;Cant use multiple baseclasses &#39;, node.pos));
+        return;
+      }
+      baseclass = nodeAttrs.extends;
+      deps[baseclass] = 1;
+    }
+    
+    body += exports.classnameToJS(baseclass) + &#39;.extend(&quot;&#39; + clsname + &#39;&quot;, function(){\n&#39;;
+    
+    if (nodeAttrs) {
+      if (nodeAttrs.with) {
+        nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
+          if (cls) {
+            deps[cls] = 1;
+            body += &#39;\t\tthis.mixin(&#39; + exports.classnameToJS(cls)+&#39;)\n&#39;;
+          }
+        });
+      }
+      
+      if (nodeAttrs.scriptincludes) {
+        nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
+          if (cls) {
+            filePathStack.push(cls);
+            deps[exports.resolveFilePathStack(filePathStack, true)] = 2;
+            filePathStack.pop();
+          }
+        })
+      }
+      
+      if (nodeAttrs.requires) {
+        nodeAttrs.requires.split(SEPARATOR_REGEX).forEach(function(cls) {
+          if (cls) deps[cls] = 1;
+        });
+      }
+    }
+    
+    // ok lets compile a dreem class to a module
+    if (node.child) {
+      var attributes = {};
+      
+      for (var i = 0; i &lt; node.child.length; i++) {
+        var child = node.child[i],
+          childTagName = child.tag,
+          childAttrs = child.attr;
+        switch (childTagName) {
+          case &#39;include&#39;:
+            if (onInclude) {
+              filePathStack.push(childAttrs.href);
+              var newNodes = onInclude(errors, filePathStack);
+              console.log(filePathStack.join(&#39; | &#39;));
+              newNodes.push({tag:&#39;$filePathStackPop&#39;});
+              node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+              i--;
+            } else {
+              errors.push(new DreemError(&#39;Cant support include in this location&#39;, node.pos));
+            }
+            break;
+          case &#39;attribute&#39;:
+            if (childAttrs) {
+              attributes[childAttrs.name.toLowerCase()] = childAttrs.type.toLowerCase() || &#39;string&#39;;
+            }
+            break;
+          case &#39;method&#39;:
+          case &#39;handler&#39;:
+          case &#39;getter&#39;:
+          case &#39;setter&#39;:
+            var attrnameset = childAttrs &amp;&amp; (childAttrs.name || childAttrs.event);
+            var attrnames = attrnameset.split(SEPARATOR_REGEX), attrname, j;
+            for (j = 0; j &lt; attrnames.length; j++) {
+              attrname = attrnames[j];
+              if (!attrname) {
+                errors.push(new DreemError(&#39;Attribute has no name &#39;, child.pos));
+                return;
+              }
+              var fn = compileMethod(child, node, language, errors, &#39;\t\t\t\t&#39;);
+              if (fn === errors) continue;
+              
+              var args = fn.args;
+              if (!args &amp;&amp; childTagName == &#39;setter&#39;) args = [&#39;value&#39;];
+              body += &#39;\t\tthis.&#39; + attrname +&#39; = function(&#39; + args.join(&#39;, &#39;) + &#39;){&#39; + fn.comp + &#39;}\n&#39;;
+            }
+            break;
+          default:
+            if (childTagName.startsWith(&#39;$&#39;)) {
+              if (childTagName === &#39;$filePathStackPop&#39;) {
+                filePathStack.pop();
+                node.child.splice(i, 1);
+              }
+            } else { // its our render-node
+              var inst = this.compileInstance(child, errors, &#39;\t\t\t&#39;, onInclude, filePathStack);
+              for (var key in inst.deps) deps[key] = inst.deps[key];
+              body += &#39;\t\tthis.render = function(){\n&#39;;
+              body += &#39;\t\t\treturn &#39; + inst.body +&#39;\n&#39;;
+              body += &#39;\t\t}\n&#39;;
+            }
+            break;
+        }
+      }
+      
+      for (var name in attributes) {
+        body += &#39;\t\tthis.__attribute(&quot;&#39; + name + &#39;&quot;, &quot;&#39; + attributes[name] + &#39;&quot;)\n&#39;;
+      }
+    }
+    body += &#39;\t})&#39;;
+    
+    return {
+      name:clsname,
+      deps:deps,
+      body:body
+    };
+  };
+
+  exports.compileInstance = function(node, errors, indent, onLocalClass, onInclude, filePathStack) {
+    var deps = getDefaultDeps();
     
     var walk = function(node, parent, indent, depth, language) {
       deps[node.tag] = 1;
-      var myindent = indent + &#39;\t&#39;;
-      var props = &#39;&#39;;
-      var children = &#39;&#39;;
       
-      if (node.attr) {
-        if (node.attr.with) {
-          node.attr.with.split(/,\s*|\s+/).forEach(function(cls) {
+      var myindent = indent + &#39;\t&#39;,
+        props = &#39;&#39;,
+        children = &#39;&#39;,
+        nodeAttrs = node.attr;
+      
+      if (nodeAttrs) {
+        if (nodeAttrs.with) {
+          nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
           })
         }
         
-        for (var key in node.attr) {
-          var value = node.attr[key];
+        if (nodeAttrs.scriptincludes) {
+          nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
+            if (cls) {
+              filePathStack.push(cls);
+              deps[exports.resolveFilePathStack(filePathStack, true)] = 2;
+              filePathStack.pop();
+            }
+          })
+        }
+        
+        if (node.tag === &#39;replicator&#39; &amp;&amp; nodeAttrs.classname) {
+          var cls = nodeAttrs.classname;
+          if (cls) deps[cls] = 1;
+        }
+        
+        if (nodeAttrs.requires) {
+          nodeAttrs.requires.split(SEPARATOR_REGEX).forEach(function(cls) {
+            if (cls) deps[cls] = 1;
+          });
+        }
+        
+        for (var key in nodeAttrs) {
+          var value = nodeAttrs[key];
           
           if (props) {
             props += &#39;,\n&#39; + myindent;
@@ -315,7 +376,7 @@ define(function(require, exports, module) {
         // screen and attribute nodes also have types so we don&#39;t want 
         // to look at them for a compiler language
         if (node.tag !== &#39;screen&#39; &amp;&amp; node.tag !== &#39;attribute&#39;) {
-          language = node.attr.type ? node.attr.type : language;
+          language = nodeAttrs.type ? nodeAttrs.type : language;
         }
       }
       
@@ -328,11 +389,23 @@ define(function(require, exports, module) {
             attr = child.attr;
           
           switch (tagName) {
+            case &#39;include&#39;:
+              if (onInclude) {
+                filePathStack.push(attr.href);
+                var newNodes = onInclude(errors, filePathStack);
+                newNodes.push({tag:&#39;$filePathStackPop&#39;});
+                node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+                i--;
+              } else {
+                errors.push(new DreemError(&#39;Cant support include in this location&#39;, node.pos));
+              }
+              break;
             case &#39;class&#39;:
             case &#39;mixin&#39;:
+              if (attr.name) deps[attr.name] = 1;
               // lets output a local class 
               if (onLocalClass) {
-                onLocalClass(child, errors);
+                onLocalClass(child, errors, filePathStack);
               } else {
                 errors.push(new DreemError(&#39;Cant support class in this location&#39;, node.pos));
               }
@@ -341,7 +414,7 @@ define(function(require, exports, module) {
             case &#39;handler&#39;:
             case &#39;getter&#39;:
             case &#39;setter&#39;:
-              var fn = this.compileMethod(child, parent, language, errors, indent + &#39;\t&#39;);
+              var fn = compileMethod(child, parent, language, errors, indent + &#39;\t&#39;);
               if (fn === errors) continue;
               
               if (!attr || (!attr.name &amp;&amp; !attr.event)) {
@@ -350,7 +423,7 @@ define(function(require, exports, module) {
               }
               var attrnameset = attr.name || attr.event;
               
-              var attrnames = attrnameset.split(/,\s*|\s+/);
+              var attrnames = attrnameset.split(SEPARATOR_REGEX);
               for (var j = 0; j &lt; attrnames.length; j++) {
                 var attrname = attrnames[j];
                 
@@ -386,7 +459,12 @@ define(function(require, exports, module) {
               }
               break;
             default:
-              if (tagName.charAt(0) != &#39;$&#39;) {
+              if (tagName.startsWith(&#39;$&#39;)) {
+                if (tagName === &#39;$filePathStackPop&#39;) {
+                  filePathStack.pop();
+                  node.child.splice(i, 1);
+                }
+              } else {
                 if (children) {
                   children += &#39;,\n&#39; + myindent;
                 } else {

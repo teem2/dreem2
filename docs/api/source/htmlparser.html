@@ -55,7 +55,7 @@ define(function(require, exports, module){
 			}
 		}
 		if(!node.tag) return child
-		if(node.tag.charAt(0) !== &#39;$&#39;){
+		if(!node.tag.startsWith(&#39;$&#39;)){
 			ret += indent + &#39;&lt;&#39; + node.tag
 			var attr = node.attr
 			if(attr) for(var k in attr){

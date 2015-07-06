@@ -353,6 +353,11 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n199" name="n199">199</a>
 <strong><a href="#n200" name="n200">200</a></strong>
 <a href="#n201" name="n201">201</a>
+<a href="#n202" name="n202">202</a>
+<a href="#n203" name="n203">203</a>
+<a href="#n204" name="n204">204</a>
+<a href="#n205" name="n205">205</a>
+<a href="#n206" name="n206">206</a>
 </pre></td>
   <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
      Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
@@ -539,6 +544,11 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     # setup default to reduce events during initialization.
     @fontsize = @fontfamily = ''
     @bold = @italic = @underline = @strike = @smallcaps = @multiline = @ellipsis = false
+
+    # allow data attribute to override unset text attribute
+    if (attrs.data? and not attrs.text)
+      attrs.text = attrs.data
+      delete attrs.data
     
     @super()
   <span class="tag">&lt;/method&gt;</span>
