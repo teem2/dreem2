@@ -198,9 +198,6 @@ define(function(require, exports, module) {
         query = url.substring(queryIndex);
         url = url.substring(0, queryIndex);
       }
-      if (url.indexOf(&#39;.dre&#39;, url.length - &#39;.dre&#39;.length) !== -1) {
-        url = url.substring(0, url.length - &#39;.dre&#39;.length);
-      }
       if (url.endsWith(&#39;.dre&#39;)) url = url.substring(0, url.length - 4);
       req.url = url = url + query;
 
