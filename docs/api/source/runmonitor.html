@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+*/
+<span id='RunMonitor'>/**
+</span> * @class RunMonitor
+ * RunMonitor class executes ourselves as a subprocess, receives the dependency file names
+ * from the child process and manages restart/killing when files change
+ */
+define(function(require, exports, module) {
+  module.exports = RunMonitor;
+
+  var FileWatcher = require(&#39;./filewatcher&#39;),
+    ExternalApps = require(&#39;./externalapps&#39;),
+    child_process = require(&#39;child_process&#39;);
+
+<span id='RunMonitor-method-constructor'><span id='RunMonitor'>  /**
+</span></span>   * @constructor
+   * Parses the arguments
+   * @param {Array} argv Pass process.argv
+   */
+  function RunMonitor(args) {
+    // lets process args into hash
+    this.args = args;
+    this.restart_count = 0;
+    this.watcher = new FileWatcher();
+    this.only_when_down = {};
+    this.watcher.onChange = function(file) {
+      // lets restart this.child
+      if (this.child) {
+        if (this.only_when_down[file]) return;
+        console.color(&#39;~g~Got filechange: ~y~&#39; + file + &#39;~~ killing and restarting server\n&#39;);
+        this.child.kill(&#39;SIGHUP&#39;);
+        setTimeout(function() {
+          if (this.child) this.child.kill(&#39;SIGTERM&#39;);
+        }.bind(this), 50);
+      } else {
+        console.color(&#39;~g~Got filechange: ~y~&#39; + file + &#39;~~ starting server\n&#39;);
+        this.start();
+      }
+    }.bind(this)
+    
+    this.start();
+  }
+
+  body.call(RunMonitor.prototype);
+
+  function body() {
+<span id='RunMonitor-attribute-restart_delay'>    /**
+</span>     * @attribute restart_delay
+     * When in infinite restart loop, wait atleast this long (ms)
+     */
+    this.restart_delay = 1000;
+
+    /* Internal. start the monitored process again */
+    this.start = function() {
+      var subarg = process.argv.slice(1);
+      subarg.push(&#39;-nomoni&#39;);
+      subarg.push(&#39;-count&#39;);
+      subarg.push(this.restart_count++);
+
+      var stdio = [process.stdin, process.stdout,&#39;pipe&#39;];
+      this.was_exception = false;
+      this.watcher.watch(subarg[0]);
+
+      this.child = child_process.spawn(process.execPath, subarg, {stdio:stdio});
+
+      this.child.stderr.on(&#39;data&#39;, function(buf) {
+        // we haz exception, wait for filechange
+        var data = buf.toString();
+        if (data.indexOf(&#39;\x0F&#39;) != -1) {
+          var files = data.split(&#39;\x0F&#39;);
+          for (var i = 0; i &lt; files.length; i++) {
+            var file = files[i].replace(/\n/,&#39;&#39;);
+            if (file) {
+              if (file.charAt(0) == &#39;!&#39;) {
+                file = file.slice(1);
+                this.only_when_down[file] = 1;
+              }
+              this.watcher.watch(file);
+            }
+          }
+          return;
+        }
+        
+        this.was_exception = data.indexOf(&#39;\0xE&#39;) != -1 ? false : true;
+        var m = data.match(/(\/[^\:]+)\:(\d+)\n/);
+        var ln = data.split(/\n/);
+        if (m) { // open error in code editor
+          if (this.args[&#39;-notify&#39;]) ExternalApps.notify(ln[1] + &#39;\n&#39; + ln[2], ln[3]);
+          if (this.args[&#39;-edit&#39;]) ExternalApps.editor(m[1], m[2]);
+        }
+        process.stdout.write(data);
+      }.bind(this));
+      
+      this.child.on(&#39;close&#39;, function(code) {
+        // lets have a start per second
+        this.child = undefined;
+        if (this.was_exception &amp;&amp; !this.args[&#39;-restart&#39;]) return console.log(&quot;Exception detected, not restarting&quot;);
+        if (Date.now() - this.last &gt;= this.restart_delay) {
+          this.start();
+        } else {
+          setTimeout(function() {
+            this.start();
+          }.bind(this), this.restart_delay)
+        }
+      }.bind(this));
+    }
+  }
+})</pre>
+</body>
+</html>

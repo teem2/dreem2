@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+*/
+<span id='BusServer'>/**
+</span> * @class BusServer {}
+ * Holds a set of server side sockets for broadcast
+ */
+define(function(require, exports, module) {
+  module.exports = BusServer;
+
+  function BusServer() {
+    this.sockets = [];
+  };
+
+  body.call(BusServer.prototype);
+
+  function body() {
+<span id='BusServer-method-addWebSocket'>    /**
+</span>      * @method addWebSocket
+      * adds a WebSocket to the BusServer
+      * @param {WebSocket} sock socket to add
+      */
+    this.addWebSocket = function(sock) {
+      this.sockets.push(sock);
+      
+      sock.onClose = function() {
+        this.sockets.splice(this.sockets.indexOf(sock), 1);
+        sock.onClose = undefined;
+      }.bind(this);
+      
+      sock.onMessage = function(message) {
+        this.onMessage(JSON.parse(message), sock);
+      }.bind(this);
+      
+      this.onConnect(sock);
+    };
+    
+<span id='BusServer-event-onMessage'>    /**
+</span>     * @event onMessage
+     * Called when a new message appears on any of the sockets
+     * @param {Object} message
+     * @param {WebSocket} socket
+     */
+    this.onMessage = function(message, socket) {};
+    
+<span id='BusServer-event-onConnect'>    /**
+</span>     * @event onConnect
+     * Called when a new socket appears on the bus
+     * @param {Object} message
+     * @param {WebSocket} socket
+     */
+    this.onConnect = function(message, socket) {};
+    
+<span id='BusServer-method-broadcast'>    /** 
+</span>      * @method broadcast
+      * Send a message to all connected sockets
+      * @param {Object} message
+      */
+    this.broadcast = function(message) {
+      message = JSON.stringify(message);
+      for (var i = 0; i &lt; this.sockets.length; i++) this.sockets[i].send(message);
+    };
+    
+    this.closeAll = function() {
+      for (var i = 0; i &lt; this.sockets.length; i++) this.sockets[i].close();
+      this.sockets = [];
+    };
+  }
+})</pre>
+</body>
+</html>

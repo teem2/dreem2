@@ -119,7 +119,7 @@ define(function(require, exports, module) {
       }
     }
 
-    /** 
+    /**
       * @method getComposition
       * Find composition object by url 
       * @param {String} url 
@@ -164,7 +164,7 @@ define(function(require, exports, module) {
       } else {
         this.busserver.addWebSocket(sock);
       }
-    }
+    };
 
     /**
       * @method request
@@ -183,10 +183,10 @@ define(function(require, exports, module) {
       }
       if (url.endsWith('.dre')) url = url.substring(0, url.length - 4);
       req.url = url = url + query;
-      
+
       // if we are a composition request, send it to composition
       var composition = this.getComposition(url);
-      if (composition) return composition.request(req, res)
+      if (composition) return composition.request(req, res);
       
       // otherwise handle as static file
       var filePath;
@@ -194,6 +194,10 @@ define(function(require, exports, module) {
         filePath = url.replace(/\_extlib\_/, define.expandVariables(define.EXTLIB));
       } else {
         filePath = path.join(define.expandVariables(define.ROOT), url);
+      }
+
+      if (filePath.indexOf('?') !== -1) {
+        filePath = filePath.substring(0, filePath.indexOf('?'))
       }
       filePath = decodeURI(filePath);
       
