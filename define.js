@@ -85,13 +85,11 @@
     // A non-empty implementation is set by teem.js
   };
 
-  define.findRequires = function(str){
-    var req = [];
-    
+  define.findRequires = function(str) {
     // bail out if we redefine require
-    if (str.match(/function\s+require/) || str.match(/var\s+require/)) {
-      return req;
-    }
+    if (str.match(/function\s+require[\s\(]/) || str.match(/var\s+require\s/)) return [];
+    
+    var req = [];
     str.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path) {
       req.push(path);
     });
