@@ -207,10 +207,10 @@
             var main = define.MAIN,
               mainFactory = define.factory[main];
             if (mainFactory) {
-              var module = define.module[main] = {exports:{}, id:main, filename:main};
-              var ret = mainFactory(define.localRequire(define.filePath(main)), module.exports, module);
-              if (ret !== undefined) module.exports = ret;
-              define.onMain(module.exports);
+              var mainModule = define.module[main] = {exports:{}, id:main, filename:main};
+              var ret = mainFactory(define.localRequire(define.filePath(main)), mainModule.exports, mainModule);
+              if (ret !== undefined) mainModule.exports = ret;
+              define.onMain(mainModule.exports);
             } else {
               throw new Error("Cannot find main: " + main);
             }

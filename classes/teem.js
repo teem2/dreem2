@@ -147,44 +147,59 @@ define(function(require, exports, module) {
     teem.bus = new BusClient(pathname + location.search);
     var rpcpromise = new RpcPromise(teem.bus);
     
-    define.onMain = function(main) {
+    // Called from define.js
+    define.onMain = function(mainModuleExports) {
       teem.bus.onMessage = function(msg) {
-        if (msg.type == 'sessionCheck') {
-          if (teem.session) location.href = location.href;
-          if (teem.session != msg.session) {
-            teem.bus.send({type:'connectBrowser'});
-          }
-        } else if (msg.type == 'connectBrowserOK') {
-          // lets set up our teem.bla base RPC layer (nonmultiples)
-          for (var key in msg.rpcdef) {
-            var def = msg.rpcdef[key];
-            
-            if (key.indexOf('.') !== -1) { // its a sub object property
-              var parts = key.split('.');
-              teem[parts[0]][parts[1]] = RpcMulti.createFromDef(def, key, rpcpromise);
-            } else{
-              teem[key] = RpcProxy.createFromDef(def, key, rpcpromise);
+        switch (msg.type) {
+          case 'sessionCheck':
+            if (teem.session != msg.session) {
+              teem.session = msg.session;
+              teem.bus.send({type:'connectBrowser'});
             }
-          }
-          //var proxy = new RpcProxy(); // Doesn't appear to be used.
-          
-          teem.root = main();
-          
-          teem.__startup(main);
-        } else if (msg.type == 'join') {
-          var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
-          if (obj) obj._addNewProxy(msg.index, msg.rpcid, rpcpromise);
-        } else if (msg.type == 'attribute') {
-          var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
-          if (obj) obj[msg.attribute] = msg.value;
-        } else if (msg.type == 'method') {
-          // lets call our method on root.
-          if (!teem.root[msg.method]) {
-            return console.log('Rpc call received on nonexisting method ' + msg.method);
-          }
-          RpcProxy.handleCall(teem.root, msg, teem.bus);
-        } else if (msg.type == 'return') {
-          rpcpromise.resolveResult(msg);
+            break;
+            
+          case 'connectBrowserOK':
+            // lets set up our teem.bla base RPC layer (nonmultiples)
+            for (var key in msg.rpcdef) {
+              var def = msg.rpcdef[key];
+              
+              if (key.indexOf('.') !== -1) { // its a sub object property
+                var parts = key.split('.');
+                teem[parts[0]][parts[1]] = RpcMulti.createFromDef(def, key, rpcpromise);
+              } else{
+                teem[key] = RpcProxy.createFromDef(def, key, rpcpromise);
+              }
+            }
+            //var proxy = new RpcProxy(); // Doesn't appear to be used.
+            //teem.root = mainModuleExports();
+            
+            teem.__startup(mainModuleExports);
+            break;
+            
+          case 'join':
+            var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
+            if (obj) obj._addNewProxy(msg.index, msg.rpcid, rpcpromise);
+            break;
+            
+          case 'attribute':
+            var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
+            if (obj) obj[msg.attribute] = msg.value;
+            break;
+            
+          case 'method':
+            // lets call our method on root.
+            if (!teem.root[msg.method]) {
+              return console.log('Rpc call received on nonexisting method ' + msg.method);
+            }
+            RpcProxy.handleCall(teem.root, msg, teem.bus);
+            break;
+            
+          case 'return':
+            rpcpromise.resolveResult(msg);
+            break;
+            
+          default:
+            console.log('Unexpected message type: ', msg);
         }
       }
     }
@@ -193,10 +208,10 @@ define(function(require, exports, module) {
     define.onMain = teem.__startup;
   }
 
-  teem.__startup = function(main) {
+  teem.__startup = function(mainModuleExports) {
     var dreemMaker = require('$LIB/dr/dreemMaker.js'),
       compiler = new dreemMaker.Compiler();
-    compiler.execute(main.dre, main.classmap);
+    compiler.execute(mainModuleExports.dre, mainModuleExports.classmap, teem);
   };
 
   return teem;
