@@ -1,6 +1,3 @@
 <!-- The MIT License (see LICENSE)
      Copyright (C) 2014-2015 Teem2 LLC -->
-<class name="screen" extends="eventable">
-  <method name="spawn"></method>
-  <method name="render"></method>
-</class>
+<class name="screen" extends="eventable"></class>

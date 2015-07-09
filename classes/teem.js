@@ -11,39 +11,12 @@ define(function(require, exports, module) {
     RpcMulti = require('$CORE/rpcmulti');
 
   teem._modules = {};
-  teem._intervals = [];
 
   teem.destroy = function() {
     for (var key in teem) {
       prop = teem[key];
-      if (typeof prop == 'object' && prop !== teem && prop.destroy && typeof prop.destroy == 'function') {
-        prop.destroy();
-      }
+      if (typeof prop == 'object' && prop !== teem && typeof prop.destroy == 'function') prop.destroy();
     }
-    
-    for (var i = 0; i < teem._intervals.length; i++) clearInterval(teem._intervals[i]);
-  };
-
-  teem.toString = function() {
-    // lets dump our RPC objects
-    var out = 'Teem RPC object:\n';
-    for (var key in this){
-      if (key in Node.prototype) continue;
-      out += key + '\n';
-    }
-    return out;
-  };
-
-  teem.setInterval = function(cb, timeout) {
-    var id = setInterval(cb, timeout)
-    teem._intervals.push(id);
-    return id;
-  };
-
-  teem.clearInterval = function(id) {
-    var i = teem._intervals.indexOf(id);
-    if (i != -1) teem._intervals.splice(i, 1);
-    clearInterval(id);
   };
 
   if (define.env == 'nodejs') {
@@ -90,7 +63,7 @@ define(function(require, exports, module) {
         if (obj.on_init) obj.on_init.emit();
       }
       
-      // ok now what. well we need to build our RPC interface
+      // Build our RPC interface
       teem.postAPI = function(msg, response) {
         if (msg.type == 'attribute') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
@@ -158,24 +131,6 @@ define(function(require, exports, module) {
             }
             break;
             
-          case 'connectBrowserOK':
-            // lets set up our teem.bla base RPC layer (nonmultiples)
-            for (var key in msg.rpcdef) {
-              var def = msg.rpcdef[key];
-              
-              if (key.indexOf('.') !== -1) { // its a sub object property
-                var parts = key.split('.');
-                teem[parts[0]][parts[1]] = RpcMulti.createFromDef(def, key, rpcpromise);
-              } else{
-                teem[key] = RpcProxy.createFromDef(def, key, rpcpromise);
-              }
-            }
-            //var proxy = new RpcProxy(); // Doesn't appear to be used.
-            //teem.root = mainModuleExports();
-            
-            teem.__startup(mainModuleExports);
-            break;
-            
           case 'join':
             var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
             if (obj) obj._addNewProxy(msg.index, msg.rpcid, rpcpromise);
@@ -196,6 +151,24 @@ define(function(require, exports, module) {
             
           case 'return':
             rpcpromise.resolveResult(msg);
+            break;
+            
+          case 'connectBrowserOK':
+            // lets set up our teem.bla base RPC layer (nonmultiples)
+            for (var key in msg.rpcdef) {
+              var def = msg.rpcdef[key];
+              
+              if (key.indexOf('.') !== -1) { // its a sub object property
+                var parts = key.split('.');
+                teem[parts[0]][parts[1]] = RpcMulti.createFromDef(def, key, rpcpromise);
+              } else{
+                teem[key] = RpcProxy.createFromDef(def, key, rpcpromise);
+              }
+            }
+            //var proxy = new RpcProxy(); // Doesn't appear to be used.
+            //teem.root = mainModuleExports();
+            
+            teem.__startup(mainModuleExports);
             break;
             
           default:
