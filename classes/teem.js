@@ -111,9 +111,9 @@ define(function(require, exports, module) {
     // web environment
     var BusClient = require('$CORE/busclient');
     
-    // Strip off .dre extension if found so that /foo and /foo.dre work the same.
+    // Strip off dreem file extension if found so that /foo and /foo.dre work the same.
     var pathname = location.pathname;
-    if (pathname.indexOf('.dre', pathname.length - 4) !== -1) {
+    if (pathname.indexOf(define.DREEM_EXTENSION, pathname.length - define.DREEM_EXTENSION.length) !== -1) {
       pathname = pathname.substring(0, pathname.length - 4);
     }
     

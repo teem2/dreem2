@@ -15,8 +15,7 @@
 define(function(require, exports, module) {
   var path = require('path'),
     HTMLParser = require('./htmlparser'),
-    DreemError = require('./dreemerror'),
-    SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
+    DreemError = require('./dreemerror');
 
   function getDefaultDeps() {
     return {teem:1};
@@ -97,7 +96,7 @@ define(function(require, exports, module) {
     
     //node.method_id = output.methods.length
     var lang = languages[language];
-    var args = node.attr && node.attr.args ? node.attr.args.split(SEPARATOR_REGEX): [];
+    var args = node.attr && node.attr.args ? node.attr.args.split(define.SEPARATOR_REGEX): [];
     var compiled = lang.compile(concatCode(node), args);
     
     if (compiled instanceof DreemError) { // the compiler returned an error
@@ -202,7 +201,7 @@ define(function(require, exports, module) {
     
     if (nodeAttrs) {
       if (nodeAttrs.with) {
-        nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
+        nodeAttrs.with.split(define.SEPARATOR_REGEX).forEach(function(cls) {
           if (cls) {
             deps[cls] = 1;
             body += '\t\tthis.mixin(' + exports.classnameToJS(cls)+')\n';
@@ -211,7 +210,7 @@ define(function(require, exports, module) {
       }
       
       if (nodeAttrs.scriptincludes) {
-        nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
+        nodeAttrs.scriptincludes.split(define.SEPARATOR_REGEX).forEach(function(cls) {
           if (cls) {
             filePathStack.push(cls);
             deps[exports.resolveFilePathStack(filePathStack, true)] = 2;
@@ -221,7 +220,7 @@ define(function(require, exports, module) {
       }
       
       if (nodeAttrs.requires) {
-        nodeAttrs.requires.split(SEPARATOR_REGEX).forEach(function(cls) {
+        nodeAttrs.requires.split(define.SEPARATOR_REGEX).forEach(function(cls) {
           if (cls) deps[cls] = 1;
         });
       }
@@ -258,7 +257,7 @@ define(function(require, exports, module) {
           case 'getter':
           case 'setter':
             var attrnameset = childAttrs && (childAttrs.name || childAttrs.event);
-            var attrnames = attrnameset.split(SEPARATOR_REGEX), attrname, j;
+            var attrnames = attrnameset.split(define.SEPARATOR_REGEX), attrname, j;
             for (j = 0; j < attrnames.length; j++) {
               attrname = attrnames[j];
               if (!attrname) {
@@ -316,13 +315,13 @@ define(function(require, exports, module) {
       
       if (nodeAttrs) {
         if (nodeAttrs.with) {
-          nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
+          nodeAttrs.with.split(define.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
           })
         }
         
         if (nodeAttrs.scriptincludes) {
-          nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
+          nodeAttrs.scriptincludes.split(define.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) {
               filePathStack.push(cls);
               deps[exports.resolveFilePathStack(filePathStack, true)] = 2;
@@ -337,7 +336,7 @@ define(function(require, exports, module) {
         }
         
         if (nodeAttrs.requires) {
-          nodeAttrs.requires.split(SEPARATOR_REGEX).forEach(function(cls) {
+          nodeAttrs.requires.split(define.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
           });
         }
@@ -406,7 +405,7 @@ define(function(require, exports, module) {
               }
               var attrnameset = attr.name || attr.event;
               
-              var attrnames = attrnameset.split(SEPARATOR_REGEX);
+              var attrnames = attrnameset.split(define.SEPARATOR_REGEX);
               for (var j = 0; j < attrnames.length; j++) {
                 var attrname = attrnames[j];
                 

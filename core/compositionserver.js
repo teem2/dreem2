@@ -146,7 +146,7 @@ define(function(require, exports, module) {
     
     /** @private */
     this.__buildPath = function(compName, className) {
-      return '$BUILD/compositions.' + compName + '.dre.' + className + '.js';
+      return '$BUILD/compositions.' + compName + define.DREEM_EXTENSION + '.' + className + '.js';
     };
     
     /**
@@ -256,7 +256,7 @@ define(function(require, exports, module) {
         
         for (var i = 0; i < paths.length; i++) {
           var thePath = paths[i] + '/' + classnameToPath(classname),
-            drefile = thePath + '.dre',
+            drefile = thePath + define.DREEM_EXTENSION,
             jsfile =  thePath + '.js',
             ignore_watch = false;
           
@@ -326,13 +326,13 @@ define(function(require, exports, module) {
     /** @private */
     this.__getCompositionPath = function() {
       var compositionName = this.name,
-        filepath = '$COMPOSITIONS/' + compositionName + '.dre';
+        filepath = '$COMPOSITIONS/' + compositionName + define.DREEM_EXTENSION;
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
           var dir = fs.readdirSync(extpath), mypath;
           for (var i = 0; i < dir.length; i++) {
-            mypath = '$EXTLIB/' + dir[i] + '/compositions/' + compositionName + '.dre';
+            mypath = '$EXTLIB/' + dir[i] + '/compositions/' + compositionName + define.DREEM_EXTENSION;
             if (fs.existsSync(define.expandVariables(mypath))) return mypath;
           }
         }

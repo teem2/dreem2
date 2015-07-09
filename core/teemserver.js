@@ -54,7 +54,7 @@ define(function(require, exports, module) {
 
     this.server = http.createServer(this.request.bind(this));
     this.server.listen(port, iface);
-    this.server.on('upgrade', this.upgrade.bind(this));
+    this.server.on('upgrade', this.__upgrade.bind(this));
 
     if (iface == '0.0.0.0') {
       var ifaces = os.networkInterfaces(),
@@ -99,14 +99,12 @@ define(function(require, exports, module) {
       if (this.args['-delay']) this.broadcast({type:'delay'});
     }.bind(this))
     
-    if (this.args['-web']) this.getComposition(this.args['-web']);
+    if (this.args['-web']) this.__getComposition(this.args['-web']);
   }
 
   body.call(TeemServer.prototype)
 
   function body() {
-    this.COMP_DIR = 'compositions';
-    
     /** 
       * @method broadcast
       * Send a message to all my connected websockets and those on the compositions
@@ -120,12 +118,11 @@ define(function(require, exports, module) {
     }
 
     /**
-      * @method getComposition
       * Find composition object by url 
       * @param {String} url 
       * @return {Composition|undefined} 
       */
-    this.getComposition = function(url) {
+    this.__getComposition = function(url) {
       if (url.indexOf('.') === -1) {
         // Strip Query
         var queryIndex = url.indexOf('?');
@@ -148,17 +145,16 @@ define(function(require, exports, module) {
     };
 
     /** 
-      * @method upgrade
       * Handle protocol upgrade to WebSocket
       * @param {Request} req 
       * @param {Socket} sock
       * @param {Object} head 
       */
-    this.upgrade = function(req, sock, head) {
+    this.__upgrade = function(req, sock, head) {
       // lets connect the sockets to the app
       var sock = new NodeWebSocket(req, sock, head);
       sock.url = req.url;
-      var composition = this.getComposition(req.url);
+      var composition = this.__getComposition(req.url);
       if (composition) {
         composition.busserver.addWebSocket(sock);
       } else {
@@ -173,7 +169,7 @@ define(function(require, exports, module) {
       * @param {Response} res
       */
     this.request = function(req, res) {
-      // Strip off .dre extension if found so that /foo and /foo.dre work the same.
+      // Strip off dreem file extension if found so that /foo and /foo.dre work the same.
       var url = req.url,
         query = '',
         queryIndex = url.indexOf('?');
@@ -181,55 +177,57 @@ define(function(require, exports, module) {
         query = url.substring(queryIndex);
         url = url.substring(0, queryIndex);
       }
-      if (url.endsWith('.dre')) url = url.substring(0, url.length - 4);
+      if (url.endsWith(define.DREEM_EXTENSION)) url = url.substring(0, url.length - define.DREEM_EXTENSION.length);
       req.url = url = url + query;
-
-      // if we are a composition request, send it to composition
-      var composition = this.getComposition(url);
-      if (composition) return composition.request(req, res);
       
-      // otherwise handle as static file
-      var filePath;
-      if (url.indexOf('_extlib_') !== -1) {
-        filePath = url.replace(/\_extlib\_/, define.expandVariables(define.EXTLIB));
+      var composition = this.__getComposition(url);
+      if (composition) {
+        // if we are a composition request, send it to composition
+        composition.request(req, res);
       } else {
-        filePath = path.join(define.expandVariables(define.ROOT), url);
-      }
-
-      if (filePath.indexOf('?') !== -1) {
-        filePath = filePath.substring(0, filePath.indexOf('?'))
-      }
-      filePath = decodeURI(filePath);
-      
-      fs.stat(filePath, function(err, stat) {
-        if (err || !stat.isFile()) {
-          if (url == '/favicon.ico') {
-            res.writeHead(200);
-            res.end();
-          } else {
-            res.writeHead(404);
-            res.end();
-            console.color('~br~Error~y~ ' + filePath + '~~ In teemserver.js request handling. File not found, returning 404\n');
-          }
+        // otherwise handle as static file
+        var filePath;
+        if (url.indexOf('_extlib_') !== -1) {
+          filePath = url.replace(/\_extlib\_/, define.expandVariables(define.EXTLIB));
         } else {
-          var header = {
-            "Cache-control":"max-age=0",
-            "Content-Type": mimeFromFile(filePath),
-            "ETag": stat.mtime.getTime() + '_' + stat.ctime.getTime() + '_' + stat.size
-          };
-          
-          this.watcher.watch(filePath);
-          
-          if (req.headers['if-none-match'] == header.ETag) {
-            res.writeHead(304, header);
-            res.end();
-          } else {
-            var stream = fs.createReadStream(filePath);
-            res.writeHead(200, header);
-            stream.pipe(res);
-          }
+          filePath = path.join(define.expandVariables(define.ROOT), url);
         }
-      }.bind(this));
+        
+        if (filePath.indexOf('?') !== -1) {
+          filePath = filePath.substring(0, filePath.indexOf('?'))
+        }
+        filePath = decodeURI(filePath);
+        
+        fs.stat(filePath, function(err, stat) {
+          if (err || !stat.isFile()) {
+            if (url == '/favicon.ico') {
+              res.writeHead(200);
+              res.end();
+            } else {
+              res.writeHead(404);
+              res.end();
+              console.color('~br~Error~y~ ' + filePath + '~~ In teemserver.js request handling. File not found, returning 404\n');
+            }
+          } else {
+            var header = {
+              "Cache-control":"max-age=0",
+              "Content-Type": mimeFromFile(filePath),
+              "ETag": stat.mtime.getTime() + '_' + stat.ctime.getTime() + '_' + stat.size
+            };
+            
+            this.watcher.watch(filePath);
+            
+            if (req.headers['if-none-match'] == header.ETag) {
+              res.writeHead(304, header);
+              res.end();
+            } else {
+              var stream = fs.createReadStream(filePath);
+              res.writeHead(200, header);
+              stream.pipe(res);
+            }
+          }
+        }.bind(this));
+      }
     };
   }
 })

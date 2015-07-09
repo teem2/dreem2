@@ -17,6 +17,14 @@
       if (define.define) define.define(factory);
     }
   };
+  
+  //// Constants/Config ////
+
+  // A regex that matches comma or whitespace. Used in many places to
+  // split up values.
+  define.SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
+
+  define.DREEM_EXTENSION = '.dre';
 
   // default config variables
   define.ROOT = '';
