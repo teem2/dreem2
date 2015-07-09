@@ -30,7 +30,7 @@ SOFTWARE. -->
       >
         <attribute name="url" type="string" value=""></attribute>
         <handler event="onactivated">
-          display.setAttribute('src', this.url);
+          display.setAttribute('src', this.url + define.DREEM_EXTENSION);
         </handler>
         <method name="drawHoverState">
           this.setAttribute('gradient', ['right', '#ffffff', '#aaaaaa']);

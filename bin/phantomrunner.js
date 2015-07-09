@@ -19,7 +19,7 @@ var list = fs.list("./compositions/smoke/"),
   files = [], file, i = list.length;
 while (i) {
   file = list[--i]
-  if (fs.isFile("./compositions/smoke/" + file)) files.push("/smoke/" + file);
+  if (fs.isFile("./compositions/smoke/" + file)) files.push("/compositions/smoke/" + file);
 }
 
 var runTest = function(file, callback) {
@@ -113,7 +113,7 @@ var runTest = function(file, callback) {
     }
   };
   
-  page.open('http://127.0.0.1:8080/' + file.substring(0, file.length - 4)); // 4 is remove '.dre'
+  page.open('http://127.0.0.1:8080/' + file);
 }
 
 // Runs the next test if possible. This function is provided as the callback

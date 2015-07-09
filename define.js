@@ -32,7 +32,6 @@
   define.CORE = "$ROOT/core";
   define.LIB = "$ROOT/lib";
   define.EXTLIB = "/_extlib_";
-  define.COMPOSITIONS = "$ROOT/compositions";
   define.BUILD = "$ROOT/build";
   define.SPRITE = "$ROOT/lib/dr/sprite_browser";
 

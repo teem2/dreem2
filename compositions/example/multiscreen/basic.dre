@@ -97,14 +97,14 @@ SOFTWARE. -->
       <webpage name="a"
         layouthint='{"weight":1}'
         border="1" bordercolor="black"
-        clickable="true" src="./basic?screen=a"
+        clickable="true" src="./basic.dre?screen=a"
       ></webpage>
       <webpage name="b"
         layouthint='{"weight":1}'
         ignorelayout='{"vert":true}'
         y="${this.parent.a.y}" height="${this.parent.a.height}"
         border="1" bordercolor="black"
-        clickable="true" src="./basic?screen=b"
+        clickable="true" src="./basic.dre?screen=b"
       ></webpage>
       
       <webpage name="c"
@@ -112,14 +112,14 @@ SOFTWARE. -->
         ignorelayout='{"horiz":true}'
         x="${this.parent.a.x}" width="${this.parent.a.width}"
         border="1" bordercolor="black"
-        clickable="true" src="./basic?screen=c"
+        clickable="true" src="./basic.dre?screen=c"
       ></webpage>
       <webpage name="d"
         ignorelayout='{"horiz":true, "vert":true}'
         x="${this.parent.b.x}" width="${this.parent.b.width}"
         y="${this.parent.c.y}" height="${this.parent.c.height}"
         border="1" bordercolor="black"
-        clickable="true" src="./basic?screen=d"
+        clickable="true" src="./basic.dre?screen=d"
       ></webpage>
     </view>
   </screen>

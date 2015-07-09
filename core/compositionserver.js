@@ -20,14 +20,6 @@ define(function(require, exports, module) {
     DreemError = require('./dreemerror'),
     dreemCompiler = require('./dreemcompiler');
 
-  function classnameToBuild(name) {
-    return name.replace(/-/g,'.');
-  };
-
-  function classnameToPath(name) {
-    return name.replace(/-/g,'/');
-  };
-
   /**
     * @constructor
     * @param {Object} args Process arguments
@@ -146,7 +138,7 @@ define(function(require, exports, module) {
     
     /** @private */
     this.__buildPath = function(compName, className) {
-      return '$BUILD/compositions.' + compName + define.DREEM_EXTENSION + '.' + className + '.js';
+      return '$BUILD/' + compName + define.DREEM_EXTENSION + '.' + className + '.js';
     };
     
     /**
@@ -255,17 +247,19 @@ define(function(require, exports, module) {
         paths.unshift('$CLASSES');
         
         for (var i = 0; i < paths.length; i++) {
-          var thePath = paths[i] + '/' + classnameToPath(classname),
+          var thePath = paths[i] + '/' + classname.replace(/-/g,'/'), // Replace package separator char '-' with '/'
             drefile = thePath + define.DREEM_EXTENSION,
             jsfile =  thePath + '.js',
             ignore_watch = false;
           
           if (fs.existsSync(define.expandVariables(drefile))) {
-            if (!this.compile_once[drefile]) {
+            jsfile = this.compile_once[drefile];
+            if (!jsfile) {
               // lets parse and compile this dre file
               var local_err = [];
               var dre = this.__parseDreSync(drefile, local_err);
               if (!dre.child) return '';
+              
               var root;
               for (var j = 0; j < dre.child.length; j++) {
                 var tag = dre.child[j].tag
@@ -274,15 +268,13 @@ define(function(require, exports, module) {
               
               // Output this class
               if (root) {
-                jsfile = "$BUILD/" + paths[i].replace(/\//g,'.').replace(/\$/g,'').toLowerCase() + '.' + classnameToBuild(classname) + ".js";
+                jsfile = '$BUILD/' + thePath.replace(/\$/g,'').toLowerCase() + '.js';
                 this.compile_once[drefile] = jsfile;
                 this.__compileAndWriteDreToJS(root, jsfile, null, local_err, [drefile]);
                 ignore_watch = true;
               }
               
               if (local_err.length) this.__showErrors(local_err, drefile, dre.source);
-            } else {
-              jsfile = this.compile_once[drefile];
             }
           }
           
@@ -326,13 +318,13 @@ define(function(require, exports, module) {
     /** @private */
     this.__getCompositionPath = function() {
       var compositionName = this.name,
-        filepath = '$COMPOSITIONS/' + compositionName + define.DREEM_EXTENSION;
+        filepath = '$ROOT/' + compositionName + define.DREEM_EXTENSION;
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
           var dir = fs.readdirSync(extpath), mypath;
           for (var i = 0; i < dir.length; i++) {
-            mypath = '$EXTLIB/' + dir[i] + '/compositions/' + compositionName + define.DREEM_EXTENSION;
+            mypath = '$EXTLIB/' + dir[i] + '/' + compositionName + define.DREEM_EXTENSION;
             if (fs.existsSync(define.expandVariables(mypath))) return mypath;
           }
         }

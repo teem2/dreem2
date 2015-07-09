@@ -34,7 +34,7 @@ SOFTWARE. -->
           if (this.status === 'fail') this.setAttribute('text', this.text + ' (Fails)');
         </handler>
         <handler event="onactivated">
-          window.open(this.url, 'test');
+          window.open(this.url + define.DREEM_EXTENSION, 'test');
         </handler>
         <method name="drawHoverState">
           if (this.status === 'fail') {

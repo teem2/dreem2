@@ -123,10 +123,12 @@ define(function(require, exports, module) {
       * @return {Composition|undefined} 
       */
     this.__getComposition = function(url) {
-      if (url.indexOf('.') === -1) {
-        // Strip Query
-        var queryIndex = url.indexOf('?');
-        if (queryIndex !== -1) url = url.substring(0, queryIndex);
+      // Strip Query
+      var queryIndex = url.indexOf('?');
+      if (queryIndex !== -1) url = url.substring(0, queryIndex);
+      
+      if (url.endsWith(define.DREEM_EXTENSION)) {
+        url = url.substring(0, url.length - define.DREEM_EXTENSION.length);
         
         var pathParts = url.split('/'),
           i = pathParts.length,
@@ -169,18 +171,8 @@ define(function(require, exports, module) {
       * @param {Response} res
       */
     this.request = function(req, res) {
-      // Strip off dreem file extension if found so that /foo and /foo.dre work the same.
       var url = req.url,
-        query = '',
-        queryIndex = url.indexOf('?');
-      if (queryIndex !== -1) {
-        query = url.substring(queryIndex);
-        url = url.substring(0, queryIndex);
-      }
-      if (url.endsWith(define.DREEM_EXTENSION)) url = url.substring(0, url.length - define.DREEM_EXTENSION.length);
-      req.url = url = url + query;
-      
-      var composition = this.__getComposition(url);
+        composition = this.__getComposition(url);
       if (composition) {
         // if we are a composition request, send it to composition
         composition.request(req, res);
