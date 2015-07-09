@@ -166,7 +166,7 @@ define(function(require, exports, module) {
               }
             }
             //var proxy = new RpcProxy(); // Doesn't appear to be used.
-            //teem.root = mainModuleExports();
+            teem.root = mainModuleExports();
             
             teem.__startup(mainModuleExports);
             break;
