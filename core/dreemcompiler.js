@@ -382,6 +382,9 @@ define(function(require, exports, module) {
                 errors.push(new DreemError('Cant support include in this location', node.pos));
               }
               break;
+            case 'require':
+              deps[attr.name] = attr.src
+              break
             case 'class':
             case 'mixin':
               if (attr.name) deps[attr.name] = 1;

@@ -54,7 +54,9 @@ define(function(require, exports, module) {
         
         // store the vdom object as our main object
         var obj = teem[mod.name] = mod.vdom;
-        
+
+        obj.teem = teem
+
         RpcProxy.bindSetAttribute(obj, mod.name, teem.bus);
         
         // allow extension of the rpc def with multiples by the class itself
@@ -159,7 +161,7 @@ define(function(require, exports, module) {
                 teem[key] = RpcProxy.createFromDef(def, key, rpcpromise);
               }
             }
-            //var proxy = new RpcProxy(); // Doesn't appear to be used.
+            
             teem.root = mainModuleExports();
             
             teem.__startup(mainModuleExports);

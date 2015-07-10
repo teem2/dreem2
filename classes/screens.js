@@ -56,14 +56,19 @@ define(function(require, exports, module){
       var index = multi.length++;
       var rpcid = this.name + '.' + screenName;
       
-      // send it the joins for the previous ones to the new one
-      for (var i = 0; i < index; i++) {
-        socket.send({
-          index:i,
-          type:'join',
-          rpcid:rpcid
-        });
-      }
+      // send the joins on all previous screens to the new screen
+      for(var otherScreen in this.rpcdefs){
+        var oindex = this[otherScreen].length
+        var orpcid = this.name + '.' + otherScreen;
+        for (var i = 0; i < oindex; i++) {
+          socket.send({
+            index:i,
+            type:'join',
+            rpcid:orpcid
+          });
+        }
+      }      
+
       multi._addNewProxy(index, rpcid, socket.rpcpromise);
       
       teem.bus.broadcast({

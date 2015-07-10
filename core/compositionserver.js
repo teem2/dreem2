@@ -201,14 +201,20 @@ define(function(require, exports, module) {
     this.__makeLocalDeps = function(deps, compname, indent) {
       var out = [];
       for (var key in deps) {
-        var type = deps[key],
-          incpath = this.__lookupDep(type, key, compname, out);
-        if (incpath) {
-          this.classmap[key] = incpath;
-          if (type === 2) {
-            out.push(indent + 'if (define.env == "browser") require("' + incpath + '")\n');
-          } else {
-            out.push(indent + 'var ' + dreemCompiler.classnameToJS(key) + ' = require("' + incpath + '")\n');
+        var type = deps[key]
+
+        if(typeof type === 'string'){
+         out.push(indent + 'var '+key+' = require("' + type + '")\n');
+        }
+        else{
+          var incpath = this.__lookupDep(type, key, compname, out);
+          if (incpath) {
+            this.classmap[key] = incpath;
+            if (type === 2) {
+              out.push(indent + 'if (define.env == "browser") require("' + incpath + '")\n');
+            } else {
+              out.push(indent + 'var ' + dreemCompiler.classnameToJS(key) + ' = require("' + incpath + '")\n');
+            }
           }
         }
       }
