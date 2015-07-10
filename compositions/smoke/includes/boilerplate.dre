@@ -1,1 +1,1 @@
-<node scriptincludes="/lib/chai.js, /lib/smoke_helper.js"></node>
+<node id="boilerplate" scriptincludes="/lib/chai.js, /lib/smoke_helper.js"></node>

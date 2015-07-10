@@ -22,9 +22,11 @@ SOFTWARE. -->
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Dre Misc'>
+    <!-- Creates a root node with id "boilerplate" -->
     <include href="./includes/boilerplate.dre"></include>
     
-    <view width="100%" height="100%" scrolling="true" bgcolor="#cccccc" padding="10">
+    <!-- Creates a root view -->
+    <view id="rootView1" width="50%" height="50%" scrolling="true" bgcolor="#cccccc" padding="10">
       <testingtimer>500</testingtimer>
       <expectedoutput>No nesting of screen tags. Skipping instance.</expectedoutput>
       
@@ -52,6 +54,28 @@ SOFTWARE. -->
         </handler>
         <indicator></indicator>
       </view>
+    </view>
+    
+    <!-- Creates another root view -->
+    <view id="rootView2" width="50%" height="50%" x="50%" y="50%" bgcolor="#999999">
+      <handler event="oninit">
+        assert.isTrue(this.isRoot(), 'This is also a root view.');
+        
+        var roots = dr.global.roots.getRoots(),
+          boilerplateNode = dr.sprite.retrieveGlobal('boilerplate'),
+          rootView1 = dr.sprite.retrieveGlobal('rootView1'),
+          rootView2 = dr.sprite.retrieveGlobal('rootView1');
+        
+        assert.lengthOf(roots, 3, 'There should now be three roots, The boilerpate node and the two views.');
+        assert.include(roots, boilerplateNode, 'One of the roots is the boilerplate node.');
+        assert.include(roots, rootView1, 'One of the roots is the other view.');
+        assert.include(roots, rootView2, 'One of the roots is this view.');
+        
+        // Also verify that classroot is correct for each root node
+        assert.equal(boilerplateNode, boilerplateNode.classroot);
+        assert.equal(rootView1, rootView1.classroot);
+        assert.equal(rootView2, rootView2.classroot);
+      </handler>
     </view>
   </screen>
 </screens>
