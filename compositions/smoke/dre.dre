@@ -21,7 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <composition>
 <screens>
-  <screen type="browser" name="default" title='Smoke Test - Dre Misc'>
+  <!-- The screen also gets stored as a root. -->
+  <screen id="theScreen" type="browser" name="default" title='Smoke Test - Dre Misc'>
     <!-- Creates a root node with id "boilerplate" -->
     <include href="./includes/boilerplate.dre"></include>
     
@@ -62,21 +63,31 @@ SOFTWARE. -->
         assert.isTrue(this.isRoot(), 'This is also a root view.');
         
         var roots = dr.global.roots.getRoots(),
+          theScreen = dr.sprite.retrieveGlobal('theScreen'),
           boilerplateNode = dr.sprite.retrieveGlobal('boilerplate'),
           rootView1 = dr.sprite.retrieveGlobal('rootView1'),
           rootView2 = dr.sprite.retrieveGlobal('rootView1');
         
-        assert.lengthOf(roots, 3, 'There should now be three roots, The boilerpate node and the two views.');
+        assert.lengthOf(roots, 4, 'There should now be three roots, The scren, the boilerpate node and the two views.');
+        assert.include(roots, theScreen, 'One of the roots is the screen.');
         assert.include(roots, boilerplateNode, 'One of the roots is the boilerplate node.');
         assert.include(roots, rootView1, 'One of the roots is the other view.');
         assert.include(roots, rootView2, 'One of the roots is this view.');
         
         // Also verify that classroot is correct for each root node
+        assert.equal(theScreen, theScreen.classroot);
         assert.equal(boilerplateNode, boilerplateNode.classroot);
         assert.equal(rootView1, rootView1.classroot);
         assert.equal(rootView2, rootView2.classroot);
       </handler>
+      
+      <!-- Put it here so it doesn't make another root view. -->
+      <expectedoutput>oninit for screen fired</expectedoutput>
     </view>
+    
+    <handler event="oninit">
+      console.log('oninit for screen fired');
+    </handler>
   </screen>
 </screens>
 </composition>
