@@ -110,6 +110,9 @@ SOFTWARE. -->
         </block>
         
         <block>
+          <subhead>RPC</subhead>
+          <link url="./smoke/rpc_client_server">Basic</link>
+          
           <subhead>Animation</subhead>
           <link url="./smoke/animation">Animation</link>
           <link url="./smoke/animgroup">Animation Group</link>
