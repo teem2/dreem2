@@ -143,13 +143,15 @@ define(function(require, exports, module) {
   exports.classnameToJS = function(name) {
     return name.replace(/-/g,'_');
   };
-  
+
   exports.resolveFilePathStack = function(filePathStack, useRootPrefix) {
     var src, i = 0, len = filePathStack.length,
       resolvedPath = '';
     for (; len > i; i++) {
       src = filePathStack[i];
-      if (src.indexOf('/') === 0) {
+      if (define.isFullyQualifiedURL(src)) {
+        return src;
+      } else if (src.indexOf('/') === 0) {
         resolvedPath = define.expandVariables('$ROOT/' + src);
       } else {
         resolvedPath = (resolvedPath ? path.dirname(resolvedPath) + '/' : '') + define.expandVariables(src);

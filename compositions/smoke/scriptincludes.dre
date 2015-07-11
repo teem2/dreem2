@@ -30,12 +30,32 @@ Warning: scriptincludes not found: /compositions/smoke/notfound.js
       </expectedoutput>
       
       <spacedlayout axis="y" spacing="15"></spacedlayout>
+      
+      <!-- Local includes -->
       <view scriptincludes="../../lib/test.js,./notfound.js"></view>
       <node scriptincludes="../../lib/two.js"></node>
       
+      <!-- Protocol agnostic includes -->
+      <node scriptincludes="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></node>
+      
+      <!-- Fully qualified includes -->
+      <node scriptincludes="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></node>
+      
+      <expectedoutput>oninit ran</expectedoutput>
       <handler event="oninit">
-        // The two.js constructor should exists since we included it via scriptincludes.
+        console.log('oninit ran');
+        
+        // The two.js constructor should exist since we included it via scriptincludes.
         assert.isFunction(Two);
+        assert.equal(Two.Version, "v0.4.0");
+        
+        // Lodash should be pulled in from the CDN via scriptincludes.
+        assert.isFunction(_);
+        assert.equal(_.VERSION, "3.10.0");
+        
+        // JQuery should be pulled in from the CDN via scriptincludes.
+        assert.isFunction($);
+        assert.equal($().jquery, "2.1.4");
       </handler>
     </view>
   </screen>

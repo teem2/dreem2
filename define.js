@@ -68,6 +68,17 @@
     relative = relative.replace(/\.\.\//g,function(){ base.pop(); return ''}).replace(/\.\//g, '');
     return define.cleanPath(base.join('/') + '/' + relative);
   };
+  
+  define.isFullyQualifiedURL = function(url) {
+    if (url.indexOf('//') === 0) {
+      // Looks like a protocol agnostic URL (Typically a CDN URL)
+      return true;
+    } else if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
+      // Fully qualified URL so return as is.
+      return true;
+    }
+    return false;
+  };
 
   // expand define variables
   define.expandVariables = function(str) {
@@ -97,7 +108,7 @@
     if (str.match(/function\s+require[\s\(]/) || str.match(/var\s+require\s/)) return [];
     
     var req = [];
-    str.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path) {
+    str.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\s+\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path) {
       req.push(path);
     });
     return req;
@@ -105,8 +116,13 @@
 
   define.localRequire = function(base_path) {
     return function(dep_path) {
-      var abs_path = define.joinPath(base_path, define.expandVariables(dep_path));
-      if (abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js';
+      var abs_path;
+      if (define.isFullyQualifiedURL(dep_path)) {
+        abs_path = dep_path;
+      } else {
+        abs_path = define.joinPath(base_path, define.expandVariables(dep_path));
+        if (abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js';
+      }
       
       // lets look it up
       var module = define.module[abs_path];
@@ -198,11 +214,16 @@
           // parse the function for other requires
           if (factory) {
             define.findRequires(factory.toString()).forEach(function(path) {
-              // Make path absolute and process variables
-              var dep_path = define.joinPath(base_path, define.expandVariables(path));
-              
-              // automatic .js appending if not given
-              if (dep_path.indexOf(".js") != dep_path.length -3) dep_path += '.js';
+              var dep_path;
+              if (define.isFullyQualifiedURL(path)) {
+                dep_path = path;
+              } else {
+                // Make path absolute and process variables
+                dep_path = define.joinPath(base_path, define.expandVariables(path));
+                
+                // automatic .js appending if not given
+                if (dep_path.indexOf(".js") != dep_path.length -3) dep_path += '.js';
+              }
               
               // load it
               if (!define.script_tags[dep_path]) insertScriptTag(dep_path, script_url);

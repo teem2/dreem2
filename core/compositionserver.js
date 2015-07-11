@@ -225,6 +225,8 @@ define(function(require, exports, module) {
     this.__lookupDep = function(type, classname, compname, out) {
       // Scriptincludes are type 2
       if (type === 2) {
+        if (define.isFullyQualifiedURL(classname)) return classname;
+        
         var expandedPath = define.expandVariables(classname);
         if (fs.existsSync(expandedPath)) {
           return classname;
