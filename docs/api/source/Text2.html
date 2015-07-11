@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific Text functionality. */
+</span>define(function(require, exports, module) {
+    var JS = require(&#39;$LIB/jsclass.js&#39;),
+        global= require(&#39;$SPRITE/global.js&#39;),
+        View = require(&#39;./View.js&#39;);
+    
+    module.exports = new JS.Class(&#39;sprite.Text&#39;, View, {
+        // Life Cycle //////////////////////////////////////////////////////////////
+        createPlatformObject: function(attrs) {
+            var elem = this.callSuper(attrs),
+                s = elem.style;
+            s.fontFamily = &quot;font-family:mission-gothic, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif&quot;;
+            s.fontSize = &quot;20px&quot;;
+            
+            return elem;
+        },
+         
+        // Attributes //////////////////////////////////////////////////////////////
+        set_text: function(v) {
+            if (v != null) {
+                var platformObject = this.platformObject
+                platformObject.setText(v)
+            }
+            return v;
+        },
+        
+        set_fontsize: function(v) {
+            this.styleObj.fontSize = v;
+            this.platformObject.setFontSize(v)
+            return v;
+        },
+        
+        set_fontfamily: function(v) {
+            this.styleObj.fontFamily = v;
+            this.platformObject.setFontFamily(v)
+            return v;
+        },
+        
+        set_bold: function(v) {
+            this.styleObj.fontWeight = v ? &#39;bold&#39; : &#39;normal&#39;;
+            this.platformObject.setFontStyle(v ? &#39;bold&#39; : &#39;normal&#39;);
+            
+            return v;
+        },
+        
+        set_italic: function(v) {
+            this.styleObj.fontStyle = v ? &#39;italic&#39; : &#39;normal&#39;;
+            return v;
+        },
+        
+        set_smallcaps: function(v) {
+            this.styleObj.fontVariant = v ? &#39;small-caps&#39; : &#39;normal&#39;;
+            return v;
+        },
+        
+        set_underline: function(v) {
+            this.styleObj.textDecoration = v ? &#39;underline&#39; : &#39;none&#39;;
+            return v;
+        },
+        
+        set_strike: function(v) {
+            this.styleObj.textDecoration = v ? &#39;line-through&#39; : &#39;none&#39;;
+            return v;
+        },
+        
+        set_ellipsis: function(v) {
+            this.__ellipsis = v;
+            this.styleObj.textOverflow = v ? &#39;ellipsis&#39; : &#39;clip&#39;;
+            this.__updateOverflow();
+            return v;
+        },
+        
+        set_multiline: function(v) {
+            this.__isMultiline = v;
+            this.__updateMultiline();
+            return v;
+        },
+        
+        set_width: function(v) {
+            this.__isAutoWidth = v === &#39;auto&#39;;
+            this.__updateMultiline();
+            return this.callSuper(v);
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-__updateMultiline'>        /** @private */
+</span>        __updateMultiline: function() {
+            var whitespace;
+            if (this.__isMultiline) {
+                whitespace = this.__isAutoWidth ? &#39;pre&#39; : &#39;pre-wrap&#39;;
+            } else {
+                whitespace = &#39;nowrap&#39;;
+            }
+            this.styleObj.whiteSpace = whitespace;
+        },
+        
+<span id='global-method-__updateOverflow'>        /** @overrides */
+</span>        __updateOverflow: function() {
+            if (this.__ellipsis) {
+                this.styleObj.overflow = &#39;hidden&#39;;
+            } else {
+                this.callSuper()
+            }
+        },
+        
+        getText: function() {
+            // Firefox doesn&#39;t support innerText and textContent gives us more than
+            // we want. Instead, walk the dom children and concat all the text nodes.
+            // The nodes get trimmed since line feeds and other junk whitespace will
+            // show up as text nodes.
+            var child = this.platformObject.firstChild, texts = [];
+            while (child) {
+                if (child.nodeType === 3) texts.push(child.data.trim());
+                child = child.nextSibling;
+            }
+            return texts.join(&quot;&quot;)
+        }
+    });
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides global error events and console logging.
+</span>    
+    Events:
+        Error specific events are broadcast. Here is a list of known error
+        types.
+            eventLoop: Fired by dr.Observable when an infinite event loop
+                would occur.
+    
+    Attributes:
+        stackTraceLimit:int Sets the size for stack traces.
+        consoleLogging:boolean Turns logging to the console on and off.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        GlobalRegistry = require(&#39;./Global.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = new JS.Singleton(&#39;GlobalError&#39;, {
+        include: [
+            require(&#39;$LIB/dr/events/Observable&#39;)
+        ],
+        
+        
+        // Constructor /////////////////////////////////////////////////////////////
+        initialize: function() {
+            this.set_stackTraceLimit(50);
+            this.set_consoleLogging(true);
+            GlobalRegistry.register(&#39;error&#39;, this);
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+        set_consoleLogging: function(v) {
+            this.consoleLogging = v;
+        },
+        
+        set_stackTraceLimit: function(v) {
+            this.stackTraceLimit = sprite.set_stackTraceLimit(v);
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-notifyError'>        /** A wrapper on this.notify where consoleFuncName is &#39;error&#39;. */
+</span>        notifyError: function(type, msg, err) {this.notify(&#39;error&#39;, type, msg, err);},
+        
+<span id='global-method-notifyWarn'>        /** A wrapper on this.notify where consoleFuncName is &#39;warn&#39;. */
+</span>        notifyWarn: function(type, msg, err) {this.notify(&#39;warn&#39;, type, msg, err);},
+        
+<span id='global-method-notifyMsg'>        /** A wrapper on this.notify where consoleFuncName is &#39;log&#39;. */
+</span>        notifyMsg: function(type, msg, err) {this.notify(&#39;log&#39;, type, msg, err);},
+        
+<span id='global-method-notifyDebug'>        /** A wrapper on this.notify where consoleFuncName is &#39;debug&#39;. */
+</span>        notifyDebug: function(type, msg, err) {this.notify(&#39;debug&#39;, type, msg, err);},
+        
+<span id='global-method-notify'>        /** Broadcasts that an error has occurred and also logs the error to the
+</span>            console if so configured.
+            @param consoleFuncName:string (optional) The name of the function to 
+                call on the console. Standard values are:&#39;error&#39;, &#39;warn&#39;, &#39;log&#39;
+                and &#39;debug&#39;. If not provided no console logging will occur 
+                regardless of the value of this.consoleLogging.
+            @param eventType:string (optional) The type of the event that will be 
+                broadcast. If not provided &#39;error&#39; will be used.
+            @param msg:* (optional) Usually a string, this is additional information
+                that will be provided in the value object of the broadcast event.
+            @param err:Error (optional) A javascript error object from which a
+                stacktrace will be taken. If not provided a stacktrace will be
+                automatically generated.
+            @private */
+        notify: function(consoleFuncName, eventType, msg, err) {
+            var stacktrace = sprite.generateStacktrace(eventType, msg, err);
+            
+            this.sendEvent(&#39;on&#39; + (eventType || &#39;error&#39;), {msg:msg, stacktrace:stacktrace});
+            if (this.consoleLogging &amp;&amp; consoleFuncName) sprite.console[consoleFuncName](stacktrace || msg);
+        },
+        
+        logError: function(msg) {this.log(&#39;error&#39;, msg);},
+        logWarn: function(msg) {this.log(&#39;warn&#39;, msg);},
+        logMsg: function(msg) {this.log(&#39;log&#39;, msg);},
+        logDebug: function(msg) {this.log(&#39;debug&#39;, msg);},
+        
+        log: function(consoleFuncName, msg) {
+            if (this.consoleLogging &amp;&amp; consoleFuncName) sprite.console[consoleFuncName](msg);
+        }
+    });
+});
+</pre>
+</body>
+</html>

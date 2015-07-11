@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">define(function(require, exports, module) {
+    // Object
+<span id='global-property-keys'>    /** Provides support for Object.keys in IE8 and earlier.
+</span>        Taken from: http://whattheheadsaid.com/2010/10/a-safer-object-keys-compatibility-implementation */
+    Object.keys = Object.keys || (function() {
+        var hasOwnProperty = Object.prototype.hasOwnProperty,
+            hasDontEnumBug = !{toString:null}.propertyIsEnumerable(&quot;toString&quot;),
+            DontEnums = [
+                &#39;toString&#39;,
+                &#39;toLocaleString&#39;,
+                &#39;valueOf&#39;,
+                &#39;hasOwnProperty&#39;,
+                &#39;isPrototypeOf&#39;,
+                &#39;propertyIsEnumerable&#39;,
+                &#39;constructor&#39;
+            ],
+            DontEnumsLength = DontEnums.length;
+        
+        return function(o) {
+            if (typeof o !== &quot;object&quot; &amp;&amp; typeof o !== &quot;function&quot; || o === null)
+                throw new TypeError(&quot;Object.keys called on non-object&quot;);
+            
+            var result = [], n;
+            for (n in o) {
+                if (hasOwnProperty.call(o, n)) result.push(n);
+            }
+            
+            if (hasDontEnumBug) {
+                for (var i = 0; i &lt; DontEnumsLength; ++i) {
+                    if (hasOwnProperty.call(o, DontEnums[i])) result.push(DontEnums[i]);
+                }
+            }
+            
+            return result
+        }
+    })();
+    
+    // Array
+<span id='global-property-isArray'>    /** Provides support for Array.isArray in IE8 and earlier.
+</span>        Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/isArray */
+    Array.isArray = Array.isArray || function(v) {
+        return Object.prototype.toString.call(v) === &quot;[object Array]&quot;
+    };
+    
+    // String
+<span id='global-property-'>    /** Provides support for String.trim in IE8 and earlier.
+</span>        Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/Trim */
+    if (!String.prototype.trim) {
+        String.prototype.trim = function() {
+            return this.replace(/^\s+|\s+$/g,&#39;&#39;)
+        };
+        String.prototype.trimLeft = function() {
+            return this.replace(/^\s+/,&#39;&#39;)
+        };
+        String.prototype.trimRight = function() {
+            return this.replace(/\s+$/,&#39;&#39;)
+        };
+    };
+    
+    if (!String.prototype.startsWith) {
+        String.prototype.startsWith = function(searchString, position) {
+            position = position || 0;
+            return this.lastIndexOf(searchString, position) === position;
+        };
+    };
+    
+    if (!String.prototype.endsWith) {
+        String.prototype.endsWith = function(searchString, position) {
+            var subjectString = this.toString();
+            if (position === undefined || position &gt; subjectString.length) {
+                position = subjectString.length;
+            }
+            position -= searchString.length;
+            var lastIndex = subjectString.indexOf(searchString, position);
+            return lastIndex !== -1 &amp;&amp; lastIndex === position;
+        };
+    };
+    
+    // Date
+<span id='global-property-now'>    /** Provides support for Date.now in IE8 and ealier.
+</span>        Taken from https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now */
+    Date.now = Date.now || function() {
+        return new Date().getTime()
+    };
+});
+</pre>
+</body>
+</html>

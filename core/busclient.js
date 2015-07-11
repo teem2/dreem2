@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class BusClient
+ * @class BusClient {Internal}
  * Auto (re)connecting always writable socket
  */
 define(function(require, exports, module) {

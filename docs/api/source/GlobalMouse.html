@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides global mouse events by listening to mouse events on the 
+</span>    viewport. Registered with dr.global as &#39;mouse&#39;. */
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        GlobalRegistry = require(&#39;./Global.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;),
+        GlobalMouseSprite = require(&#39;$SPRITE/GlobalMouse.js&#39;);
+    
+    module.exports = new JS.Singleton(&#39;GlobalMouse&#39;, {
+        include: [
+            require(&#39;$LIB/dr/SpriteBacked.js&#39;),
+            require(&#39;$LIB/dr/events/PlatformObserver.js&#39;),
+            require(&#39;$LIB/dr/events/Observable.js&#39;),
+            require(&#39;$LIB/dr/events/Observer.js&#39;)
+        ],
+        
+        
+        // Constructor /////////////////////////////////////////////////////////////
+        initialize: function() {
+            this.set_sprite(this.createSprite());
+            
+            // Store in dr namespace for backwards compatibility with dreem
+            if (dr.mouse) {
+                dr.dumpStack(&#39;dr.mouse already set.&#39;);
+            } else {
+                dr.mouse = this;
+            }
+            
+            this.__xOrYAttachedObserverCount = 0;
+            
+            GlobalRegistry.register(&#39;mouse&#39;, this);
+        },
+        
+        createSprite: function(attrs) {
+            return new GlobalMouseSprite(this);
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-isPlatformEvent'>        /** @overrides
+</span>            All global mouse platform events should be handled during the
+            capture phase. */
+        isPlatformEvent: function(eventType) {
+            var retval = this.callSuper();
+            return typeof retval === &#39;boolean&#39; ? true : retval;
+        },
+        
+<span id='global-method-attachObserver'>        /** Auto register for platform events when registering for a normal
+</span>            event with the same event type.
+            @overrides dr.Observable */
+        attachObserver: function(observer, methodName, eventType) {
+            var retval = this.callSuper(observer, methodName, eventType);
+            
+            // Provide onmousemove handling for x and y events
+            if (eventType === &#39;onx&#39; || eventType === &#39;ony&#39;) {
+                if (++this.__xOrYAttachedObserverCount === 1) {
+                    if (this.__handler_xOrY == null) {
+                        this.__handler_xOrY = (function(event) {
+                            var pos = sprite.MouseObservable.getMouseFromEvent(event);
+                            this.x = pos.x;
+                            this.y = pos.y;
+                            this.sendEvent(&#39;onx&#39;, pos.x);
+                            this.sendEvent(&#39;ony&#39;, pos.y);
+                            return true;
+                        }).bind(this);
+                    }
+                    this.listenTo(this, &#39;onmousemove&#39;, &#39;__handler_xOrY&#39;);
+                }
+            }
+            
+            return retval;
+        },
+        
+<span id='global-method-detachObserver'>        /** Auto unregister for platform events when registering for a normal
+</span>            event with the same event type.
+            @overrides dr.Observable */
+        detachObserver: function(observer, methodName, eventType) {
+            var retval = this.callSuper(observer, methodName, eventType);
+            
+            // Provide onmousemove handling for x and y events
+            if (eventType === &#39;onx&#39; || eventType === &#39;ony&#39;) {
+                if (--this.__xOrYAttachedObserverCount === 0) this.stopListening(this, &#39;onmousemove&#39;, &#39;__handler_xOrY&#39;);
+            }
+            
+            return retval;
+        }
+    });
+});
+</pre>
+</body>
+</html>

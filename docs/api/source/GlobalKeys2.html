@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific global keyboard functionality. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        globalScope = require(&#39;$SPRITE/global.js&#39;),
+        globalRegistry = require(&#39;$LIB/dr/globals/Global.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = sprite.GlobalKeys = new JS.Class(&#39;sprite.GlobalKeys&#39;, {
+        include: [
+            require(&#39;$SPRITE/events/PlatformObservable.js&#39;),
+            require(&#39;$SPRITE/events/KeyObservable.js&#39;)
+        ],
+        
+        
+        // Constructor /////////////////////////////////////////////////////////////
+<span id='global-method-initialize'>        /** The standard JSClass initializer function. Subclasses should not
+</span>            override this function.
+            @param attrs:object A map of attribute names and values.
+            @returns void */
+        initialize: function(view, attrs) {
+            this.view = view;
+            this.platformObject = globalScope.document;
+            
+            // Constants
+            this.KEYCODE_SHIFT = 16;
+            this.KEYCODE_CONTROL = 17;
+            this.KEYCODE_ALT = 18;
+            var isFirefox = sprite.platform.browser === &#39;Firefox&#39;;
+            this.KEYCODE_COMMAND = isFirefox ? 224 : 91;
+            this.KEYCODE_RIGHT_COMMAND = isFirefox ? 224 : 93;
+            
+            this.__keysDown = {};
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-isKeyDown'>        /** Tests if a key is currently pressed down or not.
+</span>            @param keyCode:number the key to test.
+            @returns true if the key is down, false otherwise. */
+        isKeyDown: function(keyCode) {return !!this.__keysDown[keyCode];},
+        
+<span id='global-method-isShiftKeyDown'>        /** Tests if the &#39;shift&#39; key is down. */
+</span>        isShiftKeyDown: function() {return this.isKeyDown(this.KEYCODE_SHIFT);},
+        
+<span id='global-method-isControlKeyDown'>        /** Tests if the &#39;control&#39; key is down. */
+</span>        isControlKeyDown: function() {return this.isKeyDown(this.KEYCODE_CONTROL);},
+        
+<span id='global-method-isAltKeyDown'>        /** Tests if the &#39;alt&#39; key is down. */
+</span>        isAltKeyDown: function() {return this.isKeyDown(this.KEYCODE_ALT);},
+        
+<span id='global-method-isCommandKeyDown'>        /** Tests if the &#39;command&#39; key is down. */
+</span>        isCommandKeyDown: function() {
+            return this.isKeyDown(this.KEYCODE_COMMAND) || this.isKeyDown(this.KEYCODE_RIGHT_COMMAND);
+        },
+        
+<span id='global-method-isAcceleratorKeyDown'>        /** Tests if the platform specific &quot;accelerator&quot; key is down. */
+</span>        isAcceleratorKeyDown: function() {
+            return sprite.platform.os === &#39;Mac&#39; ? this.isCommandKeyDown() : this.isControlKeyDown();
+        },
+        
+<span id='global-method-handleFocusChange'>        /** @private */
+</span>        handleFocusChange: function(focused) {
+            var view = this.view;
+            if (focused) {
+                this.__unlistenToDocument();
+                
+                view.listenToPlatform(focused, &#39;onkeydown&#39;, &#39;__handleKeyDown&#39;);
+                view.listenToPlatform(focused, &#39;onkeypress&#39;, &#39;__handleKeyPress&#39;);
+                view.listenToPlatform(focused, &#39;onkeyup&#39;, &#39;__handleKeyUp&#39;);
+            } else {
+                var prevFocused = sprite.focus.prevFocusedView;
+                if (prevFocused) {
+                    view.stopListeningToPlatform(prevFocused, &#39;onkeydown&#39;, &#39;__handleKeyDown&#39;);
+                    view.stopListeningToPlatform(prevFocused, &#39;onkeypress&#39;, &#39;__handleKeyPress&#39;);
+                    view.stopListeningToPlatform(prevFocused, &#39;onkeyup&#39;, &#39;__handleKeyUp&#39;);
+                }
+                
+                this.__listenToDocument();
+            }
+        },
+        
+<span id='global-method-__listenToDocument'>        /** @private */
+</span>        __listenToDocument: function() {
+            var view = this.view;
+            view.listenToPlatform(view, &#39;onkeydown&#39;, &#39;__handleKeyDown&#39;);
+            view.listenToPlatform(view, &#39;onkeypress&#39;, &#39;__handleKeyPress&#39;);
+            view.listenToPlatform(view, &#39;onkeyup&#39;, &#39;__handleKeyUp&#39;);
+        },
+        
+<span id='global-method-__unlistenToDocument'>        /** @private */
+</span>        __unlistenToDocument: function() {
+            var view = this.view;
+            view.stopListeningToPlatform(view, &#39;onkeydown&#39;, &#39;__handleKeyDown&#39;);
+            view.stopListeningToPlatform(view, &#39;onkeypress&#39;, &#39;__handleKeyPress&#39;);
+            view.stopListeningToPlatform(view, &#39;onkeyup&#39;, &#39;__handleKeyUp&#39;);
+        },
+        
+<span id='global-method-__handleKeyDown'>        /** @private */
+</span>        __handleKeyDown: function(platformEvent) {
+            var keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+            if (this.__shouldPreventDefault(keyCode, platformEvent.target)) sprite.preventDefault(platformEvent);
+            
+            // Keyup events do not fire when command key is down so fire a keyup
+            // event immediately. Not an issue for other meta keys: shift, ctrl 
+            // and option.
+            if (this.isCommandKeyDown() &amp;&amp; keyCode !== 16 &amp;&amp; keyCode !== 17 &amp;&amp; keyCode !== 18) {
+                this.view.sendEvent(&#39;onkeydown&#39;, keyCode);
+                this.view.sendEvent(&#39;onkeyup&#39;, keyCode);
+                
+                // Assume command key goes back up since it is common for the page
+                // to lose focus after the command key is used. Do this for every 
+                // key other than &#39;z&#39; since repeated undo/redo is 
+                // nice to have and doesn&#39;t typically result in loss of focus 
+                // to the page.
+                if (keyCode !== 90) {
+                    this.view.sendEvent(&#39;onkeyup&#39;, this.KEYCODE_COMMAND);
+                    this.__keysDown[this.KEYCODE_COMMAND] = false;
+                }
+            } else {
+                this.__keysDown[keyCode] = true;
+                
+                // Check for &#39;tab&#39; key and do focus traversal.
+                if (keyCode === 9) {
+                    var ift = this.view.ignoreFocusTrap(), gf = globalRegistry.focus;
+                    if (this.isShiftKeyDown()) {
+                        gf.prev(ift);
+                    } else {
+                        gf.next(ift);
+                    }
+                }
+                
+                this.view.sendEvent(&#39;onkeydown&#39;, keyCode);
+            }
+        },
+        
+<span id='global-method-__handleKeyPress'>        /** @private */
+</span>        __handleKeyPress: function(platformEvent) {
+            var keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+            this.view.sendEvent(&#39;onkeypress&#39;, keyCode);
+        },
+        
+<span id='global-method-__handleKeyUp'>        /** @private */
+</span>        __handleKeyUp: function(platformEvent) {
+            var keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+            if (this.__shouldPreventDefault(keyCode, platformEvent.target)) sprite.preventDefault(platformEvent);
+            this.__keysDown[keyCode] = false;
+            this.view.sendEvent(&#39;onkeyup&#39;, keyCode);
+        },
+        
+<span id='global-method-__shouldPreventDefault'>        /** @private */
+</span>        __shouldPreventDefault: function(keyCode, targetElem) {
+            switch (keyCode) {
+                case 8: // Backspace
+                    // Catch backspace since it navigates the history. Allow it to
+                    // go through for text input elements though.
+                    var nodeName = targetElem.nodeName;
+                    if (nodeName === &#39;TEXTAREA&#39; || 
+                        (nodeName === &#39;INPUT&#39; &amp;&amp; (targetElem.type === &#39;text&#39; || targetElem.type === &#39;password&#39;)) ||
+                        (nodeName === &#39;DIV&#39; &amp;&amp; targetElem.contentEditable === &#39;true&#39; &amp;&amp; targetElem.firstChild)
+                    ) return false;
+                    
+                    return true;
+                    
+                case 9: // Tab
+                    // Tab navigation is handled by the framework.
+                    return true;
+            }
+            return false;
+        }
+    });
+});
+</pre>
+</body>
+</html>

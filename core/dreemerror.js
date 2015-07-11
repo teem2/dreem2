@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class DreemError
+ * @class DreemError {Internal}
  * Unified Error class that holds enough information to 
  * find the right file at the right line
  */

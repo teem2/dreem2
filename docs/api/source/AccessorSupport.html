@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides support for getter and setter functions on an object.
+</span>    
+    Events:
+        None
+    
+    Attributes:
+        earlyAttrs:array An array of attribute names that will be set first.
+        lateAttrs:array An array of attribute names that will be set last.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        acorn = require(&#39;$LIB/acorn.js&#39;),
+        evaluator = require(&#39;$SPRITE/expressionresolver.js&#39;);
+    
+    module.exports = dr.AccessorSupport = new JS.Module(&#39;AccessorSupport&#39;, {
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+<span id='global-method-generateSetterName'>            /** Generate a setter name for an attribute.
+</span>                @returns string */
+            generateSetterName: function(attrName) {
+                return this.SETTER_NAMES[attrName] || (this.SETTER_NAMES[attrName] = this.generateName(attrName, &#39;set_&#39;));
+            },
+            
+<span id='global-method-generateGetterName'>            /** Generate a getter name for an attribute.
+</span>                @returns string */
+            generateGetterName: function(attrName) {
+                return this.GETTER_NAMES[attrName] || (this.GETTER_NAMES[attrName] = this.generateName(attrName, &#39;get_&#39;));
+            },
+            
+<span id='global-method-generateConfigAttrName'>            /** Generate a config name for an attribute.
+</span>                @returns string */
+            generateConfigAttrName: function(attrName) {
+                return this.CONFIG_ATTR_NAMES[attrName] || (this.CONFIG_ATTR_NAMES[attrName] = this.generateName(attrName, &#39;__cfg_&#39;));
+            },
+            
+<span id='global-method-generateConstraintFunctionName'>            /** Generate a constraint function name for an attribute.
+</span>                @returns string */
+            generateConstraintFunctionName: function(attrName) {
+                return this.CONSTRAINT_FUNCTION_NAMES[attrName] || (this.CONSTRAINT_FUNCTION_NAMES[attrName] = this.generateName(attrName, &#39;__fnc_&#39;));
+            },
+            
+<span id='global-method-generateName'>            /** Generates a method name by capitalizing the attrName and
+</span>                prepending the prefix.
+                @returns string */
+            generateName: function(attrName, prefix) {
+                return prefix + attrName;
+            },
+            
+<span id='global-property-GETTER_NAMES'>            /** Caches getter names. */
+</span>            GETTER_NAMES:{},
+            
+<span id='global-property-SETTER_NAMES'>            /** Caches setter names. */
+</span>            SETTER_NAMES:{},
+            
+<span id='global-property-CONFIG_ATTR_NAMES'>            /** Caches config attribute names. */
+</span>            CONFIG_ATTR_NAMES:{},
+            
+<span id='global-property-CONSTRAINT_FUNCTION_NAMES'>            /** Caches constraint function names. */
+</span>            CONSTRAINT_FUNCTION_NAMES:{},
+            
+            CONSTRAINTS: {
+                BINDINGS:{},
+                SCOPES: null,
+                PROPERTY_BINDINGS: {
+                    MemberExpression: function(n, parent) {
+                        // avoid binding to CallExpressions whose parent is a 
+                        // function call, e.g. Math.round(...) shouldn&#39;t attempt 
+                        // to bind to &#39;round&#39; on Math
+                        if (parent.node.type !== &#39;CallExpression&#39; || parent.sub !== &#39;callee&#39;) {
+                            dr.AccessorSupport.CONSTRAINTS.SCOPES.push({
+                                binding:acorn.stringify(n.object),
+                                property:n.property.name
+                            });
+                        }
+                        return true;
+                    }
+                },
+                
+                __registeredConstraints: [],
+                __lockCount: 0,
+                incrementLockCount: function() {
+                    ++this.__lockCount;
+                },
+                decrementLockCount: function() {
+                    if (--this.__lockCount === 0) {
+                        // Bind constraints
+                        var rcs = this.__registeredConstraints;
+                        while (rcs.length) rcs.shift().bindConstraint(rcs.shift(), rcs.shift(), true);
+                    }
+                },
+                registerConstraint: function(node, attrName, expression) {
+                    if (this.__lockCount === 0) {
+                        // Bind immediatly if no nodes are being instantiated.
+                        node.bindConstraint(attrName, expression);
+                    } else {
+                        this.__registeredConstraints.push(node, attrName, expression);
+                    }
+                }
+            },
+            
+            coerce: function(attrName, value, type, defaultValue, scope) {
+                switch (type) {
+                    case &#39;number&#39;:
+                        var newValue = parseFloat(value);
+                        if (isNaN(newValue)) {
+                            if (defaultValue !== undefined) {
+                                value = defaultValue;
+                            } else {
+                                dr.dumpStack(&quot;NaN encountered parsing value as number with no default: &quot; + value);
+                            }
+                        } else {
+                            value = newValue;
+                        }
+                        break;
+                    case &#39;positivenumber&#39;:
+                        var newValue = parseFloat(value);
+                        if (isNaN(newValue)) {
+                            if (defaultValue !== undefined) {
+                                value = defaultValue;
+                            } else {
+                                value = 0;
+                            }
+                        } else {
+                            value = newValue;
+                        }
+                        value = Math.max(0, value);
+                        break;
+                    case &#39;boolean&#39;:
+                        if (value == null) {
+                            value = defaultValue !== undefined ? defaultValue : false;
+                        } else if (typeof value === &#39;string&#39;) {
+                            value = value === &#39;true&#39;;
+                        } else {
+                            value = value ? true : false;
+                        }
+                        break;
+                    case &#39;string&#39;:
+                        if (value == null) {
+                            value = defaultValue !== undefined ? defaultValue : &#39;&#39;;
+                        } else {
+                            value = &#39;&#39; + value;
+                        }
+                        break;
+                    case &#39;color&#39;:
+                        if (value == null) {
+                            value = defaultValue !== undefined ? defaultValue : &#39;transparent&#39;;
+                        } else {
+                            value = &#39;&#39; + value;
+                        }
+                        break;
+                    case &#39;motion&#39;:
+                        // Lookup easing function if a string is provided.
+                        if (typeof value === &#39;string&#39;) value = dr.Animator.motionFunctions[value];
+                        
+                        // Use default if invalid
+                        if (!value) value = dr.Animator.DEFAULT_MOTION;
+                        break;
+                    case &#39;json&#39;:
+                        try {
+                            value = JSON.parse(value);
+                        } catch (e) {
+                            dr.global.error.logWarn(&quot;error parsing json value &#39;&quot; + value + &quot;&#39; for attribute &#39;&quot; + attrName + &quot;&#39;&quot;);
+                        }
+                        break;
+                    case &#39;expression&#39;:
+                        if (typeof value === &#39;string&#39;) {
+                            value = (new Function(&#39;dr&#39;, &#39;return &#39; + value)).bind(scope)(dr);
+                        }
+                        break;
+                    case &#39;*&#39;:
+                    case &#39;object&#39;:
+                    case &#39;function&#39;:
+                    default:
+                }
+                return value;
+            }
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+        appendToEarlyAttrs: function() {Array.prototype.push.apply(this.earlyAttrs || (this.earlyAttrs = []), arguments);},
+        prependToEarlyAttrs: function() {Array.prototype.unshift.apply(this.earlyAttrs || (this.earlyAttrs = []), arguments);},
+        appendToLateAttrs: function() {Array.prototype.push.apply(this.lateAttrs || (this.lateAttrs = []), arguments);},
+        prependToLateAttrs: function() {Array.prototype.unshift.apply(this.lateAttrs || (this.lateAttrs = []), arguments);},
+        
+        coerce: function(attrName, value, type, defaultValue) {
+            return dr.AccessorSupport.coerce(attrName, value, type, defaultValue, this);
+        },
+        
+<span id='global-method-setAttributes'>        /** Calls a setter function for each attribute in the provided map.
+</span>            @param attrs:object a map of attributes to set.
+            @returns void. */
+        setAttributes: function(attrs) {
+            var earlyAttrs = this.earlyAttrs,
+                lateAttrs = this.lateAttrs,
+                attrName, extractedLateAttrs, i, len;
+            if (earlyAttrs || lateAttrs) {
+                // Make a shallow copy of attrs since we can&#39;t guarantee that
+                // attrs won&#39;t be reused
+                var copyOfAttrs = {};
+                for (attrName in attrs) copyOfAttrs[attrName] = attrs[attrName];
+                attrs = copyOfAttrs;
+                
+                // Do early setters
+                if (earlyAttrs) {
+                    i = 0;
+                    len = earlyAttrs.length;
+                    while (len &gt; i) {
+                        attrName = earlyAttrs[i++];
+                        if (attrName in attrs) {
+                            this.setAttribute(attrName, attrs[attrName]);
+                            delete attrs[attrName];
+                        }
+                    }
+                }
+                
+                // Extract late setters for later execution
+                if (lateAttrs) {
+                    extractedLateAttrs = [];
+                    i = 0;
+                    len = lateAttrs.length;
+                    while (len &gt; i) {
+                        attrName = lateAttrs[i++];
+                        if (attrName in attrs) {
+                            extractedLateAttrs.push(attrName, attrs[attrName]);
+                            delete attrs[attrName];
+                        }
+                    }
+                }
+            }
+            
+            // Do normal setters in alphabetical order
+            var keys = Object.keys(attrs).sort();
+            len = keys.length;
+            i = 0;
+            for (; len &gt; i;) {
+                attrName = keys[i++];
+                this.setAttribute(attrName, attrs[attrName]);
+            }
+            
+            // Do late setters
+            if (extractedLateAttrs) {
+                i = 0;
+                len = extractedLateAttrs.length;
+                while (len &gt; i) this.setAttribute(extractedLateAttrs[i++], extractedLateAttrs[i++]);
+            }
+        },
+        
+<span id='global-method-getAttribute'>        /** A generic getter function that can be called to get a value from this
+</span>            object. Will defer to a defined getter if it exists.
+            @param attrName:string The name of the attribute to get.
+            @returns the attribute value. */
+        getAttribute: function(attrName) {
+            var getterName = dr.AccessorSupport.generateGetterName(attrName);
+            return this[getterName] ? this[getterName]() : this[attrName];
+        },
+        
+<span id='global-method-setAttribute'>        /** A generic setter function that can be called to set the configured
+</span>            value of an attribute on this object. Will first test if the 
+            &quot;config&quot; value has changed and if so it will proceed to update the
+            value, bind/unbind constraints and finally set the actual
+            attribute value via  the setActualAttribute method.
+            @param attrName:string The name of the attribute to set.
+            @param value:* The value to set.
+            @returns This object for chainability. */
+        setAttribute: function(attrName, value) {
+            var cfgAttrName = dr.AccessorSupport.generateConfigAttrName(attrName);
+            if (this[cfgAttrName] !== value) {
+                this[cfgAttrName] = value;
+                
+                // Teardown Constraint if one already exists
+                this.unbindConstraint(attrName);
+                
+                // Bind New Constraint if necessary and then set actual value
+                if (!this.setupConstraint(attrName, value)) this.setActualAttribute(attrName, value);
+            }
+            return this;
+        },
+        
+<span id='global-method-setActualAttribute'>        /** A generic setter function that is called to set the actual value 
+</span>            of an attribute on this object. Will defer to a defined setter if 
+            it exists. The implementation assumes this object is an 
+            Observable so it will have a &#39;sendEvent&#39; method.
+            @param attrName:string The name of the attribute to set.
+            @param value:* The value to set.
+            @returns This object for chainability. */
+        setActualAttribute: function(attrName, value) {
+            var setterName = dr.AccessorSupport.generateSetterName(attrName);
+            if (this[setterName]) {
+                value = this[setterName](value);
+                if (value !== dr.noop &amp;&amp; value !== undefined) this.setActual(attrName, value);
+            } else {
+                this.setActual(attrName, value);
+            }
+            return this;
+        },
+        
+<span id='global-method-getTypeForAttrName'>        /** @private */
+</span>        getTypeForAttrName: function(attrName) {
+            return &#39;*&#39;;
+        },
+        
+        // Common Setter Helpers //
+<span id='global-method-setActual'>        /** Sets the actual value of an attribute on an object and fires an
+</span>            event if the value has changed.
+            @param attrName:string The name of the attribute to set.
+            @param value:* The value to set.
+            @param type:string The type to try to coerce the value to.
+            @param defaultValue:* (optional) The default value to use when
+                coercion fails.
+            @param beforeEventFunc:function (optional) A function that gets called
+                before the event may be fired.
+            @returns boolean: True if the value was changed, false otherwise. */
+        setActual: function(attrName, value, type, defaultValue, beforeEventFunc) {
+            if (!type) type = this.getTypeForAttrName(attrName);
+            
+            if (this[attrName] !== (value = this.coerce(attrName, value, type, defaultValue))) {
+                // Store value and invoke setter on sprite if it exists
+                var setterName = dr.AccessorSupport.generateSetterName(attrName),
+                    sprite = this.sprite;
+                this[attrName] = (sprite &amp;&amp; sprite[setterName]) ? sprite[setterName](value) : value;
+                
+                // Invoke the beforeEventFunc if possible
+                if (beforeEventFunc) beforeEventFunc();
+                
+                // Fire an event if possible
+                if (this.sendEvent) this.sendEvent(&#39;on&#39; + attrName, this[attrName]);
+                
+                return true;
+            }
+            return false;
+        },
+        
+<span id='global-method-setSimpleActual'>        /** Sets the actual value of an attribute on an object.
+</span>            @param attrName:string The name of the attribute to set.
+            @param value:* The value to set.
+            @param fireEvent:boolean (optional) If true an attempt will be made
+                to fire an event. Defaults to undefined which is equivalent 
+                to false.
+            @returns boolean: True if the value was changed, false otherwise. */
+        setSimpleActual: function(attrName, value, fireEvent) {
+            if (this[attrName] !== value) {
+                this[attrName] = value;
+                
+                // Fire an event if possible
+                if (fireEvent &amp;&amp; this.sendEvent) this.sendEvent(&#39;on&#39; + attrName, this[attrName]);
+                
+                return true;
+            }
+            return false;
+        },
+        
+        // Constraints //
+<span id='global-method-setConstraint'>        /** A convienence method for setting an attribute as a constraint.
+</span>            This is a wrapper around setAttribute with &#39;${expression}&#39; for
+            the value.
+            @param attrName:string The name of the attribute to set.
+            @param expression:string The expression to set.
+            @returns This object for chainability. */
+        setConstraint: function(attrName, expression) {
+            this.setAttribute(attrName, this.constraintify(expression));
+            return this;
+        },
+        
+        unbindConstraint: function(attrName) {
+            var constraints = this.constraints,
+                constraintInfo = constraints ? constraints[attrName] : null;
+            if (constraintInfo) {
+                var funcName = constraintInfo.funcName,
+                    bindings = constraintInfo.bindings, i = bindings.length, binding;
+                while (i) {
+                    binding = bindings[--i];
+                    this.stopListening(binding.target, binding.eventName, funcName);
+                }
+                delete this[funcName];
+                delete constraints[attrName];
+            }
+        },
+        
+<span id='global-method-setupConstraint'>        /** Attempts to setup the provided value as a constraint.
+</span>            @param attrName:string The name of the attribute the constraint is for.
+            @param value:* The value, possibly a constraint expression, to set.
+            @return boolean True if the value was a constraint, false otherwise. */
+        setupConstraint: function(attrName, value) {
+            if (this.isConstraintExpression(value)) {
+                // Defer constraint resolution until later.
+                dr.AccessorSupport.CONSTRAINTS.registerConstraint(
+                    this, attrName, this.extractConstraintExpression(value)
+                );
+                return true;
+            }
+            return false;
+        },
+        
+<span id='global-method-constraintify'>        /** @private */
+</span>        constraintify: function(expression) {return &#39;${&#39; + expression + &#39;}&#39;;},
+        
+<span id='global-method-isConstraintExpression'>        /** @private */
+</span>        isConstraintExpression: function(value) {
+            return typeof value === &#39;string&#39; &amp;&amp; value.startsWith(&#39;${&#39;) &amp;&amp; value.endsWith(&#39;}&#39;);
+        },
+        
+<span id='global-method-extractConstraintExpression'>        /** @private */
+</span>        extractConstraintExpression: function(value) {
+            return value.substring(2, value.length - 1);
+        },
+        
+<span id='global-method-rebindConstraints'>        /** Rebinds all constraints on this object. */
+</span>        rebindConstraints: function() {
+            var constraints = this.constraints;
+            if (constraints) {
+                for (var attrName in constraints) {
+                    this.bindConstraint(attrName, constraints[attrName].expression);
+                }
+            }
+        },
+        
+<span id='global-method-bindConstraint'>        /** @private */
+</span>        bindConstraint: function(attrName, expression, isAsync) {
+            // Unbind again in case multiple constraints got registered for the
+            // same attribute during initialization.
+            if (isAsync) this.unbindConstraint(attrName);
+            
+            expression = evaluator(expression);
+            
+            // Find Bindings
+            var AS = dr.AccessorSupport,
+                CONSTRAINTS = AS.CONSTRAINTS,
+                bindingCache = CONSTRAINTS.BINDINGS;
+            
+            if (!(expression in bindingCache)) {
+                CONSTRAINTS.SCOPES = [];
+                acorn.walkDown(acorn.parse(expression), CONSTRAINTS.PROPERTY_BINDINGS);
+                bindingCache[expression] = CONSTRAINTS.SCOPES;
+            }
+            
+            // Create function to be called for the constraint.
+            var fn = (new Function(&#39;event&#39;,&#39;dr&#39;,&#39;this.setActualAttribute(&quot;&#39; + attrName + &#39;&quot;,&#39; + expression+ &#39;)&#39;)).bind(this); // TAG:Global Scope
+            
+            // Resolve binding paths and start listening to binding targets
+            if (fn) {
+                var funcName = AS.generateConstraintFunctionName(attrName),
+                    bindings = [],
+                    scopes = bindingCache[expression], i = scopes.length, 
+                    scope, eventName, target;
+                
+                while (i) {
+                    scope = scopes[--i];
+                    target = dr.resolveName(scope.binding, this);
+                    if (target) {
+                        eventName = &#39;on&#39; + scope.property;
+                        this.listenTo(target, eventName, funcName);
+                        bindings.push({target:target, eventName:eventName});
+                    }
+                }
+                (this.constraints || (this.constraints = {}))[attrName] = {funcName:funcName, bindings:bindings, expression:expression};
+                
+                // Assign function to this object and execute immediately
+                this[funcName] = fn;
+                fn(null, dr); // TAG:Global Scope
+            }
+        }
+    });
+});
+</pre>
+</body>
+</html>

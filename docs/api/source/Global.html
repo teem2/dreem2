@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Holds references to &quot;global&quot; objects and services. Fires events when 
+</span>    these globals are registered and unregistered.
+    
+    Events:
+        onregister&lt;key&gt;:object Fired when an object is stored under the key.
+        onunregister&lt;key&gt;:object Fired when an object is removed from the key.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = dr.global = new JS.Singleton(&#39;GlobalRegistry&#39;, {
+        include: [
+            require(&#39;$LIB/dr/events/Observable.js&#39;)
+        ],
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-register'>        /** Registers the provided global under the key. Fires a register&lt;key&gt;
+</span>            event. If a global is already registered under the key the existing
+            global is unregistered first.
+            @returns void */
+        register: function(key, v) {
+            if (this.hasOwnProperty(key)) {
+                sprite.console.warn(&quot;Warning: dr.global key in use: &quot;, key);
+                this.unregister(key);
+            }
+            this[key] = v;
+            this.sendEvent(&#39;onregister&#39; + key, v);
+        },
+        
+<span id='global-method-unregister'>        /** Unegisters the global for the provided key. Fires an unregister&lt;key&gt;
+</span>            event if the key exists.
+            @returns void */
+        unregister: function(key) {
+            if (this.hasOwnProperty(key)) {
+                var v = this[key];
+                delete this[key];
+                this.sendEvent(&#39;onunregister&#39; + key, v);
+            } else {
+                sprite.console.warn(&quot;Warning: dr.global key not in use: &quot;, key);
+            }
+        }
+    });
+});
+</pre>
+</body>
+</html>

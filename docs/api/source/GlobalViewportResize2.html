@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific viewport resize functionality. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        globalScope = require(&#39;$SPRITE/global.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = GlobalViewportResize = new JS.Class(&#39;sprite.GlobalViewportResize&#39;, {
+        // Constructor /////////////////////////////////////////////////////////////
+<span id='global-method-initialize'>        /** The standard JSClass initializer function. Subclasses should not
+</span>            override this function.
+            @param attrs:object A map of attribute names and values.
+            @returns void */
+        initialize: function(view, attrs) {
+            this.view = view;
+            
+            var self = this;
+            sprite.addEventListener(globalScope, &#39;resize&#39;, function(domEvent) {
+                view.__handleResizeEvent(self.getViewportWidth(), self.getViewportHeight());
+            });
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+        getViewportWidth: function() {
+            return globalScope.innerWidth;
+        },
+        
+        getViewportHeight: function() {
+            return globalScope.innerHeight;
+        }
+    });
+});
+</pre>
+</body>
+</html>

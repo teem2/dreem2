@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** A base class for animators and animator groups.
+</span>    
+    Animation Progress:
+        Expected Behavior for combinations of bounce, reverse and repeat. Loop
+        count starts at 0 for forward motion and increases. For reverse motion
+        the loop count starts at the repeat value minus one. Negative repeat
+        values (which indicate infinite looping) always start at 0 regardless of
+        direction of motion.
+        
+        In the tables below, 
+            --&gt; indicates &quot;regular&quot; animation progess which is from the &quot;from&quot; 
+            to the &quot;to&quot; value of the animation as time increases. 
+            
+            &lt;-- indicates &quot;flipped&quot; animation progress which is from the &quot;to&quot; 
+            to the &quot;from&quot; value of the animation as time increases.
+            
+            Loop counts are organized so that time proceeds from top to bottom.
+        
+        Even repeat values (2, 4, 6, ...):
+            
+                   | Forward (loop) | Reverse (loop) |
+            -------+----------------+----------------+
+            Normal |     --&gt; (0)    |     &lt;-- (1)    |
+                   |     --&gt; (1)    |     &lt;-- (0)    |
+            -------+----------------+----------------+
+            Bounce |     --&gt; (0)    |     &lt;-- (1)    |
+                   |     &lt;-- (1)    |     --&gt; (0)    |
+            -------+----------------+----------------+
+        
+        Odd repeat values (1, 3, 5, ...):
+            
+                   | Forward (loop) | Reverse (loop) |
+            -------+----------------+----------------+
+            Normal |     --&gt; (0)    |     &lt;-- (2)    |
+                   |     --&gt; (1)    |     &lt;-- (1)    |
+                   |     --&gt; (2)    |     &lt;-- (0)    |
+            -------+----------------+----------------+
+            Bounce |     --&gt; (0)    |     &lt;-- (2)    |
+                   |     &lt;-- (1)    |     --&gt; (1)    |
+                   |     --&gt; (2)    |     &lt;-- (0)    |
+            -------+----------------+----------------+
+    
+    Delay is always at the &quot;front&quot; of an animation. This means if an animation
+    is flipped the delay will happen at the end of the animation loop.
+    
+    Events:
+        onstart:this Fired when the animation starts running.
+        onend:this Fired when the animation stops running.
+        ontick:this Fired each time the animation updates.
+        onloop:Fired when the animation repeats. The value is the current
+            loop count.
+        running:boolean Fired when the animation starts or stops.
+        paused:boolean Fired when the animation is paused or unpaused.
+        
+    Attributes:
+        target:object The object to animate the attribute on. The default is 
+            the parent of this node.
+        duration:number The length of time the animation will run in millis.
+        delay:number The length of time before the animation begins updating.
+            The default is 0.
+        repeat:number The number of times to repeat the animation. If negative 
+            the animation will repeat forever. The default value is 1.
+        reverse:boolean If true, the animation is run in reverse.
+        bounce:boolean If true, each loop alternates between forward and
+            reverse. Defaults to false.
+        running:boolean Indicates if the animation is currently running. The 
+            default value is true.
+        paused:boolean Indicates if the animation is temporarily paused. The 
+            default value is false.
+        callback:function A function that gets called when the animation
+            completes. A boolean value is passed into the function and will be
+            true if the animation completed successfully or false if not.
+    
+    Private Attributes:
+        __loopCount:number the loop currently being run.
+        __progress:number the number of millis currently used during the
+            current animation loop.
+        __loopTime:number The total time for a single loop of the animation.
+        __isPuppet:boolean Indicates if this animator is being puppeted by
+            an animation group or not. Defaults to undefined which is
+            equivalent to false.
+        totalDuration:number The total duration of this animator if run.
+        __puppetStart:number When this animator starts animating when
+            puppeted.
+        __puppetEnd:number When this animator stops animating when
+            puppeted.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    require(&#39;$LIB/dr/globals/GlobalIdle.js&#39;);
+    
+    module.exports = dr.AnimBase = new JS.Class(&#39;AnimBase&#39;, require(&#39;$LIB/dr/Node.js&#39;), {
+        include: [
+            require(&#39;$LIB/dr/model/pool/Reusable.js&#39;)
+        ],
+        
+        
+        // Life Cycle //////////////////////////////////////////////////////////////
+<span id='global-method-initNode'>        /** @overrides dr.Node */
+</span>        initNode: function(parent, attrs) {
+            this.duration = this.__loopTime = dr.AnimBase.DEFAULT_DURATION;
+            this.reverse = this.paused = this.bounce = false;
+            this.repeat = 1;
+            this.delay = 0;
+            
+            if (!parent.isA(dr.AnimBase)) {
+                if (attrs.running === undefined) attrs.running = true;
+            }
+            
+            var target = attrs.target;
+            if (target &amp;&amp; typeof target === &#39;string&#39; &amp;&amp; !this.isConstraintExpression(target)) {
+                attrs.target = this.constraintify(target);
+            }
+            
+            this.callSuper(parent, attrs);
+            
+            this.reset();
+            
+            if (this.running &amp;&amp; !this.__isPuppet) {
+                this.sendEvent(&#39;onstart&#39;, this);
+                this.sendEvent(&#39;onloop&#39;, this.__loopCount);
+            }
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+        set_target: function(v) {this.setActual(&#39;target&#39;, v, &#39;object&#39;);},
+        
+        get_target: function() {
+            var target = this.target;
+            if (!target) {
+                target = this.parent;
+                if (target.isA(dr.AnimBase)) {
+                    this.searchAncestors(function(n) {
+                        if (n.target) {
+                            target = n.target;
+                            return true;
+                        }
+                        
+                        if (!n.isA(dr.AnimBase)) {
+                            target = n;
+                            return true;
+                        }
+                        
+                        return false;
+                    });
+                }
+            }
+            return target;
+        },
+        
+        set_delay: function(v) {
+            if (this.setActual(&#39;delay&#39;, v, &#39;number&#39;, 0)) {
+                this.__calculateLoopTime();
+                this.__calculateTotalDuration();
+            }
+        },
+        set_duration: function(v) {
+            if (this.setActual(&#39;duration&#39;, v, &#39;number&#39;, dr.AnimBase.DEFAULT_DURATION)) {
+                this.__calculateLoopTime();
+                this.__calculateTotalDuration();
+            }
+        },
+        set_repeat: function(v) {
+            if (this.setActual(&#39;repeat&#39;, v, &#39;number&#39;, 1)) {
+                this.__calculateTotalDuration();
+            }
+        },
+        
+        set_bounce: function(v) {this.setActual(&#39;bounce&#39;, v, &#39;boolean&#39;, false);},
+        
+        set_reverse: function(v) {
+            if (this.setActual(&#39;reverse&#39;, v, &#39;boolean&#39;, false)) {
+                if (!this.running) this.reset();
+            }
+        },
+        
+        get_reverse: function() {
+            var reverse = this.reverse;
+            if (this.parent &amp;&amp; this.parent.isA(dr.AnimBase)) {
+                if (reverse) {
+                    return !this.parent.__isFlipped();
+                } else {
+                    return this.parent.__isFlipped();
+                }
+            }
+            return reverse;
+        },
+        
+        set_running: function(v) {
+            if (this.setActual(&#39;running&#39;, v, &#39;boolean&#39;, true)) {
+                if (!this.paused) {
+                    if (this.running) {
+                        if (!this.__isPuppet) {
+                            this.listenTo(dr.global.idle, &#39;onidle&#39;, &#39;__update&#39;);
+                            if (!this.initing) {
+                                this.sendEvent(&#39;onstart&#39;, this);
+                                this.sendEvent(&#39;onloop&#39;, this.__loopCount);
+                            }
+                        }
+                    } else {
+                        this.reset();
+                        if (!this.__isPuppet) {
+                            this.stopListening(dr.global.idle, &#39;onidle&#39;, &#39;__update&#39;);
+                            if (!this.initing) {
+                                this.sendEvent(&#39;onend&#39;, this);
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        
+        set_paused: function(v) {
+            if (this.setActual(&#39;paused&#39;, v, &#39;boolean&#39;, false)) {
+                if (this.running) {
+                    if (!this.__isPuppet) {
+                        if (this.paused) {
+                            this.stopListening(dr.global.idle, &#39;onidle&#39;, &#39;__update&#39;);
+                        } else {
+                            this.listenTo(dr.global.idle, &#39;onidle&#39;, &#39;__update&#39;);
+                        }
+                    }
+                }
+            }
+        },
+        
+        set_callback: function(v) {this.setSimpleActual(&#39;callback&#39;, v);},
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+        pause: function() {this.setAttribute(&#39;paused&#39;, true);},
+        resume: function() {this.setAttribute(&#39;paused&#39;, false);},
+        
+        stop: function() {this.setAttribute(&#39;running&#39;, false);},
+        play: function() {this.setAttribute(&#39;running&#39;, true);},
+        
+<span id='global-method-makePuppet'>        /** @private */
+</span>        makePuppet: function(animGroup) {this.__isPuppet = true;},
+        
+<span id='global-method-releasePuppet'>        /** @private */
+</span>        releasePuppet: function(animGroup) {this.__isPuppet = false;},
+        
+<span id='global-method-__calculateLoopTime'>        /** @private */
+</span>        __calculateLoopTime: function() {
+            this.__loopTime = this.delay + this.duration;
+        },
+        
+<span id='global-method-__calculateTotalDuration'>        /** @private */
+</span>        __calculateTotalDuration: function() {
+            if (this.repeat === 0) {
+                this.totalDuration = 0;
+            } else if (this.repeat &gt; 0) {
+                this.totalDuration = this.__loopTime * this.repeat;
+            } else {
+                this.totalDuration = -1;
+            }
+        },
+        
+<span id='global-method-next'>        /** A convienence method to set the callback to run when the animator
+</span>            stops running. If a callback already exists the provided callback
+            will be executed after the existing one.
+            @param callback:function the function to run.
+            @param replace:boolean (optional) if true the existing callback will 
+                be replaced with the new callback.
+            @returns void */
+        next: function(callback, replace) {
+            var existingCallback = this.callback;
+            if (existingCallback &amp;&amp; !replace) {
+                var anim = this;
+                this.set_callback(function(success, remainderTime) {
+                    existingCallback.call(anim, success, remainderTime);
+                    callback.call(anim, success, remainderTime);
+                });
+            } else {
+                this.set_callback(callback);
+            }
+        },
+        
+<span id='global-method-rewind'>        /** Puts the animator back to an initial configured state.
+</span>            @param executeCallback:boolean (optional) if true the callback, if
+                it exists, will be executed.
+            @returns void */
+        rewind: function(executeCallback) {
+            this.reset();
+            
+            this.set_running(false);
+            this.set_paused(false);
+            
+            if (executeCallback &amp;&amp; this.callback) this.callback.call(this, false);
+        },
+        
+<span id='global-method-clean'>        /** @overrides dr.Reusable */
+</span>        clean: function() {
+            this.__cfg_callback = this.callback = undefined;
+            this.__cfg_duration = this.duration = dr.AnimBase.DEFAULT_DURATION;
+            this.__cfg_reverse = this.__cfg_bounce = this.reverse = this.bounce = false;
+            this.__cfg_repeat = this.repeat = 1;
+            this.__cfg_delay = this.delay = 0;
+            
+            this.rewind(false);
+        },
+        
+<span id='global-method-reset'>        /** @private */
+</span>        reset: function() {
+            this.__loopCount = this.getAttribute(&#39;reverse&#39;) &amp;&amp; this.repeat &gt; 0 ? this.repeat - 1 : 0;
+            this.__resetProgress();
+        },
+        
+<span id='global-method-__resetProgress'>        /** @private */
+</span>        __resetProgress: function() {
+            this.__progress = this.__isFlipped() ? this.__loopTime : 0;
+        },
+        
+<span id='global-method-__isFlipped'>        /** @private */
+</span>        __isFlipped: function() {
+            if (this.bounce) {
+                if (this.getAttribute(&#39;reverse&#39;)) {
+                    if (this.repeat % 2 === 0) {
+                        return this.__loopCount % 2 !== 0;
+                    } else {
+                        return this.__loopCount % 2 === 0;
+                    }
+                } else {
+                    return this.__loopCount % 2 !== 0;
+                }
+            } else {
+                return this.getAttribute(&#39;reverse&#39;);
+            }
+        },
+        
+<span id='global-method-__update'>        /** @private */
+</span>        __update: function(idleEvent) {
+            this.__advance(idleEvent.delta);
+            this.sendEvent(&#39;ontick&#39;, this);
+        },
+        
+<span id='global-method-__advance'>        /** @private */
+</span>        __advance: function(timeDiff) {
+            if (this.running &amp;&amp; !this.paused) {
+                var reverse = this.getAttribute(&#39;reverse&#39;), 
+                    duration = this.duration,
+                    loopTime = this.__loopTime,
+                    delay = this.delay,
+                    repeat = this.repeat,
+                    remainderTime,
+                    flip = this.__isFlipped(),
+                    oldProgress = this.__progress,
+                    target = this.getAttribute(&#39;target&#39;);
+                
+                // An animation in reverse is like time going backward.
+                this.__progress += flip ? -timeDiff : timeDiff;
+                
+                // Check for overage
+                var loopIncr;
+                if (this.__progress &gt; loopTime) {
+                    remainderTime = this.__calculateRemainder(reverse, repeat, this.__progress - loopTime);
+                    loopIncr = reverse ? -1 : 1;
+                    this.__progress = loopTime;
+                } else if (0 &gt; this.__progress) {
+                    remainderTime = this.__calculateRemainder(reverse, repeat, -this.__progress);
+                    loopIncr = reverse ? -1 : 1;
+                    this.__progress = 0;
+                } else {
+                    remainderTime = 0;
+                    loopIncr = 0;
+                }
+                
+                if (target) {
+                    this.updateTarget(target, this.__progress, oldProgress, flip);
+                    
+                    this.__loopCount += loopIncr;
+                    
+                    if (
+                        (!reverse &amp;&amp; this.__loopCount === repeat) || // Forward done check
+                        (reverse &amp;&amp; 0 &gt; this.__loopCount &amp;&amp; repeat &gt; 0) // Reverse done check
+                    ) {
+                        this.set_running(false);
+                        if (this.callback) this.callback.call(this, true, remainderTime);
+                    } else if (remainderTime &gt; 0) {
+                        this.doLoop(remainderTime, loopTime);
+                    }
+                } else {
+                    sprite.console.warn(&quot;No target found for animator.&quot;, this);
+                    this.set_running(false);
+                    if (this.callback) this.callback.call(this, false);
+                }
+            }
+        },
+        
+<span id='global-method-__calculateRemainder'>        /** @private */
+</span>        __calculateRemainder: function(reverse, repeat, remainderTime) {
+            if (reverse) {
+                if (0 &gt; this.__loopCount - 1 &amp;&amp; repeat &gt; 0) return 0;
+            } else {
+                if (this.__loopCount + 1 === repeat) return 0;
+            }
+            return remainderTime;
+        },
+        
+        updateTarget: function(target, progress, oldProgress, flip) {
+            // Subclasses to implement as needed.
+        },
+        
+<span id='global-method-doLoop'>        /** @private */
+</span>        doLoop: function(remainderTime, loopTime) {
+            // Advance again if time is remaining. This occurs when
+            // the timeDiff provided was greater than the animation
+            // duration and the animation loops.
+            this.sendEvent(&#39;onloop&#39;, this.__loopCount);
+            this.__resetProgress();
+            this.__advance(remainderTime);
+        }
+    });
+    
+    dr.AnimBase.DEFAULT_DURATION = 600;
+});
+</pre>
+</body>
+</html>
