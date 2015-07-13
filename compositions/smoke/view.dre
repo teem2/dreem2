@@ -211,6 +211,16 @@ SOFTWARE. -->
           assert.equal(this.v2.y, 50);
         </handler>
       </view>
+
+      <!-- Views with mouse-related handlers automatically set clickable=true -->
+      <view>
+        <handler event="onclick">
+          return
+        </handler>
+        <handler event="oninit">
+          assert.equal(this.clickable, true);
+        </handler>
+      </view>
     </view>
   </screen>
 </screens>
