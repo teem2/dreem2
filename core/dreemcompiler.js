@@ -33,11 +33,11 @@ define(function(require, exports, module) {
 
   /* Concats all the childnodes of a jsonxml node*/
   function concatCode(node) {
-    var out = '', children = node.child;
-    if (children) {
-      var i = 0, len = children.length, child;
+    var out = '', nodeChildren = node.child;
+    if (nodeChildren) {
+      var i = 0, len = nodeChildren.length, child;
       for (; i < len; i++) {
-        child = children[i];
+        child = nodeChildren[i];
         if (child.tag === '$text' || child.tag === '$cdata') out += child.value;
       }
     }
@@ -229,11 +229,12 @@ define(function(require, exports, module) {
     }
     
     // ok lets compile a dreem class to a module
-    if (node.child) {
+    var nodeChildren = node.child;
+    if (nodeChildren) {
       var attributes = {};
       
-      for (var i = 0; i < node.child.length; i++) {
-        var child = node.child[i],
+      for (var i = 0; i < nodeChildren.length; i++) {
+        var child = nodeChildren[i],
           childTagName = child.tag,
           childAttrs = child.attr;
         switch (childTagName) {
@@ -243,7 +244,7 @@ define(function(require, exports, module) {
               var newNodes = onInclude(errors, filePathStack);
               console.log(filePathStack.join(' | '));
               newNodes.push({tag:'$filePathStackPop'});
-              node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+              nodeChildren.splice.apply(nodeChildren, [i, 1].concat(newNodes));
               i--;
             } else {
               errors.push(new DreemError('Cant support include in this location', node.pos));
@@ -278,7 +279,8 @@ define(function(require, exports, module) {
             if (childTagName.startsWith('$')) {
               if (childTagName === '$filePathStackPop') {
                 filePathStack.pop();
-                node.child.splice(i, 1);
+                nodeChildren.splice(i, 1);
+                i--;
               }
             } else { // its our render-node
               var inst = this.compileInstance(child, errors, '\t\t\t', onInclude, filePathStack);
@@ -364,11 +366,12 @@ define(function(require, exports, module) {
         }
       }
       
-      if (node.child) {
+      var nodeChildren = node.child;
+      if (nodeChildren) {
         var attributes = {};
         
-        for (var i = 0; i < node.child.length; i++) {
-          var child = node.child[i],
+        for (var i = 0; i < nodeChildren.length; i++) {
+          var child = nodeChildren[i],
             tagName = child.tag,
             attr = child.attr;
           
@@ -378,7 +381,7 @@ define(function(require, exports, module) {
                 filePathStack.push(attr.href);
                 var newNodes = onInclude(errors, filePathStack);
                 newNodes.push({tag:'$filePathStackPop'});
-                node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+                nodeChildren.splice.apply(nodeChildren, [i, 1].concat(newNodes));
                 i--;
               } else {
                 errors.push(new DreemError('Cant support include in this location', node.pos));
@@ -449,7 +452,8 @@ define(function(require, exports, module) {
               if (tagName.startsWith('$')) {
                 if (tagName === '$filePathStackPop') {
                   filePathStack.pop();
-                  node.child.splice(i, 1);
+                  nodeChildren.splice(i, 1);
+                  i--;
                 }
               } else {
                 if (children) {
