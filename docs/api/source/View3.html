@@ -81,114 +81,170 @@
   *
   *     &lt;/view&gt;
   *
-  *
-  * A Node that is a visual component on a screen.
-    
-    Events:
-        onsubviewAdded:dr.View Fired when a subview is added to this view.
-        onsubviewRemoved:dr.View Fired when a subview is removed from this view.
-        onlayoutAdded:dr.Layout Fired when a layout is added to this view.
-        onlayoutRemoved:dr.Layout Fired when a layout is removed from this view.
-    
-    Attributes:
-        Layout Related:
-            ignorelayout:json Defaults to false.
-                Indicates if layouts should ignore this view or not. A variety 
-                of configuration mechanisms are supported. Provided true or 
-                false will cause the view to be ignored or not by all layouts. 
-                If instead a serialized map is provided the keys of the map 
-                will target values the layouts with matching names. A special 
-                key of &#39;*&#39; indicates a default value for all layouts not 
-                specifically mentioned in the map.
-            layouthint:json Default to empty
-                Provides per view hinting to layouts. The specific hints 
-                supported are layout specific. Hints are provided as a map. A 
-                map key may be prefixied with the name of a layout followed by 
-                a &#39;/&#39;. This will target that hint at a specific layout. If 
-                the prefix is ommitted or a prefix of &#39;*&#39; is used the hint 
-                will be targeted to all layouts.
+*/
+
+<span id='dr-view-event-onsubviewadded'>/**
+</span> * @event onsubviewadded
+ * Fired when a subview is added to this view
+ * @param {dr.view} view The dr.view that was added
+ */
+
+<span id='dr-view-event-onsubviewremoved'>/**
+</span> * @event onsubviewremoved
+ * Fired when a subview is removed from this view
+ * @param {dr.view} view The dr.view that was removed
+ */
+
+<span id='dr-view-event-onlayoutadded'>/**
+</span> * @event onlayoutadded
+ * Fired when a layout is added to this view
+ * @param {dr.Layout} layout The dr.layout that was added
+ */
+
+<span id='dr-view-event-onlayoutremoved'>/**
+</span> * @event onlayoutremoved
+ * Fired when a layout is removed from this view
+ * @param {dr.Layout} layout The dr.layout that was removed
+ */
+
+
+<span id='dr-view-attribute-focustrap'> /**
+</span> * @attribute {Boolean} focustrap
+ * Determines if focus traversal can move above this
+ * view or not. The default is undefined which is equivalent to
+ * false. Can be ignored using a key modifier. The key modifier is
+ * typically &#39;option&#39;.
+ */
+
+<span id='dr-view-attribute-focuscage'>/**
+</span> * @attribute {Boolean} focuscage
+ * Determines if focus traversal can move above this
+ * view or not. The default is undefined which is equivalent to
+ * false. This is the same as focustrap except it can&#39;t be ignored
+ * using a key modifier.
+ *
+ */
+
+<span id='dr-view-attribute-maskfocus'>/**
+</span> * @attribute {Boolean} maskfocus
+ * Prevents focus from traversing into this view or
+ * any of its subviews. The default is undefined which is
+ * equivalent to false.
+ */
+
+<span id='dr-view-attribute-focusable'>/**
+</span> * @attribute {Boolean} focusable
+ * Indicates if this view can have focus or not. Defaults to false.
+ */
+
+<span id='dr-view-attribute-focused'>/**
+</span> * @attribute {Boolean} focused
+ * Indicates if this view has focus or not.
+ */
+
+<span id='dr-view-attribute-focusembellishment'>/**
+</span> * @attribute {Boolean} focusembellishment
+ * Indicates if the focus embellishment
+ * should be shown for this view or not when it has focus.
+ */
         
-        Focus Related:
-            focustrap:boolean Determines if focus traversal can move above this 
-                view or not. The default is undefined which is equivalent to 
-                false. Can be ignored using a key modifier. The key modifier is 
-                typically &#39;option&#39;.
-            focuscage:boolean Determines if focus traversal can move above this 
-                view or not. The default is undefined which is equivalent to 
-                false. This is the same as focustrap except it can&#39;t be ignored 
-                using a key modifier.
-            maskfocus:boolean Prevents focus from traversing into this view or 
-                any of its subviews. The default is undefined which is 
-                equivalent to false.
-            focusable:boolean Indicates if this view can have focus or not.
-                Defaults to false.
-            focused:boolean Indicates if this view has focus or not.
-            focusembellishment:boolean Indicates if the focus embellishment 
-                should be shown for this view or not when it has focus.
-        
-        Visual Related:
-            x:number The x-position of this view in pixels. Defaults to 0.
-            y:number The y-position of this view in pixels. Defaults to 0.
-            width:number The width of this view in pixels. Defaults to 0.
-            height:number the height of this view in pixels. Defaults to 0.
-            boundswidth:number (read only) The actual bounds of the view in the
-                x-dimension. This value is in pixels relative to the root view 
-                and thus compensates for rotation and scaling.
-            boundsheight:number (read only) The actual bounds of the view in 
-                the y-dimension. This value is in pixels relative to the 
-                root view and thus compensates for rotation and scaling.
-            bgcolor:string The background color of this view. Use a value of 
-                &#39;transparent&#39; to make this view transparent. Defaults 
-                to &#39;transparent&#39;.
-            opacity:number The opacity of this view. The value should be a 
-                number between 0 and 1. Defaults to 1.
-            visible:boolean Makes this view visible or not. The default value 
-                is true which means visbility is inherited from the parent view.
-            cursor:string Determines what cursor to show when moused over 
-                the view. Allowed values: &#39;auto&#39;, &#39;move&#39;, &#39;no-drop&#39;, 
-                &#39;col-resize&#39;, &#39;all-scroll&#39;, &#39;pointer&#39;, &#39;not-allowed&#39;, 
-                &#39;row-resize&#39;, &#39;crosshair&#39;, &#39;progress&#39;, &#39;e-resize&#39;, &#39;ne-resize&#39;, 
-                &#39;default&#39;, &#39;text&#39;, &#39;n-resize&#39;, &#39;nw-resize&#39;, &#39;help&#39;, 
-                &#39;vertical-text&#39;, &#39;s-resize&#39;, &#39;se-resize&#39;, &#39;inherit&#39;, &#39;wait&#39;, 
-                &#39;w-resize&#39;, &#39;sw-resize&#39;. Defaults to undefined which is 
-                equivalent to &#39;auto&#39;.
-            boxshadow:array Sets a shadow around this view. In the array,
-                index 0 is the horizontal shadow offset, index 1 is the 
-                vertical shadow offset, index 2 is the blur amount,
-                index 3 is the spread and index 4 is the color. Each entry in 
-                the array is optional and the values default 
-                to: [0, 0, 4, 0, &#39;rgba(0,0,0,0.5)&#39;]
-            gradient:array Sets a linear gradient fill on the view. The value
-                at index 0 is the gradient angle. The remaining entries are
-                the color stops. Each color stop is a color value plus an
-                optional location percentage. If no stops are provided the
-                current bgcolor and color will be used. If those do not exist
-                transparent will be used.
-    
-    Private Attributes:
-        subviews:array The array of child dr.Views for this view. Should 
-            be accessed through the getSubviews method.
-        layouts:array The array of child dr.Layouts for this view. Should
-            be accessed through the getLayouts method.
-        __fullBorderPaddingWidth:number The sum of borderleft, borderright,
-            paddingleft and paddingright.
-        __fullBorderPaddingHeight:number The sum of bordertop, borderbottom,
-            paddingtop and paddingbottom.
-        __autoLayoutwidth:dr.AutoPropertyLayout A reference to the layout
-            used for auto widths.
-        __autoLayoutheight:dr.AutoPropertyLayout A reference to the layout
-            used for auto heights.
-        __isPercentConstraint_x:boolean True if a percent constraint is used
-            for the x attribute.
-        __isPercentConstraint_y:boolean True if a percent constraint is used
-            for the y attribute.
-        __isPercentConstraint_width:boolean True if a percent constraint is 
-            used for the width attribute.
-        __isPercentConstraint_height:boolean True if a percent constraint is 
-            used for the height attribute.
-        __lockRecalc:boolean Used to prevent recacalcuation of border, 
-            padding and corner radius when setting them via set_border, 
-            set_padding or set_cornerradius.
+<span id='dr-view-attribute-cursor'> /**
+</span>  * @attribute {String} cursor
+  * Determines what cursor to show when moused over the view. Allowed values: &#39;auto&#39;, &#39;move&#39;, &#39;no-drop&#39;, &#39;col-resize&#39;,
+  * &#39;all-scroll&#39;, &#39;pointer&#39;, &#39;not-allowed&#39;, &#39;row-resize&#39;, &#39;crosshair&#39;, &#39;progress&#39;, &#39;e-resize&#39;, &#39;ne-resize&#39;, &#39;default&#39;,
+  * &#39;text&#39;, &#39;n-resize&#39;, &#39;nw-resize&#39;, &#39;help&#39;, &#39;vertical-text&#39;, &#39;s-resize&#39;, &#39;se-resize&#39;, &#39;inherit&#39;, &#39;wait&#39;, &#39;w-resize&#39;,
+  * &#39;sw-resize&#39;. Defaults to undefined which is equivalent to &#39;auto&#39;.
+*/
+
+<span id='dr-view-attribute-boxshadow'>/**
+</span> * @attribute {Array} boxshadow
+ * Sets a shadow around this view. In the array, index 0 is the horizontal shadow offset, index 1 is the
+ * vertical shadow offset, index 2 is the blur amount, index 3 is the spread and index 4 is the color.
+ * Each entry in the array is optional and the values default to: [0, 0, 4, 0, &#39;rgba(0,0,0,0.5)&#39;]
+ *
+*/
+
+<span id='dr-view-attribute-gradient'>/**
+</span> * @attribute {Array} gradient
+ * Sets a linear gradient fill on the view. The value
+ * at index 0 is the gradient angle. The remaining entries are
+ * the color stops. Each color stop is a color value plus an
+ * optional location percentage. If no stops are provided the
+ * current bgcolor and color will be used. If those do not exist
+ * transparent will be used.
+*/
+
+<span id='dr-view-attribute-subviews'>/**
+</span> * @attribute {Array} subviews
+ * The array of child dr.Views for this view. Should
+ * be accessed through the getSubviews method.
+*/
+
+<span id='dr-view-attribute-layouts'>/**
+</span> * @attribute {Array} layouts
+ * The array of child dr.Layouts for this view. Should
+ * be accessed through the getLayouts method.
+*/
+
+<span id='dr-view-attribute-__fullBorderPaddingWidth'>/**
+</span> * @attribute {Number} __fullBorderPaddingWidth
+ * @private
+ * The sum of borderleft, borderright,
+ * paddingleft and paddingright.
+*/
+
+<span id='dr-view-attribute-__fullBorderPaddingHeight'>/**
+</span> * @attribute {Number} __fullBorderPaddingHeight
+ * @private
+ * The sum of bordertop, borderbottom,
+ * paddingtop and paddingbottom.
+*/
+
+<span id='dr-view-attribute-__autoLayoutwidth'>/**
+</span> * @attribute {dr.AutoPropertyLayout} __autoLayoutwidth
+ * @private
+ * A reference to the layout
+ * used for auto widths.
+*/
+
+<span id='dr-view-attribute-__autoLayoutheight'>/**
+</span> * @attribute {dr.AutoPropertyLayout} __autoLayoutheight
+ * @private
+ * A reference to the layout
+ * used for auto heights.
+*/
+
+<span id='dr-view-attribute-__isPercentConstraint_x'>/**
+</span> * @attribute {Boolean} __isPercentConstraint_x
+ * @private
+ * True if a percent constraint is used
+ * for the x attribute.
+*/
+
+<span id='dr-view-attribute-__isPercentConstraint_y'>/**
+</span> * @attribute {Boolean} __isPercentConstraint_y
+ * @private
+ * True if a percent constraint is used
+ * for the y attribute.
+*/
+
+<span id='dr-view-attribute-__isPercentConstraint_width'>/**
+</span> * @attribute {Boolean} __isPercentConstraint_width
+ * True if a percent constraint is
+ * used for the width attribute.
+*/
+
+<span id='dr-view-attribute-__isPercentConstraint_height'>/**
+</span> * @attribute {Boolean} __isPercentConstraint_height
+ * True if a percent constraint is
+ * used for the height attribute.
+*/
+
+<span id='dr-view-attribute-__lockRecalc'>/**
+</span> * @attribute {Boolean} __lockRecalc
+ * Used to prevent recacalcuation of border,
+ * padding and corner radius when setting them via set_border,
+ * set_padding or set_cornerradius.
 */
 
 <span id='dr-view-attribute-x'>/**
