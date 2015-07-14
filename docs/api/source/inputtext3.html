@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-inputtext'>/**
+</span>     * @class dr.inputtext {UI Components, Input}
+     * @extends dr.view
+     * Provides an editable input text field.
+     *
+     *     @example
+     *     &lt;spacedlayout axis=&quot;y&quot; spacing=&quot;10&quot;&gt;&lt;/spacedlayout&gt;
+     *
+     *     &lt;text text=&quot;Enter your name:&quot;&gt;&lt;/text&gt;
+     *
+     *     &lt;inputtext id=&quot;nameinput&quot; width=&quot;200&quot;&gt;&lt;/inputtext&gt;
+     *
+     *     &lt;labelbutton text=&quot;submit&quot;&gt;
+     *       &lt;handler event=&quot;onclick&quot;&gt;
+     *         welcome.setAttribute(&#39;text&#39;, &#39;Welcome &#39; + nameinput.text);
+     *       &lt;/handler&gt;
+     *     &lt;/labelbutton&gt;
+     *
+     *     &lt;text id=&quot;welcome&quot;&gt;&lt;/text&gt;
+     *
+     * It&#39;s possible to listen for an onchange event to find out when the user changed the inputtext value:
+     *
+     *     @example
+     *     &lt;spacedlayout axis=&quot;y&quot; spacing=&quot;10&quot;&gt;&lt;/spacedlayout&gt;
+     *     &lt;text text=&quot;Type some text below and press enter:&quot;&gt;&lt;/text&gt;
+     *     &lt;inputtext id=&quot;nameinput&quot; width=&quot;200&quot; onchange=&quot;alert(&#39;onchange event: &#39; + this.text)&quot;&gt;&lt;/inputtext&gt;
+     *
+     */
+<span id='dr-inputtext-event-onselect'>/**
+</span>    * @event onselect
+    * Fired when an inputtext is selected
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onchange
+    * Fired when an inputtext has changed
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onfocus
+    * Fired when an inputtext is focused
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onblur
+    * Fired when an inputtext is blurred or loses focus
+    * @param {dr.view} view The view that fired the event
+    * 
+    * @event onkeydown
+    * Fired when a key goes down
+    * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
+    * 
+    * @event onkeyup
+    * Fired when a key goes up
+    * @param {Object} keys An object representing the keyboard state, including shiftKey, allocation, ctrlKey, metaKey, keyCode and type
+    * 
+    * @event onrows
+    * Fired the rows attribute changes.
+    * @param {number} The number of rows displayed for multiline text input.
+    */
+</pre>
+</body>
+</html>

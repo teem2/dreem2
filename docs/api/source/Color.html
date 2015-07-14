@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Models a color as individual color channels.
+</span>    
+    Events:
+        None
+   
+    Attributes:
+        red:int The red channel. Will be an integer between 0 and 255.
+        green:int The green channel. Will be an integer between 0 and 255.
+        blue:int The blue channel. Will be an integer between 0 and 255.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    
+    module.exports = dr.Color = new JS.Class(&#39;Color&#39;, {
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+<span id='global-method-toHex'>            /** Converts a number or string representation of a number to a 
+</span>                two character hex string.
+                @param value:number/string The number or string to convert.
+                @returns string: A two character hex string such as: &#39;0c&#39; or &#39;c9&#39;. */
+            toHex: function(value) {
+                value = Math.round(Number(value)).toString(16);
+                return value.length === 1 ? &#39;0&#39; + value : value;
+            },
+            
+<span id='global-method-rgbToHex'>            /** Converts red, green, and blue color channel numbers to a six 
+</span>                character hex string.
+                @param red:number The red color channel.
+                @param green:number The green color channel.
+                @param blue:number The blue color channel.
+                @param prependHash:boolean (optional) If true a &#39;#&#39; character
+                    will be prepended to the return value.
+                @returns string: Something like: &#39;#ff9c02&#39; or &#39;ff9c02&#39; */
+            rgbToHex: function(red, green, blue, prependHash) {
+                var toHex = this.toHex;
+                return [prependHash ? &#39;#&#39; : &#39;&#39;, toHex(red), toHex(green), toHex(blue)].join(&#39;&#39;);
+            },
+            
+<span id='global-method-cleanChannelValue'>            /** Limits a channel value to integers between 0 and 255.
+</span>                @param value:number the channel value to clean up.
+                @returns number */
+            cleanChannelValue: function(value) {
+                value = Math.round(value);
+                
+                if (value &gt; 255) return 255;
+                if (value &lt; 0) return 0;
+                return value;
+            },
+            
+<span id='global-method-getRedChannel'>            /** Gets the red channel from a &quot;color&quot; number.
+</span>                @return number */
+            getRedChannel: function(value) {
+                return (0xff0000 &amp; value) &gt;&gt; 16;
+            },
+            
+<span id='global-method-getGreenChannel'>            /** Gets the green channel from a &quot;color&quot; number.
+</span>                @returns number */
+            getGreenChannel: function(value) {
+                return (0x00ff00 &amp; value) &gt;&gt; 8;
+            },
+            
+<span id='global-method-getBlueChannel'>            /** Gets the blue channel from a &quot;color&quot; number.
+</span>                @returns number */
+            getBlueChannel: function(value) {
+                return (0x0000ff &amp; value);
+            },
+            
+<span id='global-method-makeColorFromNumber'>            /** Creates an dr.Color from a &quot;color&quot; number.
+</span>                @returns dr.Color */
+            makeColorFromNumber: function(value) {
+                return new dr.Color(
+                    this.getRedChannel(value),
+                    this.getGreenChannel(value),
+                    this.getBlueChannel(value)
+                );
+            },
+            
+            COLORS_BY_NAME: {
+                aliceblue:&#39;#F0F8FF&#39;,
+                antiquewhite:&#39;#FAEBD7&#39;,
+                aqua:&#39;#00FFFF&#39;,
+                aquamarine:&#39;#7FFFD4&#39;,
+                azure:&#39;#F0FFFF&#39;,
+                beige:&#39;#F5F5DC&#39;,
+                bisque:&#39;#FFE4C4&#39;,
+                black:&#39;#000000&#39;,
+                blanchedalmond:&#39;#FFEBCD&#39;,
+                blue:&#39;#0000FF&#39;,
+                blueviolet:&#39;#8A2BE2&#39;,
+                brown:&#39;#A52A2A&#39;,
+                burlywood:&#39;#DEB887&#39;,
+                cadetblue:&#39;#5F9EA0&#39;,
+                chartreuse:&#39;#7FFF00&#39;,
+                chocolate:&#39;#D2691E&#39;,
+                coral:&#39;#FF7F50&#39;,
+                cornflowerblue:&#39;#6495ED&#39;,
+                cornsilk:&#39;#FFF8DC&#39;,
+                crimson:&#39;#DC143C&#39;,
+                cyan:&#39;#00FFFF&#39;,
+                darkblue:&#39;#00008B&#39;,
+                darkcyan:&#39;#008B8B&#39;,
+                darkgoldenrod:&#39;#B8860B&#39;,
+                darkgray:&#39;#A9A9A9&#39;,
+                darkgreen:&#39;#006400&#39;,
+                darkgrey:&#39;#A9A9A9&#39;,
+                darkkhaki:&#39;#BDB76B&#39;,
+                darkmagenta:&#39;#8B008B&#39;,
+                darkolivegreen:&#39;#556B2F&#39;,
+                darkorange:&#39;#FF8C00&#39;,
+                darkorchid:&#39;#9932CC&#39;,
+                darkred:&#39;#8B0000&#39;,
+                darksalmon:&#39;#E9967A&#39;,
+                darkseagreen:&#39;#8FBC8F&#39;,
+                darkslateblue:&#39;#483D8B&#39;,
+                darkslategray:&#39;#2F4F4F&#39;,
+                darkslategrey:&#39;#2F4F4F&#39;,
+                darkturquoise:&#39;#00CED1&#39;,
+                darkviolet:&#39;#9400D3&#39;,
+                deeppink:&#39;#FF1493&#39;,
+                deepskyblue:&#39;#00BFFF&#39;,
+                dimgray:&#39;#696969&#39;,
+                dimgrey:&#39;#696969&#39;,
+                dodgerblue:&#39;#1E90FF&#39;,
+                firebrick:&#39;#B22222&#39;,
+                floralwhite:&#39;#FFFAF0&#39;,
+                forestgreen:&#39;#228B22&#39;,
+                fuchsia:&#39;#FF00FF&#39;,
+                gainsboro:&#39;#DCDCDC&#39;,
+                ghostwhite:&#39;#F8F8FF&#39;,
+                gold:&#39;#FFD700&#39;,
+                goldenrod:&#39;#DAA520&#39;,
+                gray:&#39;#808080&#39;,
+                green:&#39;#008000&#39;,
+                greenyellow:&#39;#ADFF2F&#39;,
+                grey:&#39;#808080&#39;,
+                honeydew:&#39;#F0FFF0&#39;,
+                hotpink:&#39;#FF69B4&#39;,
+                indianred:&#39;#CD5C5C&#39;,
+                indigo:&#39;#4B0082&#39;,
+                ivory:&#39;#FFFFF0&#39;,
+                khaki:&#39;#F0E68C&#39;,
+                lavender:&#39;#E6E6FA&#39;,
+                lavenderblush:&#39;#FFF0F5&#39;,
+                lawngreen:&#39;#7CFC00&#39;,
+                lemonchiffon:&#39;#FFFACD&#39;,
+                lightblue:&#39;#ADD8E6&#39;,
+                lightcoral:&#39;#F08080&#39;,
+                lightcyan:&#39;#E0FFFF&#39;,
+                lightgoldenrodyellow:&#39;#FAFAD2&#39;,
+                lightgray:&#39;#D3D3D3&#39;,
+                lightgreen:&#39;#90EE90&#39;,
+                lightgrey:&#39;#D3D3D3&#39;,
+                lightpink:&#39;#FFB6C1&#39;,
+                lightsalmon:&#39;#FFA07A&#39;,
+                lightseagreen:&#39;#20B2AA&#39;,
+                lightskyblue:&#39;#87CEFA&#39;,
+                lightslategray:&#39;#778899&#39;,
+                lightslategrey:&#39;#778899&#39;,
+                lightsteelblue:&#39;#B0C4DE&#39;,
+                lightyellow:&#39;#FFFFE0&#39;,
+                lime:&#39;#00FF00&#39;,
+                limegreen:&#39;#32CD32&#39;,
+                linen:&#39;#FAF0E6&#39;,
+                magenta:&#39;#FF00FF&#39;,
+                maroon:&#39;#800000&#39;,
+                mediumaquamarine:&#39;#66CDAA&#39;,
+                mediumblue:&#39;#0000CD&#39;,
+                mediumorchid:&#39;#BA55D3&#39;,
+                mediumpurple:&#39;#9370DB&#39;,
+                mediumseagreen:&#39;#3CB371&#39;,
+                mediumslateblue:&#39;#7B68EE&#39;,
+                mediumspringgreen:&#39;#00FA9A&#39;,
+                mediumturquoise:&#39;#48D1CC&#39;,
+                mediumvioletred:&#39;#C71585&#39;,
+                midnightblue:&#39;#191970&#39;,
+                mintcream:&#39;#F5FFFA&#39;,
+                mistyrose:&#39;#FFE4E1&#39;,
+                moccasin:&#39;#FFE4B5&#39;,
+                navajowhite:&#39;#FFDEAD&#39;,
+                navy:&#39;#000080&#39;,
+                oldlace:&#39;#FDF5E6&#39;,
+                olive:&#39;#808000&#39;,
+                olivedrab:&#39;#6B8E23&#39;,
+                orange:&#39;#FFA500&#39;,
+                orangered:&#39;#FF4500&#39;,
+                orchid:&#39;#DA70D6&#39;,
+                palegoldenrod:&#39;#EEE8AA&#39;,
+                palegreen:&#39;#98FB98&#39;,
+                paleturquoise:&#39;#AFEEEE&#39;,
+                palevioletred:&#39;#DB7093&#39;,
+                papayawhip:&#39;#FFEFD5&#39;,
+                peachpuff:&#39;#FFDAB9&#39;,
+                peru:&#39;#CD853F&#39;,
+                pink:&#39;#FFC0CB&#39;,
+                plum:&#39;#DDA0DD&#39;,
+                powderblue:&#39;#B0E0E6&#39;,
+                purple:&#39;#800080&#39;,
+                red:&#39;#FF0000&#39;,
+                rosybrown:&#39;#BC8F8F&#39;,
+                royalblue:&#39;#4169E1&#39;,
+                saddlebrown:&#39;#8B4513&#39;,
+                salmon:&#39;#FA8072&#39;,
+                sandybrown:&#39;#F4A460&#39;,
+                seagreen:&#39;#2E8B57&#39;,
+                seashell:&#39;#FFF5EE&#39;,
+                sienna:&#39;#A0522D&#39;,
+                silver:&#39;#C0C0C0&#39;,
+                skyblue:&#39;#87CEEB&#39;,
+                slateblue:&#39;#6A5ACD&#39;,
+                slategray:&#39;#708090&#39;,
+                slategrey:&#39;#708090&#39;,
+                snow:&#39;#FFFAFA&#39;,
+                springgreen:&#39;#00FF7F&#39;,
+                steelblue:&#39;#4682B4&#39;,
+                tan:&#39;#D2B48C&#39;,
+                teal:&#39;#008080&#39;,
+                thistle:&#39;#D8BFD8&#39;,
+                tomato:&#39;#FF6347&#39;,
+                turquoise:&#39;#40E0D0&#39;,
+                violet:&#39;#EE82EE&#39;,
+                wheat:&#39;#F5DEB3&#39;,
+                white:&#39;#FFFFFF&#39;,
+                whitesmoke:&#39;#F5F5F5&#39;,
+                yellow:&#39;#FFFF00&#39;,
+                yellowgreen:&#39;#9ACD32&#39;
+            },
+            
+            makeColorFromNameString: function(value) {
+                if (value) {
+                    return this.makeColorFromHexString(this.COLORS_BY_NAME[value.toLowerCase()]);
+                } else {
+                    return null;
+                }
+            },
+            
+<span id='global-method-makeColorFromHexString'>            /** Creates an dr.Color from an html color string.
+</span>                @param value:string A hex string representation of a color, such
+                    as &#39;#ff339b&#39;.
+                @returns dr.Color or null if no color could be parsed. */
+            makeColorFromHexString: function(value) {
+                if (value &amp;&amp; value.indexOf(&#39;#&#39;) === 0) {
+                    return this.makeColorFromNumber(parseInt(value.substring(1), 16));
+                } else {
+                    return null;
+                }
+            },
+            
+            makeColorFromHexOrNameString: function(value) {
+                if (value) {
+                    if (value.indexOf(&#39;#&#39;) === 0) {
+                        return this.makeColorFromHexString(value);
+                    } else {
+                        return this.makeColorFromNameString(value);
+                    }
+                }
+            },
+            
+<span id='global-method-getLighterColor'>            /** Returns the lighter of the two provided colors.
+</span>                @param a:number A color number.
+                @param b:number A color number.
+                @returns The number that represents the lighter color. */
+            getLighterColor: function(a, b) {
+                var cA = this.makeColorFromNumber(a),
+                    cB = this.makeColorFromNumber(b);
+                return cA.isLighterThan(cB) ? a : b;
+            },
+            
+<span id='global-method-makeColorNumberFromChannels'>            /** Creates a &quot;color&quot; number from the provided color channels.
+</span>                @param red:number the red channel
+                @param green:number the green channel
+                @param blue:number the blue channel
+                @returns number */
+            makeColorNumberFromChannels: function(red, green, blue) {
+                red = this.cleanChannelValue(red);
+                green = this.cleanChannelValue(green);
+                blue = this.cleanChannelValue(blue);
+                return (red &lt;&lt; 16) + (green &lt;&lt; 8) + blue;
+            }
+        },
+        
+        
+        // Constructor /////////////////////////////////////////////////////////////
+<span id='global-method-initialize'>        /** Create a new Color.
+</span>            @param red:number the red channel
+            @param green:number the green channel
+            @param blue:number the blue channel */
+        initialize: function(red, green, blue) {
+            this.setRed(red);
+            this.setGreen(green);
+            this.setBlue(blue);
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+<span id='global-method-setRed'>        /** Sets the red channel value. */
+</span>        setRed: function(red) {
+            this.red = dr.Color.cleanChannelValue(red);
+        },
+        
+<span id='global-method-setGreen'>        /** Sets the green channel value. */
+</span>        setGreen: function(green) {
+            this.green = dr.Color.cleanChannelValue(green);
+        },
+        
+<span id='global-method-setBlue'>        /** Sets the blue channel value. */
+</span>        setBlue: function(blue) {
+            this.blue = dr.Color.cleanChannelValue(blue);
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-getColorNumber'>        /** Gets the numerical representation of this color.
+</span>            @returns number: The number that represents this color. */
+        getColorNumber: function() {
+            return (this.red &lt;&lt; 16) + (this.green &lt;&lt; 8) + this.blue;
+        },
+        
+<span id='global-method-getHtmlHexString'>        /** Gets the hex string representation of this color.
+</span>            @returns string: A hex color such as &#39;#a0bbcc&#39;. */
+        getHtmlHexString: function() {
+            return dr.Color.rgbToHex(this.red, this.green, this.blue, true);
+        },
+        
+<span id='global-method-isLighterThan'>        /** Tests if this color is lighter than the provided color.
+</span>            @param c:dr.Color the color to compare to.
+            @returns boolean: True if this color is lighter, false otherwise. */
+        isLighterThan: function(c) {
+            var diff = this.getDiffFrom(c);
+            
+            // Sum channel diffs to determine lightest color. A negative diff
+            // means a lighter color.
+            return 0 &gt; (diff.red + diff.green + diff.blue);
+        },
+        
+<span id='global-method-getDiffFrom'>        /** Gets an object holding color channel diffs.
+</span>            @param c:dr.Color the color to diff from.
+            @returns object containing the diffs for the red, green and blue
+                channels. */
+        getDiffFrom: function(c) {
+            return {
+                red: c.red - this.red,
+                green: c.green - this.green,
+                blue: c.blue - this.blue
+            };
+        },
+        
+<span id='global-method-applyDiff'>        /** Applies the provided diff object to this color.
+</span>            @param diff:object the color diff to apply.
+            @returns this dr.Color to facilitate method chaining. */
+        applyDiff: function(diff) {
+            this.setRed(this.red + diff.red);
+            this.setGreen(this.green + diff.green);
+            this.setBlue(this.blue + diff.blue);
+            return this;
+        },
+        
+<span id='global-method-add'>        /** Adds the provided color to this color.
+</span>            @param c:dr.Color the color to add.
+            @returns this dr.Color to facilitate method chaining. */
+        add: function(c) {
+            this.setRed(this.red + c.red);
+            this.setGreen(this.green + c.green);
+            this.setBlue(this.blue + c.blue);
+            return this;
+        },
+        
+<span id='global-method-subtract'>        /** Subtracts the provided color from this color.
+</span>            @param c:dr.Color the color to subtract.
+            @returns this dr.Color to facilitate method chaining. */
+        subtract: function(c) {
+            this.setRed(this.red - c.red);
+            this.setGreen(this.green - c.green);
+            this.setBlue(this.blue - c.blue);
+            return this;
+        },
+        
+<span id='global-method-multiply'>        /** Multiplys this color by the provided scalar.
+</span>            @param s:number the scaler to multiply by.
+            @returns this dr.Color to facilitate method chaining. */
+        multiply: function(s) {
+            this.setRed(this.red * s);
+            this.setGreen(this.green * s);
+            this.setBlue(this.blue * s);
+            return this;
+        },
+        
+<span id='global-method-divide'>        /** Divides this color by the provided scalar.
+</span>            @param s:number the scaler to divide by.
+            @returns this dr.Color to facilitate method chaining. */
+        divide: function(s) {
+            this.setRed(this.red / s);
+            this.setGreen(this.green / s);
+            this.setBlue(this.blue / s);
+            return this;
+        },
+        
+<span id='global-method-clone'>        /** Clones this Color.
+</span>            @returns dr.Color A copy of this dr.Color. */
+        clone: function() {
+            return new dr.Color(this.red, this.green, this.blue);
+        }
+    });
+});
+</pre>
+</body>
+</html>

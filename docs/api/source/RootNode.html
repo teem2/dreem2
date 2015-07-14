@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Allows a node to act as a &quot;root&quot; for a node hierarchy. 
+</span>    
+    Events:
+        onready:boolean Fired when the root node has been 
+            completely instantiated.
+    
+    Attributes:
+        ready:boolean Indicates that this root node is now ready for use. This
+            starts as undefined and gets set to true when dr.notifyReady is
+            called.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        globalRootRegistry = require(&#39;$LIB/dr/globals/globalRootRegistry.js&#39;);
+    require(&#39;$LIB/dr/view/View.js&#39;);
+    
+    module.exports = dr.RootNode = new JS.Module(&#39;RootNode&#39;, {
+        // Life Cycle //////////////////////////////////////////////////////////////
+        initNode: function(parent, attrs) {
+            this.callSuper(parent, attrs);
+            globalRootRegistry.addRoot(this);
+        },
+        
+<span id='global-method-destroyAfterOrphaning'>        /** @overrides dr.View */
+</span>        destroyAfterOrphaning: function() {
+            globalRootRegistry.removeRoot(this);
+            this.callSuper();
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+        set_ready: function(v) {
+            if (this.setActual(&#39;ready&#39;, v, &#39;boolean&#39;, false)) {
+                // Notify all descendants in a depth first manner since 
+                // initialization is now done.
+                if (this.ready) this.walk(null, function(node) {node.notifyReady();});
+            }
+        },
+        
+        set_classroot: function(v) {
+            this.setSimpleActual(&#39;classroot&#39;, this);
+        }
+    });
+});
+</pre>
+</body>
+</html>

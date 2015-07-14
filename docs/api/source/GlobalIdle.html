@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides idle events. Registered with dr.global as &#39;idle&#39;.
+</span>    
+    Events:
+        onidle:object Fired when a browser idle event occurs. The event value is
+            an object containing:
+                delta: The time in millis since the last idle evnet.
+                time: The time in millis of this idle event.
+    
+    Private Attributes:
+        __running:boolean Indicates if onidle events are currently being fired
+            or not.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        GlobalRegistry = require(&#39;./Global.js&#39;),
+        GlobalIdleSprite = require(&#39;$SPRITE/GlobalIdle.js&#39;);
+    require(&#39;$LIB/dr/events/Observer.js&#39;);
+    require(&#39;$LIB/dr/Eventable.js&#39;);
+    
+    module.exports = new JS.Singleton(&#39;GlobalIdle&#39;, {
+        include: [
+            require(&#39;$LIB/dr/SpriteBacked.js&#39;),
+            require(&#39;$LIB/dr/events/Observable.js&#39;)
+        ],
+        
+        
+        // Constructor /////////////////////////////////////////////////////////////
+        initialize: function() {
+            this.__running = false;
+            this.set_sprite(this.createSprite());
+            
+            // Store in dr namespace for backwards compatibility with dreem
+            if (dr.idle) {
+                dr.dumpStack(&#39;dr.idle already set.&#39;);
+            } else {
+                dr.idle = this;
+            }
+            
+            GlobalRegistry.register(&#39;idle&#39;, this);
+        },
+        
+        createSprite: function(attrs) {
+            return new GlobalIdleSprite(this);
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-attachObserver'>        /** @overrides dr.Observable */
+</span>        attachObserver: function(observer, methodName, type) {
+            var retval = this.callSuper(observer, methodName, type);
+            
+            // Start firing onidle events
+            if (!this.__running &amp;&amp; this.hasObservers(&#39;onidle&#39;)) {
+                this.__running = true;
+                this.sprite.start();
+            }
+            
+            return retval;
+        },
+        
+<span id='global-method-detachObserver'>        /** @overrides dr.Observable */
+</span>        detachObserver: function(observer, methodName, type) {
+            var retval = this.callSuper(observer, methodName, type);
+            
+            // Stop firing onidle events
+            if (this.__running &amp;&amp; !this.hasObservers(&#39;onidle&#39;)) {
+                this.sprite.stop();
+                this.__running = false;
+            }
+            
+            return retval;
+        },
+        
+<span id='global-method-callOnIdle'>        /** Invokes the provided callback function once on the next idle event.
+</span>            @param callback:function/string The function to call or a path
+                to a function to call relative to the provided scope.
+            @param scope:object (optional) If provided this scope will be
+                bound to the callback function.
+            @returns void */
+        callOnIdle: function(callback, scope) {
+            if (callback) {
+                if (scope) {
+                    if (typeof callback === &#39;string&#39;) {
+                        callback = dr.resolveName(callback, scope);
+                    }
+                    if (typeof callback === &#39;function&#39;) {
+                        callback = callback.bind(scope);
+                    } else {
+                        dr.dumpStack(&#39;callOnIdle: Provided callback was not a function or a string that resolves to a function.&#39;);
+                        return;
+                    }
+                }
+                
+                var observer = new dr.Eventable({}, [{
+                    invoke: function(event) {
+                            try {
+                                callback(event.time, event.delta);
+                            } catch (e) {
+                                dr.dumpStack(e);
+                            } finally {
+                                this.destroy();
+                            }
+                        }
+                    }]);
+                observer.listenTo(this, &#39;onidle&#39;, &#39;invoke&#39;, true);
+            }
+        }
+    });
+});
+</pre>
+</body>
+</html>

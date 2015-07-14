@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Apply this mixin to any Object that needs to fire events.
+</span>    
+    Attributes:
+        None
+    
+    Private Attributes:
+        __obsbt:object Stores arrays of dr.Observers and method names 
+            by event type
+        __aet:object Stores active event type strings. An event type is active
+            if it has been fired from this Observable as part of the current 
+            call stack. If an event type is &quot;active&quot; it will not be fired 
+            again. This provides protection against infinite event loops.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    
+    module.exports = dr.Observable = new JS.Module(&#39;Observable&#39;, {
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+<span id='global-property-pendingEventQueue'>            /** Holds events until dr.ready is true. */
+</span>            pendingEventQueue: [],
+            
+            firePendingEvents: function() {
+                if (dr.ready) {
+                    var queue = this.pendingEventQueue, entry;
+                    while (queue.length &gt; 0) {
+                        entry = queue.shift();
+                        entry[0].sendEvent(entry[1], entry[2]);
+                    }
+                }
+            }
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-attachObserver'>        /** Adds the observer to the list of event recipients for the event type.
+</span>            @param observer:dr.Observer The observer that will observe this
+                observable. If methodName is a function this object will be the
+                context for the function when it is called.
+            @param methodName:string|function The name of the method to call, or
+                a function, on the observer when the event fires.
+            @param type:string The name of the event the observer will listen to.
+            @returns boolean true if the observer was successfully attached, 
+                false otherwise. */
+        attachObserver: function(observer, methodName, type) {
+            if (observer &amp;&amp; methodName &amp;&amp; type) {
+                this.getObservers(type).unshift(methodName, observer);
+                return true;
+            }
+            return false;
+        },
+        
+<span id='global-method-detachObserver'>        /** Removes the observer from the list of observers for the event type.
+</span>            @param observer:dr.Observer The observer that will no longer be
+                observing this observable.
+            @param methodName:string|function The name of the method that was
+                to be called or the function to be called.
+            @param type:string The name of the event the observer will no longer
+                be listening to.
+            @returns boolean true if the observer was successfully detached, 
+                false otherwise. */
+        detachObserver: function(observer, methodName, type) {
+            if (observer &amp;&amp; methodName &amp;&amp; type) {
+                var observersByType = this.__obsbt;
+                if (observersByType) {
+                    var observers = observersByType[type];
+                    if (observers) {
+                        // Remove all instances of the observer and methodName 
+                        // combination.
+                        var retval = false, i = observers.length;
+                        while (i) {
+                            // Ensures we decrement twice. First with --i, then 
+                            // with i-- since the part after &amp;&amp; may not be executed.
+                            --i;
+                            if (observer === observers[i--] &amp;&amp; methodName === observers[i]) {
+                                observers.splice(i, 2); // &lt;- Detach Activity that detachAllObservers cares about.
+                                retval = true;
+                            }
+                        }
+                        return retval;
+                    }
+                }
+            }
+            return false;
+        },
+        
+<span id='global-method-detachAllObservers'>        /** Removes all observers from this Observable.
+</span>            @returns void */
+        detachAllObservers: function() {
+            var observersByType = this.__obsbt;
+            if (observersByType) {
+                var observers, observer, methodName, i, type;
+                for (type in observersByType) {
+                    observers = observersByType[type];
+                    i = observers.length;
+                    while (i) {
+                        observer = observers[--i];
+                        methodName = observers[--i];
+                        
+                        // If an observer is registered more than once the list may 
+                        // get shortened by observer.stopListening. If so, just 
+                        // continue decrementing downwards.
+                        if (observer &amp;&amp; methodName) {
+                            if (typeof observer.stopListening !== &#39;function&#39; || 
+                                !observer.stopListening(this, type, methodName)
+                            ) {
+                                // Observer may not have a stopListening function or 
+                                // observer may not have attached via 
+                                // Observer.listenTo so do default detach activity 
+                                // as implemented in Observable.detachObserver
+                                observers.splice(i, 2);
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        
+<span id='global-method-getObservers'>        /** Gets an array of observers and method names for the provided type.
+</span>            The array is structured as:
+                [methodName1, observerObj1, methodName2, observerObj2,...].
+            @param type:string The name of the event to get observers for.
+            @returns array: The observers of the event. */
+        getObservers: function(type) {
+            var observersByType = this.__obsbt || (this.__obsbt = {});
+            return observersByType[type] || (observersByType[type] = []);
+        },
+        
+<span id='global-method-hasObservers'>        /** Checks if any observers exist for the provided event type.
+</span>            @param type:string The name of the event to check.
+            @returns boolean: True if any exist, false otherwise. */
+        hasObservers: function(type) {
+            var observersByType = this.__obsbt;
+            if (!observersByType) return false;
+            var observers = observersByType[type];
+            return observers &amp;&amp; observers.length &gt; 0;
+        },
+        
+<span id='global-method-sendEvent'>        /** Generates a new event from the provided type and value and fires it
+</span>            to the provided observers or the registered observers.
+            @param type:string The event type to fire.
+            @param value:* The value to set on the event.
+            @returns This object for chainability. */
+        sendEvent: function(type, value) {
+            if (dr.ready) {
+                var observers = this.hasObservers(type) ? this.__obsbt[type] : null;
+                if (observers) this.__fireEvent(type, value, observers);
+            } else {
+                // Queue up events during initialization
+                dr.Observable.pendingEventQueue.push([this, type, value]);
+            }
+            return this;
+        },
+        
+<span id='global-method-__fireEvent'>        /** Fire the event to the observers.
+</span>            @private
+            @param type:string The type of event to fire.
+            @param event:Object The event to fire.
+            @param observers:array An array of method names and contexts to invoke
+                providing the event as the sole argument.
+            @returns void */
+        __fireEvent: function(type, event, observers) {
+            // Prevent &quot;active&quot; events from being fired again
+            var activeEventTypes = this.__aet || (this.__aet = {});
+            if (activeEventTypes[type] === true) {
+                dr.global.error.notifyWarn(&#39;eventLoop&#39;, &quot;Attempt to refire active event: &quot; + type);
+            } else {
+                // Mark event type as &quot;active&quot;
+                activeEventTypes[type] = true;
+                
+                // Walk through observers backwards so that if the observer is
+                // detached by the event handler the index won&#39;t get messed up.
+                // FIXME: If necessary we could queue up detachObserver calls that 
+                // come in during iteration or make some sort of adjustment to &#39;i&#39;.
+                var i = observers.length, observer, methodName;
+                while (i) {
+                    observer = observers[--i]
+                    methodName = observers[--i];
+                    
+                    // Sometimes the list gets shortened by the method we called so
+                    // just continue decrementing downwards.
+                    if (observer &amp;&amp; methodName) {
+                        try {
+                            if (typeof methodName === &#39;function&#39;) {
+                                methodName.call(observer, event, dr); // TAG:Global Scope
+                            } else {
+                                if (typeof observer[methodName] === &#39;function&#39;) {
+                                    observer[methodName](event, dr); // TAG:Global Scope
+                                } else {
+                                    if (observer[methodName] == null) {
+                                        dr.global.error.logWarn(&#39;Target method &quot;&#39; + methodName + &#39;&quot; not found when firing &quot;&#39; + type + &#39;&quot; event.&#39;);
+                                    } else {
+                                        dr.global.error.logWarn(&#39;Target method &quot;&#39; + methodName + &#39;&quot; not a function when firing &quot;&#39; + type + &#39;&quot; event.&#39;);
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            dr.dumpStack(err);
+                        }
+                    }
+                }
+                
+                // Mark event type as &quot;inactive&quot;
+                activeEventTypes[type] = false;
+            }
+        }
+    });
+});
+</pre>
+</body>
+</html>

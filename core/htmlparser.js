@@ -4,7 +4,7 @@
 */
 
 /**
- * @class parser.HTMLParser
+ * @class parser.HTMLParser {Internal}
  * Very fast and simple XML/HTML parser
  * Modifyable to output any JS datastructure from HTML/XML you prefer
  */

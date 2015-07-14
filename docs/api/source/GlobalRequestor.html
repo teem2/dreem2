@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides the ability to send and receive data over the network. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        GlobalRegistry = require(&#39;./Global.js&#39;),
+        GlobalRequestorSprite = require(&#39;$SPRITE/GlobalRequestor.js&#39;);
+    
+    module.exports = new JS.Singleton(&#39;GlobalRequestor&#39;, {
+        include: [
+            require(&#39;$LIB/dr/SpriteBacked.js&#39;)
+        ],
+        
+        
+        // Constructor /////////////////////////////////////////////////////////////
+        initialize: function() {
+            this.set_sprite(this.createSprite());
+            GlobalRegistry.register(&#39;requestor&#39;, this);
+        },
+        
+        createSprite: function(attrs) {
+            return new GlobalRequestorSprite(this);
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+        fetch: function(url) {
+            return this.sprite.fetch(url);
+        },
+        
+        send: function(url, data) {
+            return this.send.fetch(url, data);
+        }
+    });
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** A mixin that sizes a root view to the viewport width, height or both.
+</span>    
+    Events:
+        None
+    
+    Attributes:
+        minwidth:number the minimum width below which this view will not 
+            resize its width. Defaults to 0.
+        minheight:number the minimum height below which this view will not
+            resize its height. Defaults to 0.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    require(&#39;$LIB/dr/globals/GlobalViewportResize.js&#39;);
+    
+    module.exports = dr.SizeToViewport = new JS.Module(&#39;SizeToViewport&#39;, {
+        include: [
+            require(&#39;$LIB/dr/RootNode.js&#39;)
+        ],
+        
+        
+        // Life Cycle //////////////////////////////////////////////////////////////
+<span id='global-method-initNode'>        /** @overrides */
+</span>        initNode: function(parent, attrs) {
+            this.minwidth = this.minheight = 0;
+            this.callSuper(parent, attrs);
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+        set_minwidth: function(v) {this.setActual(&#39;minwidth&#39;, v, &#39;number&#39;, 0);},
+        set_minheight: function(v) {this.setActual(&#39;minheight&#39;, v, &#39;number&#39;, 0);}
+    });
+});
+</pre>
+</body>
+</html>

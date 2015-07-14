@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class DreemCompiler
+ * @class DreemCompiler {Internal}
  * Client and server usable dreem compiler
  * Parses and loads all dependencies starting from a particular
  * Source XML, and delivers them all compiled and bundled up 

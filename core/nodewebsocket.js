@@ -4,7 +4,7 @@
 */
 
 /**
- * @class NodeWebSocket
+ * @class NodeWebSocket {Internal}
  * Clean and simple websocket implementation for node
  */
 

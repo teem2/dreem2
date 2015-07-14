@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class TeemServer {}
+ * @class TeemServer {Internal}
  * Main NodeJS HTTP server with support for WebSockets, static file handling and 
  * Composition objects
  */

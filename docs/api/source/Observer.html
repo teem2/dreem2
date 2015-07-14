@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides a mechanism to remember which Observables this instance has 
+</span>    registered itself with. This can be useful when we need to cleanup the 
+    instance later.
+    
+    When this module is used registration and unregistration must be done 
+    using the methods below. Otherwise, it is possible for the relationship 
+    between observer and observable to be broken.
+    
+    Events:
+        None
+    
+    Attributes:
+        None
+    
+    Private Attributes:
+        __obt:object Stores arrays of Observables by event type
+        __DO_ONCE_*:function The names used for methods that only get run
+            one time. */
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    require(&#39;./Observable.js&#39;);
+    
+    module.exports = dr.Observer = new JS.Module(&#39;Observer&#39;, {
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-syncTo'>        /** Does the same thing as this.listenTo and also immediately calls the
+</span>            method with an event containing the attributes value. If &#39;once&#39; is
+            true no attachment will occur which means this probably isn&#39;t the
+            correct method to use in that situation.
+            @param observable:dr.Observable the Observable to attach to.
+            @param eventType:string the event type to attach for.
+            @param methodName:string the method name on this instance to execute.
+            @param attrName:string (optional: the eventType will be used if not
+                provided) the name of the attribute on the Observable
+                to pull the value from.
+            @param once:boolean (optional) if true  this Observer will detach
+                from the Observable after the event is handled once.
+            @returns This object for chainability. */
+        syncTo: function(observable, eventType, methodName, attrName, once) {
+            if (attrName === undefined) {
+                // Trim &#39;on&#39; prefix if necessary
+                attrName = eventType.startsWith(&#39;on&#39;) ? eventType.substring(2) : eventType;
+            }
+            try {
+                var event = observable.getAttribute(attrName);
+                if (typeof methodName === &#39;function&#39;) {
+                    methodName.call(this, event, dr); // TAG:Global Scope
+                } else {
+                    this[methodName](event, dr); // TAG:Global Scope
+                }
+            } catch (err) {
+                dr.dumpStack(err);
+            }
+            
+            // Providing a true value for once means we&#39;ll never actually attach.
+            if (once) return this;
+            
+            return this.listenTo(observable, eventType, methodName, once);
+        },
+        
+<span id='global-method-isListeningTo'>        /** Checks if this Observer is attached to the provided observable for
+</span>            the methodName and eventType.
+            @param observable:dr.Observable the Observable to check with.
+            @param eventType:string the event type to check for.
+            @param methodName:string the method name on this instance to execute.
+            @returns true if attached, false otherwise. */
+        isListeningTo: function(observable, eventType, methodName) {
+            if (observable &amp;&amp; methodName &amp;&amp; eventType) {
+                var observablesByType = this.__obt;
+                if (observablesByType) {
+                    var observables = observablesByType[eventType];
+                    if (observables) {
+                        var i = observables.length;
+                        while (i) {
+                            // Ensures we decrement twice. First with --i, then 
+                            // with i-- since the part after &amp;&amp; may not be executed.
+                            --i;
+                            if (observable === observables[i--] &amp;&amp; methodName === observables[i]) return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        },
+        
+<span id='global-method-getObservables'>        /** Gets an array of observables and method names for the provided type.
+</span>            The array is structured as:
+                [methodName1, observableObj1, methodName2, observableObj2,...].
+            @param eventType:string the event type to check for.
+            @returns an array of observables. */
+        getObservables: function(eventType) {
+            var observablesByType = this.__obt || (this.__obt = {});
+            return observablesByType[eventType] || (observablesByType[eventType] = []);
+        },
+        
+<span id='global-method-hasObservables'>        /** Checks if any observables exist for the provided event type.
+</span>            @param eventType:string the event type to check for.
+            @returns true if any exist, false otherwise. */
+        hasObservables: function(eventType) {
+            var observablesByType = this.__obt;
+            if (!observablesByType) return false;
+            var observables = observablesByType[eventType];
+            return observables &amp;&amp; observables.length &gt; 0;
+        },
+        
+<span id='global-method-listenToOnce'>        /** A wrapper on listenTo where the &#39;once&#39; argument is set to true. */
+</span>        listenToOnce: function(observable, eventType, methodName) {
+            return this.listenTo(observable, eventType, methodName, true);
+        },
+        
+<span id='global-method-listenTo'>        /** Registers this Observer with the provided Observable
+</span>            for the provided eventType.
+            @param observable:dr.Observable the Observable to attach to.
+            @param eventTypes:string the event type to attach for. May be a
+                comma or space separated list of event types.
+            @param methodName:string the method name on this instance to execute.
+            @param once:boolean (optional) if true  this Observer will detach
+                from the Observable after the event is handled once.
+            @returns This object for chainability. */
+        listenTo: function(observable, eventTypes, methodName, once) {
+            if (observable &amp;&amp; methodName &amp;&amp; eventTypes) {
+                // Setup wrapper method when &#39;once&#39; is true.
+                if (once) {
+                    var self = this, 
+                        origMethodName = methodName,
+                        origEventTypes = eventTypes;
+                    
+                    // Generate one time method name.
+                    methodName = &#39;__DO_ONCE_&#39; + dr.generateGuid();
+                    
+                    // Setup wrapper method that will do the stopListening.
+                    this[methodName] = function(event) {
+                        self.stopListening(observable, origEventTypes, methodName);
+                        delete self[methodName];
+                        return self[origMethodName](event);
+                    };
+                }
+                
+                eventTypes = eventTypes.split(/[ ,]+/);
+                var i = eventTypes.length, eventType, platformEventInfo;
+                
+                // First see if this should be handled as a platform event.
+                if (this.listenToPlatform &amp;&amp; observable.isPlatformEvent) {
+                    while (i) {
+                        eventType = eventTypes[--i];
+                        if (eventType) {
+                            platformEventInfo = observable.isPlatformEvent(eventType);
+                            if (platformEventInfo != null) {
+                                this.listenToPlatform(observable, eventType, methodName, platformEventInfo);
+                                eventTypes.splice(i, 0);
+                            }
+                        }
+                    }
+                }
+                
+                var len = eventTypes.length, observables;
+                for (i = 0; len &gt; i;) {
+                    eventType = eventTypes[i++];
+                    if (eventType) {
+                        observables = this.getObservables(eventType);
+                        
+                        // Register this observer with the observable
+                        if (observable.attachObserver(this, methodName, eventType)) {
+                            observables.push(methodName, observable);
+                        }
+                    }
+                }
+            }
+            
+            return this;
+        },
+        
+<span id='global-method-stopListening'>        /** Unregisters this Observer from the provided Observable
+</span>            for the provided eventType.
+            @param observable:dr.Observable the Observable to attach to.
+            @param eventTypes:string the event type to unattach for. May be a
+                comma or space separated list of event types.
+            @param methodName:string the method name on this instance to execute.
+            @returns This object for chainability. */
+        stopListening: function(observable, eventTypes, methodName) {
+            if (observable &amp;&amp; methodName &amp;&amp; eventTypes) {
+                eventTypes = eventTypes.split(/[ ,]+/);
+                var i = eventTypes.length, eventType, platformEventInfo;
+                
+                // First see if this should be handled as a platform event.
+                if (this.listenToPlatform &amp;&amp; observable.isPlatformEvent) {
+                    while (i) {
+                        eventType = eventTypes[--i];
+                        if (eventType) {
+                            platformEventInfo = observable.isPlatformEvent(eventType);
+                            if (platformEventInfo != null) {
+                                this.stopListeningToPlatform(observable, eventType, methodName, platformEventInfo);
+                                eventTypes.splice(i, 0);
+                            }
+                        }
+                    }
+                }
+                
+                // No need to unregister if observable array doesn&#39;t exist.
+                var observablesByType = this.__obt;
+                if (observablesByType) {
+                    var len = eventTypes.length, j, observables;
+                    for (i = 0; len &gt; i;) {
+                        eventType = eventTypes[i++];
+                        if (eventType) {
+                            observables = observablesByType[eventType];
+                            if (observables) {
+                                // Remove all instances of this observer/methodName/eventType 
+                                // from the observable
+                                j = observables.length;
+                                while (j) {
+                                    --j;
+                                    if (observable === observables[j--] &amp;&amp; methodName === observables[j]) {
+                                        if (observable.detachObserver(this, methodName, eventType)) {
+                                            observables.splice(j, 2);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return this;
+        },
+        
+<span id='global-method-stopListeningToAllObservables'>        /** Tries to detach this Observer from all Observables it
+</span>            is attached to.
+            @returns void */
+        stopListeningToAllObservables: function() {
+            var observablesByType = this.__obt;
+            if (observablesByType) {
+                var observables, i;
+                for (var eventType in observablesByType) {
+                    observables = observablesByType[eventType];
+                    i = observables.length;
+                    while (i) observables[--i].detachObserver(this, observables[--i], eventType);
+                    observables.length = 0;
+                }
+            }
+        }
+    });
+});
+</pre>
+</body>
+</html>

@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific View functionality. */
+</span>// dali version
+
+define(function(require, exports, module) {
+    var JS = require(&#39;$LIB/jsclass.js&#39;),
+        dali = require(&#39;$SPRITE/dali.js&#39;),
+        Color = require(&#39;$LIB/dr/model/Color.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = sprite.View = new JS.Class(&#39;sprite.View&#39;, {
+        include: [
+            require(&#39;$LIB/dr/Destructible.js&#39;),
+            require(&#39;$LIB/dr/SpriteBacked.js&#39;),
+            require(&#39;$SPRITE/events/PlatformObservable.js&#39;),
+            require(&#39;$SPRITE/events/ScrollObservable.js&#39;),
+            require(&#39;$SPRITE/events/KeyObservable.js&#39;),
+            require(&#39;$SPRITE/events/MouseObservable.js&#39;),
+            require(&#39;$SPRITE/events/FocusObservable.js&#39;)
+        ],
+        
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+            CSS_USER_SELECT:&#39;dali&#39; + &#39;user-select&#39;
+        },
+        
+        // Constructor /////////////////////////////////////////////////////////////
+<span id='global-method-initialize'>        /** The standard JSClass initializer function. Subclasses should not
+</span>            override this function.
+            @param view:dr.View The view this sprite is backing.
+            @param attrs:object A map of attribute names and values.
+            @returns void */
+        initialize: function(view, attrs) {
+            this.view = view;
+            this.platformObject = this.createPlatformObject(attrs || {});
+            
+            this.platformObject.attachEvent = function() {
+                console.log(&quot;platformObject attachEvent&quot;);
+            }
+            
+            this.attachEvent = function() {
+                console.log(&quot;platformObject attachEvent&quot;);
+            }
+            
+            this.platformObject.model = this;
+            this.styleObj = this.platformObject.style;
+        },
+        
+        
+        // Life Cycle //////////////////////////////////////////////////////////////
+        createPlatformObject: function(attrs) {
+            elem = dali.createElement(&#39;div&#39;),
+            s = elem.style;
+            s.position = &#39;absolute&#39;;
+            s.pointerEvents = &#39;none&#39;;
+            s.borderStyle = &#39;solid&#39;;
+            s.borderColor = &#39;transparent&#39;;
+            s.padding = s.margin = s.borderWidth = 0;
+            s.boxSizing = &#39;border-box&#39;;
+           s.height = 0;
+           s.width = 0;
+            s.marginLeft = s.marginTop = 0;
+            return elem;
+        },
+        
+        destroy: function() 
+        {
+            delete this.platformObject.model;
+            this.detachAllPlatformObservers();
+            this.callSuper();
+        },
+        
+        
+        // Attributes //////////////////////////////////////////////////////////////
+        set_x: function(v) 
+        {
+            this.styleObj.marginLeft = v;
+            this.platformObject.setPosition(this.styleObj.marginLeft, this.styleObj.marginTop);
+            return v;
+        },
+        
+        set_y: function(v) 
+        {	
+            this.styleObj.marginTop = v ;
+            this.platformObject.setPosition(this.styleObj.marginLeft, this.styleObj.marginTop);
+            return v;
+        },
+        
+        set_width: function(v) 
+        {
+            this.styleObj.width = v;
+            
+            this.platformObject.setSize(this.styleObj.width,this.styleObj.height);
+            return v;
+        },
+        
+        set_height: function(v, supressEvent) {
+            this.styleObj.height = v;
+            this.platformObject.setSize(this.styleObj.width,this.styleObj.height);
+            return v;
+        },
+        
+        set_bgcolor: function(v) {
+            this.styleObj.backgroundColor = v;
+            var colorObj = Color.makeColorFromHexOrNameString(v);
+            log(colorObj.red + &#39;\n&#39;);
+            this.platformObject.setBackgroundColor([colorObj.red/255.0, colorObj.green/255.0, colorObj.blue/255.0, 1.0]);
+            return v;
+        },
+        
+        set_color: function(v) {
+            this.styleObj.color = v || &#39;inherit&#39;;
+            return v;
+        },
+        
+        set_opacity: function(v) {
+            this.styleObj.opacity = v;
+            return v;
+        },
+        
+        set_visible: function(v) {
+            var s = this.styleObj;
+            s.visibility = v ? &#39;&#39; : &#39;hidden&#39;;
+            
+            // Move invisible elements to a very negative location so they won&#39;t
+            // effect scrollable area. Ideally we could use display:none but we
+            // can&#39;t because that makes measuring bounds not work.
+            s.marginLeft = v ? this.view.x + &#39;px&#39; : &#39;-100000px&#39;;
+            s.marginTop = v ? this.view.y + &#39;px&#39; : &#39;-100000px&#39;;
+            return v;
+        },
+        
+        set_cursor: function(v) {
+            this.styleObj.cursor = v || &#39;auto&#39;;
+            return v;
+        },
+        
+        set_clickable: function(v) {
+            this.__clickable = v;
+            this.__updatePointerEvents();
+            return v;
+        },
+    
+        set_clip: function(v) {
+            this.__clip = v;
+            this.__updateOverflow();
+            return v;
+        },
+        
+        set_scrollx: function(v) {
+            if (this.platformObject.scrollLeft !== v) this.platformObject.scrollLeft = v;
+            return v;
+        },
+    
+        set_scrolly: function(v) {
+            if (this.platformObject.scrollTop !== v) this.platformObject.scrollTop = v;
+            return v;
+        },
+    
+        set_scrollable: function(v) {
+            this.__scrollable = v;
+            this.__updateOverflow();
+            this.__updatePointerEvents();
+            return v;
+        },
+        
+        // Borders //
+        set_bordercolor: function(v) {
+            this.styleObj.borderColor = v;
+            return v;
+        },
+        
+        set_borderstyle: function(v) {
+            this.styleObj.borderStyle = v;
+            return v;
+        },
+        
+        set_border: function(v) {
+            this.styleObj.borderWidth = v + &#39;px&#39;;
+            return v;
+        },
+        
+        set_topborder: function(v) {
+            this.styleObj.borderTopWidth = v + &#39;px&#39;;
+            return v;
+        },
+        
+        set_bottomborder: function(v) {
+            this.styleObj.borderBottomWidth = v + &#39;px&#39;;
+            return v;
+        },
+        
+        set_leftborder: function(v) {
+            this.styleObj.borderLeftWidth = v + &#39;px&#39;;
+            return v;
+        },
+        
+        set_rightborder: function(v) {
+            this.styleObj.borderRightWidth = v + &#39;px&#39;;
+            return v;
+        },
+        
+        // Padding //
+        set_padding: function(v) {
+            this.styleObj.padding = v + &#39;px&#39;;
+            return v;
+        },
+        
+        set_toppadding: function(v) {
+            this.styleObj.paddingTop = v + &#39;px&#39;;
+            return v;
+        },
+        
+        set_bottompadding: function(v) {
+            this.styleObj.paddingBottom = v + &#39;px&#39;;
+            return v;
+        },
+        
+        set_leftpadding: function(v) {
+            this.styleObj.paddingLeft = v + &#39;px&#39;;
+            return v;
+        },
+        
+        set_rightpadding: function(v) {
+            this.styleObj.paddingRight = v + &#39;px&#39;;
+            return v;
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-__WebkitPositionHack'>        /** @private */
+</span>        __WebkitPositionHack: function() {
+            // WORKAROUND: Chrome and Safari (Webkit?) browsers only update position on
+            // borderLeftWidth and paddingLeft change. Fix is to tweak the padding 
+            // by +/- a small value to trigger a change but prevent value drift.
+            // 
+            // Perturb smaller since the browser appears to do a ceiling for
+            // calculating the DOM element scrollLeft. This will give the expected
+            // value whereas pertubing larger would give a value 1 greater than
+            // expected for scrollLeft.
+            var perturb = (this.__BP_TOGGLE = !this.__BP_TOGGLE) ? -0.001 : 0.001, 
+                s = this.styleObj, 
+                v = s.paddingLeft;
+            s.paddingLeft = Number(v.substring(0, v.length - 2)) + perturb + &#39;px&#39;
+        },
+        
+<span id='global-method-__updateOverflow'>        /** @private */
+</span>        __updateOverflow: function() {
+            var v = &#39;&#39;;
+            if (this.__scrollable) {
+                v = &#39;auto&#39;;
+            } else if (this.__clip) {
+                v = &#39;hidden&#39;;
+            }
+            this.styleObj.overflow = v;
+        },
+        
+<span id='global-method-__updatePointerEvents'>        /** @private */
+</span>        __updatePointerEvents: function() {
+            this.styleObj.pointerEvents = this.__clickable || this.__scrollable ? &#39;auto&#39; : &#39;none&#39;;
+        },
+        
+        getScrollX: function() {
+            return this.platformObject.scrollLeft;
+        },
+        
+        getScrollY: function() {
+            return this.platformObject.scrollTop;
+        },
+        
+        getScrollWidth: function() {
+            return this.platformObject.scrollWidth;
+        },
+        
+        getScrollHeight: function() {
+            return this.platformObject.scrollHeight;
+        },
+        
+        appendSprite: function(sprite) {
+            this.platformObject.appendChild(sprite.platformObject);
+        },
+        
+        removeSprite: function(sprite) {
+            this.platformObject.removeChild(sprite.platformObject);
+        },
+        
+        
+<span id='global-method-getAbsolutePosition'>        /** Gets the x and y position of the dom element relative to the 
+</span>            ancestor dom element or the page. Transforms are not supported.
+            @param ancestorView:View (optional) An ancestor View
+                that if encountered will halt the page position calculation
+                thus giving the position relative to ancestorView.
+            @returns object with &#39;x&#39; and &#39;y&#39; keys or null if an error has
+                occurred. */
+        getAbsolutePosition: function(ancestorView) {
+            var elem = this.platformObject,
+                ancestorElem = ancestorView ? ancestorView.sprite.platformObject : null;
+                x = 0, y = 0, s,
+                borderMultiplier = 1;
+            
+            // elem.nodeName !== &quot;BODY&quot; test prevents looking at the body
+            // which causes problems when the document is scrolled on webkit.
+            while (elem &amp;&amp; elem.nodeName !== &quot;BODY&quot; &amp;&amp; elem !== ancestorElem) {
+                x += elem.offsetLeft;
+                y += elem.offsetTop;
+                elem = elem.offsetParent;
+                if (elem &amp;&amp; elem.nodeName !== &quot;BODY&quot;) {
+                    s = this.getComputedStyle();
+                    x += borderMultiplier * parseInt(s.borderLeftWidth, 10) - elem.scrollLeft;
+                    y += borderMultiplier * parseInt(s.borderTopWidth, 10) - elem.scrollTop;
+                }
+            }
+            
+            return {x:x, y:y};
+        },
+        
+<span id='global-method-getBounds'>        /** Gets the bounding rect object with enties: x, y, width and height. */
+</span>        getBounds: function() 
+        {
+            return {};//this.platformObject.getBoundingClientRect();
+        },
+        
+<span id='global-method-getAncestorArray'>        /** Gets an array of ancestor platform objects including the platform
+</span>            object for this sprite.
+            @param ancestor (optional) The platform element to stop
+                getting ancestors at.
+            @returns an array of ancestor elements. */
+        getAncestorArray: function(ancestor) 
+        {
+            var ancestors = [],
+                elem = this.platformObject
+            while (elem) {
+                ancestors.push(elem);
+                if (elem === ancestor) break;
+                elem = elem.parentNode;
+            }
+            return ancestors;
+        },
+        
+        // Transforms //
+        updateTransform: function(xscale, yscale, rotation, z) 
+        {
+            var transform = &#39;&#39;
+            
+            // Generate scale transform configuration
+            if (xscale !== 1 || yscale !== 1) transform += &#39;scale3d(&#39; + xscale + &#39;,&#39; + yscale + &#39;,1.0)&#39;
+            
+            // Generate rotation transform configuration
+            if (rotation % 360 !== 0) transform += &#39; rotate3d(0,0,1.0,&#39; + rotation + &#39;deg)&#39;;
+            
+            // Generate z-order transform configuration
+            if (z !== 0) transform += &#39; translate3d(0,0,&#39; + z + &#39;px)&#39;;
+            
+            this.styleObj.transform = {xs:xscale, ys:yscale, zs: 1.0, x:0,y:0,z:z,rx:0,ry:0, rz: rotation };
+            this.platformObject.setRotation(rotation);
+        },
+        
+        updateTransformOrigin: function(xanchor, yanchor, zanchor) {
+            if (xanchor !== &#39;left&#39; &amp;&amp; xanchor !== &#39;right&#39; &amp;&amp; xanchor !== &#39;center&#39;) xanchor += &#39;px&#39;;
+            if (yanchor !== &#39;top&#39; &amp;&amp; yanchor !== &#39;bottom&#39; &amp;&amp; yanchor !== &#39;center&#39;) yanchor += &#39;px&#39;;
+
+            this.styleObj.transformOrigin = {xorigin:xanchor, yorigin: yanchor, zorigin: zanchor };
+            
+            //this.styleObj[dr.sprite.platform.prefix.css + &#39;transform-origin&#39;] = xanchor + &#39; &#39; + yanchor + &#39; &#39; + zanchor + &#39;px&#39;;
+        }
+    });
+});
+</pre>
+</body>
+</html>

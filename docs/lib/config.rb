@@ -32,7 +32,10 @@ module Dreem
 
   class CategoriesBuilder
     def self.build(root_dir)
-      search_files = [*Dir[File.join(root_dir, 'core', 'dreem.coffee')], *Dir[File.join(root_dir, 'classes', '*.dre')]]
+      search_files = [*Dir[File.join(root_dir, 'lib', 'dr', '*.js')],
+                      *Dir[File.join(root_dir, 'lib', 'dr', '**', '*.js')],
+                      *Dir[File.join(root_dir, 'core', '*.js')],
+                      *Dir[File.join(root_dir, 'classes', '*.dre')]]
 
       groups = {}
 
@@ -59,7 +62,7 @@ module Dreem
       }
 
       { name: 'Dreem Classes',
-        groups: [ all_group, *( groups.map { |n, c| { name:n, classes:c.sort } }) ]
+        groups: [ all_group, *( groups.map { |n, c| { name:n, classes:c.sort.uniq } }) ]
       }
     end
   end

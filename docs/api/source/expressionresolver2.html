@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific Text functionality. */
+</span>// dali version
+define(function(require, exports, module) {
+    var acorn = require(&#39;$LIB/acorn.js&#39;);
+    var acornserializer = require(&#39;./acornserializer.js&#39;);
+    var dr = require(&quot;$LIB/dr/dr.js&quot;);
+    
+    function parse(expression) {
+            //console.log(&quot;attempting to parse expression: &quot;);
+            //console.log(expression);
+            var AST = acorn.parse(expression);
+            return acornserializer.serialize(AST, dr.IDdictionary);
+        }
+    /*
+
+    console.log(&quot;testing resolved reserialize &quot;);
+    var asttest = &quot;globaltest = blah(&#39;&#39;) + subglobal.globaltest(a.b)+ subglobal.a.globaltest(2)+this.globaltest.globaltest&quot;;
+    var AST = acorn.parse(asttest);
+
+    
+    console.log(acornserializer.dump(AST , &#39;&#39; ));		
+    var globaldict = {globaltest: &quot;globalreplace&quot;, subglobal:&quot;global[&#39;a&#39;]&quot; };
+    var reserialize = acornserializer.serialize(AST, globaldict);
+
+    console.log(asttest);
+    console.log(JSON.stringify(globaldict));
+    console.log(reserialize);
+    
+    */
+    return parse;
+});</pre>
+</body>
+</html>

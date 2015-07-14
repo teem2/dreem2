@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class Composition {}
+ * @class CompositionServer {Internal}
  * Holder of the dreem <composition> for the server
  * Manages all iOT objects and the BusServer for each Composition
  */

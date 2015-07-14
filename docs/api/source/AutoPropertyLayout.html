@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** A private layout used by the special value for width/height of &#39;auto&#39;.
+</span>    This layout sizes the view to fit its child views. */
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    
+    module.exports = dr.AutoPropertyLayout = new JS.Class(&#39;AutoPropertyLayout&#39;, require(&#39;./Layout.js&#39;), {
+        // Life Cycle //////////////////////////////////////////////////////////////
+        doAfterAdoption: function() {
+            this.callSuper();
+            
+            parent = this.parent;
+            this.listenTo(parent, &#39;onborder&#39;, &#39;update&#39;);
+            this.listenTo(parent, &#39;onpadding&#39;, &#39;update&#39;);
+        },
+        
+        // Attributes //////////////////////////////////////////////////////////////
+        set_axis: function(v) {this.setActual(&#39;axis&#39;, v, &#39;string&#39;, &#39;x&#39;);},
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+        startMonitoringSubview: function(view) {
+            if (this.axis === &#39;x&#39;) {
+                this.listenTo(view, &#39;onboundsx&#39;, &#39;update&#39;);
+                this.listenTo(view, &#39;onboundswidth&#39;, &#39;update&#39;);
+            } else {
+                this.listenTo(view, &#39;onboundsy&#39;, &#39;update&#39;);
+                this.listenTo(view, &#39;onboundsheight&#39;, &#39;update&#39;);
+            }
+            this.listenTo(view, &#39;onvisible&#39;, &#39;update&#39;);
+        },
+        
+        stopMonitoringSubview: function(view) {
+            if (this.axis === &#39;x&#39;) {
+                this.stopListening(view, &#39;onboundsx&#39;, &#39;update&#39;);
+                this.stopListening(view, &#39;onboundswidth&#39;, &#39;update&#39;);
+            } else {
+                this.stopListening(view, &#39;onboundsy&#39;, &#39;update&#39;);
+                this.stopListening(view, &#39;onboundsheight&#39;, &#39;update&#39;);
+            }
+            this.stopListening(view, &#39;onvisible&#39;, &#39;update&#39;);
+        },
+        
+        update: function() {
+            if (!this.locked &amp;&amp; this.axis) {
+                // Prevent inadvertent loops
+                this.locked = true;
+                
+                var svs = this.subviews,
+                    i = svs.length,
+                    maxFunc = Math.max,
+                    parent = this.parent,
+                    max = 0,
+                    sv, val;
+                if (this.axis === &#39;x&#39;) {
+                    // Find the farthest horizontal extent of any subview
+                    while (i) {
+                        sv = svs[--i];
+                        if (!this.__skipX(sv)) max = maxFunc(max, sv.boundsx + maxFunc(0, sv.boundswidth));
+                    }
+                    val = max + parent.__fullBorderPaddingWidth;
+                    if (parent.width !== val) parent.setActualAttribute(&#39;width&#39;, val);
+                } else{
+                    // Find the farthest vertical extent of any subview
+                    while (i) {
+                        sv = svs[--i]
+                        if (!this.__skipY(sv)) max = maxFunc(max, sv.boundsy + maxFunc(0, sv.boundsheight));
+                    }
+                    val = max + parent.__fullBorderPaddingHeight;
+                    if (parent.height !== val) parent.setActualAttribute(&#39;height&#39;, val);
+                }
+                
+                this.locked = false;
+            }
+        },
+        
+<span id='global-method-__skipX'>        /** No need to measure children that are not visible or that use a percent
+</span>            position or size since this leads to circular sizing constraints.
+            Also skip children that use an align of bottom/right or center/middle
+            since those also lead to circular sizing constraints.
+            @private */
+        __skipX: function(view) {
+            return !view.visible || view.__isPercentConstraint_x || view.__isPercentConstraint_width || view.__noAutoForAlignConstraint_x;
+        },
+        
+<span id='global-method-__skipY'>        /** @private */
+</span>        __skipY: function(view) {
+            return !view.visible || view.__isPercentConstraint_y || view.__isPercentConstraint_height || view.__noAutoForAlignConstraint_y;
+        }
+    });
+});
+</pre>
+</body>
+</html>

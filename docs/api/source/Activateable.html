@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Adds the capability for an dr.View to be &quot;activated&quot;. A doActivated method
+</span>    is added that gets called when the view is &quot;activated&quot;. */
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    
+    module.exports = dr.Activateable = new JS.Module(&#39;Activateable&#39;, {
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-doActivated'>        /** Called when this view should be activated.
+</span>            @returns void */
+        doActivated: function() {
+            this.sendEvent(&#39;onactivated&#39;, true);
+        }
+    });
+});
+</pre>
+</body>
+</html>

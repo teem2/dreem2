@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Indicates that a dr.Node is backed by a sprite. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        ViewSprite = require(&#39;$SPRITE/View.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = dr.SpriteBacked = new JS.Module(&#39;SpriteBacked&#39;, {
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+<span id='global-property-PLATFORM_EVENTS'>            /** The boolean indicates if it is capture phase or not. */
+</span>            PLATFORM_EVENTS: {
+                // sprite.FocusObservable
+                onfocus:false,
+                onblur:false,
+                
+                // sprite.KeyObservable
+                onkeypress:false,
+                onkeydown:false,
+                onkeyup:false,
+                
+                // sprite.MouseObservable
+                onmouseover:false,
+                onmouseout:false,
+                onmousedown:false,
+                onmouseup:false,
+                onclick:false,
+                ondblclick:false,
+                onmousemove:false,
+                oncontextmenu:false,
+                onwheel:false
+                
+                // sprite.ScrollObservable
+                // onscroll:false not needed because dr.View.set_scrollable
+                // sets up handlers automatically.
+                
+                // Sprite.InputObservable
+                // Overide in inputtext.dre
+            }
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+        set_sprite: function(sprite) {
+            if (this.sprite) {
+                dr.dumpStack(&#39;Attempt to reset sprite.&#39;);
+            } else {
+                this.sprite = sprite;
+            }
+        },
+        
+        get_sprite: function() {
+            return this.sprite;
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+        createSprite: function(attrs) {
+            // Default implementation is a View sprite.
+            return new ViewSprite(this, attrs);
+        },
+        
+<span id='global-method-isPlatformEvent'>        /** Determines if the provided event type is for a platform event or
+</span>            not.
+            @param eventType:string The event type to check.
+            @returns boolean True if the eventType is a platform event, false
+                otherwise. */
+        isPlatformEvent: function(eventType) {
+            return dr.SpriteBacked.PLATFORM_EVENTS[eventType];
+        },
+        
+<span id='global-method-trigger'>        /** Triggers a simulated platform event on this SpriteBacked. */
+</span>        trigger: function(platformEventName, opts) {
+            sprite.simulatePlatformEvent(this, platformEventName, opts);
+        }
+    });
+});</pre>
+</body>
+</html>

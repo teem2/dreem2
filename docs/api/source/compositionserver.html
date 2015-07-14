@@ -19,8 +19,8 @@
  The MIT License (see LICENSE)
  Copyright (C) 2014-2015 Teem2 LLC
 */
-<span id='Composition'>/**
-</span> * @class Composition {}
+<span id='CompositionServer'>/**
+</span> * @class CompositionServer {Internal}
  * Holder of the dreem &lt;composition&gt; for the server
  * Manages all iOT objects and the BusServer for each Composition
  */
@@ -36,14 +36,6 @@ define(function(require, exports, module) {
     HTMLParser = require(&#39;./htmlparser&#39;),
     DreemError = require(&#39;./dreemerror&#39;),
     dreemCompiler = require(&#39;./dreemcompiler&#39;);
-
-  function classnameToBuild(name) {
-    return name.replace(/-/g,&#39;.&#39;);
-  };
-
-  function classnameToPath(name) {
-    return name.replace(/-/g,&#39;/&#39;);
-  };
 
 <span id='CompositionServer-method-constructor'><span id='CompositionServer'>  /**
 </span></span>    * @constructor
@@ -163,7 +155,7 @@ define(function(require, exports, module) {
     
 <span id='CompositionServer-method-__buildPath'>    /** @private */
 </span>    this.__buildPath = function(compName, className) {
-      return &#39;$BUILD/compositions.&#39; + compName + &#39;.dre.&#39; + className + &#39;.js&#39;;
+      return &#39;$BUILD/&#39; + compName + define.DREEM_EXTENSION + &#39;.&#39; + className + &#39;.js&#39;;
     };
     
 <span id='CompositionServer-method-__showErrors'>    /**
@@ -226,14 +218,20 @@ define(function(require, exports, module) {
 </span>    this.__makeLocalDeps = function(deps, compname, indent) {
       var out = [];
       for (var key in deps) {
-        var type = deps[key],
-          incpath = this.__lookupDep(type, key, compname, out);
-        if (incpath) {
-          this.classmap[key] = incpath;
-          if (type === 2) {
-            out.push(indent + &#39;if (define.env == &quot;browser&quot;) require(&quot;&#39; + incpath + &#39;&quot;)\n&#39;);
-          } else {
-            out.push(indent + &#39;var &#39; + dreemCompiler.classnameToJS(key) + &#39; = require(&quot;&#39; + incpath + &#39;&quot;)\n&#39;);
+        var type = deps[key]
+
+        if(typeof type === &#39;string&#39;){
+         out.push(indent + &#39;var &#39;+key+&#39; = require(&quot;&#39; + type + &#39;&quot;)\n&#39;);
+        }
+        else{
+          var incpath = this.__lookupDep(type, key, compname, out);
+          if (incpath) {
+            this.classmap[key] = incpath;
+            if (type === 2) {
+              out.push(indent + &#39;if (define.env == &quot;browser&quot;) require(&quot;&#39; + incpath + &#39;&quot;)\n&#39;);
+            } else {
+              out.push(indent + &#39;var &#39; + dreemCompiler.classnameToJS(key) + &#39; = require(&quot;&#39; + incpath + &#39;&quot;)\n&#39;);
+            }
           }
         }
       }
@@ -272,17 +270,19 @@ define(function(require, exports, module) {
         paths.unshift(&#39;$CLASSES&#39;);
         
         for (var i = 0; i &lt; paths.length; i++) {
-          var thePath = paths[i] + &#39;/&#39; + classnameToPath(classname),
-            drefile = thePath + &#39;.dre&#39;,
+          var thePath = paths[i] + &#39;/&#39; + classname.replace(/-/g,&#39;/&#39;), // Replace package separator char &#39;-&#39; with &#39;/&#39;
+            drefile = thePath + define.DREEM_EXTENSION,
             jsfile =  thePath + &#39;.js&#39;,
             ignore_watch = false;
           
           if (fs.existsSync(define.expandVariables(drefile))) {
-            if (!this.compile_once[drefile]) {
+            jsfile = this.compile_once[drefile];
+            if (!jsfile) {
               // lets parse and compile this dre file
               var local_err = [];
               var dre = this.__parseDreSync(drefile, local_err);
               if (!dre.child) return &#39;&#39;;
+              
               var root;
               for (var j = 0; j &lt; dre.child.length; j++) {
                 var tag = dre.child[j].tag
@@ -291,15 +291,13 @@ define(function(require, exports, module) {
               
               // Output this class
               if (root) {
-                jsfile = &quot;$BUILD/&quot; + paths[i].replace(/\//g,&#39;.&#39;).replace(/\$/g,&#39;&#39;).toLowerCase() + &#39;.&#39; + classnameToBuild(classname) + &quot;.js&quot;;
+                jsfile = &#39;$BUILD/&#39; + thePath.replace(/\$/g,&#39;&#39;).toLowerCase() + &#39;.js&#39;;
                 this.compile_once[drefile] = jsfile;
                 this.__compileAndWriteDreToJS(root, jsfile, null, local_err, [drefile]);
                 ignore_watch = true;
               }
               
               if (local_err.length) this.__showErrors(local_err, drefile, dre.source);
-            } else {
-              jsfile = this.compile_once[drefile];
             }
           }
           
@@ -343,13 +341,13 @@ define(function(require, exports, module) {
 <span id='CompositionServer-method-__getCompositionPath'>    /** @private */
 </span>    this.__getCompositionPath = function() {
       var compositionName = this.name,
-        filepath = &#39;$COMPOSITIONS/&#39; + compositionName + &#39;.dre&#39;;
+        filepath = &#39;$ROOT/&#39; + compositionName + define.DREEM_EXTENSION;
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
           var dir = fs.readdirSync(extpath), mypath;
           for (var i = 0; i &lt; dir.length; i++) {
-            mypath = &#39;$EXTLIB/&#39; + dir[i] + &#39;/compositions/&#39; + compositionName + &#39;.dre&#39;;
+            mypath = &#39;$EXTLIB/&#39; + dir[i] + &#39;/&#39; + compositionName + define.DREEM_EXTENSION;
             if (fs.existsSync(define.expandVariables(mypath))) return mypath;
           }
         }

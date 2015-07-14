@@ -20,7 +20,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 <span id='DreemCompiler'>/**
-</span> * @class DreemCompiler
+</span> * @class DreemCompiler {Internal}
  * Client and server usable dreem compiler
  * Parses and loads all dependencies starting from a particular
  * Source XML, and delivers them all compiled and bundled up 
@@ -32,8 +32,7 @@
 define(function(require, exports, module) {
   var path = require(&#39;path&#39;),
     HTMLParser = require(&#39;./htmlparser&#39;),
-    DreemError = require(&#39;./dreemerror&#39;),
-    SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
+    DreemError = require(&#39;./dreemerror&#39;);
 
   function getDefaultDeps() {
     return {teem:1};
@@ -114,7 +113,7 @@ define(function(require, exports, module) {
     
     //node.method_id = output.methods.length
     var lang = languages[language];
-    var args = node.attr &amp;&amp; node.attr.args ? node.attr.args.split(SEPARATOR_REGEX): [];
+    var args = node.attr &amp;&amp; node.attr.args ? node.attr.args.split(define.SEPARATOR_REGEX): [];
     var compiled = lang.compile(concatCode(node), args);
     
     if (compiled instanceof DreemError) { // the compiler returned an error
@@ -219,7 +218,7 @@ define(function(require, exports, module) {
     
     if (nodeAttrs) {
       if (nodeAttrs.with) {
-        nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
+        nodeAttrs.with.split(define.SEPARATOR_REGEX).forEach(function(cls) {
           if (cls) {
             deps[cls] = 1;
             body += &#39;\t\tthis.mixin(&#39; + exports.classnameToJS(cls)+&#39;)\n&#39;;
@@ -228,7 +227,7 @@ define(function(require, exports, module) {
       }
       
       if (nodeAttrs.scriptincludes) {
-        nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
+        nodeAttrs.scriptincludes.split(define.SEPARATOR_REGEX).forEach(function(cls) {
           if (cls) {
             filePathStack.push(cls);
             deps[exports.resolveFilePathStack(filePathStack, true)] = 2;
@@ -238,7 +237,7 @@ define(function(require, exports, module) {
       }
       
       if (nodeAttrs.requires) {
-        nodeAttrs.requires.split(SEPARATOR_REGEX).forEach(function(cls) {
+        nodeAttrs.requires.split(define.SEPARATOR_REGEX).forEach(function(cls) {
           if (cls) deps[cls] = 1;
         });
       }
@@ -275,7 +274,7 @@ define(function(require, exports, module) {
           case &#39;getter&#39;:
           case &#39;setter&#39;:
             var attrnameset = childAttrs &amp;&amp; (childAttrs.name || childAttrs.event);
-            var attrnames = attrnameset.split(SEPARATOR_REGEX), attrname, j;
+            var attrnames = attrnameset.split(define.SEPARATOR_REGEX), attrname, j;
             for (j = 0; j &lt; attrnames.length; j++) {
               attrname = attrnames[j];
               if (!attrname) {
@@ -333,13 +332,13 @@ define(function(require, exports, module) {
       
       if (nodeAttrs) {
         if (nodeAttrs.with) {
-          nodeAttrs.with.split(SEPARATOR_REGEX).forEach(function(cls) {
+          nodeAttrs.with.split(define.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
           })
         }
         
         if (nodeAttrs.scriptincludes) {
-          nodeAttrs.scriptincludes.split(SEPARATOR_REGEX).forEach(function(cls) {
+          nodeAttrs.scriptincludes.split(define.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) {
               filePathStack.push(cls);
               deps[exports.resolveFilePathStack(filePathStack, true)] = 2;
@@ -354,7 +353,7 @@ define(function(require, exports, module) {
         }
         
         if (nodeAttrs.requires) {
-          nodeAttrs.requires.split(SEPARATOR_REGEX).forEach(function(cls) {
+          nodeAttrs.requires.split(define.SEPARATOR_REGEX).forEach(function(cls) {
             if (cls) deps[cls] = 1;
           });
         }
@@ -400,6 +399,9 @@ define(function(require, exports, module) {
                 errors.push(new DreemError(&#39;Cant support include in this location&#39;, node.pos));
               }
               break;
+            case &#39;require&#39;:
+              deps[attr.name] = attr.src
+              break
             case &#39;class&#39;:
             case &#39;mixin&#39;:
               if (attr.name) deps[attr.name] = 1;
@@ -423,7 +425,7 @@ define(function(require, exports, module) {
               }
               var attrnameset = attr.name || attr.event;
               
-              var attrnames = attrnameset.split(SEPARATOR_REGEX);
+              var attrnames = attrnameset.split(define.SEPARATOR_REGEX);
               for (var j = 0; j &lt; attrnames.length; j++) {
                 var attrname = attrnames[j];
                 
