@@ -158,6 +158,9 @@ SOFTWARE. -->
           <!--link url="./smoke/twojs">TwoJS</link-->
           <link url="./smoke/video">Video</link>
           <link url="./smoke/webpage">Webpage</link>
+          
+          <subhead>Editor Components</subhead>
+          <link url="./smoke/undo">Undo/Redo</link>
         </block>
       </view>
     </view>

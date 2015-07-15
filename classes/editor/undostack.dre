@@ -1,0 +1,119 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+      * @class dr.editor.undostack {UI Components}
+      * @extends dr.node
+      * Provides a stack of undoables that can be done/undone.
+      */-->
+<class name="editor-undostack" extends="node" requires="editor-undoable">
+  <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.reset();
+    this.super();
+  </method>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <method name="reset">
+    var stack = this.__stack || (this.__stack = []);
+    while (stack.length) stack.pop().destroy();
+    this.__stackLoc = -1;
+  </method>
+
+  <method name="canUndo">
+    return this.__stackLoc >= 0;
+  </method>
+
+  <method name="canRedo">
+    return this.__stack.length - 1 > this.__stackLoc;
+  </method>
+
+  <method name="getUndoDescription">
+    if (this.canUndo()) {
+      return this.__stack[this.__stackLoc].getUndoDescription();
+    } else {
+      return '';
+    }
+  </method>
+
+  <method name="getRedoDescription">
+    if (this.canRedo()) {
+      return this.__stack[this.__stackLoc + 1].getRedoDescription();
+    } else {
+      return '';
+    }
+  </method>
+
+  <method name="do" args="undoable, callback, errorHandler">
+    if (!undoable || undoable.done) {
+      if (errorHandler) errorHandler('Undoable already done.');
+    } else {
+      var error = this.__executeUndoable(undoable, callback, true);
+      if (error) {
+        // Rollback since an error occurred.
+        var undoError = this.__executeUndoable(undoable, callback, false);
+        if (errorHandler) {
+          errorHandler(error);
+          if (undoError) errorHandler(err);
+        }
+      } else {
+        ++this.__stackLoc;
+        var stack = this.__stack,
+          loc = this.__stackLoc;
+        while (stack.length > loc) stack.pop().destroy();
+        stack.push(undoable);
+        return true;
+      }
+    }
+    return false;
+  </method>
+
+  <method name="undo" args="callback, errorHandler">
+    if (this.canUndo()) {
+      var error = this.__executeUndoable(this.__stack[this.__stackLoc--], callback, false);
+      if (error) {
+        if (errorHandler) errorHandler(err);
+      } else {
+        return true;
+      }
+    }
+    return false;
+  </method>
+
+  <method name="redo" args="callback, errorHandler">
+    if (this.canRedo()) {
+      var error = this.__executeUndoable(this.__stack[++this.__stackLoc], callback, true);
+      if (error) {
+        if (errorHandler) errorHandler(err);
+      } else {
+        return true;
+      }
+    }
+    return false;
+  </method>
+
+  <method name="__executeUndoable" args="undoable, callback, isRedo">
+    // Listen for expected errors while doing the undoable.
+    var error,
+      expectedErrorHandler = new dr.Eventable(null, [{
+        handleError: function(event) {error = event;}
+      }]);
+    expectedErrorHandler.listenTo(dr.global.error, 'handleError');
+    
+    // Do the undoable
+    try {
+      if (isRedo) {
+        undoable.redo(callback);
+      } else {
+        undoable.undo(callback);
+      }
+    } catch (err) {
+      // Catch unexpected errors
+      error = err;
+    }
+    
+    expectedErrorHandler.destroy();
+    
+    return error;
+  </method>
+</class>

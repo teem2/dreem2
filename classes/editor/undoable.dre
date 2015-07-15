@@ -1,0 +1,48 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+      * @class dr.editor.undoable {UI Components}
+      * @extends dr.eventable
+      */-->
+<class name="editor-undoable" extends="eventable">
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
+  <!--/**
+        * @attribute {Boolean} [done]
+        * @readonly
+        * Indicates if this undoable is in the "done" or "undone" state.
+        * Undoables begin in the undone state.
+        */-->
+  <attribute name="done" type="boolean" value="false"></attribute>
+
+  <!--/**
+        * @attribute {String} [description]
+        * A human readable representation of the undoable. The description
+        * should describe what will be done/undone when the undoable is
+        * executed.
+        */-->
+  <attribute name="description" type="string" value=""></attribute>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <method name="getUndoDescription">
+    return this.description;
+  </method>
+
+  <method name="getRedoDescription">
+    return this.description;
+  </method>
+
+  <method name="undo" args="callback">
+    if (this.done) {
+      this.setAttribute('done', false);
+      if (callback) callback(this);
+    }
+  </method>
+
+  <method name="redo" args="callback">
+    if (!this.done) {
+      this.setAttribute('done', true);
+      if (callback) callback(this);
+    }
+  </method>
+</class>
