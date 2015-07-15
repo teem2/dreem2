@@ -83,6 +83,8 @@ SOFTWARE. -->
           <subhead>Foundation</subhead>
           <link url="./smoke/class_system">Class System</link>
           <link url="./smoke/resolve_name">Resolve Name</link>
+          <link url="./smoke/promises" status="fail">Promises</link><!-- Fails in the browser only. Looks like it's setup to fail. -->
+          <link url="./smoke/promises_simple">Simple Promises</link>
         </block>
         
         <block>
