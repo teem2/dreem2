@@ -117,8 +117,10 @@ SOFTWARE. -->
           <handler event="oninit">
             var el = this.sprite.platformObject,
               testVal = 'This\n      text should wrap at my width.';
-            assert.equal(this.text, testVal, 'Multiline text with a line ending should work.');
-            assert.equal(this.sprite.getText(), testVal, 'innerText should exist #9');
+            var t = this.text.replace(/\r/gm, ''); // Fix windows
+            assert.equal(t, testVal, 'Multiline text with a line ending should work.');
+            t = this.sprite.getText().replace(/\r/gm, ''); // Fix windows
+            assert.equal(t, testVal, 'innerText should exist #9');
           </handler>
         </text>
   
@@ -341,8 +343,8 @@ SOFTWARE. -->
             assert.equal(this.width, 50, 'width should be 50');
             
             // PhantomJS doesn't handle overflow:auto on text correctly so
-            // the next test has to also allow a value of 40
-            assert.include([this.parent.nowrap_auto.height, 40], this.height, 'nowrap fixed height should be the same as nowrap auto')
+            // the next test has to also allow a value of 40 and 41
+            assert.include([this.parent.nowrap_auto.height, 40, 41], this.height, 'nowrap fixed height should be the same as nowrap auto')
           </handler>
         </text>
         
@@ -443,7 +445,7 @@ SOFTWARE. -->
             assert.testCaseLabel = 'Change fixed and multiline';
             
             assert.equal(this.multiline, false);
-            assert.closeTo(this.width, 125, 11, 'width check');
+            assert.closeTo(this.width, 125, 17, 'width check');
             assert.closeTo(this.height, 24, 10, 'height check');
             
             // Change to fixed width
@@ -466,7 +468,7 @@ SOFTWARE. -->
             
             assert.equal(this.multiline, true);
             assert.equal(this.sprite.styleObj['white-space'], 'pre');
-            assert.closeTo(this.width, 100, 10);
+            assert.closeTo(this.width, 100, 12);
             assert.closeTo(this.height, 48, 10);
             
             // Change to back single line
@@ -474,7 +476,7 @@ SOFTWARE. -->
             
             assert.equal(this.multiline, false);
             assert.equal(this.sprite.styleObj['white-space'], 'nowrap');
-            assert.closeTo(this.width, 125, 11, 'check width after changed back to single line');
+            assert.closeTo(this.width, 125, 17, 'check width after changed back to single line');
             assert.closeTo(this.height, 24, 10, 'check height after changed back to single line');
             
             // Change to back multiline
@@ -482,13 +484,13 @@ SOFTWARE. -->
             
             assert.equal(this.multiline, true);
             assert.equal(this.sprite.styleObj['white-space'], 'pre');
-            assert.closeTo(this.width, 100, 10);
+            assert.closeTo(this.width, 100, 12);
             assert.closeTo(this.height, 48, 10);
             
             // Make bold and observe a resize
             this.setAttribute('bold', true);
             
-            assert.closeTo(this.width, 100, 10);
+            assert.closeTo(this.width, 100, 12);
             assert.closeTo(this.height, 48, 10);
             
             // Change fontsize and observe a resize
