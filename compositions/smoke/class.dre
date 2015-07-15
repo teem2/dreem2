@@ -292,6 +292,16 @@ SOFTWARE. -->
         assert.equal(this.st.subviews.length, 1)
         assert.equal(this.st.subnodes.length, 2)
       </handler>
+      
+      <!-- Verify that classes can extend Eventable -->
+      <class name="thing" extends="eventable">
+        <method name="init" args="attrs, mixins">
+          this.super();
+          assert.isTrue(this.isA(dr.Eventable));
+        </method>
+      </class>
+      
+      <thing></thing>
     </view>
   </screen>
 </screens>
