@@ -1,0 +1,51 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+      * @class dr.editor.undoable {UI Components}
+      * @extends dr.eventable
+      */-->
+<class name="editor-compoundundoable" extends="editor-undoable">
+  <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
+  <method name="destroy">
+    var undoables = this.__undoables;
+    if (undoables) while (undoables.length) undoables.pop().destroy();
+    this.super();
+  </method>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <method name="add" args="undoable">
+    if (!undoable) {
+      dr.sprite.console.warn("No undoable provided to compoundundoable.add.");
+    } else if (undoable.done) {
+      dr.sprite.console.warn("Undoable already in the done state in compoundundoable.add.");
+    } else if (undoable === this) {
+      dr.sprite.console.warn("Adding compoundundoable to itself is not allowed.");
+    } else {
+      (this.__undoables || (this.__undoables = [])).push(undoable);
+    }
+    return this;
+  </method>
+
+  <method name="undo" args="callback">
+    if (this.done) {
+      var undoables = this.__undoables;
+      if (undoables) {
+        var i = undoables.length;
+        while (i) undoables[--i].undo(callback);
+      }
+    }
+    this.super();
+  </method>
+
+  <method name="redo" args="callback">
+    if (!this.done) {
+      var undoables = this.__undoables;
+      if (undoables) {
+        var len = undoables.length, i = 0;
+        for (; len > i;) undoables[i++].redo(callback);
+      }
+    }
+    this.super();
+  </method>
+</class>
