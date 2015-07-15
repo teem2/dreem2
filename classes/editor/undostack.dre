@@ -46,13 +46,13 @@
 
   <method name="do" args="undoable, callback, errorHandler">
     if (!undoable || undoable.done) {
-      if (errorHandler) errorHandler('Undoable already done.');
+      if (errorHandler && typeof errorHandler === 'function') errorHandler({msg:'Undoable already done.'});
     } else {
       var error = this.__executeUndoable(undoable, callback, true);
       if (error) {
         // Rollback since an error occurred.
         var undoError = this.__executeUndoable(undoable, callback, false);
-        if (errorHandler) {
+        if (errorHandler && typeof errorHandler === 'function') {
           errorHandler(error);
           if (undoError) errorHandler(err);
         }
@@ -72,7 +72,7 @@
     if (this.canUndo()) {
       var error = this.__executeUndoable(this.__stack[this.__stackLoc--], callback, false);
       if (error) {
-        if (errorHandler) errorHandler(err);
+        if (errorHandler && typeof errorHandler === 'function') errorHandler(err);
       } else {
         return true;
       }
@@ -84,7 +84,7 @@
     if (this.canRedo()) {
       var error = this.__executeUndoable(this.__stack[++this.__stackLoc], callback, true);
       if (error) {
-        if (errorHandler) errorHandler(err);
+        if (errorHandler && typeof errorHandler === 'function') errorHandler(err);
       } else {
         return true;
       }
@@ -98,7 +98,7 @@
       expectedErrorHandler = new dr.Eventable(null, [{
         handleError: function(event) {error = event;}
       }]);
-    expectedErrorHandler.listenTo(dr.global.error, 'handleError');
+    expectedErrorHandler.listenTo(dr.global.error, 'onall', 'handleError');
     
     // Do the undoable
     try {

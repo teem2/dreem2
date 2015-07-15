@@ -35,14 +35,14 @@
   <method name="undo" args="callback">
     if (this.done) {
       this.setAttribute('done', false);
-      if (callback) callback(this);
+      if (callback && typeof callback === 'function') callback(this);
     }
   </method>
 
   <method name="redo" args="callback">
     if (!this.done) {
       this.setAttribute('done', true);
-      if (callback) callback(this);
+      if (callback && typeof callback === 'function') callback(this);
     }
   </method>
 </class>
