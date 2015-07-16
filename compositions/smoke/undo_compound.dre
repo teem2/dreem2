@@ -24,6 +24,9 @@ SOFTWARE. -->
   <screen type="browser" name="default" title='Smoke Test - Undo/Redo Compound'>
     <include href="./includes/boilerplate.dre"></include>
     
+    <expectedoutput>Invalid redo in compoundundoable.</expectedoutput>
+    <expectedoutput>Invalid undo in compoundundoable.</expectedoutput>
+    
     <editor-undostack id="undo"></editor-undostack>
     
     <view width="100%" height="100%">
@@ -112,6 +115,25 @@ SOFTWARE. -->
         
         undo.redo();
         assert.equal(foo.width, 100);
+        
+        
+        // Verify there is protection against cyclic calls in undo/redo
+        undo.reset();
+        
+        var compound4 = new dr.editor.compoundundoable();
+        var compound5 = new dr.editor.compoundundoable();
+        
+        compound4.add(compound5);
+        compound5.add(compound4);
+        
+        assert.isFalse(undo.do(compound4));
+        assert.isFalse(undo.canUndo());
+        assert.isFalse(undo.canRedo());
+        
+        compound5.destroy();
+        
+        assert.isTrue(compound4.destroyed);
+        assert.isTrue(compound5.destroyed);
       </handler>
     </view>
   </screen>
