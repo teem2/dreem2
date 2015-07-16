@@ -229,8 +229,10 @@ SOFTWARE. -->
         
         Also, it's two lines
         <handler event="oninit">
-          assert.equal(this.text,  'Test content heres some more test content to make this a lot bigger\n        \n        Also, it\'s two lines')
-          assert.equal(this.value, 'Test content heres some more test content to make this a lot bigger\n        \n        Also, it\'s two lines')
+          var text = this.text.replace(/\r/g,'');   // Windows
+          var value = this.value.replace(/\r/g,''); // Windows
+          assert.equal(text,  'Test content heres some more test content to make this a lot bigger\n        \n        Also, it\'s two lines')
+          assert.equal(value, 'Test content heres some more test content to make this a lot bigger\n        \n        Also, it\'s two lines')
         </handler>
       </inputtext>
       

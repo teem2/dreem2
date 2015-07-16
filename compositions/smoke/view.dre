@@ -114,7 +114,7 @@ SOFTWARE. -->
             
             // PhantomJS doesn't adjust the scroll position the way browsers do
             // so we allow 84 as well.
-            assert.include([100, 84], sprite.getScrollWidth());
+            assert.include([100, 84, 83], sprite.getScrollWidth());
             assert.equal(50, sprite.getScrollHeight());
           }, 300);
         </handler>
