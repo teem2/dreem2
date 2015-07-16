@@ -5,7 +5,7 @@
       * @extends dr.node
       * Provides a stack of undoables that can be done/undone.
       */-->
-<class name="editor-undostack" extends="node" requires="editor-undoable">
+<class name="editor-undostack" extends="node" requires="editor-compoundundoable, editor-attrundoable">
   <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
     this.reset();
