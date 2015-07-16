@@ -1,0 +1,186 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+  <screens>
+    <screen type="browser" name="default" title='Example - Bitmap'>
+      <view width="100%" height="100%">
+        <editor-undostack id="undo"></editor-undostack>
+
+        <view id="rightbar" x="right" y="40" width="300" height="100%" bgcolor="silver">
+          <spacedlayout axis="y"></spacedlayout>
+          <labelbutton>Undo
+            <handler event="onclick">
+              undo.undo(this.undone);
+            </handler>
+            <method name="undone">
+              reticle.syncPosition();
+            </method>
+          </labelbutton>
+          <labelbutton>Redo
+            <handler event="onclick">
+              undo.redo(this.redone);
+            </handler>
+            <method name="redone">
+              reticle.syncPosition();
+            </method>
+          </labelbutton>
+        </view>
+
+        <view id="toolbar" height="40" width="100%" bgcolor="gray"></view>
+
+        <view id="redbox" y="40" bgcolor="red" width="100" height="100">
+          <handler event="onclick">
+            reticle.setFocus(this)
+          </handler>
+        </view>
+
+        <view id="greenbox" y="40" bgcolor="green" width="100" height="100">
+          <handler event="onclick">
+            reticle.setFocus(this)
+          </handler>
+        </view>
+
+        <view id="softfocus">
+          <method name="setFocus" args="view">
+            if (this.scope && this.scope !== view) {
+              this.stopListening(dr.mouse, 'onmouseup', this.processEvent)
+            }
+            this.scope = view;
+            console.log('setFocus', this.scope, view)
+            this.listenTo(dr.mouse, 'onmouseup', this.processEvent.bind(this))
+          </method>
+          <method name="processEvent" args="event">
+            if (! this.scope) return;
+            // Check to see if the mouse went up outside us
+            var view = event.view;
+            while (view) {
+              console.log('processEvent', view.platformObject, this.scope.id, view === this.scope)
+              if (view === this.scope) {
+                // don't prevent bubbling for mouseup events
+                return false;
+              }
+              view = view.parent;
+            }
+
+            console.log('canceling', this.scope.id)
+            this.stopListening(dr.mouse, 'onmouseup', this.processEvent)
+            this.scope.sendEvent('onlostfocus')
+            this.scope = null;
+
+            // don't prevent bubbling for mouseup events
+            return false;
+          </method>
+        </view>
+
+        <class name="handle" bgcolor="cyan" width="10" height="10" with="draggable" clickable="true" distancebeforedrag="5"></class>
+
+        <view id="reticle" border="1" bgcolor="cyan" opacity=".7" with="draggable" ignorelayout="true" clickable="true" visible="false" distancebeforedrag="5">
+          <method name="setFocus" args="view">
+            // console.log('setFocus', view)
+            this.target = view;
+            var pos = view.getAbsolutePosition();
+            this.dx = view.x - pos.x;
+            this.dy = view.y - pos.y;
+            this.syncPosition();
+            this.moveToFront();
+            softfocus.setFocus(this);
+          </method>
+          <method name="syncPosition">
+            var pos = this.target.getAbsolutePosition();
+            this.setAttributes({visible: true, width: this.target.width, height: this.target.height, x: pos.x, y: pos.y})
+          </method>
+          <handler event="onx" args="x">
+            if (this.target) {
+              this.target.setAttribute('x', x + this.dx);
+            }
+          </handler>
+          <handler event="ony" args="y">
+            if (this.target) {
+              this.target.setAttribute('y', y + this.dy);
+            }
+          </handler>
+          <handler event="onwidth" args="width">
+            if (this.target) {
+              this.target.setAttribute('width', width);
+            }
+            this.resizer.setAttribute('x', this.width - 5)
+          </handler>
+          <handler event="onheight" args="height">
+            if (this.target) {
+              this.target.setAttribute('height', height);
+            }
+            this.resizer.setAttribute('y', this.height - 5)
+          </handler>
+          <handle name="resizer">
+            <handler event="onx" args="x">
+              this.parent.setAttribute('width', x + 5);
+            </handler>
+            <handler event="ony" args="y">
+              this.parent.setAttribute('height', y + 5);
+            </handler>
+            <method name="startDrag" args="event">
+              this.parent._start();
+              this.super();
+            </method> 
+            <method name="stopDrag" args="event, isAbort">
+              if (isAbort) {
+                return;
+              } else {
+                this.parent._stop();
+                this.super();
+              }
+            </method> 
+          </handle>
+          <method name="_start">
+            // started dragging, create compound for target with current values
+            this._undoablew = new dr.editor.attrundoable({target:this.target, attribute:'width', oldvalue:this.target.width});
+            this._undoableh = new dr.editor.attrundoable({target:this.target, attribute:'height', oldvalue:this.target.height});
+            this._undoablex = new dr.editor.attrundoable({target:this.target, attribute:'x', oldvalue:this.target.x});
+            this._undoabley = new dr.editor.attrundoable({target:this.target, attribute:'y', oldvalue:this.target.y});
+          </method>
+          <method name="startDrag" args="event">
+            this._start();
+            this.super();
+          </method>
+          <method name="_stop">
+            // stopped dragging, store new values
+            var compound = new dr.editor.compoundundoable();
+            this._undoablew.newvalue = this.target.width;
+            this._undoableh.newvalue = this.target.height;
+            this._undoablex.newvalue = this.target.x;
+            this._undoabley.newvalue = this.target.y;
+            compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
+            undo.do(compound);
+          </method>
+          <method name="stopDrag" args="event, isAbort">
+            if (isAbort) {
+              return;
+            } else {
+              this._stop();
+              this.super();
+            }
+          </method>
+        </view>
+      </view>
+    </screen>
+  </screens>
+</composition>
