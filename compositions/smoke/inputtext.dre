@@ -204,12 +204,14 @@ SOFTWARE. -->
           assert.equal(this.multiline, true)
           assert.equal(this.rows, 3)
           
-          assert.equal(this.width, 100, 'Default width is 100.')
-          if (this.height <  75)
-            assert.closeTo(this.height, 69, 5, 'Default height is 3 lines')
-	  else {
+          // Use this until we add browser detection
+          var firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
+          if (firefox) {
             // Firefox has different sizes
             assert.closeTo(this.height, 89, 5, 'Default height is 3 lines')
+          }
+          else {
+            assert.closeTo(this.height, 69, 5, 'Default height is 3 lines')
           }
 
         </handler>
@@ -223,13 +225,16 @@ SOFTWARE. -->
           assert.equal(this.rows, 5)
           
           assert.equal(this.width, 200, 'Width is 200.')
-	  if (this.height < 130)
-            assert.closeTo(this.height, 115, 5, 'Height is 5 lines');
-	  else {
+
+          // Use this until we add browser detection
+          var firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
+          if (firefox) {
             // Firefox has different sizes
             assert.closeTo(this.height, 137, 5, 'Height is 5 lines');
           }
-
+          else {
+            assert.closeTo(this.height, 115, 5, 'Height is 5 lines');
+          }
 
           
           assert.equal(this.text,  'Test content heres some more test content to make this a lot bigger')
