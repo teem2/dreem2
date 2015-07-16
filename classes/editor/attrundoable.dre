@@ -1,0 +1,48 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+      * @class dr.editor.attrundoable {UI Components}
+      * @extends dr.editor.undoable
+      */-->
+<class name="editor-attrundoable" extends="editor-undoable"
+  undodescription='Undo change {0} from "{1}" to "{2}".'
+  redodescription='Redo change {0} from "{1}" to "{2}".'
+>
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
+  <attribute name="target" type="expression" value=""></attribute>
+  <attribute name="attribute" type="string" value="x"></attribute>
+  <attribute name="oldvalue" type="expression" value="undefined"></attribute>
+  <attribute name="newvalue" type="expression" value="undefined"></attribute>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <method name="getUndoDescription">
+    return this.__getDescription(this.super());
+  </method>
+
+  <method name="getRedoDescription">
+    return this.__getDescription(this.super());
+  </method>
+  
+  <method name="__getDescription" args="template">
+    return dr.fillTextTemplate(template, this.attribute, this.oldvalue, this.newvalue);
+  </method>
+
+  <method name="undo" args="callback">
+    if (this.done) this.target.setAttribute(this.attribute, this.oldvalue);
+    this.super();
+  </method>
+
+  <method name="redo" args="callback">
+    if (!this.done) {
+      // Record oldvalue one time only just before applying the new value.
+      if (!this.__storedOldValue && this.oldvalue === undefined) {
+        this.setAttribute('oldvalue', this.target[this.attribute]);
+        this.__storedOldValue = true;
+      }
+      
+      this.target.setAttribute(this.attribute, this.newvalue);
+    }
+    this.super();
+  </method>
+</class>

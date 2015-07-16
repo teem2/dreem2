@@ -15,21 +15,29 @@
   <attribute name="done" type="boolean" value="false"></attribute>
 
   <!--/**
-        * @attribute {String} [description]
+        * @attribute {String} [undodescription]
         * A human readable representation of the undoable. The description
-        * should describe what will be done/undone when the undoable is
+        * should describe what will be undone when the undoable is
         * executed.
         */-->
-  <attribute name="description" type="string" value=""></attribute>
+  <attribute name="undodescription" type="string" value=""></attribute>
+
+  <!--/**
+        * @attribute {String} [redodescription]
+        * A human readable representation of the undoable. The description
+        * should describe what will be done/redone when the undoable is
+        * executed.
+        */-->
+  <attribute name="redodescription" type="string" value=""></attribute>
 
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->
   <method name="getUndoDescription">
-    return this.description;
+    return this.undodescription;
   </method>
 
   <method name="getRedoDescription">
-    return this.description;
+    return this.redodescription;
   </method>
 
   <method name="undo" args="callback">

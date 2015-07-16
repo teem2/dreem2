@@ -26,39 +26,6 @@ SOFTWARE. -->
     
     <editor-undostack id="undo"></editor-undostack>
     
-    <class name="attrundoable" extends="editor-undoable" description="Change Attribute">
-      <attribute name="target" type="expression" value=""></attribute>
-      <attribute name="attribute" type="string" value="x"></attribute>
-      <attribute name="oldvalue" type="expression" value="undefined"></attribute>
-      <attribute name="newvalue" type="expression" value="undefined"></attribute>
-      
-      <method name="getUndoDescription">
-        return 'Undo ' + this.super() + ': ' + this.attribute;
-      </method>
-      
-      <method name="getRedoDescription">
-        return 'Redo ' + this.super() + ': ' + this.attribute;
-      </method>
-      
-      <method name="undo" args="callback">
-        if (this.done) this.target.setAttribute(this.attribute, this.oldvalue);
-        this.super();
-      </method>
-      
-      <method name="redo" args="callback">
-        if (!this.done) {
-          // Record oldvalue one time only just before applying the new value.
-          if (!this.__storedOldValue && this.oldvalue === undefined) {
-            this.setAttribute('oldvalue', this.target[this.attribute]);
-            this.__storedOldValue = true;
-          }
-          
-          this.target.setAttribute(this.attribute, this.newvalue);
-        }
-        this.super();
-      </method>
-    </class>
-    
     <view width="100%" height="100%">
       <view name="foo" width="50" height="50" bgcolor="red"></view>
       
@@ -69,8 +36,8 @@ SOFTWARE. -->
         // Add an undoable
         assert.equal(foo.width, 50, 'Verify original width of foo view.');
         var compound = new dr.editor.compoundundoable();
-        var undoable1 = new dr.attrundoable({target:foo, attribute:'width', newvalue:100});
-        var undoable2 = new dr.attrundoable({target:foo, attribute:'height', newvalue:75});
+        var undoable1 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:100});
+        var undoable2 = new dr.editor.attrundoable({target:foo, attribute:'height', newvalue:75});
         compound.add(undoable1).add(undoable2);
         
         assert.isFalse(compound.done);
@@ -113,10 +80,10 @@ SOFTWARE. -->
         var compound2 = new dr.editor.compoundundoable();
         var compound3 = new dr.editor.compoundundoable();
         
-        var undoable3 = new dr.attrundoable({target:foo, attribute:'width', newvalue:100});
-        var undoable4 = new dr.attrundoable({target:foo, attribute:'width', newvalue:200});
-        var undoable5 = new dr.attrundoable({target:foo, attribute:'width', newvalue:100});
-        var undoable6 = new dr.attrundoable({target:foo, attribute:'width', newvalue:200});
+        var undoable3 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:100});
+        var undoable4 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:200});
+        var undoable5 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:100});
+        var undoable6 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:200});
         
         compound2.add(undoable3).add(undoable4);
         compound3.add(undoable6).add(undoable5); // Opposite order

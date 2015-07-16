@@ -1,8 +1,8 @@
 <!-- The MIT License (see LICENSE)
      Copyright (C) 2014-2015 Teem2 LLC -->
 <!--/**
-      * @class dr.editor.undoable {UI Components}
-      * @extends dr.eventable
+      * @class dr.editor.compoundundoable {UI Components}
+      * @extends dr.editor.undoable
       */-->
 <class name="editor-compoundundoable" extends="editor-undoable">
   <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
