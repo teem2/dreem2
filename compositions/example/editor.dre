@@ -22,47 +22,234 @@ SOFTWARE. -->
 <composition>
   <screens>
     <screen type="browser" name="default" title='Editor'>
-      <view width="100%" height="100%">
-        <editor-undostack id="undo"></editor-undostack>
-
-        <view id="rightbar" x="right" y="40" width="300" height="100%" bgcolor="silver"></view>
-
-        <view id="toolbar" height="40" width="100%" bgcolor="gray">
-          <spacedlayout></spacedlayout>
-          <labelbutton>Undo
-            <handler event="onclick">
-              undo.undo(this.undone);
-            </handler>
-            <method name="undone" args="undoable">
-              if (undoable.target) reticle.target = undoable.target;
-              reticle.syncPosition();
-            </method>
-          </labelbutton>
-          <labelbutton>Redo
-            <handler event="onclick">
-              undo.redo(this.redone);
-            </handler>
-            <method name="redone" args="undoable">
-              if (undoable.target) reticle.target = undoable.target;
-              reticle.syncPosition();
-            </method>
-          </labelbutton>
-        </view>
-
-        <view id="greenbox" y="40" bgcolor="green" width="100" height="100">
-          <handler event="onclick">
-            reticle.setFocus(this)
-          </handler>
-          <method name="setAttribute" args="name, value">
-            var ret = this.super(name, value)
-            if (this.parent && this.parent.inited) {
-              editormodel.updatemodel(this.id, name, this[name]);
+      <node id="config">
+        <attribute name="topbar_height" type="number" value="32"></attribute>
+        <attribute name="leftbar_width" type="number" value="75"></attribute>
+        <attribute name="rightbar_width" type="number" value="250"></attribute>
+        <attribute name="bottombar_height" type="number" value="24"></attribute>
+      </node>
+      
+      <node id="actions">
+        <method name="_undoRedoCallback" args="undoable">
+          if (undoable.target) reticle.target = undoable.target;
+          reticle.syncPosition();
+        </method>
+        
+        <method name="undo">
+          undo.undo(this._undoRedoCallback);
+        </method>
+        
+        <method name="redo">
+          undo.redo(this._undoRedoCallback);
+        </method>
+        
+        <method name="clearSelection">
+          reticle.setFocus(null);
+        </method>
+      </node>
+      
+      <editor-undostack id="undo"></editor-undostack>
+      
+      <node id="editormodel">
+        <handler event="oninit">
+          var _this = this;
+          // rewrite the file to be editable, which will reload this page automatically
+          dr.global.requestor.fetch(window.location.toString() + '?edit=1').success(
+            function(data, status) {
+              var parser = new dr.htmlparser();
+              var jsobj = parser.parse(data)
+              _this.setAttribute('model', jsobj);
+              // console.log('loaded model', jsobj)
             }
-            return ret;
+          );
+        </handler>
+        <method name="updatemodel" args="id, name, value">
+          var child = this._findChild(id, this.model);
+          if (child) {
+            child.attr[name] = value;
+            //console.log('found child', child, id, child.attr);
+          }
+        </method>
+        <method name="_findChild" args="id, jsobj">
+          var children = jsobj.child;
+          for (var i = 0; children.length > i; i++) {
+            var child = children[i]
+            if (child.attr && (child.attr.id === id)) {
+              // console.log('found child', child)
+              return child;
+            } else if (child.child) {
+              newchild = this._findChild(id, child);
+              if (newchild) {
+                return newchild;
+              }
+            }
+          }
+        </method>
+      </node>
+      
+      <mixin name="editable">
+        <handler event="onmousedown" args="event">
+          reticle.setFocus(this)
+          dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
+        </handler>
+        
+        <method name="setAttribute" args="name, value">
+          var ret = this.super(name, value)
+          if (this.parent && this.parent.inited) {
+            editormodel.updatemodel(this.id, name, this[name]);
+          }
+          return ret;
+        </method>
+      </mixin>
+      
+      <class name="controlhandle" with="draggable"
+        border="1" bordercolor="blue" bgcolor="cyan" width="10" height="10"
+      ></class>
+      
+      <class name="reticle" with="draggable" visible="false" distancebeforedrag="5">
+        <view name="fill" width="100%" height="100%"
+          border="1" bordercolor="blue" bgcolor="cyan" opacity=".5"
+        ></view>
+        
+        <controlhandle name="resizer">
+          <handler event="onx" args="x">
+            this.parent.setAttribute('width', x + 6);
+          </handler>
+          <handler event="ony" args="y">
+            this.parent.setAttribute('height', y + 6);
+          </handler>
+          <method name="startDrag" args="event">
+            this.parent._start();
+            this.super();
+          </method> 
+          <method name="stopDrag" args="event, isAbort">
+            if (isAbort) {
+              return;
+            } else {
+              this.parent._stop();
+              this.super();
+            }
           </method>
+        </controlhandle>
+        
+        <method name="setFocus" args="view">
+          this.target = view;
+          if (view) {
+            this.setAttribute('visible', true);
+            
+            var pos = view.getAbsolutePosition();
+            this.dx = view.x - pos.x;
+            this.dy = view.y - pos.y;
+            this.syncPosition();
+            this.moveToFront();
+          } else {
+            this.setAttribute('visible', false);
+          }
+          //softfocus.setFocus(this);
+        </method>
+        <method name="syncPosition">
+          var pos = this.target.getAbsolutePosition();
+          this.setAttributes({visible: true, width: this.target.width, height: this.target.height, x: pos.x, y: pos.y})
+        </method>
+        <handler event="onx" args="x">
+          if (this.target) {
+            this.target.setAttribute('x', x + this.dx);
+          }
+        </handler>
+        <handler event="ony" args="y">
+          if (this.target) {
+            this.target.setAttribute('y', y + this.dy);
+          }
+        </handler>
+        <handler event="onwidth" args="width">
+          if (this.target) {
+            this.target.setAttribute('width', width);
+          }
+          this.resizer.setAttribute('x', this.width - 6)
+        </handler>
+        <handler event="onheight" args="height">
+          if (this.target) {
+            this.target.setAttribute('height', height);
+          }
+          this.resizer.setAttribute('y', this.height - 6)
+        </handler>
+        
+        <method name="_start">
+          // started dragging, create compound for target with current values
+          this._undoablew = new dr.editor.attrundoable({target:this.target, attribute:'width', oldvalue:this.target.width});
+          this._undoableh = new dr.editor.attrundoable({target:this.target, attribute:'height', oldvalue:this.target.height});
+          this._undoablex = new dr.editor.attrundoable({target:this.target, attribute:'x', oldvalue:this.target.x});
+          this._undoabley = new dr.editor.attrundoable({target:this.target, attribute:'y', oldvalue:this.target.y});
+        </method>
+        <method name="startDrag" args="event">
+          this._start();
+          this.super();
+        </method>
+        <method name="_stop">
+          // stopped dragging, store new values
+          var compound = new dr.editor.compoundundoable();
+          this._undoablew.newvalue = this.target.width;
+          this._undoableh.newvalue = this.target.height;
+          this._undoablex.newvalue = this.target.x;
+          this._undoabley.newvalue = this.target.y;
+          compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
+          undo.do(compound);
+        </method>
+        <method name="stopDrag" args="event, isAbort">
+          if (isAbort) {
+            return;
+          } else {
+            this._stop();
+            this.super();
+          }
+        </method>
+      </class>
+      
+      <view width="100%" height="100%">
+        <handler event="onkeydown" reference="dr.keyboard" args="event">
+          console.error('keydown', event);
+        </handler>
+        
+        <view name="topbar" bgcolor="gray"
+          width="100%" height="${config.topbar_height}"
+        >
+          <spacedlayout spacing="2" inset="4"></spacedlayout>
+          <constantlayout attribute="y" value="'middle'"></constantlayout>
+          
+          <labelbutton>Undo<handler event="onactivated">actions.undo();</handler></labelbutton>
+          <labelbutton>Redo<handler event="onactivated">actions.redo();</handler></labelbutton>
         </view>
-
-        <view id="softfocus">
+        
+        <view name="leftbar" bgcolor="silver"
+          y="${config.topbar_height}"
+          width="${config.leftbar_width}"
+          height="${this.parent.innerheight - this.y - config.bottombar_height}"
+        ></view>
+        
+        <view name="content"
+          x="${config.leftbar_width}" y="${config.topbar_height}"
+          width="${this.parent.innerwidth - this.x - config.rightbar_width}"
+          height="${this.parent.innerheight - this.y - config.bottombar_height}"
+          scrollable="true"
+        >
+          <handler event="onmousedown" args="event">actions.clearSelection();</handler>
+          <view with="editable" x="10" y="40" bgcolor="red" width="100" height="100"></view>
+          <view with="editable" x="10" y="40" bgcolor="green" width="100" height="100"></view>
+        </view>
+        
+        <view name="rightbar" bgcolor="silver"
+          x="right" y="${config.topbar_height}"
+          width="${config.rightbar_width}"
+          height="${this.parent.innerheight - this.y - config.bottombar_height}"
+        ></view>
+        
+        <view name="bottombar" bgcolor="gray" y="bottom"
+          width="100%" height="${config.bottombar_height}"
+        ></view>
+        
+        <reticle id="reticle"></reticle>
+        
+        <!--view id="softfocus">
           <method name="setFocus" args="view">
             if (this.scope && this.scope !== view) {
               this.stopListening(dr.mouse, 'onmouseup', this.processEvent)
@@ -83,143 +270,16 @@ SOFTWARE. -->
               }
               view = view.parent;
             }
-
+            
             console.log('canceling', this.scope.id)
             this.stopListening(dr.mouse, 'onmouseup', this.processEvent)
             this.scope.sendEvent('onlostfocus')
             this.scope = null;
-
+            
             // don't prevent bubbling for mouseup events
             return false;
           </method>
-        </view>
-
-        <class name="reticlehandle" bgcolor="cyan" width="10" height="10" with="draggable" clickable="true" distancebeforedrag="5"></class>
-
-        <view id="reticle" border="1" bgcolor="cyan" opacity=".7" with="draggable" ignorelayout="true" clickable="true" visible="false" distancebeforedrag="5">
-          <method name="setFocus" args="view">
-            // console.log('setFocus', view)
-            this.target = view;
-            var pos = view.getAbsolutePosition();
-            this.dx = view.x - pos.x;
-            this.dy = view.y - pos.y;
-            this.syncPosition();
-            this.moveToFront();
-            softfocus.setFocus(this);
-          </method>
-          <method name="syncPosition">
-            var pos = this.target.getAbsolutePosition();
-            this.setAttributes({visible: true, width: this.target.width, height: this.target.height, x: pos.x, y: pos.y})
-          </method>
-          <handler event="onx" args="x">
-            if (this.target) {
-              this.target.setAttribute('x', x + this.dx);
-            }
-          </handler>
-          <handler event="ony" args="y">
-            if (this.target) {
-              this.target.setAttribute('y', y + this.dy);
-            }
-          </handler>
-          <handler event="onwidth" args="width">
-            if (this.target) {
-              this.target.setAttribute('width', width);
-            }
-            this.resizer.setAttribute('x', this.width - 5)
-          </handler>
-          <handler event="onheight" args="height">
-            if (this.target) {
-              this.target.setAttribute('height', height);
-            }
-            this.resizer.setAttribute('y', this.height - 5)
-          </handler>
-          <reticlehandle name="resizer">
-            <handler event="onx" args="x">
-              this.parent.setAttribute('width', x + 5);
-            </handler>
-            <handler event="ony" args="y">
-              this.parent.setAttribute('height', y + 5);
-            </handler>
-            <method name="startDrag" args="event">
-              this.parent._start();
-              this.super();
-            </method> 
-            <method name="stopDrag" args="event, isAbort">
-              if (isAbort) {
-                return;
-              } else {
-                this.parent._stop();
-                this.super();
-              }
-            </method> 
-          </reticlehandle>
-          <method name="_start">
-            // started dragging, create compound for target with current values
-            this._undoablew = new dr.editor.attrundoable({target:this.target, attribute:'width', oldvalue:this.target.width});
-            this._undoableh = new dr.editor.attrundoable({target:this.target, attribute:'height', oldvalue:this.target.height});
-            this._undoablex = new dr.editor.attrundoable({target:this.target, attribute:'x', oldvalue:this.target.x});
-            this._undoabley = new dr.editor.attrundoable({target:this.target, attribute:'y', oldvalue:this.target.y});
-          </method>
-          <method name="startDrag" args="event">
-            this._start();
-            this.super();
-          </method>
-          <method name="_stop">
-            // stopped dragging, store new values
-            var compound = new dr.editor.compoundundoable();
-            this._undoablew.newvalue = this.target.width;
-            this._undoableh.newvalue = this.target.height;
-            this._undoablex.newvalue = this.target.x;
-            this._undoabley.newvalue = this.target.y;
-            compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
-            undo.do(compound);
-          </method>
-          <method name="stopDrag" args="event, isAbort">
-            if (isAbort) {
-              return;
-            } else {
-              this._stop();
-              this.super();
-            }
-          </method>
-        </view>
-
-        <view id="editormodel">
-          <handler event="oninit">
-            var _this = this;
-            // rewrite the file to be editable, which will reload this page automatically
-            dr.global.requestor.fetch(window.location.toString() + '?edit=1').success(
-              function(data, status) {
-                var parser = new dr.htmlparser();
-                var jsobj = parser.parse(data)
-                _this.setAttribute('model', jsobj);
-                // console.log('loaded model', jsobj)
-              }
-            );
-          </handler>
-          <method name="updatemodel" args="id, name, value">
-            var child = this._findChild(id, this.model);
-            if (child) {
-              child.attr[name] = value;
-              // console.log('found child', child, id, child.attr);
-            }
-          </method>
-          <method name="_findChild" args="id, jsobj">
-            var children = jsobj.child;
-            for (var i = 0; i < children.length; i++) {
-              var child = children[i]
-              if (child.attr && (child.attr.id === id)) {
-                // console.log('found child', child)
-                return child;
-              } else if (child.child) {
-                newchild = this._findChild(id, child);
-                if (newchild) {
-                  return newchild;
-                }
-              }
-            }
-          </method>
-        </view>
+        </view-->
       </view>
     </screen>
   </screens>
