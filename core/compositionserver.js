@@ -106,29 +106,48 @@ define(function(require, exports, module) {
           res.end();
           return;
         }
-        var screenName = query.screen || 'default',
-          screen = this.screens[screenName];
-        if (screen) {
-          var name = this.name;
-          if (screenName === 'dali') {
-            var stream = fs.createReadStream(define.expandVariables(this.__buildScreenPath('dali.dali')));
-            res.writeHead(200, {"Content-Type":"text/html"});
-            stream.pipe(res);
+        var action = query.action;
+        if (action === 'edit') {
+          // Retreive the a pkg directly as json. See examples/editor.io.dre
+          // for an example that uses this.
+          res.writeHead(200, {
+            "Cache-control":"max-age=0",
+            "Content-Type":"text/html"
+          });
+          var modules = this.modules,
+            i = 0, len = modules.length,
+            pkg = {
+              classmap:this.classmap,
+              composition:[]
+            };
+          for (; len > i;) pkg.composition.push(modules[i++].jsxml);
+          res.write(JSON.stringify(pkg));
+          res.end();
+        } else {
+          var screenName = query.screen || 'default',
+            screen = this.screens[screenName];
+          if (screen) {
+            var name = this.name;
+            if (screenName === 'dali') {
+              var stream = fs.createReadStream(define.expandVariables(this.__buildScreenPath('dali.dali')));
+              res.writeHead(200, {"Content-Type":"text/html"});
+              stream.pipe(res);
+            } else {
+              res.writeHead(200, {
+                "Cache-control":"max-age=0",
+                "Content-Type":"text/html"
+              });
+              res.write(this.__renderHTMLTemplate(
+                screen.attr && screen.attr.title || name, 
+                this.__buildScreenPath(screenName)
+              ));
+              res.end();
+            }
           } else {
-            res.writeHead(200, {
-              "Cache-control":"max-age=0",
-              "Content-Type":"text/html"
-            });
-            res.write(this.__renderHTMLTemplate(
-              screen.attr && screen.attr.title || name, 
-              this.__buildScreenPath(screenName)
-            ));
+            res.writeHead(404, {"Content-Type":"text/html"});
+            res.write('NOT FOUND');
             res.end();
           }
-        } else {
-          res.writeHead(404, {"Content-Type":"text/html"});
-          res.write('NOT FOUND');
-          res.end();
         }
       }
     };
@@ -408,7 +427,7 @@ define(function(require, exports, module) {
         } else if (tag === 'classes') {
           // generate local classes
           for (var j = 0, classes = child.child, clen = classes.length; j < clen; j++) {
-              this.__compileLocalClass(classes[j], errors, [compositionPath]);
+            this.__compileLocalClass(classes[j], errors, [compositionPath]);
           }
         } else {
           this.__makeComponentJS(child, compositionPath, errors);
