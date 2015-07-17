@@ -57,7 +57,7 @@ define(function(require, exports, module){
 		else{
 			if(node.tag == '$text') ret += indent + node.value + '\n' 
 			else if(node.tag == '$cdata') ret += indent + '<![CDATA['+node.value+']]>\n'
-			else if(node.tag == '$comment') ret += indent + '<!--'+node.value+'-->\n'
+			else if(node.tag == '$comment') ret += indent + node.value+'-->\n'
 			else if(node.tag == '$root') ret += child
 		}
 		return ret
