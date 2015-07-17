@@ -252,6 +252,10 @@
         document.getElementsByTagName('head')[0].appendChild(script);
       };
       
+      // Expose insertScriptTag function so it can be used for late loading
+      // of dependencies if necessary.
+      define.insertScriptTag = insertScriptTag;
+      
       // make it available globally. Overwrites existing config_define
       window.define = define;
       

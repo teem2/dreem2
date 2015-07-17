@@ -1,0 +1,72 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Example - Editor IO'>
+    <view with="button" width="100%" height="100%" clip="true"
+      bgcolor="#cccccc" padding="25"
+    >
+      <view name="target" width="100%" height="100%" bgcolor="#eeeeee" border="1" bordercolor="black"></view>
+      
+      <handler event="oninit">
+        dr.global.requestor.fetch('/compositions/smokelinks.dre?action=edit').success(
+          function(data, status) {
+            this._processJsxml(data);
+          }.bind(this)
+        ).error(function(data, status) {console.log('error', status, data);});
+      </handler>
+      
+      <method name="_processJsxml" args="data">
+        var pkg = JSON.parse(data),
+          compositionNode = pkg.composition,
+          classmap = pkg.classmap;
+        
+        // Find the screens and the server
+        var screensNode, serverNode;
+        var i = compositionNode.length, child;
+        while (i) {
+          child = compositionNode[--i];
+          if (child.tag === 'screens') {
+            screensNode = child;
+          } else if (child.tag === 'server') {
+            serverNode = child;
+          }
+        }
+        
+        // Extract screens
+        var screens = screensNode.child;
+        
+        // Render the first screen into the target view
+        var target = this.target;
+        define.onMain = function() {
+          var compiler = new dr.maker.Compiler();
+          compiler.execute(screens[0], classmap, dr.teem, target, true);
+        };
+        
+        for (var key in classmap) {
+          define.insertScriptTag(define.expandVariables(classmap[key]), window.location.href);
+        }
+      </method>
+    </view>
+  </screen>
+</screens>
+</composition>
