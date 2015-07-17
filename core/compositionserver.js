@@ -98,6 +98,14 @@ define(function(require, exports, module) {
           }
         }.bind(this));
       } else {
+        if (query.edit) {
+          var comppath = define.expandVariables(this.__getCompositionPath())
+          data = this.__makeFileEditable(comppath);
+          res.writeHead(200, {"Content-Type":"text/text"});
+          res.write(data);
+          res.end();
+          return;
+        }
         var screenName = query.screen || 'default',
           screen = this.screens[screenName];
         if (screen) {
@@ -606,5 +614,44 @@ define(function(require, exports, module) {
         }
       }
     };
+
+    this.__guid = 0;
+    this.__makeFileEditable = function(filepath) {
+      var data, newdata;
+      try {
+        data = fs.readFileSync(filepath);
+        if (data) data = data.toString();
+      } catch(e) {}
+
+      if (data.indexOf('lzeditor_') > 0) {
+        // already editable, don't do anything
+        newdata = data
+      } else {
+        var htmlParser = new HTMLParser(),
+        jsobj = htmlParser.parse(data);
+        this.__walkChildren(jsobj)
+        newdata = HTMLParser.reserialize(jsobj, ' ')
+        // this.__writeFileIfChanged(filepath, newdata)
+      }
+
+      return newdata
+    }
+    this.__walkChildren = function(jsobj) {
+      var children = jsobj.child;
+      if (! children.length) return;
+      for (var i = 0; i < children.length; i++) {
+        var child = children[i]
+        if (child.tag === '$comment') continue;
+        if (! child.attr) {
+          child.attr = {id: 'lzeditor_' + this.__guid++};
+        } else if (! child.attr.id) {
+          child.attr.id = 'lzeditor_' + this.__guid++;
+        }
+        //console.log(JSON.stringify(child));
+        if (child.child) {
+          this.__walkChildren(child);
+        }
+      }
+    }
   };
 })

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <composition>
   <screens>
-    <screen type="browser" name="default" title='Example - Bitmap'>
+    <screen type="browser" name="default" title='Editor'>
       <view width="100%" height="100%">
         <editor-undostack id="undo"></editor-undostack>
 
@@ -34,7 +34,7 @@ SOFTWARE. -->
               undo.undo(this.undone);
             </handler>
             <method name="undone" args="undoable">
-              reticle.target = undoable.target;
+              if (undoable.target) reticle.target = undoable.target;
               reticle.syncPosition();
             </method>
           </labelbutton>
@@ -43,22 +43,23 @@ SOFTWARE. -->
               undo.redo(this.redone);
             </handler>
             <method name="redone" args="undoable">
-              reticle.target = undoable.target;
+              if (undoable.target) reticle.target = undoable.target;
               reticle.syncPosition();
             </method>
           </labelbutton>
-        </view>
-
-        <view id="redbox" y="40" bgcolor="red" width="100" height="100">
-          <handler event="onclick">
-            reticle.setFocus(this)
-          </handler>
         </view>
 
         <view id="greenbox" y="40" bgcolor="green" width="100" height="100">
           <handler event="onclick">
             reticle.setFocus(this)
           </handler>
+          <method name="setAttribute" args="name, value">
+            var ret = this.super(name, value)
+            if (this.parent && this.parent.inited) {
+              editormodel.updatemodel(this.id, name, this[name]);
+            }
+            return ret;
+          </method>
         </view>
 
         <view id="softfocus">
@@ -93,7 +94,7 @@ SOFTWARE. -->
           </method>
         </view>
 
-        <class name="handle" bgcolor="cyan" width="10" height="10" with="draggable" clickable="true" distancebeforedrag="5"></class>
+        <class name="reticlehandle" bgcolor="cyan" width="10" height="10" with="draggable" clickable="true" distancebeforedrag="5"></class>
 
         <view id="reticle" border="1" bgcolor="cyan" opacity=".7" with="draggable" ignorelayout="true" clickable="true" visible="false" distancebeforedrag="5">
           <method name="setFocus" args="view">
@@ -132,7 +133,7 @@ SOFTWARE. -->
             }
             this.resizer.setAttribute('y', this.height - 5)
           </handler>
-          <handle name="resizer">
+          <reticlehandle name="resizer">
             <handler event="onx" args="x">
               this.parent.setAttribute('width', x + 5);
             </handler>
@@ -151,7 +152,7 @@ SOFTWARE. -->
                 this.super();
               }
             </method> 
-          </handle>
+          </reticlehandle>
           <method name="_start">
             // started dragging, create compound for target with current values
             this._undoablew = new dr.editor.attrundoable({target:this.target, attribute:'width', oldvalue:this.target.width});
@@ -179,6 +180,43 @@ SOFTWARE. -->
             } else {
               this._stop();
               this.super();
+            }
+          </method>
+        </view>
+
+        <view id="editormodel">
+          <handler event="oninit">
+            var _this = this;
+            // rewrite the file to be editable, which will reload this page automatically
+            dr.global.requestor.fetch(window.location.toString() + '?edit=1').success(
+              function(data, status) {
+                var parser = new dr.htmlparser();
+                var jsobj = parser.parse(data)
+                _this.setAttribute('model', jsobj);
+                // console.log('loaded model', jsobj)
+              }
+            );
+          </handler>
+          <method name="updatemodel" args="id, name, value">
+            var child = this._findChild(id, this.model);
+            if (child) {
+              child.attr[name] = value;
+              // console.log('found child', child, id, child.attr);
+            }
+          </method>
+          <method name="_findChild" args="id, jsobj">
+            var children = jsobj.child;
+            for (var i = 0; i < children.length; i++) {
+              var child = children[i]
+              if (child.attr && (child.attr.id === id)) {
+                // console.log('found child', child)
+                return child;
+              } else if (child.child) {
+                newchild = this._findChild(id, child);
+                if (newchild) {
+                  return newchild;
+                }
+              }
             }
           </method>
         </view>
