@@ -25,13 +25,16 @@ SOFTWARE. -->
       <view width="100%" height="100%">
         <editor-undostack id="undo"></editor-undostack>
 
-        <view id="rightbar" x="right" y="40" width="300" height="100%" bgcolor="silver">
-          <spacedlayout axis="y"></spacedlayout>
+        <view id="rightbar" x="right" y="40" width="300" height="100%" bgcolor="silver"></view>
+
+        <view id="toolbar" height="40" width="100%" bgcolor="gray">
+          <spacedlayout></spacedlayout>
           <labelbutton>Undo
             <handler event="onclick">
               undo.undo(this.undone);
             </handler>
-            <method name="undone">
+            <method name="undone" args="undoable">
+              reticle.target = undoable.target;
               reticle.syncPosition();
             </method>
           </labelbutton>
@@ -39,13 +42,12 @@ SOFTWARE. -->
             <handler event="onclick">
               undo.redo(this.redone);
             </handler>
-            <method name="redone">
+            <method name="redone" args="undoable">
+              reticle.target = undoable.target;
               reticle.syncPosition();
             </method>
           </labelbutton>
         </view>
-
-        <view id="toolbar" height="40" width="100%" bgcolor="gray"></view>
 
         <view id="redbox" y="40" bgcolor="red" width="100" height="100">
           <handler event="onclick">
