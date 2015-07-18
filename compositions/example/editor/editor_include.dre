@@ -23,6 +23,7 @@ SOFTWARE. -->
   <handler event="onmousedown" args="event">
     reticle.setFocus(this)
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
+    reticle.doMouseOver(true);
   </handler>
   
   <method name="setAttribute" args="name, value">
@@ -34,28 +35,79 @@ SOFTWARE. -->
   </method>
 </mixin>
 
-<class name="controlhandle" with="draggable, button"
-  border="1" bordercolor="blue" width="9" height="9"
-  focusembellishment="false"
+<mixin name="keyboarddraggable" with="draggable" allowabort="true"
+  focusable="true" focusembellishment="false"
 >
+  <handler event="onkeydown" args="platformEvent">
+    if (!this.disabled) {
+      var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+      switch (keyCode) {
+        case 37: // Left arrow
+          this._shiftPos(true, false);
+          break;
+        case 38: // Up arrow
+          this._shiftPos(false, false);
+          break;
+        case 39: // Right arrow
+          this._shiftPos(true, true);
+          break;
+        case 40: // Down arrow
+          this._shiftPos(false, true);
+          break;
+      }
+    }
+  </handler>
+  
+  <method name="_shiftPos" args="isX, increase">
+    var shiftKeyDown = dr.keyboard.isShiftKeyDown(),
+      amount = shiftKeyDown ? 10 : 1,
+      isdragging = this.isdragging,
+      event = {x:this.x, y:this.y};
+    if (!isdragging) this.startDrag(event);
+    event[isX ? 'x' : 'y'] += (increase ? 1 : -1) * amount;
+    this.updatePosition(event.x, event.y);
+    if (!isdragging) this.stopDrag(event);
+  </method>
+</mixin>
+
+<class name="controlhandle" with="keyboarddraggable, button" cursor="se-resize"
+  border="1" bordercolor="blue" width="9" height="9"
+>
+  <method name="drawFocusedState">
+    this.setAttribute('bgcolor', '#ffffff');
+    this.setAttribute('boxshadow', this.mouseover ? [0,0,4,0,'#000000'] : [0,0,12,0,'#000000']);
+  </method>
   <method name="drawHoverState">
-    this.setAttribute('bgcolor', '#eeeeee');
-    this.setAttribute('boxshadow', this.focused ? [0,0,4,0,'#000000'] : null);
+    this.setAttribute('bgcolor', '#ffffff');
+    this.setAttribute('boxshadow', [0,0,4,0,'#000000']);
   </method>
   <method name="drawActiveState">
-    this.setAttribute('bgcolor', '#dddddd');
-    this.setAttribute('boxshadow', this.focused ? [0,0,4,0,'#000000'] : null);
+    this.setAttribute('bgcolor', '#eeeeee');
+    this.setAttribute('boxshadow', null);
   </method>
   <method name="drawReadyState">
-    this.setAttribute('bgcolor', '#cccccc');
-    this.setAttribute('boxshadow', this.focused ? [0,0,4,0,'#000000'] : null);
+    this.setAttribute('bgcolor', '#dddddd');
+    this.setAttribute('boxshadow', [0,0,4,0,'#000000']);
   </method>
 </class>
 
-<class name="reticle" with="draggable" visible="false" distancebeforedrag="5">
-  <view width="100%" height="100%" clip="true">
-    <view name="fill" width="100%" height="100%"
-      border="1" bordercolor="blue" bgcolor="cyan" opacity=".5"
+<class name="reticle" with="keyboarddraggable, button" visible="false" distancebeforedrag="5" cursor="move">
+  <method name="drawFocusedState">
+    this.fill.setAttribute('boxshadow', this.mouseover ? [0,0,4,0,'#000000'] : [0,0,12,0,'#000000']);
+  </method>
+  <method name="drawHoverState">
+    this.fill.setAttribute('boxshadow', [0,0,4,0,'#000000']);
+  </method>
+  <method name="drawActiveState">
+    this.fill.setAttribute('boxshadow', null);
+  </method>
+  <method name="drawReadyState">
+    this.fill.setAttribute('boxshadow', [0,0,4,0,'#000000']);
+  </method>
+  
+  <view name="fill" width="100%" height="100%" clip="true">
+    <view name="inner" width="100%" height="100%"
+      border="1" bordercolor="blue"
     ></view>
   </view>
   
@@ -78,11 +130,11 @@ SOFTWARE. -->
     </method>
     <method name="stopDrag" args="event, isAbort">
       if (isAbort) {
-        return;
+        this.parent._abort();
       } else {
         this.parent._stop();
-        this.super();
       }
+      this.super();
     </method>
   </controlhandle>
   
@@ -99,7 +151,6 @@ SOFTWARE. -->
     } else {
       this.setAttribute('visible', false);
     }
-    //softfocus.setFocus(this);
   </method>
   <method name="syncPosition">
     var pos = this.target.getAbsolutePosition();
@@ -149,13 +200,20 @@ SOFTWARE. -->
     compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
     undo.do(compound);
   </method>
+  <method name="_abort">
+    this.target.setAttribute('x', this._undoablex.oldvalue);
+    this.target.setAttribute('y', this._undoabley.oldvalue);
+    this.target.setAttribute('width', this._undoablew.oldvalue);
+    this.target.setAttribute('height', this._undoableh.oldvalue);
+    this.syncPosition();
+  </method>
   <method name="stopDrag" args="event, isAbort">
     if (isAbort) {
-      return;
+      this._abort();
     } else {
       this._stop();
-      this.super();
     }
+    this.super();
   </method>
 </class>
 
@@ -224,7 +282,7 @@ SOFTWARE. -->
     
     <method name="_findChild" args="id, jsobj">
       var children = jsobj.child;
-      for (var i = 0; i < children.length; i++) {
+      for (var i = 0; children.length > i; i++) {
         var child = children[i]
         if (child.attr && (child.attr.id === id)) {
           // console.log('found child', child)
