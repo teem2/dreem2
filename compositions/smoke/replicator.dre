@@ -45,8 +45,8 @@ SOFTWARE. -->
         </handler>
       </replicator>
 
-      <!-- Replicate over a datapath -->
-	  <dataset name="example">
+      <!-- Replicate over a datapath with a static dataset-->
+  	  <dataset name="static">
         {
           "store": {
             "book": [
@@ -84,7 +84,7 @@ SOFTWARE. -->
           }
         }
       </dataset>
-      <replicator classname="text" datapath="$example/store/book[*]/title">
+      <replicator classname="text" datapath="$static/store/book[*]/title">
         <handler event="onreplicated" args="replicated">
           this.onreplicated = true;
           assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
@@ -95,6 +95,33 @@ SOFTWARE. -->
           dr.idle.callOnIdle(function() {
 	        assert.equal(true, _this.onreplicated, 'There should be an onreplicated event')
           });
+        </handler>
+      </replicator>
+
+      <!-- Replicate over a datapath with a dynamic dataset-->
+      <dataset name="dynamic"></dataset>
+      <replicator classname="text" datapath="$dynamic/store/book[*]/price">
+        <handler event="onreplicated" args="replicated">
+          if (this.onreplicated) {
+            this.onreplicated++;
+          } else {
+            this.onreplicated = 1
+          }
+          assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
+
+          // The first time the event fires, it will be for an empty array since the data hasn't loaded yet
+          if (this.onreplicated === 1) {
+            assert.equal(this.parent.subviews.length, 9, 'Replication on an empty array should not have increased the number of subviews');
+          } else {
+            assert.equal(this.parent.subviews.length, 17, 'Replication should have increased the number of subviews');
+          }
+        </handler>
+        <handler event="oninit">
+          var _this = this;
+          dr.idle.callOnIdle(function() {
+          assert.equal(1, _this.onreplicated, 'There should be an onreplicated event')
+          });
+          this.parent.dynamic.setAttribute('url', '/data/example.json')
         </handler>
       </replicator>
     </view>

@@ -171,12 +171,6 @@ SOFTWARE. -->
       <attribute name="pooling" value="false" type="boolean"></attribute>
 
       <!--/**
-        * @attribute {Boolean} [async=true]
-        * If true, create views asynchronously
-        */-->
-      <attribute name="async" value="false" type="boolean"></attribute>
-
-      <!--/**
         * @attribute {Array} [data=[]]
         * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
         */-->
@@ -191,8 +185,8 @@ SOFTWARE. -->
           unless @_datapath?
             @_datapath = new dr.datapath(@parent)
             @listenTo(@_datapath, 'onresult', (data) =>
-              @setAttribute('data', data)
-              #console.log('data callback', data, @)
+              @setAttribute('data', data) #unless data == dr.datapath._arrayidentity
+              # console.log('data callback', data, @)
             )
             # console.log('new datapath', @_datapath)
           @_datapath.setAttribute('path', datapath)
@@ -204,8 +198,6 @@ SOFTWARE. -->
         */-->
       <attribute name="classname" value="" type="string"></attribute>
 
-      <handler event="onclassname,ondata,oninit" method="applyData"></handler>
-
       <handler event="ondestroy" method="clear"></handler>
 
       <method name="updateData" args="data">
@@ -214,15 +206,8 @@ SOFTWARE. -->
         @dataset.updateData(@datapath.replace(re, ''), data);
       </method>
 
-      <!--/**
-        * @method refresh
-        * Refreshes the dataset manually
-        */-->
-      <method name="refresh">
-        this.applyData()
-      </method>
-
       <method name="clear">
+        @_lockLayouts(true)
         # @parent.setAttribute('display', 'none')
         if @children
           for child in @children
@@ -230,25 +215,13 @@ SOFTWARE. -->
             child.destroy()
         @children = []
         # @parent.setAttribute('display', null)
+        @_lockLayouts(false)
       </method>
 
-      <method name="applyData">
-        return unless @inited and @parent
-        unless @classname
-          console.warn 'missing classname for replicator', @
-          return
-        # console.log('applyData', @data, @classname, @parent, @children, @, @inited)
-
-        unless dr.lookupClass(@classname)
-          console.warn 'missing class for replicator', @classname, 'skipping replication'
-          return
-
-        if @data.length > @lazycount
-          setTimeout(() =>
-            @doReplication()
-          , 0);
-        else
-          @doReplication()
+      <method name="_lockLayouts" args="locked">
+        if @parent.layouts
+          for layout in @parent.layouts
+            layout.setAttribute('locked', locked)
       </method>
 
       <!--/**
@@ -256,7 +229,17 @@ SOFTWARE. -->
         * Fired when the replicator is done
         * @param {dr.replicator} replicator The dr.replicator that fired the event
         */-->
-      <method name="doReplication">
+      <handler event="onclassname,ondata,oninit">
+        return unless @inited and @parent
+        unless @classname
+          console.warn 'missing classname for replicator', @
+          return
+        # console.log('_applyData', @data, @classname, @parent, @children, @, @inited)
+
+        unless dr.lookupClass(@classname)
+          console.warn 'missing class for replicator', @classname, 'skipping replication'
+          return
+
         return if @locked
         return unless @data and @data != dr.replicator._arrayidentity
 
@@ -268,9 +251,7 @@ SOFTWARE. -->
           @locked = locked
           return
 
-        if @parent.layouts
-          for layout in @parent.layouts
-            layout.setAttribute('locked', true)
+        @_lockLayouts(true)
 
         #console.log @data.length
         @children ?= []
@@ -296,18 +277,8 @@ SOFTWARE. -->
             @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
             # console.log 'replicator created', @classname, @children[@children.length - 1]
 
-        finalize = () =>
-          # init constraints for all children created
-          # dr.initConstraints()
-          if @parent.layouts
-            for layout in @parent.layouts
-              layout.setAttribute('locked', false) # Updates automatically since the layout was already locked.
-          @locked = locked
-          @sendEvent('onreplicated', @)
-
-        if @async
-          dr.idle.callOnIdle(finalize)
-        else
-          finalize()
-      </method>
+        @_lockLayouts(false)
+        @locked = locked
+        @sendEvent('onreplicated', @)
+      </handler>
     </class>

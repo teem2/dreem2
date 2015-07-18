@@ -57,6 +57,7 @@ SOFTWARE. -->
      * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
      */-->
     <class name="datapath" type="coffee" extends="node" scriptincludes="/lib/json-path+json-ptr-0.1.3.min.js">
+      <attribute name="_arrayidentity" type="expression" value="[]" allocation="class"></attribute>
       <attribute name="datasetmatcher" value="/^\$([^\/]+)/" type="expression" allocation="class"></attribute>
       <!--/**
         * @attribute {Object} data
@@ -208,7 +209,7 @@ SOFTWARE. -->
             if parentdata?.data
               # execute selectors relative to parent data
               rundata = parentdata.data
-            else
+            else unless @dataset
               console.warn('No parent data found for', @path, @)
 
           if rundata
@@ -222,7 +223,7 @@ SOFTWARE. -->
           result = accum
 
         unless result?
-          @_origresult = []
+          @_origresult = dr.datapath._arrayidentity
         else
           @_origresult = if Array.isArray(result) then result else [result]
 
