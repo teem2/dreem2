@@ -41,14 +41,16 @@ define(function(require, exports, module){
 		if(!node.tag.startsWith('$')){
 			ret += indent + '<' + node.tag
 			var attr = node.attr
-			if(attr) for(var k in attr){
-				var val = attr[k]
-				if(ret[ret.length - 1] != ' ') ret += ' '
-				ret += k
-				var delim = "'"
-				if(val !== 1){
-					if(val.indexOf(delim) !== -1) delim = '"'
-					ret += '=' + delim + val + delim
+			if(attr) {
+				for(var k in attr){
+					var val = attr[k]
+					if(ret[ret.length - 1] != ' ') ret += ' '
+					ret += k
+					var delim = "'"
+					if(val !== 1){
+						if(typeof val === 'string' && val.indexOf(delim) !== -1) delim = '"'
+						ret += '=' + delim + val + delim
+					}
 				}
 			}
 			if(child) ret += '>\n' + child + indent + '</' + node.tag + '>\n'

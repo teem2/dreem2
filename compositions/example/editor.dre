@@ -42,6 +42,11 @@ SOFTWARE. -->
         <method name="redo">
           undo.redo(this._undoRedoCallback);
         </method>
+
+        <method name="save">
+          editormodel.save();
+          undo.reset();
+        </method>
         
         <method name="clearSelection">
           reticle.setFocus(null);
@@ -63,16 +68,19 @@ SOFTWARE. -->
             }
           );
         </handler>
-        <method name="updatemodel" args="id, name, value">
+        <method name="update" args="id, name, value">
           var child = this._findChild(id, this.model);
           if (child) {
             child.attr[name] = value;
-            //console.log('found child', child, id, child.attr);
+            // console.log('found child', child, id, child.attr);
           }
+        </method>
+        <method name="save">
+          dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model) );
         </method>
         <method name="_findChild" args="id, jsobj">
           var children = jsobj.child;
-          for (var i = 0; children.length > i; i++) {
+          for (var i = 0; i < children.length; i++) {
             var child = children[i]
             if (child.attr && (child.attr.id === id)) {
               // console.log('found child', child)
@@ -96,7 +104,7 @@ SOFTWARE. -->
         <method name="setAttribute" args="name, value">
           var ret = this.super(name, value)
           if (this.parent && this.parent.inited) {
-            editormodel.updatemodel(this.id, name, this[name]);
+            editormodel.update(this.id, name, this[name]);
           }
           return ret;
         </method>
@@ -218,6 +226,7 @@ SOFTWARE. -->
           
           <labelbutton>Undo<handler event="onactivated">actions.undo();</handler></labelbutton>
           <labelbutton>Redo<handler event="onactivated">actions.redo();</handler></labelbutton>
+          <labelbutton>Save<handler event="onactivated">actions.save();</handler></labelbutton>
         </view>
         
         <view name="leftbar" bgcolor="silver"

@@ -77,6 +77,26 @@ define(function(require, exports, module) {
         }
       }
       
+      // handle editor requests
+      if (query.edit) {
+        if (req.method == 'POST') {
+          var buf = ''
+          req.on('data', function(data) {buf += data.toString();});
+          req.on('end', function() {
+            var comppath = define.expandVariables(this.__getCompositionPath())
+            this.__saveEditableFile(comppath, buf);
+          }.bind(this));
+          return;
+        } else {
+          var comppath = define.expandVariables(this.__getCompositionPath())
+          data = this.__makeFileEditable(comppath);
+          res.writeHead(200, {"Content-Type":"text/text"});
+          res.write(data);
+          res.end();
+          return;
+        }
+      }
+
       // Serve our Composition device
       if (req.method == 'POST') {
         // lets do an RPC call
@@ -98,14 +118,6 @@ define(function(require, exports, module) {
           }
         }.bind(this));
       } else {
-        if (query.edit) {
-          var comppath = define.expandVariables(this.__getCompositionPath())
-          data = this.__makeFileEditable(comppath);
-          res.writeHead(200, {"Content-Type":"text/text"});
-          res.write(data);
-          res.end();
-          return;
-        }
         var action = query.action;
         if (action === 'edit') {
           // Retreive the a pkg directly as json. See examples/editor.io.dre
@@ -650,27 +662,43 @@ define(function(require, exports, module) {
         jsobj = htmlParser.parse(data);
         this.__walkChildren(jsobj)
         newdata = HTMLParser.reserialize(jsobj, ' ')
-        // this.__writeFileIfChanged(filepath, newdata)
+        this.__writeFileIfChanged(filepath, newdata)
       }
 
       return newdata
     }
-    this.__walkChildren = function(jsobj) {
+    this.__walkChildren = function(jsobj, stripids) {
       var children = jsobj.child;
       if (! children.length) return;
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
         if (child.tag === '$comment') continue;
+
         if (! child.attr) {
-          child.attr = {id: 'lzeditor_' + this.__guid++};
+          child.attr = {};
+        }
+
+        if (stripids) {
+          if ((typeof child.attr.id === 'string') && (child.attr.id.indexOf('lzeditor_') > -1)) {
+            // console.log('deleting', child.attr.id);
+            delete child.attr.id
+          }
         } else if (! child.attr.id) {
           child.attr.id = 'lzeditor_' + this.__guid++;
         }
+
         //console.log(JSON.stringify(child));
         if (child.child) {
-          this.__walkChildren(child);
+          this.__walkChildren(child, stripids);
         }
       }
+    }
+    this.__saveEditableFile = function(filepath, data) {
+      var jsobj = JSON.parse(data);
+      this.__walkChildren(jsobj, true);
+      var newdata = HTMLParser.reserialize(jsobj, ' ');
+      this.__writeFileIfChanged(filepath, newdata);
+      console.log('saved', filepath);
     }
   };
 })
