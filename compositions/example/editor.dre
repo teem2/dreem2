@@ -42,7 +42,7 @@ SOFTWARE. -->
         <method name="redo">
           undo.redo(this._undoRedoCallback);
         </method>
-
+        
         <method name="save">
           editormodel.save();
           undo.reset();
@@ -69,10 +69,12 @@ SOFTWARE. -->
           );
         </handler>
         <method name="update" args="id, name, value">
-          var child = this._findChild(id, this.model);
-          if (child) {
-            child.attr[name] = value;
-            // console.log('found child', child, id, child.attr);
+          if (this.model) {
+            var child = this._findChild(id, this.model);
+            if (child) {
+              child.attr[name] = value;
+              // console.log('found child', child, id, child.attr);
+            }
           }
         </method>
         <method name="save">
@@ -110,26 +112,48 @@ SOFTWARE. -->
         </method>
       </mixin>
       
-      <class name="controlhandle" with="draggable"
-        border="1" bordercolor="blue" bgcolor="cyan" width="10" height="10"
-      ></class>
+      <class name="controlhandle" with="draggable, button"
+        border="1" bordercolor="blue" width="9" height="9"
+        focusembellishment="false"
+      >
+        <method name="drawHoverState">
+          this.setAttribute('bgcolor', '#eeeeee');
+          this.setAttribute('boxshadow', this.focused ? [0,0,4,0,'#000000'] : null);
+        </method>
+        <method name="drawActiveState">
+          this.setAttribute('bgcolor', '#dddddd');
+          this.setAttribute('boxshadow', this.focused ? [0,0,4,0,'#000000'] : null);
+        </method>
+        <method name="drawReadyState">
+          this.setAttribute('bgcolor', '#cccccc');
+          this.setAttribute('boxshadow', this.focused ? [0,0,4,0,'#000000'] : null);
+        </method>
+      </class>
       
       <class name="reticle" with="draggable" visible="false" distancebeforedrag="5">
-        <view name="fill" width="100%" height="100%"
-          border="1" bordercolor="blue" bgcolor="cyan" opacity=".5"
-        ></view>
+        <view width="100%" height="100%" clip="true">
+          <view name="fill" width="100%" height="100%"
+            border="1" bordercolor="blue" bgcolor="cyan" opacity=".5"
+          ></view>
+        </view>
         
         <controlhandle name="resizer">
           <handler event="onx" args="x">
-            this.parent.setAttribute('width', x + 6);
+            this.parent.setAttribute('width', x + 5);
           </handler>
           <handler event="ony" args="y">
-            this.parent.setAttribute('height', y + 6);
+            this.parent.setAttribute('height', y + 5);
           </handler>
           <method name="startDrag" args="event">
             this.parent._start();
             this.super();
-          </method> 
+          </method>
+          <method name="updatePosition" args="x, y">
+            if (!this.disabled) {
+              this.setAttribute('x', Math.max(-5, x));
+              this.setAttribute('y', Math.max(-5, y));
+            }
+          </method>
           <method name="stopDrag" args="event, isAbort">
             if (isAbort) {
               return;
@@ -173,13 +197,13 @@ SOFTWARE. -->
           if (this.target) {
             this.target.setAttribute('width', width);
           }
-          this.resizer.setAttribute('x', this.width - 6)
+          this.resizer.setAttribute('x', this.width - 5)
         </handler>
         <handler event="onheight" args="height">
           if (this.target) {
             this.target.setAttribute('height', height);
           }
-          this.resizer.setAttribute('y', this.height - 6)
+          this.resizer.setAttribute('y', this.height - 5)
         </handler>
         
         <method name="_start">
@@ -214,8 +238,14 @@ SOFTWARE. -->
       </class>
       
       <view width="100%" height="100%">
-        <handler event="onkeydown" reference="dr.keyboard" args="event">
-          console.error('keydown', event);
+        <handler event="onkeycodedown" reference="dr.keyboard" args="keyCode">
+          if (dr.keyboard.isAcceleratorKeyDown()) {
+            switch (keyCode) {
+              case 90: // Z
+                (dr.keyboard.isShiftKeyDown() ? redoButton : undoButton).doActivated();
+                break;
+            }
+          }
         </handler>
         
         <view name="topbar" bgcolor="gray"
@@ -224,9 +254,9 @@ SOFTWARE. -->
           <spacedlayout spacing="2" inset="4"></spacedlayout>
           <constantlayout attribute="y" value="'middle'"></constantlayout>
           
-          <labelbutton>Undo<handler event="onactivated">actions.undo();</handler></labelbutton>
-          <labelbutton>Redo<handler event="onactivated">actions.redo();</handler></labelbutton>
-          <labelbutton>Save<handler event="onactivated">actions.save();</handler></labelbutton>
+          <labelbutton id="undoButton">Undo<handler event="onactivated">actions.undo();</handler></labelbutton>
+          <labelbutton id="redoButton">Redo<handler event="onactivated">actions.redo();</handler></labelbutton>
+          <labelbutton id="saveButton">Save<handler event="onactivated">actions.save();</handler></labelbutton>
         </view>
         
         <view name="leftbar" bgcolor="silver"
