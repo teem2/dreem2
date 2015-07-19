@@ -143,7 +143,12 @@ SOFTWARE. -->
   </controlhandle>
   
   <handler event="onselected" args="selected" reference="selectionmanager">
-    this.setFocus(selected)
+    if (selected) {
+      this.setFocus(selected)
+      this.listenTo(dr.idle, 'onidle', this.syncPosition);
+    } else {
+      this.stopListening(dr.idle, 'onidle', this.syncPosition);
+    }
   </handler>
 
   <method name="setFocus" args="view">
@@ -213,7 +218,6 @@ SOFTWARE. -->
     this.target.setAttribute('y', this._undoabley.oldvalue);
     this.target.setAttribute('width', this._undoablew.oldvalue);
     this.target.setAttribute('height', this._undoableh.oldvalue);
-    this.syncPosition();
   </method>
   <method name="stopDrag" args="event, isAbort">
     if (isAbort) {
@@ -237,7 +241,6 @@ SOFTWARE. -->
   <node id="actions">
     <method name="_undoRedoCallback" args="undoable">
       if (undoable.target) reticle.target = undoable.target;
-      reticle.syncPosition();
     </method>
     
     <method name="undo">
@@ -377,9 +380,17 @@ SOFTWARE. -->
   </view>
 
   <class name="texteditor" extends="inputtext">
+    <handler event="onfocus">
+      this.oldvalue = this.text;
+    </handler>
     <handler event="ontext" args="text">
       if (this.target) {
         this.target.setAttribute(this.targetattr, text);
+      }
+    </handler>
+    <handler event="onblur">
+      if (this.oldvalue !== this.text) {
+        undo.do(new dr.editor.attrundoable({target:this.target, attribute:this.targetattr, oldvalue: this.oldvalue, newvalue: this.text}));
       }
     </handler>
   </class>
@@ -391,6 +402,7 @@ SOFTWARE. -->
       this.label.setAttribute('text', name)
       var schema = {class: 'texteditor', parent: this, text: selectionmanager.selected[name], x: 100, target: selectionmanager.selected, targetattr: name};
       var child = this.createChild(schema)
+      // update when selected item's value changes
       child.listenTo(selectionmanager.selected, 'on' + name, function(val) {
         this.setAttribute('text', val);
       });
