@@ -248,6 +248,26 @@ SOFTWARE. -->
       undo.redo(this._undoRedoCallback);
     </method>
     
+    <method name="bringToFront">
+      var target = reticle.target;
+      if (target) target.moveToFront();
+    </method>
+    
+    <method name="bringForward">
+      var target = reticle.target;
+      if (target) target.moveForward();
+    </method>
+    
+    <method name="sendToBack">
+      var target = reticle.target;
+      if (target) target.moveToBack();
+    </method>
+    
+    <method name="sendBackward">
+      var target = reticle.target;
+      if (target) target.moveBackward();
+    </method>
+    
     <method name="save">
       editormodel.save();
       undo.reset();
@@ -306,10 +326,19 @@ SOFTWARE. -->
   </node>
   
   <!--// HANDLERS //-->
-  <handler event="onkeycodedown" reference="dr.keyboard" args="keyCode">
+  <handler event="onkeydown" reference="dr.keyboard" args="platformEvent">
+    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
     if (dr.keyboard.isAcceleratorKeyDown()) {
       switch (keyCode) {
-        case 90: // Z
+        case 66: // B: Reorder backward
+          platformEvent.preventDefault(); // Prevent browser show bookmarks bar functionality
+          (dr.keyboard.isShiftKeyDown() ? sendBackwardButton : sendToBackButton).doActivated();
+          break;
+        case 70: // F: Reorder forward
+          platformEvent.preventDefault(); // Prevent browser find functionality
+          (dr.keyboard.isShiftKeyDown() ? bringForwardButton : bringToFrontButton).doActivated();
+          break;
+        case 90: // Z: Undo/Redo
           (dr.keyboard.isShiftKeyDown() ? redoButton : undoButton).doActivated();
           break;
       }
@@ -325,6 +354,10 @@ SOFTWARE. -->
     
     <labelbutton id="undoButton">Undo<handler event="onactivated">actions.undo();</handler></labelbutton>
     <labelbutton id="redoButton">Redo<handler event="onactivated">actions.redo();</handler></labelbutton>
+    <labelbutton id="bringToFrontButton">Bring To Front<handler event="onactivated">actions.bringToFront();</handler></labelbutton>
+    <labelbutton id="bringForwardButton">Bring Forward<handler event="onactivated">actions.bringForward();</handler></labelbutton>
+    <labelbutton id="sendToBackButton">Send to Back<handler event="onactivated">actions.sendToBack();</handler></labelbutton>
+    <labelbutton id="sendBackwardButton">Send Backward<handler event="onactivated">actions.sendBackward();</handler></labelbutton>
     <labelbutton id="saveButton">Save<handler event="onactivated">actions.save();</handler></labelbutton>
   </view>
   
