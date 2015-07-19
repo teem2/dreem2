@@ -33,6 +33,16 @@ SOFTWARE. -->
     }
     return ret;
   </method>
+  
+  <method name="moveInFrontOf" args="sibling">
+    // FIXME: update model
+    return this.super();
+  </method>
+  
+  <method name="moveToBack">
+    // FIXME: update model
+    return this.super();
+  </method>
 </mixin>
 
 <node id="selectionmanager">
@@ -143,52 +153,42 @@ SOFTWARE. -->
   </controlhandle>
   
   <handler event="onselected" args="selected" reference="selectionmanager">
-    this.setFocus(selected);
+    var oldTarget = this.target;
+    this.target = selected;
     if (selected) {
-      this.listenTo(dr.idle, 'onidle', this.syncPosition);
-    } else {
-      this.stopListening(dr.idle, 'onidle', this.syncPosition);
-    }
-  </handler>
-
-  <method name="setFocus" args="view">
-    this.target = view;
-    if (view) {
       this.setAttribute('visible', true);
+      var pos = selected.getAbsolutePosition();
+      this.dx = selected.x - pos.x;
+      this.dy = selected.y - pos.y;
       
-      var pos = view.getAbsolutePosition();
-      this.dx = view.x - pos.x;
-      this.dy = view.y - pos.y;
-      this.syncPosition();
-      this.moveToFront();
+      this._syncPosition();
+      if (!oldTarget) this.listenTo(dr.idle, 'onidle', this._syncPosition);
     } else {
+      this.stopListening(dr.idle, 'onidle', this._syncPosition);
       this.setAttribute('visible', false);
     }
+  </handler>
+  <method name="_syncPosition">
+    var target = this.target, pos = target.getAbsolutePosition();
+    this._isSync = true;
+    this.setAttributes({width:target.width, height:target.height, x:pos.x, y:pos.y});
+    this._isSync = false;
   </method>
-  <method name="syncPosition">
-    var pos = this.target.getAbsolutePosition();
-    this.setAttributes({visible: true, width: this.target.width, height: this.target.height, x: pos.x, y: pos.y})
+  <method name="_updateTarget" args="attr, value">
+    if (this.target && !this._isSync) this.target.setAttribute(attr, value);
   </method>
   <handler event="onx" args="x">
-    if (this.target) {
-      this.target.setAttribute('x', x + this.dx);
-    }
+    this._updateTarget('x', x + this.dx);
   </handler>
   <handler event="ony" args="y">
-    if (this.target) {
-      this.target.setAttribute('y', y + this.dy);
-    }
+    this._updateTarget('y', y + this.dy);
   </handler>
   <handler event="onwidth" args="width">
-    if (this.target) {
-      this.target.setAttribute('width', width);
-    }
+    this._updateTarget('width', width);
     this.resizer.setAttribute('x', this.width - 5)
   </handler>
   <handler event="onheight" args="height">
-    if (this.target) {
-      this.target.setAttribute('height', height);
-    }
+    this._updateTarget('height', height);
     this.resizer.setAttribute('y', this.height - 5)
   </handler>
   
@@ -229,7 +229,7 @@ SOFTWARE. -->
   </method>
 </class>
 
-<view name="editor" width="100%" height="100%" defaultplacement="content">
+<view name="editor" width="100%" height="100%" defaultplacement="content" clip="true">
   <!--// SERVICE NODES //-->
   <node id="config">
     <attribute name="topbar_height" type="number" value="32"></attribute>
@@ -365,6 +365,7 @@ SOFTWARE. -->
           (dr.keyboard.isShiftKeyDown() ? bringForwardButton : bringToFrontButton).doActivated();
           break;
         case 90: // Z: Undo/Redo
+          platformEvent.preventDefault(); // Prevent browser undo/redo functionality
           (dr.keyboard.isShiftKeyDown() ? redoButton : undoButton).doActivated();
           break;
       }
@@ -475,36 +476,4 @@ SOFTWARE. -->
   ></view>
   
   <reticle id="reticle" ignoreplacement="true"></reticle>
-  
-  <!--view id="softfocus">
-    <method name="setFocus" args="view">
-      if (this.scope && this.scope !== view) {
-        this.stopListening(dr.mouse, 'onmouseup', this.processEvent)
-      }
-      this.scope = view;
-      console.log('setFocus', this.scope, view)
-      this.listenTo(dr.mouse, 'onmouseup', this.processEvent.bind(this))
-    </method>
-    <method name="processEvent" args="event">
-      if (! this.scope) return;
-      // Check to see if the mouse went up outside us
-      var view = event.view;
-      while (view) {
-        console.log('processEvent', view.platformObject, this.scope.id, view === this.scope)
-        if (view === this.scope) {
-          // don't prevent bubbling for mouseup events
-          return false;
-        }
-        view = view.parent;
-      }
-      
-      console.log('canceling', this.scope.id)
-      this.stopListening(dr.mouse, 'onmouseup', this.processEvent)
-      this.scope.sendEvent('onlostfocus')
-      this.scope = null;
-      
-      // don't prevent bubbling for mouseup events
-      return false;
-    </method>
-  </view-->
 </view>
