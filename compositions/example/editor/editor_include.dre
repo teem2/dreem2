@@ -98,8 +98,21 @@ SOFTWARE. -->
       undo.reset();
     </method>
     
+    <method name="createView">
+      console.log('FIXME: create');
+    </method>
+    
     <method name="clearSelection">
       selectionmanager.setAttribute('selected', null);
+    </method>
+    
+    <method name="deleteSelected">
+      var selected = selectionmanager.selected;
+      if (selected) {
+        console.log('FIXME: use a deleteundoable');
+        selected.setAttribute('parent', null);
+        this.clearSelection();
+      }
     </method>
   </node>
   
@@ -150,20 +163,37 @@ SOFTWARE. -->
   
   <!--// HANDLERS //-->
   <handler event="onkeydown" reference="dr.keyboard" args="platformEvent">
-    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-    if (dr.keyboard.isAcceleratorKeyDown()) {
+    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
+      keyboard = dr.keyboard;
+    if (keyboard.isAcceleratorKeyDown()) {
       switch (keyCode) {
         case 66: // B: Reorder backward
           platformEvent.preventDefault(); // Prevent browser show bookmarks bar functionality
-          (dr.keyboard.isShiftKeyDown() ? sendBackwardButton : sendToBackButton).doActivated();
+          (keyboard.isShiftKeyDown() ? sendBackwardButton : sendToBackButton).doActivated();
           break;
         case 70: // F: Reorder forward
           platformEvent.preventDefault(); // Prevent browser find functionality
-          (dr.keyboard.isShiftKeyDown() ? bringForwardButton : bringToFrontButton).doActivated();
+          (keyboard.isShiftKeyDown() ? bringForwardButton : bringToFrontButton).doActivated();
+          break;
+        case 73: // I: Insert New View
+          createButton.doActivated();
+          break;
+        case 83: // S: Save document
+          platformEvent.preventDefault(); // Prevent browser save functionality
+          saveButton.doActivated();
           break;
         case 90: // Z: Undo/Redo
           platformEvent.preventDefault(); // Prevent browser undo/redo functionality
-          (dr.keyboard.isShiftKeyDown() ? redoButton : undoButton).doActivated();
+          (keyboard.isShiftKeyDown() ? redoButton : undoButton).doActivated();
+          break;
+      }
+    } else {
+      switch (keyCode) {
+        case 8: // Delete: Delete selected view
+          deleteButton.doActivated();
+          break;
+        case 27: // Esc: Clear selection
+          actions.clearSelection();
           break;
       }
     }
@@ -178,10 +208,15 @@ SOFTWARE. -->
     
     <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable}">Undo</toolbarbutton>
     <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable}">Redo</toolbarbutton>
+    <view width="1" height="100%" bgcolor="#aaaaaa"/>
     <toolbarbutton id="bringToFrontButton" action="bringToFront" disabled="${!selectionmanager.selected}">Bring To Front</toolbarbutton>
     <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
     <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
     <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
+    <view width="1" height="100%" bgcolor="#aaaaaa"/>
+    <toolbarbutton id="deleteButton" action="deleteSelected" disabled="${!selectionmanager.selected}">Delete</toolbarbutton>
+    <toolbarbutton id="createButton" action="createView">Create</toolbarbutton>
+    <view width="1" height="100%" bgcolor="#aaaaaa"/>
     <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable}">Save</toolbarbutton>
   </view>
   
