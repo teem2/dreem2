@@ -182,7 +182,7 @@ SOFTWARE. -->
     <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
     <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
     <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
-    <toolbarbutton id="saveButton" action="save">Save</toolbarbutton>
+    <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable}">Save</toolbarbutton>
   </view>
   
   <view name="leftbar" ignoreplacement="true" bgcolor="silver"
