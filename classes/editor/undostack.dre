@@ -9,7 +9,7 @@
   * This object should be used to form the foundation of an undo/redo system
   * for an editor.
   */-->
-<class name="editor-undostack" extends="node" requires="editor-compoundundoable, editor-attrundoable">
+<class name="editor-undostack" extends="node" requires="editor-compoundundoable, editor-attrundoable, editor-orderundoable">
   <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
   <!--/**
     * @method initNode

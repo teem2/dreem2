@@ -143,8 +143,8 @@ SOFTWARE. -->
   </controlhandle>
   
   <handler event="onselected" args="selected" reference="selectionmanager">
+    this.setFocus(selected);
     if (selected) {
-      this.setFocus(selected)
       this.listenTo(dr.idle, 'onidle', this.syncPosition);
     } else {
       this.stopListening(dr.idle, 'onidle', this.syncPosition);
@@ -240,7 +240,7 @@ SOFTWARE. -->
   
   <node id="actions">
     <method name="_undoRedoCallback" args="undoable">
-      if (undoable.target) reticle.target = undoable.target;
+      if (undoable.target) selectionmanager.setAttribute('selected', undoable.target);
     </method>
     
     <method name="undo">
@@ -253,22 +253,45 @@ SOFTWARE. -->
     
     <method name="bringToFront">
       var target = reticle.target;
-      if (target) target.moveToFront();
+      if (target) {
+        var newprevsibling = target.getLastSiblingView();
+        if (newprevsibling) {
+          var oldprevsibling = target.getPrevSiblingView();
+          undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsibling, newprevsibling:newprevsibling}));
+        }
+      }
     </method>
     
     <method name="bringForward">
       var target = reticle.target;
-      if (target) target.moveForward();
+      if (target) {
+        var newprevsibling = target.getNextSiblingView();
+        if (newprevsibling) {
+          var oldprevsibling = target.getPrevSiblingView();
+          undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsibling, newprevsibling:newprevsibling}));
+        }
+      }
     </method>
     
     <method name="sendToBack">
       var target = reticle.target;
-      if (target) target.moveToBack();
+      if (target) {
+        var oldprevsibling = target.getPrevSiblingView();
+        if (oldprevsibling) {
+          undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsibling, newprevsibling:null}));
+        }
+      }
     </method>
     
     <method name="sendBackward">
       var target = reticle.target;
-      if (target) target.moveBackward();
+      if (target) {
+        var oldprevsibling = target.getPrevSiblingView();
+        if (oldprevsibling) {
+          var newprevsibling = oldprevsibling.getPrevSiblingView();
+          undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsibling, newprevsibling:newprevsibling}));
+        }
+      }
     </method>
     
     <method name="save">
@@ -277,7 +300,7 @@ SOFTWARE. -->
     </method>
     
     <method name="clearSelection">
-      reticle.setFocus(null);
+      selectionmanager.setAttribute('selected', null);
     </method>
   </node>
   
@@ -407,7 +430,7 @@ SOFTWARE. -->
         this.setAttribute('text', val);
       });
       // console.log('child', child)
-  </handler>
+    </handler>
     <text name="label"></text>
   </class>
 
@@ -440,8 +463,9 @@ SOFTWARE. -->
           # console.log('attribute', key, value)
 
         attrs.sort(compare)
-        # console.log('attributelist', attrs)
-        this.repl.setAttribute('data', attrs);
+      
+      # console.log('attributelist', attrs)
+      this.repl.setAttribute('data', attrs);
     </handler>
     <replicator name="repl" classname="attributeeditor"></replicator>
   </view>
