@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <mixin name="editable">
   <handler event="onmousedown" args="event">
-    reticle.setFocus(this)
+    selectionmanager.setAttribute('selected', this);
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
     reticle.doMouseOver(true);
   </handler>
@@ -34,6 +34,10 @@ SOFTWARE. -->
     return ret;
   </method>
 </mixin>
+
+<node id="selectionmanager">
+  <attribute name="selected" type="expression" value="null"></attribute>
+</node>
 
 <mixin name="keyboarddraggable" with="draggable" allowabort="true"
   focusable="true" focusembellishment="false"
@@ -138,6 +142,10 @@ SOFTWARE. -->
     </method>
   </controlhandle>
   
+  <handler event="onselected" args="selected" reference="selectionmanager">
+    this.setFocus(selected)
+  </handler>
+
   <method name="setFocus" args="view">
     this.target = view;
     if (view) {
@@ -335,11 +343,53 @@ SOFTWARE. -->
     <handler event="onmousedown" args="event">actions.clearSelection();</handler>
   </view>
   
+  <class name="attributeeditor" height="auto" requires="inputtext">
+    <handler event="oninit" args="data">
+      // console.log('ondata', this.data)
+      this.label.setAttribute('text', this.data.name)
+      if (this.data.type === 'number') {
+        var schema = {class: 'inputtext', parent: this, text: selectionmanager.selected[this.data.name], x: 100};
+        // console.log('schema', schema)
+        this.createChild(schema)
+      }
+    </handler>
+    <text name="label"></text>
+  </class>
+
   <view name="rightbar" ignoreplacement="true" bgcolor="silver"
     x="right" y="${config.topbar_height}"
     width="${config.rightbar_width}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-  ></view>
+  >
+    <spacedlayout axis="y" spacing="2"></spacedlayout>
+    <attribute name="attributelist" type="expression" value="[]"></attribute>
+    <handler event="onselected" args="selected" reference="selectionmanager" type="coffee">
+      attrs = []
+
+      compare = (a, b) ->
+        if (a.name < b.name)
+          return -1
+        if (a.name > b.name)
+          return 1
+        0
+
+      if selected
+        ancestors = this.klass.ancestors()
+        # pull attributes from ancestor, since we don't want the editor mixin itself
+        myattributes = ancestors[ancestors.length - 1].attributes
+        # console.log('hello', this, myattributes)
+        # build list of attributes for the replicator
+        for key, value of myattributes
+          value.name = key
+          attrs.push(value)
+          # console.log('attribute', key, value)
+
+        attrs.sort(compare)
+        # console.log('attributelist', attrs)
+        this.repl.setAttribute('data', attrs);
+    </handler>
+    <replicator name="repl" classname="attributeeditor"></replicator>
+  </view>
   
   <view name="bottombar" ignoreplacement="true" bgcolor="gray" y="bottom"
     width="100%" height="${config.bottombar_height}"
