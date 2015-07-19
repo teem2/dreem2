@@ -23,19 +23,26 @@ SOFTWARE. -->
 <include href='./editable.dre'/>
 <include href='./controlhandle.dre'/>
 <include href='./reticle.dre'/>
+<include href='./toolbarbutton.dre'/>
 
 <view name="editor" width="100%" height="100%" defaultplacement="content" clip="true">
   <!--// SERVICE NODES //-->
   <node id="config">
-    <attribute name="topbar_height" type="number" value="32"></attribute>
-    <attribute name="leftbar_width" type="number" value="75"></attribute>
-    <attribute name="rightbar_width" type="number" value="250"></attribute>
-    <attribute name="bottombar_height" type="number" value="24"></attribute>
+    <attribute name="topbar_height" type="number" value="32"/>
+    <attribute name="leftbar_width" type="number" value="75"/>
+    <attribute name="rightbar_width" type="number" value="250"/>
+    <attribute name="bottombar_height" type="number" value="24"/>
+    
+    <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
+    <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
+    
   </node>
   
   <node id="selectionmanager">
-    <attribute name="selected" type="expression" value="null"></attribute>
+    <attribute name="selected" type="expression" value="null"/>
   </node>
+  
+  <editor-undostack id="undo"></editor-undostack>
   
   <node id="actions">
     <method name="_undoRedoCallback" args="undoable">
@@ -54,10 +61,7 @@ SOFTWARE. -->
       var target = reticle.target;
       if (target) {
         var newprevsibling = target.getLastSiblingView();
-        if (newprevsibling) {
-          var oldprevsibling = target.getPrevSiblingView();
-          undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsibling, newprevsibling:newprevsibling}));
-        }
+        if (newprevsibling) this._updateOrder(target, target.getPrevSiblingView(), newprevsibling);
       }
     </method>
     
@@ -65,10 +69,7 @@ SOFTWARE. -->
       var target = reticle.target;
       if (target) {
         var newprevsibling = target.getNextSiblingView();
-        if (newprevsibling) {
-          var oldprevsibling = target.getPrevSiblingView();
-          undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsibling, newprevsibling:newprevsibling}));
-        }
+        if (newprevsibling) this._updateOrder(target, target.getPrevSiblingView(), newprevsibling);
       }
     </method>
     
@@ -76,9 +77,7 @@ SOFTWARE. -->
       var target = reticle.target;
       if (target) {
         var oldprevsibling = target.getPrevSiblingView();
-        if (oldprevsibling) {
-          undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsibling, newprevsibling:null}));
-        }
+        if (oldprevsibling) this._updateOrder(target, oldprevsibling, null);
       }
     </method>
     
@@ -86,11 +85,12 @@ SOFTWARE. -->
       var target = reticle.target;
       if (target) {
         var oldprevsibling = target.getPrevSiblingView();
-        if (oldprevsibling) {
-          var newprevsibling = oldprevsibling.getPrevSiblingView();
-          undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsibling, newprevsibling:newprevsibling}));
-        }
+        if (oldprevsibling) this._updateOrder(target, oldprevsibling, oldprevsibling.getPrevSiblingView());
       }
+    </method>
+    
+    <method name="_updateOrder" args="target, oldprevsib, newprevsib">
+      undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsib, newprevsibling:newprevsib}));
     </method>
     
     <method name="save">
@@ -102,8 +102,6 @@ SOFTWARE. -->
       selectionmanager.setAttribute('selected', null);
     </method>
   </node>
-  
-  <editor-undostack id="undo"></editor-undostack>
   
   <node id="editormodel">
     <handler event="oninit">
@@ -175,16 +173,16 @@ SOFTWARE. -->
   <view name="topbar" ignoreplacement="true" bgcolor="gray"
     width="100%" height="${config.topbar_height}"
   >
-    <spacedlayout spacing="2" inset="4"></spacedlayout>
+    <spacedlayout spacing="4" inset="4"></spacedlayout>
     <constantlayout attribute="y" value="'middle'"></constantlayout>
     
-    <labelbutton id="undoButton">Undo<handler event="onactivated">actions.undo();</handler></labelbutton>
-    <labelbutton id="redoButton">Redo<handler event="onactivated">actions.redo();</handler></labelbutton>
-    <labelbutton id="bringToFrontButton">Bring To Front<handler event="onactivated">actions.bringToFront();</handler></labelbutton>
-    <labelbutton id="bringForwardButton">Bring Forward<handler event="onactivated">actions.bringForward();</handler></labelbutton>
-    <labelbutton id="sendToBackButton">Send to Back<handler event="onactivated">actions.sendToBack();</handler></labelbutton>
-    <labelbutton id="sendBackwardButton">Send Backward<handler event="onactivated">actions.sendBackward();</handler></labelbutton>
-    <labelbutton id="saveButton">Save<handler event="onactivated">actions.save();</handler></labelbutton>
+    <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable}">Undo</toolbarbutton>
+    <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable}">Redo</toolbarbutton>
+    <toolbarbutton id="bringToFrontButton" action="bringToFront" disabled="${!selectionmanager.selected}">Bring To Front</toolbarbutton>
+    <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
+    <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
+    <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
+    <toolbarbutton id="saveButton" action="save">Save</toolbarbutton>
   </view>
   
   <view name="leftbar" ignoreplacement="true" bgcolor="silver"

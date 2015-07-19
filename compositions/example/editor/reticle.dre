@@ -21,22 +21,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="reticle" with="keyboarddraggable, button" visible="false" distancebeforedrag="5" cursor="move">
   <method name="drawFocusedState">
-    this.fill.setAttribute('boxshadow', this.mouseover ? [0,0,4,0,'#000000'] : [0,0,12,0,'#000000']);
+    this.fill.setAttribute('boxshadow', this.mouseover ? config.boxshadow_normal : config.boxshadow_large);
   </method>
   <method name="drawHoverState">
-    this.fill.setAttribute('boxshadow', [0,0,4,0,'#000000']);
+    this.fill.setAttribute('boxshadow', config.boxshadow_normal);
   </method>
   <method name="drawActiveState">
     this.fill.setAttribute('boxshadow', null);
   </method>
   <method name="drawReadyState">
-    this.fill.setAttribute('boxshadow', [0,0,4,0,'#000000']);
+    this.fill.setAttribute('boxshadow', config.boxshadow_normal);
   </method>
   
   <view name="fill" width="100%" height="100%" clip="true">
-    <view name="inner" width="100%" height="100%"
-      border="1" bordercolor="blue"
-    ></view>
+    <view name="inner" width="100%" height="100%" border="1" bordercolor="blue"></view>
   </view>
   
   <controlhandle name="resizer">

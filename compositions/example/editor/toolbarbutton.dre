@@ -19,23 +19,32 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="controlhandle" with="keyboarddraggable, button" cursor="se-resize"
-  border="1" bordercolor="blue" width="9" height="9"
+<class name="toolbarbutton" extends="text" with="button"
+  border="1" bordercolor="#666666"
+  toppadding="3" bottompadding="3" leftpadding="6" rightpadding="6"
+  fontsize="12"
+  cornerradius="4" focusembellishment="false"
 >
+  <attribute name="action" type="string" value=""/>
+  <handler event="onactivated">actions[this.action]();</handler>
+  <method name="drawDisabledState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', '#aaaaaa');
+  </method>
   <method name="drawFocusedState">
+    this.setAttribute('boxshadow', config.boxshadow_normal);
     this.setAttribute('bgcolor', '#ffffff');
-    this.setAttribute('boxshadow', this.mouseover ? config.boxshadow_normal : config.boxshadow_large);
   </method>
   <method name="drawHoverState">
+    this.setAttribute('boxshadow', null);
     this.setAttribute('bgcolor', '#ffffff');
-    this.setAttribute('boxshadow', config.boxshadow_normal);
   </method>
   <method name="drawActiveState">
-    this.setAttribute('bgcolor', '#eeeeee');
     this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', '#dddddd');
   </method>
   <method name="drawReadyState">
-    this.setAttribute('bgcolor', '#dddddd');
-    this.setAttribute('boxshadow', config.boxshadow_normal);
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', '#eeeeee');
   </method>
 </class>

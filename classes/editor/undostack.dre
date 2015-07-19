@@ -21,6 +21,10 @@
     this.super();
   </method>
 
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
+  <attribute name="isundoable" type="boolean" value="false"/>
+  <attribute name="isredoable" type="boolean" value="false"/>
+
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->
   <!--/**
@@ -33,7 +37,19 @@
     var stack = this.__stack || (this.__stack = []);
     while (stack.length) stack.pop().destroy();
     this.__stackLoc = -1;
+    
+    this.__syncUndoabilityAttrs();
+    
     return this;
+  </method>
+
+  <!--/**
+    * @method __syncUndoabilityAttrs
+    * @private
+    */-->
+  <method name="__syncUndoabilityAttrs">
+    this.setAttribute('isundoable', this.canUndo());
+    this.setAttribute('isredoable', this.canRedo());
   </method>
 
   <!--/**
@@ -129,6 +145,7 @@
           loc = this.__stackLoc;
         while (stack.length > loc) stack.pop().destroy();
         stack.push(undoable);
+        this.__syncUndoabilityAttrs();
         return true;
       }
     }
@@ -158,8 +175,10 @@
     if (this.canUndo()) {
       var error = this.__executeUndoable(this.__stack[this.__stackLoc--], callback, false);
       if (error) {
+        ++this.__stackLoc;
         if (errorHandler && typeof errorHandler === 'function') errorHandler(err);
       } else {
+        this.__syncUndoabilityAttrs();
         return true;
       }
     }
@@ -188,8 +207,10 @@
     if (this.canRedo()) {
       var error = this.__executeUndoable(this.__stack[++this.__stackLoc], callback, true);
       if (error) {
+        --this.__stackLoc;
         if (errorHandler && typeof errorHandler === 'function') errorHandler(err);
       } else {
+        this.__syncUndoabilityAttrs();
         return true;
       }
     }
