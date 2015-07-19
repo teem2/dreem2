@@ -375,17 +375,27 @@ SOFTWARE. -->
   >
     <handler event="onmousedown" args="event">actions.clearSelection();</handler>
   </view>
-  
-  <class name="attributeeditor" height="auto" requires="inputtext">
-    <handler event="oninit" args="data">
-      // console.log('ondata', this.data)
-      this.label.setAttribute('text', this.data.name)
-      if (this.data.type === 'number') {
-        var schema = {class: 'inputtext', parent: this, text: selectionmanager.selected[this.data.name], x: 100};
-        // console.log('schema', schema)
-        this.createChild(schema)
+
+  <class name="texteditor" extends="inputtext">
+    <handler event="ontext" args="text">
+      if (this.target) {
+        this.target.setAttribute(this.targetattr, text);
       }
     </handler>
+  </class>
+  
+  <class name="attributeeditor" height="auto">
+    <handler event="oninit" args="data">
+      // console.log('ondata', this.data)
+      var name = this.data.name;
+      this.label.setAttribute('text', name)
+      var schema = {class: 'texteditor', parent: this, text: selectionmanager.selected[name], x: 100, target: selectionmanager.selected, targetattr: name};
+      var child = this.createChild(schema)
+      child.listenTo(selectionmanager.selected, 'on' + name, function(val) {
+        this.setAttribute('text', val);
+      });
+      // console.log('child', child)
+  </handler>
     <text name="label"></text>
   </class>
 
