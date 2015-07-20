@@ -130,25 +130,40 @@ SOFTWARE. -->
           z="-10" rotation="-115" xscale="10.5" yscale="10.4"
         ></view>
   
+        <!-- Given a style object, retrieve a transform setting -->
+        <method name="get_transform" args="style, setting">
+          // Retrieve a transform from either css, webkit, or moz
+          var transform = style[setting] || style['-webkit-' + setting] || style['-moz-' + setting];
+
+          return transform;
+        </method>
+
+        <!-- Compare two strings with varying whitespace -->
+        <method name="compare_ws" args = "str1, str2">
+          if (!str1 || !str2) return false;
+
+          return str1.replace(/\s/g, '') == str2.replace(/\s/g, '');
+	</method>
+    
         <handler event="oninit">
-          // Check both generic and vendor syntax so that the tests will pass in firefox.
-          var transform = this.topView.sprite.platformObject.style['transform'] || this.topView.sprite.platformObject.style['-webkit-transform'];
-          assert.equal((transform == 'translate3d(0, 0, 1px)') || (transform == 'translate3d(0px, 0px, 1px)'), true, 'Verify translate.')
+          // Check both generic and vendor syntax so that the tests will pass in firefox. This includes removing spaces when comparing strings.
+          var transform = this.get_transform(this.topView.sprite.platformObject.style, 'transform');
+          assert.equal(this.compare_ws(transform, 'translate3d(0, 0, 1px)') || this.compare_ws(transform, 'translate3d(0px, 0px, 1px)'), true, 'Verify translate.')
   
-          transform = this.rotateViewDeg.sprite.platformObject.style['transform'] || this.rotateViewDeg.sprite.platformObject.style['-webkit-transform'];
-          assert.equal((transform == ' rotate3d(0, 0, 1.0, 45deg)') || (transform == 'rotate3d(0, 0, 1, 45deg)'), true, 'Verify roate.')
+          transform = this.get_transform(this.rotateViewDeg.sprite.platformObject.style, 'transform');
+          assert.equal(this.compare_ws(transform, 'rotate3d(0, 0, 1.0, 45deg)') || this.compare_ws(transform, 'rotate3d(0, 0, 1, 45deg)'), true, 'Verify rotate.');
   
-          transformOrigin = this.rotateViewDeg.sprite.platformObject.style['transform-origin'] || this.rotateViewDeg.sprite.platformObject.style['-webkit-transform-origin'];
-          assert.equal('5px 10px 1px', transformOrigin, 'Verify transform origin.')
+          transformOrigin = this.get_transform(this.rotateViewDeg.sprite.platformObject.style, 'transform-origin');
+          assert.equal(this.compare_ws('5px 10px 1px', transformOrigin), true, 'Verify transform origin.');
   
-          transform = this.xScaleView.sprite.platformObject.style['transform'] || this.xScaleView.sprite.platformObject.style['-webkit-transform'];
-          assert.equal((transform == ' scale3d(0.1, 1, 1.0)') || (transform == 'scale3d(0.1, 1, 1)'), true, 'Verify x-scale.')
+          transform = this.get_transform(this.xScaleView.sprite.platformObject.style, 'transform');
+          assert.equal(this.compare_ws(transform, 'scale3d(0.1, 1, 1.0)') || this.compare_ws(transform, 'scale3d(0.1, 1, 1)'), true, 'Verify x-scale.');
   
-          transform = this.yScaleView.sprite.platformObject.style['transform'] || this.yScaleView.sprite.platformObject.style['-webkit-transform'];
-          assert.equal((transform == ' scale3d(1, 0.2, 1.0)') || (transform == 'scale3d(1, 0.2, 1)'), true, 'Verify y-scale.')
+          transform = this.get_transform(this.yScaleView.sprite.platformObject.style, 'transform');
+          assert.equal(this.compare_ws(transform, 'scale3d(1, 0.2, 1.0)') || this.compare_ws(transform, 'scale3d(1, 0.2, 1)'), true, 'Verify y-scale.');
   
-          transform = this.scaleRotateBottomView.sprite.platformObject.style['transform'] || this.scaleRotateBottomView.sprite.platformObject.style['-webkit-transform'];
-          assert.equal((transform == 'scale3d(10.5, 10.4, 1.0) rotate3d(0, 0, 1.0, -115deg) translate3d(0, 0, -10px)') || (transform == 'scale3d(10.5, 10.4, 1) rotate3d(0, 0, 1, -115deg) translate3d(0px, 0px, -10px)'), true, 'Verify all transforms.')
+          transform = this.get_transform(this.scaleRotateBottomView.sprite.platformObject.style, 'transform');
+          assert.equal(this.compare_ws(transform, 'scale3d(10.5, 10.4, 1.0) rotate3d(0, 0, 1.0, -115deg) translate3d(0, 0, -10px)') || this.compare_ws(transform, 'scale3d(10.5, 10.4, 1) rotate3d(0, 0, 1, -115deg) translate3d(0px, 0px, -10px)'), true, 'Verify all transforms.');
         </handler>
       </view>
   
