@@ -29,10 +29,13 @@ SOFTWARE. -->
     </method>
 
     <method name="server_results" args="server_results">
-      console.log('server_unittest Finished', server_results);
+      //console.log('server_unittest Finished', server_results);
+      assert.closeTo(server_results, 100, 10);
     </method>
 
     <view width="100%" height="100%" padding="4">
+      <testingtimer>300</testingtimer>
+
       <handler event="oninit">
         this.client_unittest();
         this.server_unittest();
@@ -48,10 +51,8 @@ SOFTWARE. -->
 	});
 
         p1.then(function(ret) {
-          console.log('client_unittest Finished', ret);
-          console.log('~~DONE~~');
-          assert.isTrue(false, 'finished');
-
+          //console.log('client_unittest Finished', ret);
+          assert.closeTo(ret, 100, 10);
 	});
       </method>
 
