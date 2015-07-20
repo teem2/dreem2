@@ -193,7 +193,6 @@ define(function(require, exports, module) {
         }
         filePath = decodeURI(filePath);
         
-        console.log('filePath:: ', filePath);
         fs.stat(filePath, function(err, stat) {
           if (err || !stat.isFile()) {
             if (url == '/favicon.ico') {

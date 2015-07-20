@@ -9,7 +9,7 @@ module.exports = function(grunt) {
       all: {
         options: {
           "max-duration": 360,
-          "throttled": 3,
+          "throttled": 6,
           "tunneled": true,
           "tunnelArgs": ['--vm-version', 'dev-varnish'],
           urls: [
