@@ -1,0 +1,8 @@
+{
+  "name": "dreem2",
+  "version": "0.0.1",
+  "devDependencies": {
+    "grunt": "~0.4.5",
+    "grunt-saucelabs": "~8.5.0"
+  }
+}

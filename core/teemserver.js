@@ -19,7 +19,8 @@ define(function(require, exports, module) {
     ExternalApps = require('$CORE/externalapps'),
     BusServer = require('$CORE/busserver'),
     CompositionServer = require('$CORE/compositionserver'),
-    NodeWebSocket = require('$CORE/nodewebsocket');
+    NodeWebSocket = require('$CORE/nodewebsocket'),
+    SauceRunner = require('$CORE/saucerunner');
 
   // Create a function to determine a mime type for a file.
   var mimeFromFile = (function() {
@@ -100,6 +101,8 @@ define(function(require, exports, module) {
     }.bind(this))
     
     if (this.args['-web']) this.__getComposition(this.args['-web']);
+    
+    this.saucerunner = new SauceRunner();
   }
 
   body.call(TeemServer.prototype)
@@ -207,15 +210,21 @@ define(function(require, exports, module) {
               "ETag": stat.mtime.getTime() + '_' + stat.ctime.getTime() + '_' + stat.size
             };
             
-            this.watcher.watch(filePath);
-            
-            if (req.headers['if-none-match'] == header.ETag) {
-              res.writeHead(304, header);
-              res.end();
-            } else {
-              var stream = fs.createReadStream(filePath);
+            if (filePath.indexOf('saucerunner') !== -1) {
+              var sauceRunnerHTML = this.saucerunner.getHTML(filePath);
               res.writeHead(200, header);
-              stream.pipe(res);
+              res.end(sauceRunnerHTML);
+            } else {
+              this.watcher.watch(filePath);
+
+              if (req.headers['if-none-match'] == header.ETag) {
+                res.writeHead(304, header);
+                res.end();
+              } else {
+                var stream = fs.createReadStream(filePath);
+                res.writeHead(200, header);
+                stream.pipe(res);
+              }
             }
           }
         }.bind(this));
