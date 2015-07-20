@@ -206,8 +206,9 @@ SOFTWARE. -->
           
           // Use this until we add browser detection
           var firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
-          if (firefox) {
-            // Firefox has different sizes
+          var mac = navigator.userAgent.toLowerCase().indexOf('macintosh') > -1
+          if (firefox && !mac) {
+            // Firefox on windows and linux has different sizes
             assert.closeTo(this.height, 89, 5, 'Default height is 3 lines')
           }
           else {
@@ -228,8 +229,9 @@ SOFTWARE. -->
 
           // Use this until we add browser detection
           var firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1
-          if (firefox) {
-            // Firefox has different sizes
+          var mac = navigator.userAgent.toLowerCase().indexOf('macintosh') > -1
+          if (firefox && !mac) {
+            // Firefox on windows and linux has different sizes
             assert.closeTo(this.height, 137, 5, 'Height is 5 lines');
           }
           else {
