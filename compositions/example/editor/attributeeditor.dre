@@ -84,9 +84,11 @@ SOFTWARE. -->
   <method name="initNode" args="parent, attrs">
     this.super();
     
+    var self = this;
     var name = this.data.name;
     var child = this.createChild({
       class:'texteditor',
+      name:'field',
       x:64, 
       target:selectionmanager.selected, 
       targetattr:name
@@ -99,15 +101,28 @@ SOFTWARE. -->
     // update when selected item's value changes
     child.listenTo(selectionmanager.selected, 'on__cfg_' + name, function(val) {
       this._isSync = true;
-      this.setActualAttribute('text', selectionmanager.selected.getAttribute(name));
+      this.setActualAttribute('text', val);
+      self._checkActualIsDifferent();
       this._isSync = false;
     });
-    child.syncTo(this, 'onwidth', function(w) {
-      this.setAttribute('width', w - this.x - 4);
+    child.syncTo(this, 'oninnerwidth', function(w) {
+      this.setAttribute('width', w - this.x - 68);
+    });
+    
+    this.actual.syncTo(selectionmanager.selected, 'on' + name, function(val) {
+      this.setActualAttribute('text', val);
+      self._checkActualIsDifferent();
     });
     
     this.label.setAttribute('text', name);
   </method>
+  
+  <method name="_checkActualIsDifferent">
+    var actual = this.actual.text;
+    var cfg = this.field.text;
+    this.actual.setAttribute('color', cfg === actual ? '#999999' : '#000000');
+  </method>
 
   <text name="label" x="${60 - this.width}" fontsize="14"></text>
+  <text name="actual" x="${this.parent.innerwidth - this.width - 4}" fontsize="14" width="60"></text>
 </class>
