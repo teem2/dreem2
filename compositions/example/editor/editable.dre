@@ -25,11 +25,14 @@ SOFTWARE. -->
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
     reticle.doMouseOver(true);
   </handler>
-  
+
   <method name="setAttribute" args="name, value">
-    var ret = this.super(name, value)
-    if (this.parent && this.parent.inited) {
-      editormodel.update(this.id, name, this[name]);
+    var ret = this.super(name, value);
+    if (name === 'parent') {
+      // FIXME: update model for create/delete
+    } else {
+      var parent = this.parent;
+      if (parent && parent.inited) editormodel.update(this.id, name, this.getAttribute(name));
     }
     return ret;
   </method>
