@@ -43,7 +43,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').x, 100);
+              assert.equal(this.getActualAttribute('target').x, 100);
             </handler>
           </animator>
           
@@ -57,7 +57,7 @@ Clobbering global reference: koala3</expectedoutput>
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
-                assert.equal(this.getAttribute('target').y, 50);
+                assert.equal(this.getActualAttribute('target').y, 50);
               </handler>
             </animator>
             <animator name="subanim2" attribute="y" to="100" duration="200" delay="100">
@@ -69,7 +69,7 @@ Clobbering global reference: koala3</expectedoutput>
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
-                assert.equal(this.getAttribute('target').y, 100);
+                assert.equal(this.getActualAttribute('target').y, 100);
               </handler>
             </animator>
             
@@ -81,7 +81,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').y, 100);
+              assert.equal(this.getActualAttribute('target').y, 100);
             </handler>
           </animgroup>
           
@@ -94,7 +94,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').x, 0);
+              assert.equal(this.getActualAttribute('target').x, 0);
             </handler>
           </animator>
           
@@ -107,7 +107,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').y, 0);
+              assert.equal(this.getActualAttribute('target').y, 0);
             </handler>
           </animator>
           
@@ -184,8 +184,8 @@ Clobbering global reference: koala3</expectedoutput>
             
             assert.equal(this.output.join(','), expected.join(','));
             
-            assert.equal(this.getAttribute('target').x, 0);
-            assert.equal(this.getAttribute('target').y, 0);
+            assert.equal(this.getActualAttribute('target').x, 0);
+            assert.equal(this.getActualAttribute('target').y, 0);
           </handler>
           
           <handler event="oninit">
@@ -224,7 +224,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').x, 200);
+              assert.equal(this.getActualAttribute('target').x, 200);
             </handler>
           </animator>
           
@@ -238,7 +238,7 @@ Clobbering global reference: koala3</expectedoutput>
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
-                assert.equal(this.getAttribute('target').y, 0);
+                assert.equal(this.getActualAttribute('target').y, 0);
               </handler>
             </animator>
             <animator name="subanim2" attribute="y" from="50" to="100" duration="200" delay="100">
@@ -250,7 +250,7 @@ Clobbering global reference: koala3</expectedoutput>
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
-                assert.equal(this.getAttribute('target').y, 50);
+                assert.equal(this.getActualAttribute('target').y, 50);
               </handler>
             </animator>
             
@@ -262,7 +262,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').y, 0);
+              assert.equal(this.getActualAttribute('target').y, 0);
             </handler>
           </animgroup>
           
@@ -275,7 +275,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').x, 300);
+              assert.equal(this.getActualAttribute('target').x, 300);
             </handler>
           </animator>
           
@@ -288,7 +288,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').y, 100);
+              assert.equal(this.getActualAttribute('target').y, 100);
             </handler>
           </animator>
           
@@ -365,8 +365,8 @@ Clobbering global reference: koala3</expectedoutput>
             
             assert.equal(this.output.join(','), expected.join(','));
             
-            assert.equal(this.getAttribute('target').x, 200);
-            assert.equal(this.getAttribute('target').y, 0);
+            assert.equal(this.getActualAttribute('target').x, 200);
+            assert.equal(this.getActualAttribute('target').y, 0);
           </handler>
           
           <handler event="oninit">
@@ -540,8 +540,8 @@ Clobbering global reference: koala3</expectedoutput>
             
             assert.equal(this.output.join(','), expected.join(','));
             
-            assert.equal(this.getAttribute('target').x, 0);
-            assert.equal(this.getAttribute('target').y, 200);
+            assert.equal(this.getActualAttribute('target').x, 0);
+            assert.equal(this.getActualAttribute('target').y, 200);
           </handler>
           
           <handler event="oninit">
@@ -715,8 +715,8 @@ Clobbering global reference: koala3</expectedoutput>
             
             assert.equal(this.output.join(','), expected.join(','));
             
-            assert.equal(this.getAttribute('target').x, 200);
-            assert.equal(this.getAttribute('target').y, 200);
+            assert.equal(this.getActualAttribute('target').x, 200);
+            assert.equal(this.getActualAttribute('target').y, 200);
           </handler>
           
           <handler event="oninit">
@@ -755,7 +755,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').x, 100);
+              assert.equal(this.getActualAttribute('target').x, 100);
             </handler>
           </animator>
           
@@ -769,7 +769,7 @@ Clobbering global reference: koala3</expectedoutput>
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
-                assert.equal(this.getAttribute('target').width, 50);
+                assert.equal(this.getActualAttribute('target').width, 50);
               </handler>
             </animator>
             <animator name="subanim2" attribute="height" from="10" to="50" duration="1200" delay="100">
@@ -781,7 +781,7 @@ Clobbering global reference: koala3</expectedoutput>
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
-                assert.equal(this.getAttribute('target').height, 50);
+                assert.equal(this.getActualAttribute('target').height, 50);
               </handler>
             </animator>
             
@@ -793,8 +793,8 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').width, 50);
-              assert.equal(this.getAttribute('target').height, 50);
+              assert.equal(this.getActualAttribute('target').width, 50);
+              assert.equal(this.getActualAttribute('target').height, 50);
             </handler>
           </animgroup>
           
@@ -894,7 +894,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').x, 0);
+              assert.equal(this.getActualAttribute('target').x, 0);
             </handler>
           </animator>
           
@@ -908,7 +908,7 @@ Clobbering global reference: koala3</expectedoutput>
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
-                assert.equal(this.getAttribute('target').width, 10);
+                assert.equal(this.getActualAttribute('target').width, 10);
               </handler>
             </animator>
             <animator name="subanim2" attribute="height" from="10" to="50" duration="500" delay="100">
@@ -920,7 +920,7 @@ Clobbering global reference: koala3</expectedoutput>
               </handler>
               <handler event="onend">
                 this.parent.parent.output.push('onend ' + this.name);
-                assert.equal(this.getAttribute('target').height, 10);
+                assert.equal(this.getActualAttribute('target').height, 10);
               </handler>
             </animator>
             
@@ -932,8 +932,8 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getAttribute('target').width, 10);
-              assert.equal(this.getAttribute('target').height, 10);
+              assert.equal(this.getActualAttribute('target').width, 10);
+              assert.equal(this.getActualAttribute('target').height, 10);
             </handler>
           </animgroup>
           
@@ -1293,35 +1293,35 @@ Clobbering global reference: koala3</expectedoutput>
           <text text='Nesting'></text>
           <animgroup delay='100' id="myanim1" repeat="1" bounce="true" parallel='false'>
             <handler event='onend'>
-              assert.equal(this.getAttribute('target').x, 14)
-              assert.equal(this.getAttribute('target').y, 12)
+              assert.equal(this.getActualAttribute('target').x, 14)
+              assert.equal(this.getActualAttribute('target').y, 12)
             </handler>
             <animator attribute="x" to="100" duration="100" motion="linear">
               <handler event='onend'>
-                assert.equal(this.getAttribute('target').x, 100)
+                assert.equal(this.getActualAttribute('target').x, 100)
               </handler>
             </animator>
             <animator attribute="y" to="100" duration="500">
               <handler event='onend'>
-                assert.equal(this.getAttribute('target').x, 100)
-                assert.equal(this.getAttribute('target').y, 100)
+                assert.equal(this.getActualAttribute('target').x, 100)
+                assert.equal(this.getActualAttribute('target').y, 100)
               </handler>
             </animator>
             <animgroup repeat="1" bounce="false" parallel='true'>
               <animator attribute="x" to="14" duration="1000" motion="linear">
                 <handler event='onend'>
-                  assert.equal(this.getAttribute('target').x, 14)
+                  assert.equal(this.getActualAttribute('target').x, 14)
                 </handler>
               </animator>
               <animator delay="500" attribute="y" to="12" duration="1000" motion="linear">
                 <handler event='onend'>
-                  assert.equal(this.getAttribute('target').x, 14)
-                  assert.equal(this.getAttribute('target').y, 12)
+                  assert.equal(this.getActualAttribute('target').x, 14)
+                  assert.equal(this.getActualAttribute('target').y, 12)
                 </handler>
               </animator>
               <handler event='onend'>
-                assert.equal(this.getAttribute('target').x, 14)
-                assert.equal(this.getAttribute('target').y, 12)
+                assert.equal(this.getActualAttribute('target').x, 14)
+                assert.equal(this.getActualAttribute('target').y, 12)
               </handler>
             </animgroup>
           </animgroup>

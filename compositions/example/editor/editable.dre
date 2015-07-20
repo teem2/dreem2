@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <mixin name="editable">
   <handler event="onmousedown" args="event">
-    selectionmanager.setAttribute('selected', this);
+    selectionmanager.select(this);
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
     reticle.doMouseOver(true);
   </handler>
@@ -33,7 +33,19 @@ SOFTWARE. -->
     }
     return ret;
   </method>
-  
+
+  <method name="pauseConstraints">
+    this.__constraintsPaused = true;
+  </method>
+
+  <method name="resumeConstraints">
+    this.__constraintsPaused = false;
+  </method>
+
+  <method name="getConstraintTemplate" args="attrName, expression">
+    return 'if (this.__constraintsPaused) return; ' + this.super();
+  </method>
+
   <method name="moveInFrontOf" args="sibling">
     // FIXME: update model
     return this.super();

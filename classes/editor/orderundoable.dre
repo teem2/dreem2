@@ -18,7 +18,7 @@
 
   <!--/**
     * @attribute {expression} [oldprevsibling]
-    * The view the taret view begins in front of.
+    * The view the target view begins in front of.
     */-->
   <attribute name="oldprevsibling" type="object" value="undefined"></attribute>
 
@@ -32,33 +32,27 @@
   <!--// METHODS ////////////////////////////////////////////////////////////-->
   <method name="undo" args="callback">
     if (this.done) {
-      var sibling = this.oldprevsibling,
-        target = this.target;
-      if (sibling) {
-        target.moveInFrontOf(sibling);
+      if (this.oldprevsibling) {
+        this.target.moveInFrontOf(this.oldprevsibling);
       } else {
-        target.moveToBack();
+        this.target.moveToBack();
       }
-      return this.super();
     } else {
       dr.global.error.notifyWarn('invalidUndo', "Invalid undo in orderundoable.");
-      return this;
     }
+    return this.super();
   </method>
 
   <method name="redo" args="callback">
-    if (!this.done) {
-      var sibling = this.newprevsibling,
-        target = this.target;
-      if (sibling) {
-        target.moveInFrontOf(sibling);
-      } else {
-        target.moveToBack();
-      }
-      return this.super();
-    } else {
+    if (this.done) {
       dr.global.error.notifyWarn('invalidRedo', "Invalid redo in orderundoable.");
-      return this;
+    } else {
+      if (this.newprevsibling) {
+        this.target.moveInFrontOf(this.newprevsibling);
+      } else {
+        this.target.moveToBack();
+      }
     }
+    return this.super();
   </method>
 </class>

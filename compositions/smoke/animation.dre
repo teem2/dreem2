@@ -370,20 +370,20 @@ SOFTWARE. -->
         <view name="reversalTest" width="20" height="20" bgcolor="pink" x="20" y="20">
           <animator attribute="x" relative="true" to="10" repeat="100" duration="100">
             <handler event="onstart">
-              assert.equal(this.getAttribute('target').x, 20);
+              assert.equal(this.getActualAttribute('target').x, 20);
             </handler>
             <handler event="onloop" args="count">
               this.count = count;
             </handler>
             <handler event="onend">
               assert.equal(this.count, 0);
-              assert.closeTo(this.getAttribute('target').x, 20, 0.0001);
-              this.getAttribute('target').testRan = true;
+              assert.closeTo(this.getActualAttribute('target').x, 20, 0.0001);
+              this.getActualAttribute('target').testRan = true;
             </handler>
             <handler event='oninit' type="coffee">
               setTimeout(() =>
                 assert.isTrue(this.count > 1, 'At least 2 loops should have occurred by now.')
-                assert.isTrue(this.getAttribute('target').x > 40, 'At least 2 loops should have occurred by now so x should be at least 40.')
+                assert.isTrue(this.getActualAttribute('target').x > 40, 'At least 2 loops should have occurred by now so x should be at least 40.')
                 this.setAttribute('reverse', true)
               ,250)
             </handler>

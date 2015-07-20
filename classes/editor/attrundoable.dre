@@ -41,6 +41,27 @@
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->
   <!--/**
+    * @method setAttribute
+    * @overrides
+    * Prevent resolution of constraints since the values we wish to store
+    * for oldvalue and newvalue will often be the string value of a
+    * constraint.
+    */-->
+  <method name="setAttribute" args="attrName, value">
+    if (attrName === 'oldvalue' || attrName === 'newvalue') {
+      var cfgAttrName = dr.AccessorSupport.generateConfigAttrName(attrName);
+      if (value !== 'undefined') value = '"' + value + '"';
+      if (this[cfgAttrName] !== value) {
+        this[cfgAttrName] = value;
+        this.setActualAttribute(attrName, value);
+      }
+      return this;
+    } else {
+      return this.super();
+    }
+  </method>
+
+  <!--/**
     * @method getUndoDescription
     * @overrides
     * Gets the undo description using the value of the undodescription
@@ -80,11 +101,10 @@
   <method name="undo" args="callback">
     if (this.done) {
       this.target.setAttribute(this.attribute, this.oldvalue);
-      return this.super();
     } else {
       dr.global.error.notifyWarn('invalidUndo', "Invalid undo in attrundoable.");
-      return this;
     }
+    return this.super();
   </method>
 
   <!--/**
@@ -95,18 +115,17 @@
     * first time redo is called successfully.
     */-->
   <method name="redo" args="callback">
-    if (!this.done) {
+    if (this.done) {
+      dr.global.error.notifyWarn('invalidRedo', "Invalid redo in attrundoable.");
+    } else {
       // Record oldvalue one time only just before applying the new value.
       if (!this.__storedOldValue && this.oldvalue === undefined) {
-        this.setAttribute('oldvalue', this.target[this.attribute]);
+        this.setAttribute('oldvalue', this.target.getAttribute(this.attribute));
         this.__storedOldValue = true;
       }
       
       this.target.setAttribute(this.attribute, this.newvalue);
-      return this.super();
-    } else {
-      dr.global.error.notifyWarn('invalidRedo', "Invalid redo in attrundoable.");
-      return this;
     }
+    return this.super();
   </method>
 </class>

@@ -24,6 +24,7 @@ SOFTWARE. -->
 <include href='./controlhandle.dre'/>
 <include href='./reticle.dre'/>
 <include href='./toolbarbutton.dre'/>
+<include href='./attributeeditor.dre'/>
 
 <view name="editor" width="100%" height="100%" defaultplacement="content" clip="true">
   <!--// SERVICE NODES //-->
@@ -40,13 +41,28 @@ SOFTWARE. -->
   
   <node id="selectionmanager">
     <attribute name="selected" type="expression" value="null"/>
+    
+    <method name="clear">
+      this.select(null);
+    </method>
+    
+    <method name="select" args="view">
+      this.setAttribute('selected', view);
+    </method>
   </node>
   
   <editor-undostack id="undo"></editor-undostack>
   
   <node id="actions">
     <method name="_undoRedoCallback" args="undoable">
-      if (undoable.target) selectionmanager.setAttribute('selected', undoable.target);
+      if (!undoable.isA(dr.editor.compoundundoable)) {
+        var target = undoable.target;
+        if (target && target.parent) {
+          selectionmanager.select(target);
+        } else {
+          selectionmanager.clear();
+        }
+      }
     </method>
     
     <method name="undo">
@@ -58,34 +74,34 @@ SOFTWARE. -->
     </method>
     
     <method name="bringToFront">
-      var target = reticle.target;
-      if (target) {
-        var newprevsibling = target.getLastSiblingView();
-        if (newprevsibling) this._updateOrder(target, target.getPrevSiblingView(), newprevsibling);
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var newprevsibling = selected.getLastSiblingView();
+        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
       }
     </method>
     
     <method name="bringForward">
-      var target = reticle.target;
-      if (target) {
-        var newprevsibling = target.getNextSiblingView();
-        if (newprevsibling) this._updateOrder(target, target.getPrevSiblingView(), newprevsibling);
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var newprevsibling = selected.getNextSiblingView();
+        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
       }
     </method>
     
     <method name="sendToBack">
-      var target = reticle.target;
-      if (target) {
-        var oldprevsibling = target.getPrevSiblingView();
-        if (oldprevsibling) this._updateOrder(target, oldprevsibling, null);
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var oldprevsibling = selected.getPrevSiblingView();
+        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
       }
     </method>
     
     <method name="sendBackward">
-      var target = reticle.target;
-      if (target) {
-        var oldprevsibling = target.getPrevSiblingView();
-        if (oldprevsibling) this._updateOrder(target, oldprevsibling, oldprevsibling.getPrevSiblingView());
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var oldprevsibling = selected.getPrevSiblingView();
+        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
       }
     </method>
     
@@ -99,19 +115,26 @@ SOFTWARE. -->
     </method>
     
     <method name="createView">
-      console.log('FIXME: create');
-    </method>
-    
-    <method name="clearSelection">
-      selectionmanager.setAttribute('selected', null);
+      var attrs = {
+        class:'view', with:'editable',
+        width:50, height:50, x:'center', y:'middle', 
+        bgcolor:'#999999'
+      };
+      var parent = selectionmanager.selected;
+      if (!parent) {
+        attrs.placement = 'editor';
+        parent = this.getRoot();
+      }
+      var instance = parent.createChild(attrs);
+      undo.do(new dr.editor.createundoable({target:instance}));
+      selectionmanager.select(instance);
     </method>
     
     <method name="deleteSelected">
       var selected = selectionmanager.selected;
       if (selected) {
-        console.log('FIXME: use a deleteundoable');
-        selected.setAttribute('parent', null);
-        this.clearSelection();
+        undo.do(new dr.editor.deleteundoable({target:selected}));
+        selectionmanager.clear();
       }
     </method>
   </node>
@@ -163,17 +186,28 @@ SOFTWARE. -->
   
   <!--// HANDLERS //-->
   <handler event="onkeydown" reference="dr.keyboard" args="platformEvent">
-    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
-      keyboard = dr.keyboard;
-    if (keyboard.isAcceleratorKeyDown()) {
+    var keyboard = dr.keyboard,
+      keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
+      isAcceleratorKeyDown = keyboard.isAcceleratorKeyDown(),
+      isShiftKeyDown = keyboard.isShiftKeyDown();
+    
+    // If current focus is an input text don't do anything. In particular,
+    // we want to allow the delete key to be processed normally.
+    var focusedView = dr.global.focus.focusedView;
+    if (focusedView && focusedView.sprite.isA(dr.sprite.InputText)) {
+      if (!isAcceleratorKeyDown) return;
+      if (keyCode !== 90) return; // Z: Process undo/redo below since we want to supress the browser undo/redo mechanism
+    }
+    
+    if (isAcceleratorKeyDown) {
       switch (keyCode) {
         case 66: // B: Reorder backward
           platformEvent.preventDefault(); // Prevent browser show bookmarks bar functionality
-          (keyboard.isShiftKeyDown() ? sendBackwardButton : sendToBackButton).doActivated();
+          (isShiftKeyDown ? sendBackwardButton : sendToBackButton).doActivated();
           break;
         case 70: // F: Reorder forward
           platformEvent.preventDefault(); // Prevent browser find functionality
-          (keyboard.isShiftKeyDown() ? bringForwardButton : bringToFrontButton).doActivated();
+          (isShiftKeyDown ? bringForwardButton : bringToFrontButton).doActivated();
           break;
         case 73: // I: Insert New View
           createButton.doActivated();
@@ -184,7 +218,7 @@ SOFTWARE. -->
           break;
         case 90: // Z: Undo/Redo
           platformEvent.preventDefault(); // Prevent browser undo/redo functionality
-          (keyboard.isShiftKeyDown() ? redoButton : undoButton).doActivated();
+          (isShiftKeyDown ? redoButton : undoButton).doActivated();
           break;
       }
     } else {
@@ -193,7 +227,7 @@ SOFTWARE. -->
           deleteButton.doActivated();
           break;
         case 27: // Esc: Clear selection
-          actions.clearSelection();
+          selectionmanager.clear();
           break;
       }
     }
@@ -224,7 +258,7 @@ SOFTWARE. -->
     y="${config.topbar_height}"
     width="${config.leftbar_width}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-  ></view>
+  />
   
   <view name="content" ignoreplacement="true"
     x="${config.leftbar_width}" y="${config.topbar_height}"
@@ -232,40 +266,8 @@ SOFTWARE. -->
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
     scrollable="true"
   >
-    <handler event="onmousedown" args="event">actions.clearSelection();</handler>
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
   </view>
-
-  <class name="texteditor" extends="inputtext">
-    <handler event="onfocus">
-      this.oldvalue = this.text;
-    </handler>
-    <handler event="ontext" args="text">
-      if (this.target) {
-        this.target.setAttribute(this.targetattr, text);
-      }
-    </handler>
-    <handler event="onblur">
-      if (this.oldvalue !== this.text) {
-        undo.do(new dr.editor.attrundoable({target:this.target, attribute:this.targetattr, oldvalue: this.oldvalue, newvalue: this.text}));
-      }
-    </handler>
-  </class>
-  
-  <class name="attributeeditor" height="auto">
-    <handler event="oninit" args="data">
-      // console.log('ondata', this.data)
-      var name = this.data.name;
-      this.label.setAttribute('text', name)
-      var schema = {class: 'texteditor', parent: this, text: selectionmanager.selected[name], x: 100, target: selectionmanager.selected, targetattr: name};
-      var child = this.createChild(schema)
-      // update when selected item's value changes
-      child.listenTo(selectionmanager.selected, 'on' + name, function(val) {
-        this.setAttribute('text', val);
-      });
-      // console.log('child', child)
-    </handler>
-    <text name="label"></text>
-  </class>
 
   <view name="rightbar" ignoreplacement="true" bgcolor="silver"
     x="right" y="${config.topbar_height}"
@@ -278,11 +280,12 @@ SOFTWARE. -->
       attrs = []
 
       compare = (a, b) ->
-        if (a.name < b.name)
+        if (b.name > a.name)
           return -1
-        if (a.name > b.name)
+        else if (a.name > b.name)
           return 1
-        0
+        else
+          0
 
       if selected
         ancestors = this.klass.ancestors()
@@ -305,7 +308,7 @@ SOFTWARE. -->
   
   <view name="bottombar" ignoreplacement="true" bgcolor="gray" y="bottom"
     width="100%" height="${config.bottombar_height}"
-  ></view>
+  />
   
   <reticle id="reticle" ignoreplacement="true"></reticle>
 </view>

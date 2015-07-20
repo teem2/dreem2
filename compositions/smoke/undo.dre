@@ -181,7 +181,7 @@ SOFTWARE. -->
         
         
         // Verify error handler catches dr.global.errors. Use a cyclic error.
-        var undoable5 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:"'${this.width + 10}'"}, [{
+        var undoable5 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:"${this.width + 10}"}, [{
           undo: function(callback) {
             undoCalled++;
             this.super();
@@ -199,7 +199,7 @@ SOFTWARE. -->
         
         
         // Verify that a constraint can be set via an undoable
-        var undoable6 = new dr.editor.attrundoable({target:foo, attribute:'y', newvalue:"'${this.width + 10}'"});
+        var undoable6 = new dr.editor.attrundoable({target:foo, attribute:'y', newvalue:"${this.width + 10}"});
         undo.do(undoable6);
         assert.equal(foo.y, 110);
         undo.do(new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:"10"}));

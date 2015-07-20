@@ -1,0 +1,86 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.createundoable {UI Components}
+  * @extends dr.editor.undoable
+  * An undoable that Inserts a new node into a parent node.
+  */-->
+<class name="editor-createundoable" extends="editor-undoable"
+  undodescription='Undo create.'
+  redodescription='Redo create.'
+>
+  <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method destroy
+    * @overrides
+    */-->
+  <method name="destroy" args="parent, attrs">
+    if (!this.isdone) this.target.destroy();
+    this.super();
+  </method>
+
+
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {dr.AccessorSupport} [target]
+    * The new node/view to add.
+    */-->
+  <attribute name="target" type="expression" value=""></attribute>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method undo
+    * @overrides
+    * Removes the target from its parent.
+    */-->
+  <method name="undo" args="callback">
+    if (this.done) {
+      var target = this.target;
+      if (target) {
+        this._notFirstTime = true;
+        this._targetWasVisible = target.visible;
+        this._prevSibling = target.getPrevSiblingView();
+        this._targetParent = target.parent;
+        target.setAttribute('visible', false);
+        target.setAttribute('parent', null);
+        target.pauseConstraints();
+        return this.super();
+      } else {
+        dr.global.error.notifyWarn('invalidUndo', "No target provided to createundoable.");
+      }
+    } else {
+      dr.global.error.notifyWarn('invalidUndo', "Invalid undo in createundoable.");
+    }
+    return this;
+  </method>
+
+  <!--/**
+    * @method redo
+    * @overrides
+    * Inserts the target into the target parent.
+    */-->
+  <method name="redo" args="callback">
+    if (this.done) {
+      dr.global.error.notifyWarn('invalidRedo', "Invalid redo in createundoable.");
+    } else {
+      var target = this.target;
+      if (target) {
+        if (this._notFirstTime) {
+          target.setAttribute('parent', this._targetParent);
+          if (this._targetWasVisible === true) target.setAttribute('visible', true);
+          if (this._prevSibling) {
+            target.moveInFrontOf(this._prevSibling);
+          } else {
+            target.moveToBack();
+          }
+          target.resumeConstraints();
+        }
+        return this.super();
+      } else {
+        dr.global.error.notifyWarn('invalidUndo', "No target provided to createundoable.");
+      }
+    }
+    return this;
+  </method>
+</class>

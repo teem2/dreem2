@@ -1,0 +1,83 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.deleteundoable {UI Components}
+  * @extends dr.editor.undoable
+  * An undoable that Inserts a new node into a parent node.
+  */-->
+<class name="editor-deleteundoable" extends="editor-undoable"
+  undodescription='Undo delete.'
+  redodescription='Redo delete.'
+>
+  <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method destroy
+    * @overrides
+    */-->
+  <method name="destroy" args="parent, attrs">
+    if (this.isdone) this.target.destroy();
+    this.super();
+  </method>
+
+
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {dr.AccessorSupport} [target]
+    * The node/view to remove.
+    */-->
+  <attribute name="target" type="expression" value=""></attribute>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method undo
+    * @overrides
+    * Reinserts the target.
+    */-->
+  <method name="undo" args="callback">
+    if (this.done) {
+      var target = this.target;
+      if (target) {
+        target.setAttribute('parent', this._targetParent);
+        if (this._targetWasVisible === true) target.setAttribute('visible', true);
+        if (this._prevSibling) {
+          target.moveInFrontOf(this._prevSibling);
+        } else {
+          target.moveToBack();
+        }
+        target.resumeConstraints();
+        return this.super();
+      } else {
+        dr.global.error.notifyWarn('invalidUndo', "No target provided to deleteundoable.");
+      }
+    } else {
+      dr.global.error.notifyWarn('invalidUndo', "Invalid undo in deleteundoable.");
+    }
+    return this;
+  </method>
+
+  <!--/**
+    * @method redo
+    * @overrides
+    * Removes the target from its parent.
+    */-->
+  <method name="redo" args="callback">
+    if (this.done) {
+      dr.global.error.notifyWarn('invalidRedo', "Invalid redo in deleteundoable.");
+    } else {
+      var target = this.target;
+      if (target) {
+        this._targetWasVisible = target.visible;
+        this._prevSibling = target.getPrevSiblingView();
+        this._targetParent = target.parent;
+        target.setAttribute('visible', false);
+        target.setAttribute('parent', null);
+        target.pauseConstraints();
+        return this.super();
+      } else {
+        dr.global.error.notifyWarn('invalidUndo', "No target provided to deleteundoable.");
+      }
+    }
+    return this;
+  </method>
+</class>
