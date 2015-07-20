@@ -19,10 +19,55 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="texteditor" extends="inputtext">
+<class name="texteditor" extends="inputtext" fontsize="14">
   <handler event="onfocus">
     this.oldvalue = this.text;
   </handler>
+  <setter name="text" args="v">
+    // Clean up some common constraint patterns
+    switch (this.targetattr) {
+      case 'x':
+        if (v === '${this.boundsxdiff}') {
+          v = 'left';
+        } else if (v === '${((this.parent.innerwidth - this.boundswidth) / 2) + this.boundsxdiff}') {
+          v = 'center';
+        } else if (v === '${this.parent.innerwidth - this.boundswidth + this.boundsxdiff}') {
+          v = 'right';
+        } else {
+          var percent = this._parseAsPercentConstraint(v, 'innerwidth');
+          if (percent !== undefined) v = percent + '%';
+        }
+        break;
+      case 'y':
+        if (v === '${this.boundsydiff}') {
+          v = 'top';
+        } else if (v === '${((this.parent.innerheight - this.boundsheight) / 2) + this.boundsydiff}') {
+          v = 'middle';
+        } else if (v === '${this.parent.innerheight - this.boundsheight + this.boundsydiff}') {
+          v = 'bottom';
+        } else {
+          var percent = this._parseAsPercentConstraint(v, 'innerheight');
+          if (percent !== undefined) v = percent + '%';
+        }
+        break;
+      case 'width':
+        var percent = this._parseAsPercentConstraint(v, 'innerwidth');
+        if (percent !== undefined) v = percent + '%';
+        break;
+      case 'height':
+        var percent = this._parseAsPercentConstraint(v, 'innerheight');
+        if (percent !== undefined) v = percent + '%';
+        break;
+    }
+    return this.super(v);
+  </setter>
+  <method name="_parseAsPercentConstraint" args="value, innerAttr">
+    var prefix = '${this.parent.' + innerAttr + ' * ';
+    if (typeof value === 'string' && value.startsWith(prefix) && value.endsWith('}')) {
+      value = Number(value.substring(prefix.length, value.length - 1));
+      if (!isNaN(value)) return value * 100;
+    }
+  </method>
   <handler event="ontext" args="text">
     if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, text);
   </handler>
@@ -35,27 +80,34 @@ SOFTWARE. -->
   </handler>
 </class>
 
-<class name="attributeeditor" height="auto">
-  <handler event="oninit" args="data">
-    // console.log('ondata', this.data)
-    var name = this.data.name;
-    this.label.setAttribute('text', name);
+<class name="attributeeditor" height="auto" width="100%">
+  <method name="initNode" args="parent, attrs">
+    this.super();
     
-    var schema = {
-      class:'texteditor', 
-      x:100, target:selectionmanager.selected, 
+    var name = this.data.name;
+    var child = this.createChild({
+      class:'texteditor',
+      x:64, 
+      target:selectionmanager.selected, 
       targetattr:name
-    };
-    var child = this.createChild(schema);
+    });
+    
+    // Text may look like a constraint so call setActualAttribute rather than
+    // setAttribute to work around constraint binding.
     child.setActualAttribute('text', selectionmanager.selected.getAttribute(name));
     
     // update when selected item's value changes
-    child.listenTo(selectionmanager.selected, 'on' + name, function(val) {
+    child.listenTo(selectionmanager.selected, 'on__cfg_' + name, function(val) {
       this._isSync = true;
       this.setActualAttribute('text', selectionmanager.selected.getAttribute(name));
       this._isSync = false;
     });
-  </handler>
-  
-  <text name="label"></text>
+    child.syncTo(this, 'onwidth', function(w) {
+      this.setAttribute('width', w - this.x - 4);
+    });
+    
+    this.label.setAttribute('text', name);
+  </method>
+
+  <text name="label" x="${60 - this.width}" fontsize="14"></text>
 </class>
