@@ -103,17 +103,17 @@ SOFTWARE. -->
           assert.equal(req1.always_data, "NOT FOUND", 'Server response for always method will be "NOT FOUND".');
           
           
-          // Success with json
+          // Success with json (Removing \r is needed for Windows)
           var successObj = '{\n    "foo":1,\n    "bar":2,\n    "baz":3,\n    "buz":"hey!"\n}';
           
           assert.equal(req2.success_status, 200);
-          assert.equal(req2.success_data, successObj);
+          assert.equal(req2.success_data.replace(/\r/g, ''), successObj);
           
           assert.isUndefined(req2.error_status, 'Request succeeded so the success error should not be called.');
           assert.isUndefined(req2.error_data, 'Request succeeded so the success error should not be called.');
           
           assert.equal(req2.always_status, 200);
-          assert.deepEqual(req2.always_data, successObj);
+          assert.deepEqual(req2.always_data.replace(/\r/g, ''), successObj);
           
           
           // Success with text
