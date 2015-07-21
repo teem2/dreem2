@@ -1,5 +1,33 @@
 
-console.log("*** Dreem Headless Runner ***");
+var argv = process.argv,
+    args = {};
+
+  for (var lastkey = '', arg, i = 0; i < argv.length; i++) {
+    arg = argv[i];
+    if (arg.charAt(0) == '-') {
+      lastkey = arg;
+      args[lastkey] = true;
+    } else {
+      args[lastkey] = arg;
+    }
+  }
+
+
+var server = "http://localhost:8080";
+   var composition = "example_spirallayout";
+   var screen = "default";
+
+  if (args["-server"]) server = args["-server"];
+  if (args["-composition"]) composition = args["-composition"];
+   if (args["-screen"]) screen = args["-screen"];
+
+
+   console.log("*** Dreem Headless Runner ***");
+   console.log("using server:", server);
+   console.log("using composition:", composition);
+   console.log("using screen:", screen);
+
+
 
 var require = require('./define.js');
  var NodeWebSocket = require('./core/nodewebsocket');
@@ -15,9 +43,6 @@ if (fs.existsSync("./dalicache") == false) {
 	fs.mkdir("./dalicache");
 }
 
-var server = "http://localhost:8080";
-var composition = "example_spirallayout";
-var screen = "default";
 
 define.MAIN = './build/compositions.example_spirallayout.dre.screens.default.js';
 
@@ -34,8 +59,8 @@ function startMain() {
 	define.MAIN =  "$BUILD/compositions." + composition + ".dre.screens." + screen + ".js";
 
 	var F = require(define.MAIN)();
-	console.dir(F);
-	console.dir(define.factory);
+//	console.dir(F);
+//	console.dir(define.factory);
 	define.startMain();
 }
 

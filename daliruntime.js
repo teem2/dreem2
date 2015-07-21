@@ -1,46 +1,71 @@
 var window= {
-        x:800,
-         y:500,
-       width:880,
-       height: 1020,
-       transparent: false,
-       name:'my-first-dali-app'
- };
+	x:800,
+	y:500,
+	width:880,
+	height: 1020,
+	transparent: false,
+	name:'Teem2 Dreem2 DaliRuntime2'
+};
+
 var viewMode={
        'stereoscopic-mode':'mono', // stereo-horizontal, stereo-vertical, stereo-interlaced,
        'stereo-base': 65 // Distance in millimeters between left/right cameras typically between (50-70mm)
- };
- var options= {
-    'window': window,
-    'view-mode': viewMode,
- }
+   };
 
-var dali = require('./dalinode/dali')( options );
+   var options= {
+   	'window': window,
+   	'view-mode': viewMode,
+   };
+
+   //var dali = require('./dalinode/dali')( options );
 
 
-console.log("*** Dreem Dali Runner ***");
+var argv = process.argv,
+    args = {};
 
-var require = require('./define.js');
-var NodeWebSocket = require('./core/nodewebsocket');
+  for (var lastkey = '', arg, i = 0; i < argv.length; i++) {
+    arg = argv[i];
+    if (arg.charAt(0) == '-') {
+      lastkey = arg;
+      args[lastkey] = true;
+    } else {
+      args[lastkey] = arg;
+    }
+  }
 
-define.SPRITE = "$ROOT/lib/dr/sprite_daliruntime";
-define.env = "v8";
-
-var http = require('http');
-var url = require('url');
-var fs = require('fs');
-
-if (fs.existsSync("./dalicache") == false) {
-	fs.mkdir("./dalicache");
-}
 
 var server = "http://localhost:8080";
-var composition = "example_spirallayout";
-var screen = "default";
+   var composition = "example_spirallayout";
+   var screen = "default";
 
-define.MAIN = './build/compositions.example_spirallayout.dre.screens.default.js';
+  if (args["-server"]) server = args["-server"];
+  if (args["-composition"]) composition = args["-composition"];
+   if (args["-screen"]) screen = args["-screen"];
 
-var loadedscripts = [];
+
+   console.log("*** Dreem Dali Runner ***");
+   console.log("using server:", server);
+   console.log("using composition:", composition);
+   console.log("using screen:", screen);
+   
+   var require = require('./define.js');
+   var NodeWebSocket = require('./core/nodewebsocket');
+
+   define.SPRITE = "$ROOT/lib/dr/sprite_daliruntime";
+   define.env = "v8";
+
+   var http = require('http');
+   var url = require('url');
+   var fs = require('fs');
+
+   if (fs.existsSync("./dalicache") == false) {
+   	fs.mkdir("./dalicache");
+   }
+
+   
+   define.MAIN = './build/compositions.example_spirallayout.dre.screens.default.js';
+
+   var loadedscripts = [];
 
 // the main dependency download queue counter
 var downloads = 0;
@@ -50,8 +75,10 @@ function startMain() {
 	console.log("starting!");
 	define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
 	define.BUILD = "$ROOT/dalicache";
-	var F = require(main_file)();
-	console.dir(F);
+	define.MAIN =  "$BUILD/compositions." + composition + ".dre.screens." + screen + ".js";
+
+	var F = require(define.MAIN)();
+	define.startMain();
 }
 
 function localExpand(path) {
@@ -60,7 +87,7 @@ function localExpand(path) {
 	define.BUILD = "$ROOT/dalicache";
 	define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
 	var ret = define.expandVariables(path)
-		define.ROOT = originalroot;
+	define.ROOT = originalroot;
 	define.BUILD = originalbuild;
 	return ret;
 }
@@ -71,7 +98,7 @@ function remoteExpand(path) {
 	define.BUILD = "$ROOT/build";
 	define.ROOT = server; // + "/" + composition + "/default";
 	var ret = define.expandVariables(path)
-		define.ROOT = originalroot;
+	define.ROOT = originalroot;
 	define.BUILD = originalbuild;
 	return ret;
 }
@@ -91,7 +118,7 @@ function requireWalker(script_url, from_file, save_path) {
 		port : scripturl.port,
 		path : scripturl.path
 	},
-		function (res) {
+	function (res) {
 		res.src = script_url;
 		res.data = "";
 		res.on('data', function (buf) {
@@ -121,7 +148,7 @@ function requireWalker(script_url, from_file, save_path) {
 
 		});
 	}
-		.bind(this));
+	.bind(this));
 
 	loadedscripts.push(script);
 }
@@ -145,30 +172,30 @@ var reconnect = function() {
       
       sock = new NodeWebSocket(sockethost);
       sock.onError = function(msg) {
-        setTimeout(function() {
-          reconnect();
-        }.bind(this), 500);
+      	setTimeout(function() {
+      		reconnect();
+      	}.bind(this), 500);
       }.bind(this);
       
       sock.onMessage = function(msg) {
-        try {
-          msg = JSON.parse(msg);
-        } catch(e){}
-        if (msg.type == "sessionCheck") {
-          console.log('attempting redownload!');
-          LoadAll();
-        }
+      	try {
+      		msg = JSON.parse(msg);
+      	} catch(e){}
+      	if (msg.type == "sessionCheck") {
+      		console.log('attempting redownload!');
+      		LoadAll();
+      	}
       }.bind(this);
       
       sock.onClose = function() {
-        setTimeout(function() {
-          reconnect();
-        }.bind(this), 500);
+      	setTimeout(function() {
+      		reconnect();
+      	}.bind(this), 500);
       }.bind(this);
-    };
-	
-reconnect();
-	
+  };
+
+  reconnect();
+
 //define.ROOT = originalroot;
 
 // open dre file
