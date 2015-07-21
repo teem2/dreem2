@@ -27,6 +27,16 @@ SOFTWARE. -->
 <include href='./attributeeditor.dre'/>
 
 <view name="editor" width="100%" height="100%" defaultplacement="content" clip="true">
+  <!-- Enforce a minimum width for the editor. -->
+  <setter name="width" args="width">
+    return this.super(Math.max(width, 800));
+  </setter>
+
+  <!-- Enforce a minimum height for the editor. -->
+  <setter name="height" args="height">
+    return this.super(Math.max(height, 500));
+  </setter>
+
   <!--// SERVICE NODES //-->
   <node id="config">
     <attribute name="topbar_height" type="number" value="32"/>
