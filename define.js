@@ -274,7 +274,7 @@
 		
 		
 		
-	define.startMain = function() {
+	function startMain() {
         // lets find our main and execute the factory
         var main_mod = define.expandVariables(define.MAIN);
         
