@@ -31,8 +31,12 @@ function startMain() {
 	console.log("starting!");
 	define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
 	define.BUILD = "$ROOT/dalicache";
-	var F = require(main_file)();
+	define.MAIN =  "$BUILD/compositions." + composition + ".dre.screens." + screen + ".js";
+
+	var F = require(define.MAIN)();
 	console.dir(F);
+	console.dir(define.factory);
+	define.startMain();
 }
 
 function localExpand(path) {

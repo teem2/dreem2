@@ -1,0 +1,8 @@
+<composition>
+<screens>
+<screen type="browser" name="default" title='Example - Even Layout'>
+<view with="button" width="100%" height="100%" clip="true"></view>
+<view with="button" width="100%" height="100%" clip="false"></view>
+</screen>
+</screens>
+</composition>
