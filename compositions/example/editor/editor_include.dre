@@ -44,6 +44,8 @@ SOFTWARE. -->
     <attribute name="rightbar_minwidth" type="number" value="250"/>
     <attribute name="bottombar_height" type="number" value="32"/>
     
+    <attribute name="dragbar_width" type="number" value="2"/>
+    
     <attribute name="primary_panel_color" type="color" value="#999999"/>
     <attribute name="secondary_panel_color" type="color" value="#eeeeee"/>
     
@@ -124,6 +126,11 @@ SOFTWARE. -->
     <method name="save">
       editormodel.save();
       undo.reset();
+    </method>
+    
+    <method name="pausePlay">
+      console.log('pause/play');
+      // FIXME: implement this
     </method>
     
     <method name="createView">
@@ -247,23 +254,47 @@ SOFTWARE. -->
   
   <!--// VIEWS //-->
   <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
-    width="100%" height="${config.topbar_height}" padding="2"
+    width="100%" height="${config.topbar_height}"
   >
-    <spacedlayout spacing="4" inset="2"></spacedlayout>
-    <constantlayout attribute="y" value="'middle'"></constantlayout>
-    
-    <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable}">Undo</toolbarbutton>
-    <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable}">Redo</toolbarbutton>
-    <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-    <toolbarbutton id="bringToFrontButton" action="bringToFront" disabled="${!selectionmanager.selected}">Bring To Front</toolbarbutton>
-    <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
-    <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
-    <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
-    <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-    <toolbarbutton id="deleteButton" action="deleteSelected" disabled="${!selectionmanager.selected}">Delete</toolbarbutton>
-    <toolbarbutton id="createButton" action="createView">Create</toolbarbutton>
-    <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-    <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable}">Save</toolbarbutton>
+    <view name="left" padding="2"
+      width="auto" height="${config.topbar_height}"
+    >
+      <spacedlayout spacing="4" inset="2"></spacedlayout>
+      <constantlayout attribute="y" value="'middle'"></constantlayout>
+      
+      <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable}">Undo</toolbarbutton>
+      <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable}">Redo</toolbarbutton>
+      
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      
+      <toolbarbutton id="bringToFrontButton" action="bringToFront" disabled="${!selectionmanager.selected}">Bring To Front</toolbarbutton>
+      <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
+      <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
+      <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
+      
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      
+      <toolbarbutton id="deleteButton" action="deleteSelected" disabled="${!selectionmanager.selected}">Delete</toolbarbutton>
+      <toolbarbutton id="createButton" action="createView">Create</toolbarbutton>
+    </view>
+    <view name="center" padding="2"
+      x="${this.parent.left.width}"
+      width="${this.parent.right.x - this.x}"
+      height="${config.topbar_height}"
+    />
+    <view name="right" padding="2"
+      x="right"
+      width="auto" height="${config.topbar_height}"
+    >
+      <spacedlayout spacing="4" inset="2"></spacedlayout>
+      <constantlayout attribute="y" value="'middle'"></constantlayout>
+      
+      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable}">Save</toolbarbutton>
+      
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      
+      <toolbarbutton id="pausePlayButton" action="pausePlay">Play</toolbarbutton>
+    </view>
   </view>
   
   <view name="leftbar" ignoreplacement="true" bgcolor="${config.secondary_panel_color}"
@@ -273,7 +304,7 @@ SOFTWARE. -->
   />
   
   <view name="dragbar_left" with="keyboarddraggable" ignoreplacement="true"
-    bgcolor="${config.primary_panel_color}" cursor="col-resize" width="2"
+    bgcolor="${config.primary_panel_color}" cursor="col-resize" width="${config.dragbar_width}"
     x="${config.leftbar_minwidth}"
     y="${config.topbar_height}"
     height="${this.parent.leftbar.height}"
@@ -294,7 +325,7 @@ SOFTWARE. -->
   </view>
 
   <view name="dragbar_right" with="keyboarddraggable" ignoreplacement="true"
-    bgcolor="${config.primary_panel_color}" cursor="col-resize" width="2"
+    bgcolor="${config.primary_panel_color}" cursor="col-resize" width="${config.dragbar_width}"
     x="${this.parent.innerwidth - this.width - config.rightbar_minwidth}"
     y="${config.topbar_height}"
     height="${this.parent.leftbar.height}"
