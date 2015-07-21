@@ -337,7 +337,7 @@ SOFTWARE. -->
         <!-- nowrap fixed and scrollable -->
         <text name="nowrap_fixed_scrollable" bgcolor="red" width="50" scrollable="true">foo bar baz
           <handler event="oninit">
-            assert.testCaseLabel = 'nowrap fixed';
+            assert.testCaseLabel = 'nowrap fixed and scrollable';
   
             assert.equal(this.multiline, false, 'multiline should be false');
             assert.equal(this.width, 50, 'width should be 50');
