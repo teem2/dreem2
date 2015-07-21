@@ -20,21 +20,36 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <mixin name="editable">
-  <handler event="onmousedown" args="event">
+  <handler event="onpaused" args="paused" reference="editor">
+    if (paused) {
+      this.listenTo(this, 'onmousedown', '_handleMouseDown');
+      
+      this._origClickable = this.getAttribute('clickable');
+      this.setActualAttribute('clickable', true);
+    } else {
+      this.stopListening(this, 'onmousedown', '_handleMouseDown');
+      
+      this.setAttribute('clickable', this._origClickable);
+    }
+  </handler>
+  
+  <method name="_handleMouseDown" args="event">
     selectionmanager.select(this);
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
     reticle.doMouseOver(true);
-  </handler>
+  </method>
 
   <method name="setAttribute" args="name, value">
-    var ret = this.super(name, value);
-    if (name === 'parent') {
-      // FIXME: update model for create/delete
-    } else {
-      var parent = this.parent;
-      if (parent && parent.inited) editormodel.update(this.id, name, this.getAttribute(name));
+    var retval = this.super(name, value);
+    if (editor.paused) {
+      if (name === 'parent') {
+        // FIXME: update model for create/delete
+      } else {
+        var parent = this.parent;
+        if (parent && parent.inited) editormodel.update(this.id, name, this.getAttribute(name));
+      }
     }
-    return ret;
+    return retval;
   </method>
 
   <method name="pauseConstraints">
@@ -50,12 +65,16 @@ SOFTWARE. -->
   </method>
 
   <method name="moveInFrontOf" args="sibling">
-    // FIXME: update model
+    if (editor.paused) {
+      // FIXME: update model
+    }
     return this.super();
   </method>
   
   <method name="moveToBack">
-    // FIXME: update model
+    if (editor.paused) {
+      // FIXME: update model
+    }
     return this.super();
   </method>
 </mixin>

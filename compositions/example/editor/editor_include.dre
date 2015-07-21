@@ -26,7 +26,9 @@ SOFTWARE. -->
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
 
-<view name="editor" width="100%" height="100%" defaultplacement="content" clip="true">
+<view name="editor" id="editor" width="100%" height="100%" defaultplacement="content" clip="true">
+  <attribute name="paused" type="boolean" value="true"/>
+
   <!-- Enforce a minimum width for the editor. -->
   <setter name="width" args="width">
     return this.super(Math.max(width, 800));
@@ -56,8 +58,13 @@ SOFTWARE. -->
   <node id="selectionmanager">
     <attribute name="selected" type="expression" value="null"/>
     
-    <method name="clear">
+    <method name="clear" args="restoreable">
+      if (restoreable) this._oldSelection = this.selected;
       this.select(null);
+    </method>
+    
+    <method name="restore">
+      if (this._oldSelection && this._oldSelection.parent) this.select(this._oldSelection);
     </method>
     
     <method name="select" args="view">
@@ -129,8 +136,16 @@ SOFTWARE. -->
     </method>
     
     <method name="pausePlay">
-      console.log('pause/play');
-      // FIXME: implement this
+      editor.setAttribute('paused', !editor.paused);
+      if (editor.paused) {
+        selectionmanager.restore();
+        pausePlayButton.setAttribute('text', 'Play');
+      } else {
+        selectionmanager.clear(true);
+        pausePlayButton.setAttribute('text', 'Pause');
+        // FIXME: Need to revert UI state to model state.
+      }
+      
     </method>
     
     <method name="createView">
@@ -262,8 +277,8 @@ SOFTWARE. -->
       <spacedlayout spacing="4" inset="2"></spacedlayout>
       <constantlayout attribute="y" value="'middle'"></constantlayout>
       
-      <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable}">Undo</toolbarbutton>
-      <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable}">Redo</toolbarbutton>
+      <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable || !editor.paused}">Undo</toolbarbutton>
+      <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable|| !editor.paused}">Redo</toolbarbutton>
       
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       
@@ -275,7 +290,7 @@ SOFTWARE. -->
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       
       <toolbarbutton id="deleteButton" action="deleteSelected" disabled="${!selectionmanager.selected}">Delete</toolbarbutton>
-      <toolbarbutton id="createButton" action="createView">Create</toolbarbutton>
+      <toolbarbutton id="createButton" action="createView" disabled="${!editor.paused}">Create</toolbarbutton>
     </view>
     <view name="center" padding="2"
       x="${this.parent.left.width}"
@@ -289,11 +304,11 @@ SOFTWARE. -->
       <spacedlayout spacing="4" inset="2"></spacedlayout>
       <constantlayout attribute="y" value="'middle'"></constantlayout>
       
-      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable}">Save</toolbarbutton>
+      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
       
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       
-      <toolbarbutton id="pausePlayButton" action="pausePlay">Play</toolbarbutton>
+      <toolbarbutton id="pausePlayButton" action="pausePlay" width="54" textalign="center">Play</toolbarbutton>
     </view>
   </view>
   
