@@ -99,7 +99,6 @@ var runTest = function(file, callback) {
   
   page.onResourceError = function(resourceError) {
     console.log('RESOURCE ERROR: ' + resourceError.errorString + ', URL: ' + resourceError.url + ', File: ' + file);
-    updateTimer(0);
   };
   
   page.onConsoleMessage = function(msg, lineNum, sourceId) {

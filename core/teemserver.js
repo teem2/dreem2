@@ -200,6 +200,7 @@ define(function(require, exports, module) {
               res.end();
             } else {
               res.writeHead(404);
+              res.write('NOT FOUND');
               res.end();
               console.color('~br~Error~y~ ' + filePath + '~~ In teemserver.js request handling. File not found, returning 404\n');
             }
