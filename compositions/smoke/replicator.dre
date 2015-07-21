@@ -27,7 +27,8 @@ SOFTWARE. -->
     <testingtimer>500</testingtimer>
     
     <view width="100%" height="100%" clip="true">
-      <expectedoutput>missing classname for replicator [object Object]</expectedoutput>
+      <expectedoutput>missing classname for replicator [object Object]
+timeout ran</expectedoutput>
       <replicator>
         <handler event="oninit">
           assert.equal(this.parent.subviews.length, 1, 'Replication should not have increased the number of subviews');
@@ -119,10 +120,13 @@ SOFTWARE. -->
           }
         </handler>
         <handler event="oninit">
-          var _this = this;
-          dr.idle.callOnIdle(function() {
-            assert.equal(1, _this.onreplicated, 'There should be an onreplicated event')
-          });
+          var self = this;
+          
+          setTimeout(function(){
+            console.log('timeout ran');
+            assert.equal(2, self.onreplicated, 'There should be a second onreplicated event');
+          }.bind(this), 250)
+          
           this.parent.dynamic.setAttribute('url', '/data/example.json')
         </handler>
       </replicator>
