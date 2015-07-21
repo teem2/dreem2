@@ -42,7 +42,7 @@ SOFTWARE. -->
   </method>
 
   <method name="drawFocusedState">
-    this.fill.setAttribute('boxshadow', this.mouseover ? config.boxshadow_normal : config.boxshadow_large);
+    this.fill.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
   </method>
   <method name="drawHoverState">
     this.fill.setAttribute('boxshadow', config.boxshadow_normal);

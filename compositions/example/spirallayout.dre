@@ -36,8 +36,8 @@ SOFTWARE. -->
         this.setAttribute('count', this.count + 1);
       </handler>
       
-      <handler event="onmouseover" args="mouseover">
-        if (mouseover) {
+      <handler event="onismouseover" args="ismouseover">
+        if (ismouseover) {
           anim1.resume();
           anim2.resume();
         } else {

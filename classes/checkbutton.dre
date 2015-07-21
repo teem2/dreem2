@@ -67,7 +67,7 @@ SOFTWARE. -->
     @setAttribute('selected', !@selected);
   </handler>
 
-  <handler event="onmousedown">
+  <handler event="onismousedown">
     if @selected
       @check.setAttribute('fill', @textcolor)
       @check.setAttribute('bgcolor', @defaultcolor)
