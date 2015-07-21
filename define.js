@@ -50,7 +50,7 @@
   };
 
   define.cleanPath = function(path) {
-    return path.replace(/^\/+/,'/').replace(/([^:])\/+/g,'$1/');
+	return path.replace(/^\/+/,'/').replace(/([^:])\/+/g,'$1/');
   };
 
   define.joinPath = function(base, relative) {
@@ -274,11 +274,21 @@
 		
 		
 		
-	function startMain() {
+	define.startMain = function() {
         // lets find our main and execute the factory
-        var main_mod = define.expandVariables(define.MAIN);
+        var main_mod = define.expandVariables(define.MAIN).replace(/\\/g,'/');
         
         var factory = define.factory[main_mod];
+		
+			
+		if (!factory) 
+		{
+			var repmainmod = main_mod.replace(/\\/g,'/');
+			console.log("attempting slashswap" , repmainmod);
+			factory = define.factory[repmainmod];
+		}
+        
+		
         if (!factory) throw new Error("Cannot find main: " + main_mod, define.MAIN);
         
         // lets boot up
@@ -316,8 +326,8 @@
         var module = modules[modules.length - 1] || require.main;
         
         // store module and factory just like in the other envs
-        define.module[module.filename] = module;
-        define.factory[module.filename] = factory;
+        define.module[module.filename.replace(/\\/g,'/')] = module;
+        define.factory[module.filename.replace(/\\/g,'/')] = factory;
         
         function localRequire(name) {
           if (arguments.length != 1) throw new Error("Unsupported require style");
