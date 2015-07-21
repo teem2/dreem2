@@ -119,22 +119,28 @@ SOFTWARE. -->
     this.super();
   </method>
   <method name="_stop">
-    // stopped dragging, store new values
-    var compound = new dr.editor.compoundundoable(),
-      target = this.target;
-    this._undoablew.newvalue = target.getAttribute('width');
-    this._undoableh.newvalue = target.getAttribute('height');
-    this._undoablex.newvalue = target.getAttribute('x');
-    this._undoabley.newvalue = target.getAttribute('y');
-    compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
-    undo.do(compound);
+    // Target can be null if you undo/redo a create/delete while dragging
+    // the node that is created/deleted so make sure it exists first.
+    var target = this.target;
+    if (target) {
+      // stopped dragging, store new values
+      var compound = new dr.editor.compoundundoable();
+      this._undoablew.newvalue = target.getAttribute('width');
+      this._undoableh.newvalue = target.getAttribute('height');
+      this._undoablex.newvalue = target.getAttribute('x');
+      this._undoabley.newvalue = target.getAttribute('y');
+      compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
+      undo.do(compound);
+    }
   </method>
   <method name="_abort">
     var target = this.target;
-    target.setAttribute('x', this._undoablex.oldvalue);
-    target.setAttribute('y', this._undoabley.oldvalue);
-    target.setAttribute('width', this._undoablew.oldvalue);
-    target.setAttribute('height', this._undoableh.oldvalue);
+    if (target) {
+      target.setAttribute('x', this._undoablex.oldvalue);
+      target.setAttribute('y', this._undoabley.oldvalue);
+      target.setAttribute('width', this._undoablew.oldvalue);
+      target.setAttribute('height', this._undoableh.oldvalue);
+    }
   </method>
   <method name="stopDrag" args="event, isAbort">
     if (isAbort) {
