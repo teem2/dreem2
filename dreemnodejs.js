@@ -1,3 +1,7 @@
+var require = require('./define.js');
+var NodeWebSocket = require('./core/nodewebsocket');
+
+
 // Create a colorization function (ANSI output) use ~rb~ to set color in string
 // and ~~ to end colorization.
 console.color = (function colorize() {
@@ -71,8 +75,6 @@ console.log("** using composition:", composition);
 console.log("** using screen:", screen);
 
 
-var require = require('./define.js');
-var NodeWebSocket = require('./core/nodewebsocket');
 
 define.env = "v8";
 
@@ -213,5 +215,34 @@ var reconnect = function() {
     }.bind(this), 500);
   }.bind(this);
 };
+
+// dali setup code
+
+var dalicontainer;
+var dalihost;
+if (args["-dali"]){
+   var window= {
+        x:800,
+         y:500,
+       width:880,
+       height: 1020,
+       transparent: false,
+       name:'my-first-dali-app'
+ };
+var viewMode={
+       'stereoscopic-mode':'mono', // stereo-horizontal, stereo-vertical, stereo-interlaced,
+       'stereo-base': 65 // Distance in millimeters between left/right cameras typically between (50-70mm)
+ };
+ var options= {
+    'window': window,
+    'view-mode': viewMode,
+ }
+
+ dalinode = require('./dalinode/dali')( options );
+ dalihost = require('./lib/dr/sprite_daliruntime/dalihost.js');
+ dalihost.init(dalinode);
+}
+
+// attempt to connect to the notifier service, download initial version and download again if changes have been made.
 reconnect();
 
