@@ -22,21 +22,34 @@ SOFTWARE. -->
 <mixin name="editable">
   <handler event="onpaused" args="paused" reference="editor">
     if (paused) {
-      this.listenTo(this, 'onmousedown', '_handleMouseDown');
-      
+      this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
       this._origClickable = this.getAttribute('clickable');
-      this.setActualAttribute('clickable', true);
+      this.setAttribute('clickable', true);
     } else {
-      this.stopListening(this, 'onmousedown', '_handleMouseDown');
-      
+      this.stopListening(this, 'onmousedown', '__editable_handleMouseDown');
       this.setAttribute('clickable', this._origClickable);
     }
   </handler>
   
-  <method name="_handleMouseDown" args="event">
+  <method name="__editable_handleMouseDown" args="event">
     selectionmanager.select(this);
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
     reticle.doMouseOver(true);
+  </method>
+
+  <method name="invokePlatformObserverCallback" args="methodName, eventType, returnEvent">
+    if (editor.paused) {
+      if (eventType === 'onmousedown' && methodName === '__editable_handleMouseDown') {
+        // Only process platform events that editable has registered
+        return this.super();
+      } else {
+        // Abort all other platform events
+        return true;
+      }
+    } else {
+      // Process platform event normally when playing.
+      return this.super();
+    }
   </method>
 
   <method name="setAttribute" args="name, value">

@@ -95,7 +95,7 @@ SOFTWARE. -->
       <view width="100%" height="auto" bgcolor="lightgray" padding="4">
         <spacedlayout spacing="10"></spacedlayout>
         
-        <view id="mouser" with="button" height="100" width="100" bgcolor="yellow" clickable="true">
+        <view id="mouser" with="button" height="90" width="90" bgcolor="yellow" clickable="true">
           <handler event="onclick">
             if (dr.getGlobalScope().follower) {
               follower.stopActiveAnimators('opacity');
@@ -109,7 +109,7 @@ SOFTWARE. -->
       </view>
       
       <view width="auto" height="auto" padding="4">
-        <spacedlayout axis="y" spacing="2"></spacedlayout>
+        <spacedlayout axis="y" spacing="1"></spacedlayout>
         
         <text>View (with Button mixin) Events</text>
         
@@ -119,12 +119,20 @@ SOFTWARE. -->
           
           <mousetest eventname="wheel"></mousetest>
           <mousetest eventname="mousemove"></mousetest>
-          <mousetest eventname="mouseover" eventvalue="true"></mousetest>
-          <mousetest eventname="mouseover" eventvalue="false"></mousetest><!-- Button handled out -->
-          <mousetest eventname="mousedown" eventvalue="true"></mousetest>
-          <mousetest eventname="mousedown" eventvalue="false"></mousetest><!-- Button handled up -->
-          <mousetest eventname="mouseupoutside" eventvalue="true"></mousetest>
+          <mousetest eventname="mousedown"></mousetest>
+          <mousetest eventname="mouseup"></mousetest>
+          <mousetest eventname="mouseover"></mousetest>
+          <mousetest eventname="mouseout"></mousetest>
           <mousetest eventname="click"></mousetest>
+        </view>
+        <view width="auto" height="auto">
+          <spacedlayout spacing="1"></spacedlayout>
+          
+          <mousetest eventname="ismouseover" eventvalue="true"></mousetest>
+          <mousetest eventname="ismouseover" eventvalue="false"></mousetest>
+          <mousetest eventname="ismousedown" eventvalue="true"></mousetest>
+          <mousetest eventname="ismousedown" eventvalue="false"></mousetest>
+          <mousetest eventname="mouseupoutside" eventvalue="true"></mousetest>
         </view>
         
         <text fontsize="12">Keyboard</text>
@@ -153,7 +161,7 @@ SOFTWARE. -->
       </view>
       
       <view width="auto" height="auto" padding="4">
-        <spacedlayout axis="y" spacing="2"></spacedlayout>
+        <spacedlayout axis="y" spacing="1"></spacedlayout>
         
         <text>Input Text Events</text>
         
@@ -186,7 +194,7 @@ SOFTWARE. -->
       </view>
       
       <view width="auto" height="auto" padding="4">
-        <spacedlayout axis="y" spacing="2"></spacedlayout>
+        <spacedlayout axis="y" spacing="1"></spacedlayout>
         
         <text>Global Events</text>
         
