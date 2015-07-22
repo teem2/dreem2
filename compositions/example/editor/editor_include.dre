@@ -314,6 +314,8 @@ SOFTWARE. -->
       yLoc.setAttribute('y', y - 1);
       yLoc.label.setAttribute('text', y - this.content.y + this.content.inner.scrolly);
     }
+    
+    return true;
   </method>
 
 
