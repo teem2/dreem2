@@ -26,12 +26,12 @@ SOFTWARE. -->
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
 
-<view name="editor" id="editor" width="100%" height="100%" defaultplacement="content" clip="true" bgcolor="white">
+<view name="editor" id="editor" width="100%" height="100%" defaultplacement="content.inner" clip="true" bgcolor="white">
   <attribute name="paused" type="boolean" value="true"/>
 
   <!-- Enforce a minimum width for the editor. -->
   <setter name="width" args="width">
-    return this.super(Math.max(width, 800));
+    return this.super(Math.max(width, 1000));
   </setter>
 
   <!-- Enforce a minimum height for the editor. -->
@@ -42,8 +42,12 @@ SOFTWARE. -->
   <!--// SERVICE NODES //-->
   <node id="config">
     <attribute name="topbar_height" type="number" value="32"/>
+    
     <attribute name="leftbar_minwidth" type="number" value="50"/>
+    <attribute name="leftbar_maxwidth" type="number" value="300"/>
+    
     <attribute name="rightbar_minwidth" type="number" value="250"/>
+    <attribute name="rightbar_minx" type="number" value="700"/>
     <attribute name="bottombar_height" type="number" value="32"/>
     
     <attribute name="dragbar_width" type="number" value="2"/>
@@ -327,9 +331,14 @@ SOFTWARE. -->
     height="${this.parent.leftbar.height}"
   >
     <method name="updatePosition" args="x, y">
-      if (!this.disabled) this.setAttribute('x', Math.max(config.leftbar_minwidth, Math.min(300, x)));
+      if (!this.disabled) this.setAttribute('x', Math.max(config.leftbar_minwidth, Math.min(config.leftbar_maxwidth, x)));
     </method>
   </view>
+  
+  <class name="horizontal_rulertext" extends="text" fontsize="10" color="#cccccc" width="0" height="0" y="2"/>
+  <class name="vertical_rulertext" extends="text" fontsize="10" color="#cccccc" width="0" height="0" x="2"
+    xanchor="0" yanchor="0" rotation="-90"
+  />
 
   <view name="ruler_horizontal_lead" ignoreplacement="true" bgcolor="#cccccc"
     x="${this.parent.dragbar_left.x + this.parent.dragbar_left.width + config.ruler_thickness - 1}"
@@ -341,9 +350,12 @@ SOFTWARE. -->
     y="${config.topbar_height}"
     width="${this.parent.dragbar_right.x - this.x}"
     height="${config.ruler_thickness}"
-    scrollx="${this.parent.content.scrollx + 100 - config.content_inset}"
+    scrollx="${this.parent.content.inner.scrollx + 100 - config.content_inset}"
   >
-    <bitmap width="6000"
+    <spacedlayout axis="x" spacing="100" inset="102"/>
+    <replicator name="repl" classname="horizontal_rulertext" data="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
+    
+    <bitmap width="6000" ignorelayout="true"
       height="${config.ruler_thickness}"
       src="/classes/editor/img/ruler_horizontal.png" stretches="contain" repeat="repeat-x"
     >
@@ -361,9 +373,12 @@ SOFTWARE. -->
     y="${this.parent.ruler_vertical_lead.y + 1}"
     width="${config.ruler_thickness}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-    scrolly="${this.parent.content.scrolly + 100 - config.content_inset}"
+    scrolly="${this.parent.content.inner.scrolly + 100 - config.content_inset}"
   >
-    <bitmap height="6000"
+    <spacedlayout axis="y" spacing="100" inset="98"/>
+    <replicator name="repl" classname="vertical_rulertext" data="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
+    
+    <bitmap height="6000" ignorelayout="true"
       width="${config.ruler_thickness}"
       src="/classes/editor/img/ruler_vertical.png" stretches="contain" repeat="repeat-y"
     >
@@ -376,7 +391,9 @@ SOFTWARE. -->
     y="${this.parent.ruler_vertical.y}"
     width="${this.parent.dragbar_right.x - this.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-  />
+  >
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+  </view>
 
   <view name="content" ignoreplacement="true"
     bgcolor="${editor.parent.bgcolor}"
@@ -384,10 +401,14 @@ SOFTWARE. -->
     y="${this.parent.ruler_vertical.y + config.content_inset}"
     width="${this.parent.dragbar_right.x - this.x - config.content_inset}"
     height="${this.parent.innerheight - this.y - config.bottombar_height - config.content_inset}"
-    scrollable="true"
     boxshadow="[0,0,16,4,'#aaaaaa']"
   >
-    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    <view name="inner"
+      width="100%" height="100%"
+      scrollable="true"
+    >
+      <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    </view>
   </view>
 
   <view name="dragbar_right" with="keyboarddraggable" ignoreplacement="true"
@@ -400,7 +421,7 @@ SOFTWARE. -->
       this.updatePosition(this.x, this.y);
     </handler>
     <method name="updatePosition" args="x, y">
-      if (!this.disabled) this.setAttribute('x', Math.max(500, Math.min(this.parent.innerwidth - this.width - config.rightbar_minwidth, x)));
+      if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - this.width - config.rightbar_minwidth, x)));
     </method>
   </view>
 
