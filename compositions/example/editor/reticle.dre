@@ -34,35 +34,44 @@ SOFTWARE. -->
   </handler>
 
   <method name="_syncPosition">
-    var target = this.target,
-      pos = target.getAbsolutePosition();
+    var content = editor.content,
+      target = this.target,
+      pos = target.getAbsolutePosition(),
+      w = target.width,
+      h = target.height;
     this._isSync = true;
-    this.setAttributes({width:target.width, height:target.height, x:pos.x, y:pos.y});
+    this.setAttributes({width:w, height:h, x:pos.x, y:pos.y});
     this._isSync = false;
     
     // Update selection bars
-    var startX = pos.x - editor.content.x,
-      endX = startX + target.width,
-      xDifferent = startX !== endX;
-    horizontal_selection.locstart.setAttribute('text', startX);
+    var startX = pos.x - content.x,
+      endX = startX + w,
+      xDifferent = startX !== endX,
+      hSel = horizontal_selection,
+      hLocsize = hSel.locsize,
+      hLocend = hSel.locend;
+    hSel.locstart.setAttribute('text', startX);
     
-    horizontal_selection.locsize.setAttribute('visible', xDifferent);
-    horizontal_selection.locend.setAttribute('visible', xDifferent);
+    hLocsize.setAttribute('visible', xDifferent);
+    hLocend.setAttribute('visible', xDifferent);
     if (xDifferent) {
-      horizontal_selection.locsize.setAttribute('text', target.width);
-      horizontal_selection.locend.setAttribute('text', endX);
+      hLocsize.setAttribute('text', w);
+      hLocend.setAttribute('text', endX);
     }
     
-    var startY = pos.y - editor.content.y,
-      endY = startY + target.height,
-      yDifferent = startY !== endY;
-    vertical_selection.locstart.setAttribute('text', startY);
+    var startY = pos.y - content.y,
+      endY = startY + h,
+      yDifferent = startY !== endY,
+      vSel = vertical_selection,
+      vLocsize = vSel.locsize,
+      vLocend = vSel.locend;
+    vSel.locstart.setAttribute('text', startY);
     
-    vertical_selection.locsize.setAttribute('visible', yDifferent);
-    vertical_selection.locend.setAttribute('visible', yDifferent);
+    vLocsize.setAttribute('visible', yDifferent);
+    vLocend.setAttribute('visible', yDifferent);
     if (yDifferent) {
-      vertical_selection.locsize.setAttribute('text', target.height);
-      vertical_selection.locend.setAttribute('text', endY);
+      vLocsize.setAttribute('text', h);
+      vLocend.setAttribute('text', endY);
     }
   </method>
 
