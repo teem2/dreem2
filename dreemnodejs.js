@@ -220,6 +220,7 @@ var reconnect = function() {
 
 var dalicontainer;
 var dalihost;
+var wallRootActor;
 if (args["-dali"]){
    var window= {
         x:800,
@@ -227,7 +228,7 @@ if (args["-dali"]){
        width:880,
        height: 1020,
        transparent: false,
-       name:'my-first-dali-app'
+       name:'Dreem Dali Runtime: ' + composition
  };
 var viewMode={
        'stereoscopic-mode':'mono', // stereo-horizontal, stereo-vertical, stereo-interlaced,
@@ -238,9 +239,25 @@ var viewMode={
     'view-mode': viewMode,
  }
 
+ console.log("** loading Dali")
  dalinode = require('./dalinode/dali')( options );
+ console.color("~~** Dali loaded")
  dalihost = require('./lib/dr/sprite_daliruntime/dalihost.js');
  dalihost.init(dalinode);
+
+  wallRootActor = new dalinode.Actor();
+    wallRootActor.parentOrigin = dali.CENTER;
+    wallRootActor.anchorPoint = dali.CENTER;
+    wallRootActor.size = [120,120,1.0];
+    dalinode.stage.add(wallRootActor);
+
+  var field = new dalinode.Control("TextField");
+    field.parentOrigin = dalinode.CENTER;
+    field.anchorPoint = dalinode.CENTER;
+
+    field.placeholderText = "DALi netflix netflix-roulette demo";
+    dalinode.stage.add( field );
+
 }
 
 // attempt to connect to the notifier service, download initial version and download again if changes have been made.
