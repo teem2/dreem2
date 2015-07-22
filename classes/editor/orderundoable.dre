@@ -1,0 +1,58 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.orderundoable {UI Components}
+  * @extends dr.editor.undoable
+  * An undoable that updates the lexical order of a view.
+  */-->
+<class name="editor-orderundoable" extends="editor-undoable"
+  undodescription='Undo change order of view.'
+  redodescription='Redo change order of view.'
+>
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {dr.AccessorSupport} [target]
+    * The target object that will be moved.
+    */-->
+  <attribute name="target" type="expression" value=""></attribute>
+
+  <!--/**
+    * @attribute {expression} [oldprevsibling]
+    * The view the target view begins in front of.
+    */-->
+  <attribute name="oldprevsibling" type="object" value="undefined"></attribute>
+
+  <!--/**
+    * @attribute {expression} [newprevsibling]
+    * The view the target view ends up in front of.
+    */-->
+  <attribute name="newprevsibling" type="object" value="undefined"></attribute>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <method name="undo" args="callback">
+    if (this.done) {
+      if (this.oldprevsibling) {
+        this.target.moveInFrontOf(this.oldprevsibling);
+      } else {
+        this.target.moveToBack();
+      }
+    } else {
+      dr.global.error.notifyWarn('invalidUndo', "Invalid undo in orderundoable.");
+    }
+    return this.super();
+  </method>
+
+  <method name="redo" args="callback">
+    if (this.done) {
+      dr.global.error.notifyWarn('invalidRedo', "Invalid redo in orderundoable.");
+    } else {
+      if (this.newprevsibling) {
+        this.target.moveInFrontOf(this.newprevsibling);
+      } else {
+        this.target.moveToBack();
+      }
+    }
+    return this.super();
+  </method>
+</class>

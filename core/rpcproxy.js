@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class RunMonitor
+ * @class RunMonitor {Internal}
  * RunMonitor class executes ourselves as a subprocess, receives the dependency file names
  * from the child process and manages restart/killing when files change
  */
@@ -47,6 +47,7 @@ define(function(require, exports, module) {
 
   RpcProxy.handleCall = function(object, msg, socket) {
     var ret = object[msg.method].apply(object, msg.args);
+
     if (ret && ret.then) { // make the promise resolve to a socket send
       ret.then(function(result) {
         socket.send({type:'return', uid:msg.uid, value:result});

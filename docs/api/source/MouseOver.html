@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides a &#39;mouseover&#39; attribute that tracks mouse over/out state. Also
+</span>    provides a mechanism to smoothe over/out events so only one call to
+    &#39;doSmoothMouseOver&#39; occurs per onidle event.
+    
+    Attributes:
+        mouseover:boolean Indicates if the mouse is over this view or not.
+    
+    Private Attributes:
+        __attachedToOverIdle:boolean Used by the code that smoothes out
+            mouseover events. Indicates that we are registered with the
+            onidle event.
+        __lastOverIdleValue:boolean Used by the code that smoothes out
+            mouseover events. Stores the last mouseover value.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    require(&#39;./Disableable.js&#39;);
+    require(&#39;$LIB/dr/globals/GlobalIdle.js&#39;);
+    
+    module.exports = dr.MouseOver = new JS.Module(&#39;MouseOver&#39;, {
+        // Life Cycle //////////////////////////////////////////////////////////////
+<span id='global-method-initNode'>        /** @overrides */
+</span>        initNode: function(parent, attrs) {
+            if (attrs.mouseover === undefined) attrs.mouseover = false;
+            if (attrs.clickable === undefined) attrs.clickable = true;
+            
+            this.callSuper(parent, attrs);
+            
+            this.listenToPlatform(this, &#39;onmouseover&#39;, &#39;doMouseOver&#39;);
+            this.listenToPlatform(this, &#39;onmouseout&#39;, &#39;doMouseOut&#39;);
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+        set_mouseover: function(v) {
+            if (this.setActual(&#39;mouseover&#39;, v, &#39;boolean&#39;, false)) {
+                // Smooth over/out events by delaying until the next onidle event.
+                if (this.initing === false &amp;&amp; !this.__attachedToOverIdle) {
+                    this.__attachedToOverIdle = true;
+                    this.listenTo(dr.global.idle, &#39;onidle&#39;, &#39;__doMouseOverOnIdle&#39;);
+                }
+            }
+        },
+        
+<span id='global-method-set_disabled'>        /** @overrides dr.Disableable */
+</span>        set_disabled: function(v) {
+            if (this.callSuper) this.callSuper(v);
+            
+            // When about to disable make sure mouseover is not true. This 
+            // helps prevent unwanted behavior of a disabled view.
+            if (this.disabled &amp;&amp; this.mouseover) this.set_mouseover(false);
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-__doMouseOverOnIdle'>        /** @private */
+</span>        __doMouseOverOnIdle: function() {
+            this.stopListening(dr.global.idle, &#39;onidle&#39;, &#39;__doMouseOverOnIdle&#39;);
+            this.__attachedToOverIdle = false;
+            
+            // Only call doSmoothOver if the over/out state has changed since the
+            // last time it was called.
+            var isOver = this.mouseover;
+            if (this.__lastOverIdleValue !== isOver) {
+                this.__lastOverIdleValue = isOver;
+                this.doSmoothMouseOver(isOver);
+            }
+        },
+        
+<span id='global-method-doSmoothMouseOver'>        /** Called when mouseover state changes. This method is called after
+</span>            an event filtering process has reduced frequent over/out events
+            originating from the dom.
+            @returns void */
+        doSmoothMouseOver: function(isOver) {
+            if (this.initing === false &amp;&amp; this.updateUI) this.updateUI();
+        },
+        
+<span id='global-method-trigger'>        /** @overrides
+</span>            Try to update the UI immediately if an event was triggered
+            programatically. */
+        trigger: function(platformEventName, opts) {
+            this.callSuper(platformEventName, opts);
+            
+            if (this.initing === false &amp;&amp; this.updateUI) this.updateUI();
+        },
+        
+<span id='global-method-doMouseOver'>        /** Called when the mouse is over this view. Subclasses must call callSuper.
+</span>            @returns void */
+        doMouseOver: function(event) {
+            if (!this.disabled) this.set_mouseover(true);
+        },
+        
+<span id='global-method-doMouseOut'>        /** Called when the mouse leaves this view. Subclasses must call callSuper.
+</span>            @returns void */
+        doMouseOut: function(event) {
+            if (!this.disabled) this.set_mouseover(false);
+        }
+    });
+});
+</pre>
+</body>
+</html>

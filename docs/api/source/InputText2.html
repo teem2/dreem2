@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific Input Text functionality. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = sprite.InputText = new JS.Class(&#39;sprite.InputText&#39;, require(&#39;$SPRITE/Text.js&#39;), {
+        // Life Cycle //////////////////////////////////////////////////////////////
+        createPlatformObject: function(attrs) {
+            var isMulti = attrs.multiline === &#39;true&#39;;
+            attrs.ELEMENT_TYPE = isMulti ? &#39;textarea&#39; : &#39;input&#39;;
+            
+            var elem = this.callSuper(attrs);
+            
+            if (isMulti) {
+                elem.style.resize = &#39;none&#39;;
+            } else {
+                elem.setAttribute(&#39;type&#39;, &#39;text&#39;);
+            }
+            
+            return elem;
+        },
+        
+        
+        // Attributes //////////////////////////////////////////////////////////////
+        set_rows: function(v) {
+            this.platformObject.rows = v;
+            return v;
+        },
+        
+        set_value: function(v) {
+            this.platformObject.value = v;
+            return v;
+        },
+        
+        get_value: function() {
+            return this.platformObject.value;
+        }
+    });
+});
+</pre>
+</body>
+</html>

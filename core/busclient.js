@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class BusClient
+ * @class BusClient {Internal}
  * Auto (re)connecting always writable socket
  */
 define(function(require, exports, module) {
@@ -12,17 +12,15 @@ define(function(require, exports, module) {
   function BusClient(url) {
     this.url = url || '';
     this.backoff = 1;
-    this.reconnect();
+    this.__reconnect();
   }
 
   body.call(BusClient.prototype);
 
   function body() {
-    /**
-     * @method disconnect
-     * Disconnect from the server
-     */
-    this.disconnect = function() {
+    /** Connect/Reconnect to the server. */
+    this.__reconnect = function() {
+      // Disconnect
       if (this.socket) {
         this.socket.onclose = undefined;
         this.socket.onerror = undefined;
@@ -31,11 +29,7 @@ define(function(require, exports, module) {
         this.socket.close();
         this.socket = undefined;
       }
-    };
-    
-    /* Reconnect to server (used internally and automatically)*/
-    this.reconnect = function() {
-      this.disconnect();
+      
       if (!this.queue) this.queue = [];
       
       this.socket = new WebSocket('ws://' + window.location.host + this.url);
@@ -49,22 +43,18 @@ define(function(require, exports, module) {
       }.bind(this);
       
       this.socket.onerror = function() {
-        //this.reconnect()
+        //this.__reconnect()
       }.bind(this);
       
       this.socket.onclose = function() {
-        this.backoff *= 2;
-        if (this.backoff > 1000) this.backoff = 1000;
-        setTimeout(function() {
-          this.reconnect();
-        }.bind(this), this.backoff);
+        this.backoff = Math.min(1000, 2 * this.backoff);
+        setTimeout(function() {this.__reconnect();}.bind(this), this.backoff);
       }.bind(this);
       
       this.socket.onmessage = function(event) {
-        var msg = JSON.parse(event.data);
-        this.onMessage(msg);
+        this.onMessage(JSON.parse(event.data));
       }.bind(this);
-    }
+    };
     
     /**
      * @method send
@@ -72,31 +62,12 @@ define(function(require, exports, module) {
      * @param {Object} msg JSON.stringifyable message to send
      */
     this.send = function(msg) {
-      msg = JSON.stringify(msg);
       if (this.queue) {
-        this.queue.push(msg);
+        this.queue.push(JSON.stringify(msg));
       } else {
-        this.socket.send(msg);
+        this.socket.send(JSON.stringify(msg));
       }
-    }
-    
-    /**
-     * @method color
-     * Causes a console.color on the server
-     * @param {String} data Data to send
-     */
-    this.color = function(data) {
-      this.send({type:'color', value:data});
-    }
-    
-    /**
-     * @method color
-     * Causes a console.log on the server
-     * @param {String} data Data to send
-     */
-    this.log = function(data) {
-      this.send({type:'log', value:data});
-    }
+    };
     
     /**
      * @event onMessage

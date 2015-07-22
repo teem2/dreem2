@@ -1,0 +1,252 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.undostack {UI Components}
+  * @extends dr.node
+  * Provides a stack of undoables that can be done/undone. As undoables
+  * are done/undone a position in the stack is maintained.
+  *
+  * This object should be used to form the foundation of an undo/redo system
+  * for an editor.
+  */-->
+<class name="editor-undostack" extends="node"
+  requires="editor-compoundundoable editor-attrundoable editor-orderundoable editor-createundoable editor-deleteundoable"
+>
+  <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method initNode
+    * @overrides
+    * Initializes the undostack by calling reset.
+    */-->
+  <method name="initNode" args="parent, attrs">
+    this.reset();
+    this.super();
+  </method>
+
+
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
+  <attribute name="isundoable" type="boolean" value="false"/>
+  <attribute name="isredoable" type="boolean" value="false"/>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method reset
+    * Clears out this undostack and destroys any undoables contained within
+    * the undostack at the time of this method call.
+    * @returns {this}
+    */-->
+  <method name="reset">
+    var stack = this.__stack || (this.__stack = []);
+    while (stack.length) stack.pop().destroy();
+    this.__stackLoc = -1;
+    
+    this.__syncUndoabilityAttrs();
+    
+    return this;
+  </method>
+
+  <!--/**
+    * @method __syncUndoabilityAttrs
+    * @private
+    */-->
+  <method name="__syncUndoabilityAttrs">
+    this.setAttribute('isundoable', this.canUndo());
+    this.setAttribute('isredoable', this.canRedo());
+  </method>
+
+  <!--/**
+    * @method canUndo
+    * Determines if there is anything to undo based on the current location
+    * within the undo stack. If the current stack location is at the start
+    * then there is nothing to be undone.
+    * @returns {Boolean}
+    */-->
+  <method name="canUndo">
+    return this.__stackLoc >= 0;
+  </method>
+
+  <!--/**
+    * @method canRedo
+    * Determines if there is anything to redo based on the current location
+    * within the undo stack. If the current stack location is at the end
+    * then there is nothing to be done.
+    * @returns {Boolean}
+    */-->
+  <method name="canRedo">
+    return this.__stack.length - 1 > this.__stackLoc;
+  </method>
+
+  <!--/**
+    * @method getUndoDescription
+    * Gets the human readable undo description of the undoable that will be
+    * executed if the undo method of this undostack is called.
+    * @returns {String}
+    */-->
+  <method name="getUndoDescription">
+    if (this.canUndo()) {
+      return this.__stack[this.__stackLoc].getUndoDescription();
+    } else {
+      return '';
+    }
+  </method>
+
+  <!--/**
+    * @method getRedoDescription
+    * Gets the human readable redo description of the undoable that will be
+    * executed if the redo method of this undostack is called.
+    * @returns {String}
+    */-->
+  <method name="getRedoDescription">
+    if (this.canRedo()) {
+      return this.__stack[this.__stackLoc + 1].getRedoDescription();
+    } else {
+      return '';
+    }
+  </method>
+
+  <!--/**
+    * @method do
+    * Adds the undoable to this stack at the current location and immediately
+    * does that undoable. Also removes and destroys any undoables that exist
+    * at or after this location in the undo stack.
+    *
+    * If the attempt to do the undoable triggers an error the undoable will
+    * have its undo method called and the undoable will not be added to the
+    * undostack.
+    *
+    * Undoables already in the done state will be rejected and the errorHandler
+    * (if provided) will be executed.
+    *
+    * @param {dr.editor.undoable} undoable The undoable to add.
+    * @param {Function} callback An optional argument that if provided will
+    * be called when the provided undoable is succesfully done. The callback
+    * is executed only once, not every time the undoable is redone. The
+    * undoable is provided as an argument to the callback.
+    * @param {Function} errorHandler An optional argument that if provided will
+    * be called if an error occurs trying to do add or do the undoable. An
+    * error object is provided to the callback which may consist of a msg and
+    * stacktrace, or a native error object.
+    * @returns {Boolean} Indicates if the undoable was added succesfully or
+    * not.
+    */-->
+  <method name="do" args="undoable, callback, errorHandler">
+    if (!undoable || undoable.done) {
+      if (errorHandler && typeof errorHandler === 'function') errorHandler({msg:'Undoable already done.'});
+    } else {
+      var error = this.__executeUndoable(undoable, callback, true);
+      if (error) {
+        // Rollback since an error occurred.
+        var undoError = this.__executeUndoable(undoable, callback, false);
+        if (errorHandler && typeof errorHandler === 'function') {
+          errorHandler(error);
+          if (undoError) errorHandler(err);
+        }
+      } else {
+        ++this.__stackLoc;
+        var stack = this.__stack,
+          loc = this.__stackLoc;
+        while (stack.length > loc) stack.pop().destroy();
+        stack.push(undoable);
+        this.__syncUndoabilityAttrs();
+        return true;
+      }
+    }
+    return false;
+  </method>
+
+  <!--/**
+    * @method undo
+    * Executes the undo method of the undoable at the current undo stack 
+    * location.
+    *
+    * If the attempt to undo the undoable triggers an error the errorHandler
+    * (if provided) will be executed.
+    *
+    * @param {Function} callback An optional argument that if provided will
+    * be called when the current undoable is succesfully undone. The callback
+    * is executed only once, not every time the undoable is undone. The
+    * undoable is provided as an argument to the callback.
+    * @param {Function} errorHandler An optional argument that if provided will
+    * be called if an error occurs trying undo the undoable. An error object is 
+    * provided to the callback which may consist of a msg and stacktrace, or 
+    * a native error object.
+    * @returns {Boolean} Indicates if the undoable was successfully 
+    * undone or not.
+    */-->
+  <method name="undo" args="callback, errorHandler">
+    if (this.canUndo()) {
+      var error = this.__executeUndoable(this.__stack[this.__stackLoc--], callback, false);
+      if (error) {
+        ++this.__stackLoc;
+        if (errorHandler && typeof errorHandler === 'function') errorHandler(err);
+      } else {
+        this.__syncUndoabilityAttrs();
+        return true;
+      }
+    }
+    return false;
+  </method>
+
+  <!--/**
+    * @method redo
+    * Executes the redo method of the undoable at the current undo stack 
+    * location.
+    *
+    * If the attempt to redo the undoable triggers an error the errorHandler
+    * (if provided) will be executed.
+    *
+    * @param {Function} callback An optional argument that if provided will
+    * be called when the current undoable is succesfully done. The callback
+    * is executed only once, not every time the undoable is done. The
+    * undoable is provided as an argument to the callback.
+    * @param {Function} errorHandler An optional argument that if provided will
+    * be called if an error occurs trying redo the undoable. An error object is 
+    * provided to the callback which may consist of a msg and stacktrace, or 
+    * a native error object.
+    * @returns {Boolean} Indicates if the undoable was successfully done or not.
+    */-->
+  <method name="redo" args="callback, errorHandler">
+    if (this.canRedo()) {
+      var error = this.__executeUndoable(this.__stack[++this.__stackLoc], callback, true);
+      if (error) {
+        --this.__stackLoc;
+        if (errorHandler && typeof errorHandler === 'function') errorHandler(err);
+      } else {
+        this.__syncUndoabilityAttrs();
+        return true;
+      }
+    }
+    return false;
+  </method>
+
+  <!--/**
+    * @method __executeUndoable
+    * @private
+    * Executes the undoable and returns an error if one occured.
+    */-->
+  <method name="__executeUndoable" args="undoable, callback, isRedo">
+    // Listen for expected errors while doing the undoable.
+    var error,
+      expectedErrorHandler = new dr.Eventable(null, [{
+        handleError: function(event) {error = event;}
+      }]);
+    expectedErrorHandler.listenTo(dr.global.error, 'onall', 'handleError');
+    
+    // Do the undoable
+    try {
+      if (isRedo) {
+        undoable.redo(callback);
+      } else {
+        undoable.undo(callback);
+      }
+    } catch (err) {
+      // Catch unexpected errors
+      error = err;
+    }
+    
+    expectedErrorHandler.destroy();
+    
+    return error;
+  </method>
+</class>

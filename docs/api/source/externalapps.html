@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+*/
+<span id='global-property-'>/**
+</span> * Provides hooks for launching other apps from the server.
+ */
+define(function(require, exports, module){
+  var child_process = require(&#39;child_process&#39;);
+  
+<span id='global-method-browser'>  /**
+</span>   * @method browser
+   * Opens a webbrowser on the specified url 
+   * @param {String} url Url to open
+   * @param {Bool} withdevtools Open developer tools too (gives focus on OSX)
+   */
+   exports.browser = function(url, withdevtools) {
+    if (process.platform == &#39;darwin&#39;) {
+      // Spawn google chrome
+      child_process.spawn(
+        &quot;/Applications/Google chrome.app/Contents/MacOS/Google Chrome&quot;, [&quot;--incognito&quot;,url]
+      );
+      // open the devtools 
+      if (withdevtools) {
+        setTimeout(function() {
+          child_process.exec(&#39;osascript -e \&#39;tell application &quot;Chrome&quot;\n\treopen\nend tell\ntell application &quot;System Events&quot; to keystroke &quot;j&quot; using {option down, command down}\&#39;&#39;)
+        }, 200);
+      }
+    } else{
+      console.log(&quot;Sorry your platform &quot;+process.platform+&quot; is not supported for browser spawn&quot;);
+    }
+  };
+
+<span id='global-method-editor'>  /**
+</span>   * @method editor
+   * Opens a code editor on the file / line /columnt
+   * @param {String} file File to open
+   * @param {Int} line Line to set cursor to
+   * @param {Int} file File to open
+   */
+  exports.editor = function(file, line, col){
+    if (process.platform == &#39;darwin&#39;) {
+      // Only support sublime for now
+      child_process.spawn(
+        &quot;/Applications/Sublime\ Text.app/Contents/SharedSupport/bin/subl&quot;,
+        [file + &#39;:&#39; + line + (col!==undefined?&#39;:&#39;+col:&#39;&#39;)]
+      );
+    } else{
+      console.log(&quot;Sorry your platform &quot;+process.platform+&quot; is not supported for editor spawn&quot;);
+    }
+  };
+
+<span id='global-method-notify'>  /**
+</span>   * @method notify
+   * Opens a tray notification
+   * @param {String} body Body of the notification
+   * @param {String} title Title of notification
+   * @param {String} subtitle Subtitle
+   */
+  exports.notify = function(body, title, subtitle){
+    if (process.platform == &#39;darwin&#39;) {
+      child_process.spawn(&quot;osascript&quot;,
+        [&quot;-e&quot;,&#39;display notification \&quot;&#39;+body.replace(/&quot;/g,&#39;\\&quot;&#39;)+&#39;\&quot; &#39;+(title?&#39;with title \&quot;&#39;+title.replace(/&quot;/g,&#39;\\&quot;&#39;)+&#39;\&quot; &#39;:&#39;&#39;)+(subtitle?&#39;subtitle \&quot;&#39;+subtitle.replace(/&quot;/g,&#39;\\&quot;&#39;)+&#39;\&quot;&#39;:&#39;&#39;)]
+      );
+    } else{
+      console.log(&quot;Sorry your platform &quot;+process.platform+&quot; is not supported for notify spawn&quot;);
+    }
+  };
+})</pre>
+</body>
+</html>

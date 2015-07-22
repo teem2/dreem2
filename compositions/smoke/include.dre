@@ -1,0 +1,56 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Include'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <view id="all" width="100%" height="100%" clip="true">
+      <spacedlayout axis="y" spacing="2"></spacedlayout>
+      
+      <attribute name="includedTarget1" type="string" value="not yet"></attribute>
+      <attribute name="includedTarget2" type="string" value="not yet"></attribute>
+      <attribute name="includedTarget3" type="string" value="not yet"></attribute>
+      <attribute name="includedTarget4" type="string" value="not yet"></attribute>
+      <attribute name="nested" type="string" value="not yet"></attribute>
+      
+      <include href="./includes/included.dre"></include>
+      
+      <!-- Verify absolute path for includes and nested includes. -->
+      <include href="/compositions/smoke/includes/included2.dre"></include>
+      
+      <!-- Verify that an include from a class definition works. -->
+      <test-classwithinclude name="foo"></test-classwithinclude>
+      
+      <handler event="oninit">
+        assert.equal('SET!', this.includedTarget1, "The included target has not been set! (has it not been included?)");
+        assert.equal('SET!', this.includedTarget2, "The included target has not been set! (has it not been included?)");
+        assert.equal('SET!', this.includedTarget3, "The included target has not been set! (has it not been included?)");
+        assert.equal('SET!', this.includedTarget4, "The included target has not been set! (has it not been included?)");
+        assert.equal('SET!', this.nested, "The included target has not been set! (has it not been included?)");
+        
+        assert.isTrue(this.foo.classwasloaded);
+      </handler>
+    </view>
+  </screen>
+</screens>
+</composition>

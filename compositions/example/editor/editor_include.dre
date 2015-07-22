@@ -1,0 +1,398 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<include href='./keyboarddraggable.dre'/>
+<include href='./editable.dre'/>
+<include href='./controlhandle.dre'/>
+<include href='./reticle.dre'/>
+<include href='./toolbarbutton.dre'/>
+<include href='./attributeeditor.dre'/>
+
+<view name="editor" id="editor" width="100%" height="100%" defaultplacement="content" clip="true">
+  <attribute name="paused" type="boolean" value="true"/>
+
+  <!-- Enforce a minimum width for the editor. -->
+  <setter name="width" args="width">
+    return this.super(Math.max(width, 800));
+  </setter>
+
+  <!-- Enforce a minimum height for the editor. -->
+  <setter name="height" args="height">
+    return this.super(Math.max(height, 500));
+  </setter>
+
+  <!--// SERVICE NODES //-->
+  <node id="config">
+    <attribute name="topbar_height" type="number" value="32"/>
+    <attribute name="leftbar_minwidth" type="number" value="50"/>
+    <attribute name="rightbar_minwidth" type="number" value="250"/>
+    <attribute name="bottombar_height" type="number" value="32"/>
+    
+    <attribute name="dragbar_width" type="number" value="2"/>
+    
+    <attribute name="primary_panel_color" type="color" value="#999999"/>
+    <attribute name="secondary_panel_color" type="color" value="#eeeeee"/>
+    
+    <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
+    <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
+  </node>
+  
+  <node id="selectionmanager">
+    <attribute name="selected" type="expression" value="null"/>
+    
+    <method name="clear" args="restoreable">
+      if (restoreable) this._oldSelection = this.selected;
+      this.select(null);
+    </method>
+    
+    <method name="restore">
+      if (this._oldSelection && this._oldSelection.parent) this.select(this._oldSelection);
+    </method>
+    
+    <method name="select" args="view">
+      this.setAttribute('selected', view);
+    </method>
+  </node>
+  
+  <editor-undostack id="undo"></editor-undostack>
+  
+  <node id="actions">
+    <method name="_undoRedoCallback" args="undoable">
+      if (!undoable.isA(dr.editor.compoundundoable)) {
+        var target = undoable.target;
+        if (target && target.parent) {
+          selectionmanager.select(target);
+        } else {
+          selectionmanager.clear();
+        }
+      }
+    </method>
+    
+    <method name="undo">
+      undo.undo(this._undoRedoCallback);
+    </method>
+    
+    <method name="redo">
+      undo.redo(this._undoRedoCallback);
+    </method>
+    
+    <method name="bringToFront">
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var newprevsibling = selected.getLastSiblingView();
+        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      }
+    </method>
+    
+    <method name="bringForward">
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var newprevsibling = selected.getNextSiblingView();
+        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      }
+    </method>
+    
+    <method name="sendToBack">
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var oldprevsibling = selected.getPrevSiblingView();
+        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
+      }
+    </method>
+    
+    <method name="sendBackward">
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var oldprevsibling = selected.getPrevSiblingView();
+        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
+      }
+    </method>
+    
+    <method name="_updateOrder" args="target, oldprevsib, newprevsib">
+      undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsib, newprevsibling:newprevsib}));
+    </method>
+    
+    <method name="save">
+      editormodel.save();
+      undo.reset();
+    </method>
+    
+    <method name="pausePlay">
+      editor.setAttribute('paused', !editor.paused);
+      if (editor.paused) {
+        selectionmanager.restore();
+        pausePlayButton.setAttribute('text', 'Play');
+      } else {
+        selectionmanager.clear(true);
+        pausePlayButton.setAttribute('text', 'Pause');
+        // FIXME: Need to revert UI state to model state.
+      }
+      
+    </method>
+    
+    <method name="createView">
+      var attrs = {
+        class:'view', with:'editable',
+        width:50, height:50, x:'center', y:'middle', 
+        bgcolor:'#999999'
+      };
+      var parent = selectionmanager.selected;
+      if (!parent) {
+        attrs.placement = 'editor';
+        parent = this.getRoot();
+      }
+      var instance = parent.createChild(attrs);
+      undo.do(new dr.editor.createundoable({target:instance}));
+      selectionmanager.select(instance);
+    </method>
+    
+    <method name="deleteSelected">
+      var selected = selectionmanager.selected;
+      if (selected) {
+        undo.do(new dr.editor.deleteundoable({target:selected}));
+        selectionmanager.clear();
+      }
+    </method>
+  </node>
+  
+  <node id="editormodel">
+    <handler event="oninit">
+      var _this = this;
+      // rewrite the file to be editable, which will reload this page automatically
+      dr.global.requestor.fetch(window.location.toString() + '?edit=1').success(
+        function(data, status) {
+          var parser = new dr.htmlparser();
+          var jsobj = parser.parse(data)
+          _this.setAttribute('model', jsobj);
+          // console.log('loaded model', jsobj)
+        }
+      );
+    </handler>
+    
+    <method name="update" args="id, name, value">
+      if (this.model) {
+        var child = this._findChild(id, this.model);
+        if (child) {
+          child.attr[name] = value;
+          // console.log('found child', child, id, child.attr);
+        }
+      }
+    </method>
+    
+    <method name="save">
+      dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model) );
+    </method>
+    
+    <method name="_findChild" args="id, jsobj">
+      var children = jsobj.child;
+      for (var i = 0; children.length > i; i++) {
+        var child = children[i]
+        if (child.attr && (child.attr.id === id)) {
+          // console.log('found child', child)
+          return child;
+        } else if (child.child) {
+          newchild = this._findChild(id, child);
+          if (newchild) {
+            return newchild;
+          }
+        }
+      }
+    </method>
+  </node>
+  
+  <!--// HANDLERS //-->
+  <handler event="onkeydown" reference="dr.keyboard" args="platformEvent">
+    var keyboard = dr.keyboard,
+      keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
+      isAcceleratorKeyDown = keyboard.isAcceleratorKeyDown(),
+      isShiftKeyDown = keyboard.isShiftKeyDown();
+    
+    // If current focus is an input text don't do anything. In particular,
+    // we want to allow the delete key to be processed normally.
+    var focusedView = dr.global.focus.focusedView;
+    if (focusedView && focusedView.sprite.isA(dr.sprite.InputText)) {
+      if (!isAcceleratorKeyDown) return;
+      if (keyCode !== 90) return; // Z: Process undo/redo below since we want to supress the browser undo/redo mechanism
+    }
+    
+    if (isAcceleratorKeyDown) {
+      switch (keyCode) {
+        case 66: // B: Reorder backward
+          platformEvent.preventDefault(); // Prevent browser show bookmarks bar functionality
+          (isShiftKeyDown ? sendBackwardButton : sendToBackButton).doActivated();
+          break;
+        case 70: // F: Reorder forward
+          platformEvent.preventDefault(); // Prevent browser find functionality
+          (isShiftKeyDown ? bringForwardButton : bringToFrontButton).doActivated();
+          break;
+        case 73: // I: Insert New View
+          createButton.doActivated();
+          break;
+        case 83: // S: Save document
+          platformEvent.preventDefault(); // Prevent browser save functionality
+          saveButton.doActivated();
+          break;
+        case 90: // Z: Undo/Redo
+          platformEvent.preventDefault(); // Prevent browser undo/redo functionality
+          (isShiftKeyDown ? redoButton : undoButton).doActivated();
+          break;
+      }
+    } else {
+      switch (keyCode) {
+        case 8: // Delete: Delete selected view
+          deleteButton.doActivated();
+          break;
+        case 27: // Esc: Clear selection
+          selectionmanager.clear();
+          break;
+      }
+    }
+  </handler>
+  
+  <!--// VIEWS //-->
+  <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
+    width="100%" height="${config.topbar_height}"
+  >
+    <view name="left" padding="2"
+      width="auto" height="${config.topbar_height}"
+    >
+      <spacedlayout spacing="4" inset="2"></spacedlayout>
+      <constantlayout attribute="y" value="'middle'"></constantlayout>
+      
+      <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable || !editor.paused}">Undo</toolbarbutton>
+      <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable|| !editor.paused}">Redo</toolbarbutton>
+      
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      
+      <toolbarbutton id="bringToFrontButton" action="bringToFront" disabled="${!selectionmanager.selected}">Bring To Front</toolbarbutton>
+      <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
+      <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
+      <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
+      
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      
+      <toolbarbutton id="deleteButton" action="deleteSelected" disabled="${!selectionmanager.selected}">Delete</toolbarbutton>
+      <toolbarbutton id="createButton" action="createView" disabled="${!editor.paused}">Create</toolbarbutton>
+    </view>
+    <view name="center" padding="2"
+      x="${this.parent.left.width}"
+      width="${this.parent.right.x - this.x}"
+      height="${config.topbar_height}"
+    />
+    <view name="right" padding="2"
+      x="right"
+      width="auto" height="${config.topbar_height}"
+    >
+      <spacedlayout spacing="4" inset="2"></spacedlayout>
+      <constantlayout attribute="y" value="'middle'"></constantlayout>
+      
+      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
+      
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      
+      <toolbarbutton id="pausePlayButton" action="pausePlay" width="54" textalign="center">Play</toolbarbutton>
+    </view>
+  </view>
+  
+  <view name="leftbar" ignoreplacement="true" bgcolor="${config.secondary_panel_color}"
+    y="${config.topbar_height}"
+    width="${this.parent.dragbar_left.x}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+  />
+  
+  <view name="dragbar_left" with="keyboarddraggable" ignoreplacement="true"
+    bgcolor="${config.primary_panel_color}" cursor="col-resize" width="${config.dragbar_width}"
+    x="${config.leftbar_minwidth}"
+    y="${config.topbar_height}"
+    height="${this.parent.leftbar.height}"
+  >
+    <method name="updatePosition" args="x, y">
+      if (!this.disabled) this.setAttribute('x', Math.max(config.leftbar_minwidth, Math.min(300, x)));
+    </method>
+  </view>
+  
+  <view name="content" ignoreplacement="true"
+    x="${this.parent.dragbar_left.x + this.parent.dragbar_left.width}"
+    y="${config.topbar_height}"
+    width="${this.parent.dragbar_right.x - this.x}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    scrollable="true"
+  >
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+  </view>
+
+  <view name="dragbar_right" with="keyboarddraggable" ignoreplacement="true"
+    bgcolor="${config.primary_panel_color}" cursor="col-resize" width="${config.dragbar_width}"
+    x="${this.parent.innerwidth - this.width - config.rightbar_minwidth}"
+    y="${config.topbar_height}"
+    height="${this.parent.leftbar.height}"
+  >
+    <handler event="onwidth" reference="parent">
+      this.updatePosition(this.x, this.y);
+    </handler>
+    <method name="updatePosition" args="x, y">
+      if (!this.disabled) this.setAttribute('x', Math.max(500, Math.min(this.parent.innerwidth - this.width - config.rightbar_minwidth, x)));
+    </method>
+  </view>
+
+  <view name="rightbar" ignoreplacement="true" bgcolor="${config.secondary_panel_color}"
+    x="right" y="${config.topbar_height}"
+    width="${this.parent.innerwidth - this.parent.dragbar_right.x - this.parent.dragbar_right.width}"
+    height="${this.parent.leftbar.height}"
+  >
+    <spacedlayout axis="y" spacing="1" inset="5"/>
+    <handler event="onselected" args="selected" reference="selectionmanager" type="coffee">
+      attrs = []
+
+      compare = (a, b) ->
+        if (b.name > a.name)
+          return -1
+        else if (a.name > b.name)
+          return 1
+        else
+          0
+
+      if selected
+        ancestors = this.klass.ancestors()
+        # pull attributes from ancestor, since we don't want the editor mixin itself
+        myattributes = ancestors[ancestors.length - 1].attributes
+        
+        # console.log('hello', this, myattributes)
+        # build list of attributes for the replicator
+        for key, value of myattributes
+          value.name = key
+          attrs.push(value)
+          # console.log('attribute', key, value)
+
+        attrs.sort(compare)
+      
+      # console.log('attributelist', attrs)
+      this.repl.setAttribute('data', attrs);
+    </handler>
+    <replicator name="repl" classname="attributeeditor"/>
+  </view>
+  
+  <view name="bottombar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
+    y="bottom" width="100%" height="${config.bottombar_height}"
+  />
+  
+  <reticle id="reticle" ignoreplacement="true"/>
+</view>

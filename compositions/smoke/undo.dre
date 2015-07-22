@@ -1,0 +1,211 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Undo/Redo Basic'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <editor-undostack id="undo"></editor-undostack>
+    
+    <expectedoutput>Attempt to refire active event: onwidth</expectedoutput>
+    
+    <view width="100%" height="100%">
+      <view name="foo" width="50" height="50" bgcolor="red"></view>
+      
+      <handler event="oninit">
+        assert.isFunction(dr.editor.undoable);
+        assert.isFunction(dr.editor.undostack);
+        
+        var foo = this.foo;
+        var undo = dr.sprite.retrieveGlobal('undo');
+        assert.isObject(undo);
+        
+        // Verify initial state of an empty undostack
+        assert.isFalse(undo.canUndo(), 'Nothing to undo yet.');
+        assert.isFalse(undo.canRedo(), 'Nothing to redo yet.');
+        assert.equal(undo.getUndoDescription(), '', 'No description yet.');
+        assert.equal(undo.getRedoDescription(), '', 'No description yet.');
+        assert.isFalse(undo.undo(), 'Nothing to undo yet.');
+        assert.isFalse(undo.redo(), 'Nothing to redo yet.');
+        
+        // Add an undoable
+        assert.equal(foo.width, 50, 'Verify original width of foo view.');
+        var undoable = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:100});
+        assert.isFalse(undoable.done);
+        assert.isUndefined(undoable.oldvalue, 'Since no oldvalue was provided it should be undefined until redo is executed.');
+        assert.equal(foo.width, 50, 'Verify width of foo view has not changed yet.');
+        
+        assert.isTrue(undo.do(undoable), 'The do method returns a boolean true if it succeeds.');
+        assert.equal(undoable.oldvalue, 50, 'Since no oldvalue was provided it should be pulled from the target now that redo has executed once.');
+        assert.equal(foo.width, 100, 'Now that the undoable has been done foo should be updated.');
+        
+        assert.isTrue(undo.canUndo(), 'One thing to undo.');
+        assert.isFalse(undo.canRedo(), 'Nothing to redo yet.');
+        assert.equal(undo.getUndoDescription(), 'Undo change width from "50" to "100".', 'Has a desription now.');
+        assert.equal(undo.getRedoDescription(), '', 'No description yet.');
+        
+        // Undo it
+        assert.isTrue(undo.undo(), 'The undo method returns a boolean value of true if it succeeds.');
+        assert.equal(foo.width, 50, 'Foo width should be back to 50.');
+        
+        assert.isFalse(undo.canUndo(), 'Nothing to undo anymore.');
+        assert.isTrue(undo.canRedo(), 'One thing to redo.');
+        assert.equal(undo.getUndoDescription(), '', 'No description anymore.');
+        assert.equal(undo.getRedoDescription(), 'Redo change width from "50" to "100".', 'Has a description now.');
+        
+        // Redo it
+        assert.isTrue(undo.redo(), 'The redo method returns a boolean value of true if it succeeds.');
+        assert.equal(foo.width, 100, 'Foo width should be back to 100.');
+        
+        assert.isTrue(undo.canUndo(), 'One thing to undo.');
+        assert.isFalse(undo.canRedo(), 'Nothing to redo yet.');
+        assert.equal(undo.getUndoDescription(), 'Undo change width from "50" to "100".', 'Has a desription now.');
+        assert.equal(undo.getRedoDescription(), '', 'No description yet.');
+        
+        // Add another undoable. Use a specific oldvalue that is not the current value of foo
+        assert.equal(foo.height, 50, 'Verify original height of foo view.');
+        var undoable2 = new dr.editor.attrundoable({target:foo, attribute:'height', newvalue:200, oldvalue:100});
+        assert.isFalse(undoable2.done);
+        assert.equal(undoable2.oldvalue, 100, 'The provided value should be used.');
+        assert.equal(foo.height, 50, 'Verify height of foo view has not changed yet.');
+        
+        assert.isTrue(undo.do(undoable2), 'The do method returns a boolean true if it succeeds.');
+        assert.equal(foo.height, 200, 'Now that the undoable2 has been done foo should be updated.');
+        
+        assert.isTrue(undo.canUndo(), 'Two things to undo.');
+        assert.isFalse(undo.canRedo(), 'Nothing to redo yet.');
+        assert.equal(undo.getUndoDescription(), 'Undo change height from "100" to "200".', 'Has a desription now.');
+        assert.equal(undo.getRedoDescription(), '', 'No description yet.');
+        
+        // Undo it
+        assert.isTrue(undo.undo(), 'The undo method returns a boolean value of true if it succeeds.');
+        assert.equal(foo.height, 100, 'Foo height should bnow be 100.');
+        
+        assert.isTrue(undo.canUndo(), 'One thing to undo.');
+        assert.isTrue(undo.canRedo(), 'One thing to redo.');
+        assert.equal(undo.getUndoDescription(), 'Undo change width from "50" to "100".', 'Has a description now.');
+        assert.equal(undo.getRedoDescription(), 'Redo change height from "100" to "200".', 'Has a description now.');
+        
+        // Add another undoable while we're part way through the stack
+        assert.equal(foo.x, 0, 'Verify original x of foo view.');
+        var undoable3 = new dr.editor.attrundoable({target:foo, attribute:'x', newvalue:25});
+        assert.isFalse(undoable3.done);
+        assert.isUndefined(undoable3.oldvalue);
+        assert.equal(foo.x, 0);
+        
+        assert.isUndefined(undoable2.destroyed, 'Second undoable still exists.');
+        
+        assert.isTrue(undo.do(undoable3));
+        assert.equal(undoable3.oldvalue, 0);
+        assert.equal(foo.x, 25);
+        
+        assert.isTrue(undo.canUndo(), 'Two things to undo.');
+        assert.isFalse(undo.canRedo(), 'Nothing to redo yet.');
+        assert.equal(undo.getUndoDescription(), 'Undo change x from "0" to "25".', 'Has a desription now.');
+        assert.equal(undo.getRedoDescription(), '', 'No description yet.');
+        
+        assert.isTrue(undoable2.destroyed, 'Second undoable was destroyed since the undoable3 replaced it.');
+        
+        // Undo it
+        assert.isTrue(undo.undo(), 'The undo method returns a boolean value of true if it succeeds.');
+        assert.equal(foo.x, 0);
+        
+        assert.isTrue(undo.canUndo(), 'One thing to undo.');
+        assert.isTrue(undo.canRedo(), 'One thing to redo.');
+        assert.equal(undo.getUndoDescription(), 'Undo change width from "50" to "100".', 'Has a description now.');
+        assert.equal(undo.getRedoDescription(), 'Redo change x from "0" to "25".', 'Has a description now.');
+        
+        
+        // Reset the undostack
+        undo.reset();
+        
+        assert.isTrue(undoable.destroyed);
+        assert.isTrue(undoable3.destroyed);
+        
+        assert.isFalse(undo.canUndo(), 'Nothing to undo yet.');
+        assert.isFalse(undo.canRedo(), 'Nothing to redo yet.');
+        assert.equal(undo.getUndoDescription(), '', 'No description yet.');
+        assert.equal(undo.getRedoDescription(), '', 'No description yet.');
+        assert.isFalse(undo.undo(), 'Nothing to undo yet.');
+        assert.isFalse(undo.redo(), 'Nothing to redo yet.');
+        
+        
+        // Verify that callbacks work
+        var undoable4 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:100});
+        var callback = function(undoable) {
+          assert.equal(undoable, undoable4);
+          callbackExecuted++;
+        };
+        var callbackExecuted = 0;
+        
+        assert.isTrue(undo.do(undoable4, callback));
+        assert.equal(callbackExecuted, 1, 'Callback gets executed if do succeeds.');
+        assert.isTrue(undo.undo());
+        assert.equal(callbackExecuted, 1, 'Callback is not stored so it is only run if passed in.');
+        assert.isTrue(undo.redo(callback));
+        assert.equal(callbackExecuted, 2, 'Callback run for redo');
+        assert.isTrue(undo.undo(callback));
+        assert.equal(callbackExecuted, 3, 'Callback run for undo');
+        assert.isFalse(undo.undo(callback));
+        assert.equal(callbackExecuted, 3, 'Callback not run if undo does not run');
+        
+        
+        // Verify passing in an empty undoable fails
+        var errorHandler = function(error) {
+          errorHandlerExecuted++;
+        };
+        var errorHandlerExecuted = 0;
+        
+        assert.isFalse(undo.do(null, callback, errorHandler));
+        assert.equal(callbackExecuted, 3, 'Callback not run for null/empty failure');
+        assert.equal(errorHandlerExecuted, 1);
+        
+        
+        // Verify error handler catches dr.global.errors. Use a cyclic error.
+        var undoable5 = new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:"${this.width + 10}"}, [{
+          undo: function(callback) {
+            undoCalled++;
+            this.super();
+          },
+          redo: function(callback) {
+            redoCalled++;
+            this.super();
+          }
+        }]);
+        var undoCalled = 0, redoCalled = 0;
+        assert.isFalse(undo.do(undoable5, null, errorHandler));
+        assert.equal(errorHandlerExecuted, 2);
+        assert.equal(redoCalled, 1, 'Redo will be called during do but will fail in super.');
+        assert.equal(undoCalled, 1, 'Undo should be called since we will try to rollback on failure.');
+        
+        
+        // Verify that a constraint can be set via an undoable
+        var undoable6 = new dr.editor.attrundoable({target:foo, attribute:'y', newvalue:"${this.width + 10}"});
+        undo.do(undoable6);
+        assert.equal(foo.y, 110);
+        undo.do(new dr.editor.attrundoable({target:foo, attribute:'width', newvalue:"10"}));
+        assert.equal(foo.y, 20);
+      </handler>
+    </view>
+  </screen>
+</screens>
+</composition>

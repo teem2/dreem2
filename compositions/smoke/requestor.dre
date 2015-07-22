@@ -1,0 +1,138 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Attributes'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <view id="all" width="100%" height="100%">
+      <testingtimer>2000</testingtimer>
+      
+      <handler event="oninit">
+        var requestor = dr.global.requestor;
+        
+        assert.isObject(requestor, "The global requestor service should exist.");
+        
+        // Make a request that will fail
+        var req1 = {};
+        requestor.fetch('/some/url/that/does/not/exist').success(
+          function(data, status) {
+            req1.success_status = status;
+            req1.success_data = data;
+          }
+        ).error(
+          function(data, status) {
+            req1.error_status = status;
+            req1.error_data = data;
+          }
+        ).always(
+          function(data, status) {
+            req1.always_status = status;
+            req1.always_data = data;
+          }
+        );
+        
+        // Make a successfull request for a url that holds json
+        var req2 = {};
+        requestor.fetch('/data/test.json').success(
+          function(data, status) {
+            req2.success_status = status;
+            req2.success_data = data;
+          }
+        ).error(
+          function(data, status) {
+            req2.error_status = status;
+            req2.error_data = data;
+          }
+        ).always(
+          function(data, status) {
+            req2.always_status = status;
+            req2.always_data = data;
+          }
+        );
+        
+        // Make a successfull request for a url that holds text
+        var req3 = {};
+        requestor.fetch('/LICENSE.md').success(
+          function(data, status) {
+            req3.success_status = status;
+            req3.success_data = data;
+          }
+        ).error(
+          function(data, status) {
+            req3.error_status = status;
+            req3.error_data = data;
+          }
+        ).always(
+          function(data, status) {
+            req3.always_status = status;
+            req3.always_data = data;
+          }
+        );
+        
+        // FIXME: tests for send(url, data)
+        
+        setTimeout(function() {
+          // Failure
+          assert.isUndefined(req1.success_status, 'Request did not succeed so the success method should not be called.');
+          assert.isUndefined(req1.success_data, 'Request did not succeed so the success method should not be called.');
+          
+          assert.equal(req1.error_status, 404, 'Request to bad url should fail as a 404.');
+          assert.equal(req1.error_data, "NOT FOUND", 'Server response will be "NOT FOUND".');
+          
+          assert.equal(req1.always_status, 404, 'Request to bad url should trigger always method as a 404.');
+          assert.equal(req1.always_data, "NOT FOUND", 'Server response for always method will be "NOT FOUND".');
+          
+          
+          // Success with json (Removing \r is needed for Windows)
+          var successObj = '{\n    "foo":1,\n    "bar":2,\n    "baz":3,\n    "buz":"hey!"\n}';
+          
+          assert.equal(req2.success_status, 200);
+          assert.equal(req2.success_data.replace(/\r/g, ''), successObj);
+          
+          assert.isUndefined(req2.error_status, 'Request succeeded so the success error should not be called.');
+          assert.isUndefined(req2.error_data, 'Request succeeded so the success error should not be called.');
+          
+          assert.equal(req2.always_status, 200);
+          assert.deepEqual(req2.always_data.replace(/\r/g, ''), successObj);
+          
+          
+          // Success with text
+          var actual_success = req3.success_data.replace(/\r/g, '');
+          var actual_always = req3.always_data.replace(/\r/g, '');
+
+          assert.equal(req3.success_status, 200);
+          assert.isTrue(actual_success.startsWith('The MIT License (MIT)'));
+          assert.isTrue(actual_success.endsWith('DEALINGS IN THE\nSOFTWARE.\n'));
+          
+          assert.isUndefined(req3.error_status, 'Request succeeded so the success error should not be called.');
+          assert.isUndefined(req3.error_data, 'Request succeeded so the success error should not be called.');
+          
+          assert.equal(req3.always_status, 200);
+          assert.isTrue(actual_always.startsWith('The MIT License (MIT)'));
+          assert.isTrue(actual_always.endsWith('DEALINGS IN THE\nSOFTWARE.\n'));
+        }, 1000);
+      </handler>
+    </view>
+  </screen>
+</screens>
+</composition>

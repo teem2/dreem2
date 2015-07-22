@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+RELPATH=$(dirname $0)
+SCRIPT_PATH=$(cd ${RELPATH%/*} && echo $PWD/${RELPATH##*/})
+BASE_PATH=$(dirname $SCRIPT_PATH)
+DOCS_PATH="$BASE_PATH/docs"
+LIB_PATH="$DOCS_PATH/lib"
+API_PATH="$DOCS_PATH/api"
+
+BASE_LIB_PATH="$BASE_PATH/lib"
+
+echo
+echo "BUILDING DOCS:" $BASE_PATH
+echo
+
+rm -rf $API_PATH
+$LIB_PATH/config.rb
+rm -rf $DOCS_PATH/classdocs/*.js
+$LIB_PATH/findocomments.rb
+jsduck $BASE_PATH/core/*.js $BASE_LIB_PATH/dr/*.js $BASE_LIB_PATH/dr/**/*.js $DOCS_PATH/classdocs/*.js --tags $LIB_PATH/custom_tags.rb --guides=$DOCS_PATH/guides.json --categories=$DOCS_PATH/categories.json --output=$API_PATH/ --eg-iframe=$DOCS_PATH/jsduck_iframe.html --title="Dreem API documentation" --footer="Copyright (c) 2014-2015 Teem2 LLC"
+$LIB_PATH/buildsourcedocs.rb
+cp $DOCS_PATH/gitattributes-tmpl $API_PATH/.gitattributes

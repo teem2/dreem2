@@ -1,0 +1,320 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Datapath'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <view width="100%" height="100%" clip="true">
+      <dataset name="testdata">
+        {
+          "a": "value a",
+          "b": "value b",
+          "c": "value c",
+          "d": 10,
+          "e": 0,
+          "f": 1,
+          "g": true,
+          "h": false,
+          "i": null,
+          "k": [
+            "A",
+            "B",
+            "C"
+          ],
+          "l": {
+            "a": "A",
+            "b": "B",
+            "c": "C"
+          },
+          "m": [
+            "A",
+            "B",
+            [
+              67,
+              65,
+              32,
+              24
+            ]
+          ],
+          "n": [
+            "A",
+            "B",
+            {
+              "foo": "FOO",
+              "bar": "BAR",
+              "baz": "BAZ"
+            }
+          ],
+          "o": {
+            "foo": "FOO",
+            "bar": "BAR",
+            "baz": {
+              "a": "A",
+              "b": "B",
+              "c": "C"
+            }
+          },
+          "p": {
+            "foo": "FOO",
+            "bar": "BAR",
+            "baz": [
+              "A",
+              true,
+              23,
+              null
+            ]
+          }
+        }
+      </dataset>
+
+      <dataset name="sample">
+        {"text" : [ {"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"} ]}
+      </dataset>
+
+      <!-- Test for initial state -->
+      <datapath>
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual([], result, 'result should be an empty array')
+        </handler>
+        <handler event="oninit">
+          assert.deepEqual(null, this.data, 'data should be null')
+          assert.equal(true, this.onresultfired, 'there should be an onresult event')
+          assert.deepEqual(this.result, [], 'The result property should be set.')
+        </handler>
+      </datapath>
+
+      <!-- Test for initial data -->
+      <datapath data="['x',1,'y',2,'z',3,4,5]">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(result, this.data, 'result should equal data')
+        </handler>
+        <handler event="ondata" args="data">
+          this.ondatafired = true
+          assert.deepEqual(data, ['x',1,'y',2,'z',3,4,5], 'data should equal expected result')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.equal(true, this.ondatafired, 'There should be a data event')
+          assert.deepEqual(this.result, ['x',1,'y',2,'z',3,4,5], 'The result property should be set.')
+        </handler>
+      </datapath>
+
+      <!-- Test for changing data attribute -->
+      <datapath data="[1,2,3,4]">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(result, this.data, 'result should equal data')
+        </handler>
+        <handler event="ondata" args="data">
+          this.ondatafired = true
+          if (this.inited) {
+            assert.deepEqual(data, [5,6,7,8], 'data should equal new value')
+          } else {
+            assert.deepEqual(data, [1,2,3,4], 'data should equal initial value')
+          }
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.equal(true, this.ondatafired, 'There should be a data event')
+          this.setAttribute('data', [5,6,7,8])
+        </handler>
+      </datapath>
+
+      <!-- Test sorting -->
+      <datapath data="[0,2,27,1,4]">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [0,2,27,1,4], 'Results should not be sorted')
+          this.setAttribute('sortasc', true)
+          assert.deepEqual(this.result, [0,1,2,4,27], 'Results should be sorted in ascending order')
+          this.setAttribute('sortasc', false)
+          assert.deepEqual(this.result, [27,4,2,1,0], 'Results should be sorted in descending order')
+        </handler>
+      </datapath>
+
+      <!-- Test sortpath -->
+      <datapath data="[{count: 2},{count:1},{count: 4}]" sortasc="false" sortpath="/count">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [{count:4},{count:2},{count:1}], 'Results should be sorted in descending order by key')
+          this.setAttribute('sortasc', true)
+          assert.deepEqual(this.result, [{count:1},{count:2},{count:4}], 'Results should be sorted in descending order by key')
+        </handler>
+      </datapath>
+      
+      <!-- Test filter function on raw data -->
+      <datapath data="['x',1,'y',2,'z',3,4,5]">
+        <method name="filterfunction" args="obj, accum">
+          accum.unshift(obj);
+          return accum;
+        </method>
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(result, [5,4,3,'z',2,'y',1,'x'], 'result should be reversed per filterfunction()')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [5,4,3,'z',2,'y',1,'x'], 'The result property should be set.')
+        </handler>
+      </datapath>
+
+      <!-- Test filterexpression -->
+      <datapath data="['x',1,'y',2,'z',3,4,5]" filterexpression="[^\d]">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(result, ['x','y','z'], 'result should not contain numbers per filterexpression')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, ['x','y','z'], 'The result property should be set.')
+        </handler>
+      </datapath>
+
+      <!-- Path with just a dataset -->
+      <datapath path="$sample">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(result, [dr.dataset.datasets.sample.data], 'result should match dataset.data')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [dr.dataset.datasets.sample.data], 'The result property should be set.')
+        </handler>
+      </datapath>
+
+      <!-- Path with a dataset and path -->
+      <datapath path="$sample/text">
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(result, [dr.dataset.datasets.sample.data.text], 'result should match dataset.data.text')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [dr.dataset.datasets.sample.data.text], 'The result property should be set.')
+        </handler>
+      </datapath>
+
+      <!-- Path with a dataset path and filterfunction -->
+      <datapath path="$sample/text[*][@]">
+        <method name="filterfunction" args="obj, accum">
+          accum.unshift(obj);
+          return accum;
+        </method>
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(result, [{"a":"d"}, {"a":"c"}, {"a":"b"}, {"a":"a"}], 'result should match dataset.data.text, reversed per filterfunction()')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [{"a":"d"}, {"a":"c"}, {"a":"b"}, {"a":"a"}], 'The result property should be set.')
+        </handler>
+      </datapath>
+
+      <!-- Relative path with data -->
+      <datapath data="{text: [0,1,2,3]}">
+        <datapath path="/text[*]">
+          <handler event="onresult" args="result">
+            this.onresultfired = true
+            assert.deepEqual(this.result, [0,1,2,3], 'Results should match relative path')
+          </handler>
+          <handler event="oninit">
+            assert.equal(true, this.onresultfired, 'There should be a result event')
+            assert.deepEqual(this.result, [0,1,2,3], 'The result property should be set.')
+          </handler>
+        </datapath>
+      </datapath>
+      
+      <!-- Relative path with a dataset -->
+      <datapath path="$sample">
+        <datapath path="/text[*]">
+          <handler event="onresult" args="result">
+            this.onresultfired = true
+            assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}], 'Results should match relative path')
+          </handler>
+          <handler event="oninit">
+            assert.equal(true, this.onresultfired, 'There should be a result event')
+            assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}], 'The result property should be set.')
+          </handler>
+        </datapath>
+      </datapath>
+
+      <dataset name="bikeshop">
+        {
+          "bicycle": [
+            {
+             "color": "red",
+             "price": 19.95
+            },
+            {
+             "color": "green",
+             "price": 29.95
+            },
+            {
+             "color": "blue",
+             "price": 59.95
+            }
+          ]
+        }
+      </dataset>
+      <datapath path="$bikeshop/bicycle[*][@]">
+        <method name="filterfunction" args="obj, accum">
+          // add the color to the beginning of the results if the price is greater than 20
+          if (obj.price > 20)
+            accum.unshift(obj.color);
+          return accum
+        </method>
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(result, ['blue', 'green'], 'Results should match per filterfunction')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, ['blue', 'green'], 'Results should match per filterfunction')
+        </handler>
+      </datapath>
+      
+      <!-- Data and a path -->
+      <datapath data='{text: [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}]}'
+        path="/text[*]"
+      >
+        <handler event="onresult" args="result">
+          this.onresultfired = true
+          assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}], 'Results should match relative path')
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onresultfired, 'There should be a result event')
+          assert.deepEqual(this.result, [{"a":"a"}, {"a":"b"}, {"a":"c"}, {"a":"d"}], 'The result property should be set.')
+        </handler>
+      </datapath>
+    </view>
+  </screen>
+</screens>
+</composition>

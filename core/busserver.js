@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class BusServer {}
+ * @class BusServer {Internal}
  * Holds a set of server side sockets for broadcast
  */
 define(function(require, exports, module) {

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides events when a new dr.RootNode is created or destroyed.
+</span>    Registered in dr.global as &#39;roots&#39;.
+    
+    Events:
+        onrootAdded:RootNode Fired when a RootNode is added. The value is the 
+            RootNode added.
+        onrootRemoved:RootView Fired when a RootNode is removed. The value is the 
+            RootNode removed.
+    
+    Attributes:
+        None
+    
+    Private Attributes:
+        __roots:array Holds an array of RootNodes.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        GlobalRegistry = require(&#39;./Global.js&#39;);
+    
+    module.exports = new JS.Singleton(&#39;GlobalRootRegistry&#39;, {
+        include: [
+            require(&#39;$LIB/dr/events/Observable.js&#39;)
+        ],
+        
+        
+        // Life Cycle //////////////////////////////////////////////////////////////
+        initialize: function() {
+            this.__roots = [];
+            GlobalRegistry.register(&#39;roots&#39;, this);
+        },
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+<span id='global-method-getRoots'>        /** Gets the list of global root views.
+</span>            @returns array of RootNodes. */
+        getRoots: function() {
+            return this.__roots;
+        },
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-addRoot'>        /** Add a rootable to the global list of root views.
+</span>            @param r:RootNode the RootNode to add.
+            @returns void */
+        addRoot: function(r) {
+            this.__roots.push(r);
+            
+            // If dr is already ready then make the new root view ready
+            // immediately.
+            if (dr.ready) r.setAttribute(&#39;ready&#39;, true);
+            
+            this.sendEvent(&#39;onrootAdded&#39;, r);
+        },
+        
+<span id='global-method-removeRoot'>        /** Remove a rootable from the global list of root views.
+</span>            @param r:RootNode the RootNode to remove.
+            @returns void */
+        removeRoot: function(r) {
+            var roots = this.__roots, i = roots.length, root;
+            while(i) {
+                root = roots[--i];
+                if (root === r) {
+                    roots.splice(i, 1);
+                    this.sendEvent(&#39;onrootRemoved&#39;, root);
+                    break;
+                }
+            }
+        }
+    });
+})
+</pre>
+</body>
+</html>

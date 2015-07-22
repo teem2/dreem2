@@ -1,0 +1,8 @@
+<view width="150" height="100" bgcolor="orange">
+  <text color="white" text="INCLUDED! 4"></text>
+  <handler type="coffee" event="oninit">
+    @parent.setAttribute("includedTarget4", "SET!")
+  </handler>
+  <!-- Also verify that nested includes work. -->
+  <include href="./nested.dre"></include>
+</view>

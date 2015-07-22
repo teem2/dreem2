@@ -85,6 +85,17 @@
   </setter>
 
   <!--/**
+        * @attribute {Number} [textalign=""]
+        * Align text within its bounds. Supported values are 
+        * 'left', 'right', 'center' and 'inherit'.
+        */-->
+  <attribute name="textalign" type="string" value=""></attribute>
+  <setter name="textalign" args="v">
+    if @setActual('textalign', v, 'string', '')
+      if @inited then @sizeToPlatform()
+  </setter>
+
+  <!--/**
         * @attribute {Boolean} [bold=false]
         * Use bold text.
         */-->
@@ -183,6 +194,11 @@
     # setup default to reduce events during initialization.
     @fontsize = @fontfamily = ''
     @bold = @italic = @underline = @strike = @smallcaps = @multiline = @ellipsis = false
+
+    # allow data attribute to override unset text attribute
+    if (attrs.data? and not attrs.text)
+      attrs.text = attrs.data
+      delete attrs.data
     
     @super()
   </method>

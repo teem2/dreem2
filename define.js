@@ -17,10 +17,15 @@
       // continue calling
       if (define.define) define.define(factory);
     }
-  }
+  };
   
-  // prototyping
-  //define.amd = true
+  //// Constants/Config ////
+
+  // A regex that matches comma or whitespace. Used in many places to
+  // split up values.
+  define.SEPARATOR_REGEX = new RegExp(/,\s*|\s+/);
+
+  define.DREEM_EXTENSION = '.dre';
 
   // default config variables
   define.ROOT = '';
@@ -28,15 +33,15 @@
   define.CORE = "$ROOT/core";
   define.LIB = "$ROOT/lib";
   define.EXTLIB = "/_extlib_";
-  define.COMPOSITIONS = "$ROOT/compositions";
   define.BUILD = "$ROOT/build";
   define.SPRITE = "$ROOT/lib/dr/sprite_browser";
+
+  // The path to the main module to load.
   define.MAIN = '';
+
   // copy configuration onto define
   if (typeof config_define == 'object') {
-    for (var key in config_define) {
-      define[key] = config_define[key];	
-    }
+    for (var key in config_define) define[key] = config_define[key];
   }
 
   define.filePath = function(file) {
@@ -50,7 +55,8 @@
   };
 
   define.cleanPath = function(path) {
-	return path.replace(/^\/+/,'/').replace(/([^:])\/+/g,'$1/');
+
+    return path.replace(/^\/+/,'/').replace(/\\/g,'/').replace(/([^:])\/+/g,'$1/');
   };
 
   define.joinPath = function(base, relative) {
@@ -63,6 +69,17 @@
     base = base.split(/\//);
     relative = relative.replace(/\.\.\//g,function(){ base.pop(); return ''}).replace(/\.\//g, '');
     return define.cleanPath(base.join('/') + '/' + relative);
+  };
+  
+  define.isFullyQualifiedURL = function(url) {
+    if (url.indexOf('//') === 0) {
+      // Looks like a protocol agnostic URL (Typically a CDN URL)
+      return true;
+    } else if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
+      // Fully qualified URL so return as is.
+      return true;
+    }
+    return false;
   };
 
   // expand define variables
@@ -81,23 +98,33 @@
     );
   };
 
-  define.findRequires = function(str){
-    var req = [];
-    
+  // Resolve the MAIN module
+  define.MAIN = define.expandVariables(define.MAIN);
+  
+  define.onMain = function() {
+    // A non-empty implementation is set by teem.js
+  };
+
+  define.findRequires = function(str) {
     // bail out if we redefine require
-    if (str.match(/function\s+require/) || str.match(/var\s+require/)) {
-      return req;
-    }
-    str.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path) {
+    if (str.match(/function\s+require[\s\(]/) || str.match(/var\s+require\s/)) return [];
+    
+    var req = [];
+    str.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\s+\/\/[^\n]/g,'').replace(/require\s*\(\s*["']([^"']+)["']\s*\)/g, function(m, path) {
       req.push(path);
-    })
-	return req;
-  }
+    });
+    return req;
+  };
 
   define.localRequire = function(base_path) {
     return function(dep_path) {
-      var abs_path = define.joinPath(base_path, define.expandVariables(dep_path));
-      if (abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js';
+      var abs_path;
+      if (define.isFullyQualifiedURL(dep_path)) {
+        abs_path = dep_path;
+      } else {
+        abs_path = define.joinPath(base_path, define.expandVariables(dep_path));
+        if (abs_path.lastIndexOf('.js') !== abs_path.length - 3) abs_path = abs_path + '.js';
+      }
       
       // lets look it up
       var module = define.module[abs_path];
@@ -116,7 +143,7 @@
       if (ret !== undefined) module.exports = ret;
       return module.exports;
     };
-  }
+  };
 
   // storage structures
   define.module = {};
@@ -154,7 +181,7 @@
         if (ret !== undefined) module.exports = ret;
         return module.exports;
       };
-    }
+    };
     
     define.require = define.localRequire('');
     return define;
@@ -162,29 +189,10 @@
     // browser implementation
     (function() {
       // if define was already defined use it as a config store
-      define.ROOT = window.location.origin;
-      define.environment == 'browser|modules';
+      define.ROOT = '/';
       
       // storage structures
       define.script_tags = {};
-      
-      // the require function passed into the factory is local
-      var app_root = define.filePath(window.location.href);
-      
-      function startMain() {
-        // lets find our main and execute the factory
-        var main_mod = define.expandVariables(define.MAIN);
-        
-        var factory = define.factory[main_mod];
-        if (!factory) throw new Error("Cannot find main: " + main_mod);
-        
-        // lets boot up
-        var module = {exports:{}, id:main_mod, filename:main_mod};
-        define.module[main_mod] = module;
-        var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module);
-        if (ret !== undefined) module.exports = ret;
-        if (define.onMain) define.onMain(module.exports);
-      }
       
       // the main dependency download queue counter
       var downloads = 0;
@@ -196,25 +204,47 @@
         
         script.type = 'text/javascript';
         script.src = script_url;
+        script.async = false;
         define.script_tags[script_url] = script;
         
         downloads++;
         function onLoad() {
-          // pull out the last factor
+          // pull out the last factory
           var factory = define.factory[script_url] = define.last_factory || null;
           define.last_factory = undefined;
           
           // parse the function for other requires
-          if (factory) define.findRequires(factory.toString()).forEach(function(path) {
-            // Make path absolute and process variables
-            var dep_path = define.joinPath(base_path, define.expandVariables(path));
-            
-            // automatic .js appending if not given
-            if (dep_path.indexOf(".js") != dep_path.length -3) dep_path += '.js';
-            // load it
-            if (!define.script_tags[dep_path]) insertScriptTag(dep_path, script_url);
-          });
-          if (!--downloads) startMain(); // no more deps
+          if (factory) {
+            define.findRequires(factory.toString()).forEach(function(path) {
+              var dep_path;
+              if (define.isFullyQualifiedURL(path)) {
+                dep_path = path;
+              } else {
+                // Make path absolute and process variables
+                dep_path = define.joinPath(base_path, define.expandVariables(path));
+                
+                // automatic .js appending if not given
+                if (dep_path.indexOf(".js") != dep_path.length -3) dep_path += '.js';
+              }
+              
+              // load it
+              if (!define.script_tags[dep_path]) insertScriptTag(dep_path, script_url);
+            });
+          }
+          
+          // All dependencies loaded so start the main module
+          if (!--downloads) {
+            var main = define.MAIN,
+              mainFactory = define.factory[main];
+            if (mainFactory) {
+              var mainModule = define.module[main] = {exports:{}, id:main, filename:main};
+              var ret = mainFactory(define.localRequire(define.filePath(main)), mainModule.exports, mainModule);
+              if (ret !== undefined) mainModule.exports = ret;
+              define.onMain(mainModule.exports);
+            } else {
+              throw new Error("Cannot find main: " + main);
+            }
+          }
         }
         script.onerror = function() {console.error("Error loading " + script.src + " from " + from_file);};
         script.onload = onLoad;
@@ -222,16 +252,17 @@
           if (s.readyState == 'loaded' || s.readyState == 'complete') onLoad();
         };
         document.getElementsByTagName('head')[0].appendChild(script);
-      }
+      };
       
-      // make it available globally
+      // Expose insertScriptTag function so it can be used for late loading
+      // of dependencies if necessary.
+      define.insertScriptTag = insertScriptTag;
+      
+      // make it available globally. Overwrites existing config_define
       window.define = define;
       
       // boot up using the MAIN property
-      if (define.MAIN) {
-        insertScriptTag(define.expandVariables(define.MAIN), window.location.href);
-      }
-      window.out = console.log;
+      if (define.MAIN) insertScriptTag(define.MAIN, window.location.href);
       
       var backoff = 1;
       define.autoreloadConnect = function() {
@@ -296,7 +327,6 @@
 	  
 	  
       module.exports = global.define = define;
-      define.environment = 'node';
       
       define.ROOT = define.filePath(module.filename.replace(/\\/g,'/'));
       
@@ -333,7 +363,7 @@
           
           if (full_name instanceof Array) full_name = full_name[0];
           
-          if (define.onRequire && full_name.charAt(0) == '/') {
+          if (define.onRequire && (full_name.charAt(0) == '/' || full_name.indexOf(':') != -1)) {
             define.onRequire(full_name);
           }	
           

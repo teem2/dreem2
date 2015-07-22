@@ -1,0 +1,308 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Class'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <view id="all" width="100%" height="100%" clip="true">
+      <testingtimer>200</testingtimer>
+      <expectedoutput></expectedoutput>
+      
+      <!-- Loading classes from server -->
+      <!-- Can load a class from the components directory. Will throw an error if broken -->
+      <spacedlayout axis="y" spacing="15"></spacedlayout>
+    
+      <!-- should warn about missing name -->
+      <!--class></class-->
+    
+      <class name="initme">
+        <attribute name="initcounter" type="number" value="0"></attribute>
+        <handler event="oninit">
+          this.initcounter++;
+        </handler>
+      </class>
+    
+      <initme oninit="assert.equal(this.initcounter, 1)"></initme>
+    
+      <class name="initmechild">
+        <attribute name="initcounter" type="number" value="0"></attribute>
+        <handler event="oninit">
+          this.initcounter++;
+        </handler>
+        <view></view>
+      </class>
+    
+      <initmechild>
+        <handler event="oninit">
+          assert.equal(this.initcounter, 1)
+        </handler>
+      </initmechild>
+    
+      <class name="initmechild2" extends="initmechild">
+        <handler event="oninit">
+          this.initcounter++;
+        </handler>
+      </class>
+    
+      <initmechild2>
+        <handler event="oninit">
+          assert.equal(this.initcounter, 2)
+        </handler>
+      </initmechild2>
+    
+      <initmechild2>
+        <handler event="oninit">
+          assert.equal(this.initcounter, 2)
+        </handler>
+        <view></view>
+      </initmechild2>
+    
+      <class name="initme2" extends="initme">
+        <handler event="oninit">
+          this.initcounter++;
+        </handler>
+      </class>
+      
+      <initme2 oninit="assert.equal(this.initcounter, 2)"></initme2>
+    
+      <initme2 oninit="assert.equal(this.initcounter, 2)">
+        <view></view>
+      </initme2>
+      
+      <!-- Verify that a class defined inline that is not used explicitly is
+           still included. -->
+      <class name="foo0">
+        <attribute name="fooexists" type="boolean" value="true"></attribute>
+      </class>
+      <view>
+        <handler event="oninit">
+          assert.isFunction(dr.foo0, 'Required class should be stored in the dr package.');
+          
+          // Programtically make an instance
+          var instance = new dr.foo0(this);
+          
+          assert.isTrue(instance.fooexists);
+        </handler>
+      </view>
+      
+      <!-- Verify requires on a class, mixin or instance actually pulls in
+           the class. -->
+      <class name="foo1" requires="test-requiredclass1"></class>
+      <mixin name="foo2" requires="test-requiredclass2"></mixin>
+      <view requires="test-requiredclass3">
+        <handler event="oninit">
+          assert.isFunction(dr.test.requiredclass1, 'Required class should be stored in the dr.test package.');
+          assert.isFunction(dr['test-requiredclass1'], 'Required class should also be stored in the dr package under the full tagname.');
+          
+          assert.isFunction(dr.test.requiredclass2, 'Required class should be stored in the dr.test package.');
+          assert.isFunction(dr['test-requiredclass2'], 'Required class should also be stored in the dr package under the full tagname.');
+          
+          assert.isFunction(dr.test.requiredclass3, 'Required class should be stored in the dr.test package.');
+          assert.isFunction(dr['test-requiredclass3'], 'Required class should also be stored in the dr package under the full tagname.');
+          
+          // Programtically make some instances
+          var instance1 = new dr.test.requiredclass1(this);
+          var instance2 = new dr.test.requiredclass2(this);
+          var instance3 = new dr.test.requiredclass3(this);
+          
+          assert.isTrue(instance1.classloaded1);
+          assert.isTrue(instance2.classloaded2);
+          assert.isTrue(instance3.classloaded3);
+        </handler>
+      </view>
+    
+      <!-- Setting a sub view's attribute with a constraint -->
+      <class name="labelview" width="${this.label.width}" height="${this.label.height}" bgcolor="#808080">
+        <text name="label" text="${this.parent.text}"></text>
+      </class>
+      <labelview id="foo" text="labelview object">
+        <handler event="oninit">
+          assert.equal(this.label.text, 'labelview object');
+        </handler>
+      </labelview>
+      
+      <!-- Extension -->
+      <!-- Overriding attributes in a subclass -->
+      <class name="text2" extends="text"></class>
+      <class name="text3" extends="text2"></class>
+      <text3 text="Hello">
+        <handler event="oninit" args="who">
+          assert.equal(who.text, 'Hello')
+        </handler>
+      </text3>
+      
+      <!-- Overridden methods automatically call super -->
+      <class name="c1" type="coffee">
+        <attribute name="counter" type="string" value="0"></attribute>
+        <method name="test">
+          if this.super then this.super();
+    
+          this.counter += '1';
+          # console.log("c1.test")
+        </method>
+      </class>
+      <class name="c2" type="coffee" extends="c1">
+        <method name="test">
+          this.super();
+    
+          this.counter += '2';
+          # console.log("c2.test")
+        </method>
+        <handler event="oninit">
+          this.test()
+          assert.equal(this.counter, '012')
+        </handler>
+      </class>
+      <c2></c2>
+      
+      <!-- Classes defined inline only fire oninit once -->
+      <class name="onlyinitonce">
+        <handler event="oninit">
+          window.inlineClassInitCount = !!window.inlineClassInitCount ? window.inlineClassInitCount+1 : 1
+    
+          window.setTimeout(function() {
+            assert.equal(1, window.inlineClassInitCount, 'oninit handler should only fire once')
+          }, 1);
+        </handler>
+      </class>
+      
+      <onlyinitonce></onlyinitonce>
+    
+    
+      <!-- See https://www.pivotaltracker.com/story/show/82011138 for the issue -->
+      <class name="stackview">
+        <spacedlayout axis="y" spacing="10"></spacedlayout>
+      </class>
+    
+      <stackview name="st" bgcolor="red">
+        <view width="100" height="25" bgcolor="lightpink"></view>
+      </stackview>
+    
+      <!-- $tagname -->
+      <class name="texta" extends="text"></class>
+      <class name="textb" extends="text2">
+        <handler event="oninit" args="who">
+          assert.equal(who.$tagname, 'textb')
+        </handler>
+      </class>
+      
+      <!-- class methods -->
+      <class name="alloctest">
+        <attribute name="value" type="number" value="0" allocation="class"></attribute>
+        <attribute name="value" type="number" value="0"></attribute>
+        
+        <method name="increment" args="v" allocation="class">
+          return this.value += v;
+        </method>
+        <method name="increment" args="v">
+          return this.value += 2 * v;
+        </method>
+      </class>
+      
+      <view>
+          <alloctest name="v1"></alloctest>
+          <alloctest name="v2"></alloctest>
+          
+          <handler event="oninit">
+            var v1 = this.v1,
+                v2 = this.v2;
+            
+            assert.equal(v1.value, 0, 'instance v1 value is 0');
+            assert.equal(v2.value, 0, 'instance v1 value is 0');
+            assert.equal(dr.alloctest.value, 0, 'class alloctest value is 0');
+            
+            v1.increment(1);
+            
+            assert.equal(v1.value, 2, 'instance v1 value is 0');
+            assert.equal(v2.value, 0, 'instance v1 value is 0');
+            assert.equal(dr.alloctest.value, 0, 'class alloctest value is 0');
+            
+            v2.increment(1);
+            
+            assert.equal(v1.value, 2, 'instance v1 value is 0');
+            assert.equal(v2.value, 2, 'instance v1 value is 0');
+            assert.equal(dr.alloctest.value, 0, 'class alloctest value is 0');
+            
+            dr.alloctest.increment(1);
+            
+            assert.equal(v1.value, 2, 'instance v1 value is 0');
+            assert.equal(v2.value, 2, 'instance v1 value is 0');
+            assert.equal(dr.alloctest.value, 1, 'class alloctest value is 0');
+          </handler>
+      </view>
+    
+      <!-- classes should have the correct number of subviews, see https://www.pivotaltracker.com/story/show/83603414 -->
+      <class name="user" type="coffee">
+        <text name="firstnamelabel" color="darkblue"></text>
+        <text name="lastnamelabel" color="darkblue"></text>
+        <handler event="oninit" method="layoutelements"></handler>
+        <method name="layoutelements" type="coffee">
+          assert.equal(@subviews.length, 3)
+        </method>
+      </class>
+    
+      <class name="employee" extends="user" type="coffee">
+        <text name="joblabel"></text>
+      </class>
+    
+      <employee height="40" firstname="Donathan" lastname="Chillburger" jobtitle="COO"></employee>
+    
+      <!-- Test: package support -->
+      <test-text text="blah">
+        <handler event="oninit">
+          // Verify this instance is a test-text instance.
+          assert.equal("test-text", this.$tagname);
+          assert.equal("blah", this.text);
+          assert.equal(true, this.bold);
+          
+          // Verify the 'text' class exists in the 'test' package
+          assert.equal(true, dr['test-text'] != null);
+          assert.equal(true, dr.test.text != null);
+          assert.equal(dr['test-text'], dr.test.text);
+          
+          // Make a new instance using a class from the 'test' package.
+          var child = this.parent.createChild({class:'test-text', text:'hello'});
+          assert.equal("hello", child.text);
+          assert.equal(true, child.bold);
+          assert.equal("test-text", child.$tagname);
+        </handler>
+      </test-text>
+    
+      <handler event="oninit">
+        assert.equal(this.st.subviews.length, 1)
+        assert.equal(this.st.subnodes.length, 2)
+      </handler>
+      
+      <!-- Verify that classes can extend Eventable -->
+      <class name="thing" extends="eventable">
+        <method name="init" args="attrs, mixins">
+          this.super();
+          assert.isTrue(this.isA(dr.Eventable));
+        </method>
+      </class>
+      
+      <thing></thing>
+    </view>
+  </screen>
+</screens>
+</composition>

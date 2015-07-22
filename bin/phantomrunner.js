@@ -15,11 +15,11 @@ if (args[1]) {
 }
 
 // Get the list of tests to run
-var list = fs.list("./compositions/"),
+var list = fs.list("./compositions/smoke/"),
   files = [], file, i = list.length;
 while (i) {
   file = list[--i]
-  if (file.indexOf('smoke_') === 0) files.push(file);
+  if (fs.isFile("./compositions/smoke/" + file)) files.push("/compositions/smoke/" + file);
 }
 
 var runTest = function(file, callback) {
@@ -99,7 +99,6 @@ var runTest = function(file, callback) {
   
   page.onResourceError = function(resourceError) {
     console.log('RESOURCE ERROR: ' + resourceError.errorString + ', URL: ' + resourceError.url + ', File: ' + file);
-    updateTimer(0);
   };
   
   page.onConsoleMessage = function(msg, lineNum, sourceId) {
@@ -113,7 +112,7 @@ var runTest = function(file, callback) {
     }
   };
   
-  page.open('http://127.0.0.1:8080/' + file.substring(0, file.length - 4) + '?test'); // 4 is remove '.dre'
+  page.open('http://127.0.0.1:8080/' + file);
 }
 
 // Runs the next test if possible. This function is provided as the callback

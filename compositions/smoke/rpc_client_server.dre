@@ -1,0 +1,153 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+<!--
+  Transmit data from the client to the server, via methods and attributes.
+  Each method on the server returns a value to the client.
+-->
+
+<composition>
+
+<screens>
+  <screen type="browser" name="default" title="Smoke Test - RPC Client-Server">
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <view width="100%" height="100%" padding="4">
+      <handler event="oninit">
+        this.unittest();
+      </handler>
+
+      <method name="unittest">
+        // Call each method type and handle the return type. Use a timer
+	// to make sure all responses were received in a timely manner
+        var t0 = Date.now();
+        var response1 = null;
+        var response2 = null;
+        var response3 = null;
+
+        // Method call. No arguments
+        dr.teem.server.server_method_0arg().then(function(ret) {
+	  // console.log('ret', typeof(ret), ret);
+          var elapsed = Date.now() - t0;
+	  response1 = [ret, elapsed];
+          log.log(['received', ret, elapsed + ' msec']);
+	});
+	
+        // Method call. 1 argument
+        dr.teem.server.server_method_1arg(2).then(function(ret) {
+	  // console.log('ret', typeof(ret), ret);
+          var elapsed = Date.now() - t0;
+	  response2 = [ret, elapsed];
+          log.log(['received', ret, elapsed + ' msec']);
+	});
+
+        // Method call. 2 argument
+        dr.teem.server.server_method_2arg(2,3).then(function(ret) {
+	  // console.log('ret', typeof(ret), ret);
+          var elapsed = Date.now() - t0;
+	  response3 = [ret, elapsed];
+          log.log(['received', ret, elapsed + ' msec']);
+	});
+
+        // String attribute
+	dr.teem.server.server_attr_string = 'str1';
+        log.log(['attribute', dr.teem.server.server_attr_string]);
+        assert.equal(dr.teem.server.server_attr_string, 'str1', "server_attr_string");
+	dr.teem.server.server_attr_string = '1';
+        log.log(['attribute', dr.teem.server.server_attr_string]);
+        assert.equal(dr.teem.server.server_attr_string, 1, "server_attr_string");
+
+	dr.teem.server.server_attr_string = null;
+        log.log(['attribute', dr.teem.server.server_attr_string]);
+        assert.equal(dr.teem.server.server_attr_string, null, "server_attr_string");
+
+	// Number attribute
+	dr.teem.server.server_attr_number = 1;
+        log.log(['attribute', dr.teem.server.server_attr_number]);
+        assert.equal(dr.teem.server.server_attr_number, 1, "server_attr_number");
+
+        //TODO The attribute is a number, not a string!
+	dr.teem.server.server_attr_number = 'str';
+        log.log(['attribute', dr.teem.server.server_attr_number]);
+        assert.equal(dr.teem.server.server_attr_number, 'str', "server_attr_number");
+
+	
+        // Verify return value from method calls
+        setTimeout(function(){
+          assert.typeOf(response1, 'Array', 'No/Invalid resposne for server_method_0arg');
+          if (response1)
+            assert.equal(response1[0], 'server_method_0arg', 'Invalid return from server_method_0arg');
+	  
+          assert.typeOf(response2, 'Array', 'No/Invalid resposne for server_method_1arg');
+          if (response2)
+            assert.equal(response2[0], 'server_method_1arg:4', 'Invalid return from server_method_1arg');
+
+          assert.typeOf(response3, 'Array', 'No/Invalid resposne for server_method_2arg');
+          if (response3)
+            assert.equal(response3[0], 'server_method_2arg:6', 'Invalid return from server_method_2arg');
+          
+     	  //console.log('response1', response1);
+     	  //console.log('response2', response2);
+     	  //console.log('response3', response3);
+	}, 500);
+      </method>
+
+      <text id="log" width="50%" height="50%" multiline="true" scrollable="true" bgcolor="salmon">
+        <method name="log" args="message">
+          // If an array, join the values together
+          if (Array.isArray(message))
+	    message = message.join(', ');
+
+          this.setAttribute('text', this.text + "\n" + message);
+        </method>
+      </text>
+    </view>
+
+  </screen>
+</screens>
+
+<server>
+  <handler event="init">
+    console.log("rpc_client_server server init");
+  </handler>
+
+  <method name="server_method_0arg">
+    // console.log('server_method_0arg');
+    return "server_method_0arg";
+  </method>
+
+  <method name="server_method_1arg" args="arg1">
+    // console.log('server_method_1arg', arg1);
+    return "server_method_1arg:" + arg1*arg1;
+  </method>
+  
+  <method name="server_method_2arg" args="arg1, arg2">
+    // console.log('server_method_2arg', arg1, arg2, typeof(arg1), typeof(arg2));
+    return "server_method_2arg:" + arg1*arg2;
+  </method>
+
+  <attribute name="server_attr_string" type="string" value=""></attribute>
+  <attribute name="server_attr_number" type="number" value=""></attribute>
+
+</server>
+
+</composition>

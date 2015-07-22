@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class DaliGen
+ * @class DaliGen {Util}
  * Class to create dali JS app (testing)
  */
 define(function(require, exports, module) {

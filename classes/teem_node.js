@@ -115,14 +115,16 @@ define(function(require, exports, module) {
         if (key.indexOf('attr_') == 0) {
           key = key.slice(5);
           this.__attribute(key, prop.type, prop.value);
-        } else if (key.indexOf('set_') == 0) {
+        } 
+        else if (key.indexOf('set_') == 0) {
           key = key.slice(4);
           if (!this.__isAttribute(key)) {
             //console.log('Please define attribute type before making a setter '+key)
             this.__attribute(key, 'number');
           }
           this['on_'+key].setter = prop
-        } else if (key.indexOf('get_') == 0) {
+        } 
+        else if (key.indexOf('get_') == 0) {
           key = key.slice(4);
           if (!this.__isAttribute(key)) {
             //console.log('Please define attribute type before making a getter '+key)

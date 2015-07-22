@@ -1,0 +1,164 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+<!--
+  Transmit data from the client to the server, via methods and attributes.
+  Each method on the server returns a value to the client.
+-->
+
+<composition>
+
+<screens>
+  <screen type="browser" name="default" title="Smoke Test - RPC Client-Server">
+    <include href="./includes/boilerplate.dre"></include>
+    
+  <method name="ignore">
+    // The first method is not exposed via rpc!!
+  </method>
+
+  <method name="client_method_0arg">
+    //console.log('client_method_0arg');
+    return "client_method_0arg";
+  </method>
+
+  <method name="client_method_1arg" args="arg1">
+    //console.log('client_method_1arg', arg1);
+    return "client_method_1arg:" + (arg1*arg1).toString();
+  </method>
+  
+  <method name="client_method_2arg" args="arg1, arg2">
+    //console.log('client_method_2arg', arg1, arg2);
+    return "client_method_2arg:" + arg1*arg2;
+  </method>
+
+  <method name="server_results" args="arg">
+    // Responses from server are here.
+    var results = JSON.parse(arg);
+    log.log('server_results: ' + arg);
+
+    assert.equal(results['server_attr_0'], 'client_method_0arg', 'server_attr_0');
+    assert.equal(results['server_attr_1'], 'client_method_1arg:4', 'server_attr_1');
+    assert.equal(results['server_attr_2'], 'client_method_2arg:6', 'server_attr_2');
+
+    // Stop the timer waiting for server results
+    clearTimeout(topview.timeout);
+  </method>
+  
+
+    <view id="topview" width="100%" height="100%" padding="4">
+      <testingtimer>1000</testingtimer>
+      <attribute name="timeout" type="expression" value=""></attribute>
+      <handler event="oninit">
+        // Send a message to the server to start the unittest, and inspect the
+	// final values on the server
+
+        this.timeout = setTimeout(function() {
+          console.log('TIMEOUT');          
+          assert.isTrue(false, 'Timeout. No response received from server');
+	}, 100);
+
+        this.client_unittest();
+      </handler>
+
+      <method name="client_unittest">
+        // The unittest is mainly on the server, but it needs to wait until
+	// the client has started.
+        var self = this;
+        dr.teem.server.server_unittest().then(function(ret) {
+	  //console.log('ret', typeof(ret), ret, log);
+	});
+      </method>
+
+      <text id="log" width="50%" height="50%" multiline="true" scrollable="true" bgcolor="salmon">
+        <method name="log" args="message">
+          // If an array, join the values together
+          if (Array.isArray(message))
+	    message = message.join(', ');
+
+          this.setAttribute('text', this.text + "\n" + message);
+        </method>
+      </text>
+    </view>
+
+  </screen>
+</screens>
+
+<server>
+  <handler event="init">
+    console.log("rpc_server_client server init");
+    //this.unittest();
+    //setTimeout(this.unittest(), 0);
+    //setTimeout(function() {this.unittest()}.bind(this), 0);
+  </handler>
+
+  <method name="server_unittest">
+    console.log('rpc_server_client: server_unittest');
+    
+    var results = {};
+    var self = this;
+    var promises = []
+
+    // Method call. 0 argument
+    var p0 = this.teem.screens.default.client_method_0arg();
+    promises.push(p0);
+    p0.then(function(ret) {
+      value = ret;
+      //TODO I see an array, but I am expecting a single value
+      if (Array.isArray(value)) value = value.pop();
+      console.log('client_method_0arg', value);
+      results['server_attr_0'] = value;
+     });
+  
+    // Method call. 1 argument
+    var p1 = this.teem.screens.default.client_method_1arg(2);
+    promises.push(p1);
+    p1.then(function(ret) {
+      value = ret;
+      //TODO I see an array, but I am expecting a single value
+      if (Array.isArray(value)) value = value.pop();
+      //console.log('client_method_1arg', value);
+      results['server_attr_1'] = value;
+    });
+
+    // Method call. 2 argument
+    var p2 = this.teem.screens.default.client_method_2arg(2,3);
+    promises.push(p2);
+    p2.then(function(ret) {
+      value = ret;
+      //TODO I see an array, but I am expecting a single value
+      if (Array.isArray(value)) value = value.pop();
+      //console.log('client_method_2arg', value);
+      results['server_attr_2'] = value;
+    });
+
+    // Wait for everything to complete and send the results
+    Promise.all(promises).then(function(ret) {
+      results_json = JSON.stringify(results);
+      self.teem.screens.default.server_results(results_json);
+      console.log('server finished', results_json);
+    });
+
+  </method>
+
+</server>
+
+</composition>

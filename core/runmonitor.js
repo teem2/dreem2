@@ -3,7 +3,7 @@
  Copyright (C) 2014-2015 Teem2 LLC
 */
 /**
- * @class RunMonitor
+ * @class RunMonitor {Internal}
  * RunMonitor class executes ourselves as a subprocess, receives the dependency file names
  * from the child process and manages restart/killing when files change
  */

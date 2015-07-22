@@ -1,0 +1,63 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Script Includes'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <view id="all" width="100%" height="100%">
+      <expectedoutput>INCLUDED SCRIPT
+Warning: scriptincludes not found: /compositions/smoke/notfound.js
+      </expectedoutput>
+      
+      <spacedlayout axis="y" spacing="15"></spacedlayout>
+      
+      <!-- Local includes -->
+      <view scriptincludes="../../lib/test.js,./notfound.js"></view>
+      <node scriptincludes="../../lib/two.js"></node>
+      
+      <!-- Protocol agnostic includes -->
+      <node scriptincludes="//cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.0/lodash.min.js"></node>
+      
+      <!-- Fully qualified includes -->
+      <node scriptincludes="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.js"></node>
+      
+      <expectedoutput>oninit ran</expectedoutput>
+      <handler event="oninit">
+        console.log('oninit ran');
+        
+        // The two.js constructor should exist since we included it via scriptincludes.
+        assert.isFunction(Two);
+        assert.equal(Two.Version, "v0.4.0");
+        
+        // Lodash should be pulled in from the CDN via scriptincludes.
+        assert.isFunction(_);
+        assert.equal(_.VERSION, "3.10.0");
+        
+        // JQuery should be pulled in from the CDN via scriptincludes.
+        assert.isFunction($);
+        assert.equal($().jquery, "2.1.4");
+      </handler>
+    </view>
+  </screen>
+</screens>
+</composition>

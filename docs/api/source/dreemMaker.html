@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (MIT)
+
+ Copyright ( c ) 2014-2015 Teem2 LLC
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the &quot;Software&quot;), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in all
+ copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ SOFTWARE.
+
+Instantiates dr classes from a package JSON object.
+*/
+define(function(require, exports, module) {
+  var maker = exports,
+    dr = require(&#39;$LIB/dr/dr.js&#39;)
+    JS = require(&#39;$LIB/jsclass.js&#39;),
+    sprite = require(&#39;$SPRITE/sprite.js&#39;),
+    acorn = require(&#39;$LIB/acorn&#39;),
+    coffee = require(&#39;$LIB/coffee-script&#39;);
+
+  require(&#39;$LIB/dr/globals/GlobalError.js&#39;);
+  require(&#39;$LIB/dr/globals/GlobalRequestor.js&#39;);
+  require(&#39;$LIB/dr/Eventable.js&#39;);
+  require(&#39;$LIB/dr/view/SizeToViewport.js&#39;);
+  require(&#39;$LIB/dr/animation/Animator.js&#39;);
+  require(&#39;$LIB/dr/animation/AnimGroup.js&#39;);
+  require(&#39;$LIB/dr/behavior/Button.js&#39;);
+  require(&#39;$LIB/dr/behavior/Draggable.js&#39;);
+
+  require(&#39;$SPRITE/Text.js&#39;);
+  require(&#39;$SPRITE/InputText.js&#39;);
+  require(&#39;$SPRITE/Bitmap.js&#39;);
+  require(&#39;$SPRITE/Webview.js&#39;);
+  require(&#39;$SPRITE/VideoPlayer.js&#39;);
+
+<span id='parser-Error'>  /**
+</span>   * @class parser.Error {Internal}
+   * Unified Error class that holds enough information to 
+   * find the right file at the right line
+   */
+  maker.Error = function(message, line, col) {
+    this.message = message;
+    this.line = line;
+    this.col = col;
+    sprite.console.error(&#39;error&#39;, message, line, col);
+  };
+
+<span id='parser-Compiler'>  /**
+</span>   * @class parser.Compiler {Internal}
+   * Client and server usable dreem compiler
+   * Parses and loads all dependencies starting from a particular
+   * Source XML, and delivers them all compiled and bundled up 
+   * Ready to be interpreted and turned into classes/instances
+   * With this compiler you dont need to handle dependency loading yourself
+   * It has an overloadable &#39;onRead&#39;  that acts as the file loader interface
+   * And this method specialized for browser or server elsewhere
+   */
+  maker.Compiler = (function() {
+<span id='Compiler-method-constructor'><span id='Compiler'>    /** 
+</span></span>     * @constructor
+     */
+    function Compiler() {};
+    var proto = Compiler.prototype;
+    
+    proto.compileError = function(e) {
+      var path, line;
+      if (e.loc) {
+        path = e.loc.line - 1;
+        line = e.loc.column;
+      } else if (e.location) {
+        path = e.location.first_line;
+        line = e.location.first_column;
+      }
+      return new maker.Error(e.message, path, line);
+    };
+    
+<span id='Compiler-property-languages'>    /** These are the supported languages for methods, handlers and setters.
+</span>        the compile function takes a string of code and the args to the
+        function defined by that code. The args are not included in the
+        returned string since those get prepended in the Compiler.execute
+        method. */
+    var languages = {
+      js:{
+        compile:function(codeStr, argsStr) {
+          try { // we parse it just for errors
+            acorn.parse(&#39;function __parsetest__(&#39; + argsStr + &#39;){&#39; + codeStr + &#39;}&#39;);
+          } catch(e) {
+            return proto.compileError(e);
+          }
+          return codeStr;
+        }
+      },
+      coffee:{
+        compile:function(codeStr, argsStr) {
+          var out;
+          try {
+            out = coffee.compile(codeStr);
+          } catch(e) { // we have an exception. throw it back
+            return proto.compileError(e);
+          }
+          // The slice call removes the opening: (function() {
+          // and trailing: \n}).call(this);
+          // Since all we want is the function body.
+          return out.split(&#39;\n&#39;).slice(1, -2).join(&#39;\n&#39;);
+        }
+      }
+    };
+    
+    proto.execute = function(rootdre, classmap, teem) {
+      var errors = [],
+        methods = [],
+        classes = {};
+      
+      function loadClass(name) {
+        if (name) {
+          if (name in maker.builtin) return;
+          if (name in classes) return;
+          
+          // mark tag as loading but not defined yet
+          classes[name] = 2;
+          
+          // lets find the dre file on our require tree
+          if (name in classmap) {
+            var mod = require(classmap[name]);
+            walk(mod.dre, null, &#39;js&#39;, name);
+          } else {
+            throw new Error(&#39;Cannot find class &#39; + name);
+          }
+        }
+      };
+      
+      function concatCode(node) {
+        var out = &#39;&#39;, children = node.child;
+        if (children) {
+          var i = 0, len = children.length, child;
+          for (; i &lt; len; i++) {
+            child = children[i];
+            if (child.tag === &#39;$text&#39; || child.tag === &#39;$cdata&#39;) out += child.value;
+          }
+        }
+        return out;
+      };
+      
+      function walk(node, parent, language) {
+        var attr = node.attr || {},
+          tagName = node.tag;
+        
+        // screen and attribute nodes also have types so we don&#39;t want to look
+        // at them for a compiler language
+        if ((tagName !== &#39;screen&#39; &amp;&amp; tagName !== &#39;attribute&#39;) &amp;&amp; attr.type) {
+          language = attr.type;
+          delete attr.type;
+        }
+        
+        switch (tagName) {
+          case &#39;class&#39;:
+          case &#39;mixin&#39;:
+            var nameattr = attr.name;
+            if (!nameattr) {
+              errors.push(new maker.Error(&#39;Class has no name &#39;, node.pos));
+              return;
+            }
+            
+            // create a new tag
+            classes[nameattr] = node;
+            
+            if (attr.extends) attr.extends.split(define.SEPARATOR_REGEX).forEach(loadClass);
+            if (attr.with) attr.with.split(define.SEPARATOR_REGEX).forEach(loadClass);
+            if (attr.requires) attr.requires.split(define.SEPARATOR_REGEX).forEach(loadClass);
+            break;
+          case &#39;method&#39;:
+          case &#39;handler&#39;:
+          case &#39;setter&#39;:
+            // give the method a unique but human readable name
+            var funcName = tagName + &#39;_&#39; + attr.name + &#39;_&#39; + node._ + &#39;_&#39; + language;
+            if (parent &amp;&amp; (parent.tag === &#39;class&#39; || parent.tag === &#39;mixin&#39;)) funcName = (parent.attr &amp;&amp; parent.attr.name) + &#39;_&#39; + funcName;
+            
+            node.method_id = methods.length;
+            methods.push({
+              name:funcName,
+              origin:node.pos,
+              language:language,
+              argStr:attr.args || &#39;&#39;,
+              source:concatCode(node)
+            });
+            
+            // clear child
+            node.child = undefined;
+            break;
+          case &#39;replicator&#39;:
+            loadClass(attr.classname);
+            // Fall through to default
+          default:
+            if (!tagName.startsWith(&#39;$&#39;)) {
+              if (attr.with) attr.with.split(define.SEPARATOR_REGEX).forEach(loadClass);
+              if (attr.requires) attr.requires.split(define.SEPARATOR_REGEX).forEach(loadClass);
+              loadClass(tagName);
+            }
+            break;
+        }
+        
+        // Recursively walk children
+        var children = node.child;
+        if (children) {
+          var i = 0, len = children.length;
+          for (; i &lt; len;) walk(children[i++], node, language);
+        }
+      };
+      
+      // Walk JSON
+      walk(rootdre, null, &#39;js&#39;, &#39;composition&#39;);
+      
+      if (errors.length === 0) {
+        // Compile all methods, getters, setters, handlers using the language
+        // indicated for each.
+        var code = &#39;&#39;,
+          i = 0, len = methods.length, 
+          method, compiled, argsStr;
+        for (; i &lt; len; i++) {
+          method = methods[i];
+          argsStr = method.argStr;
+          compiled = languages[method.language].compile(method.source, argsStr);
+          
+          if (compiled instanceof maker.Error) {
+            // the compiler returned an error
+            var error = new maker.Error(compiled.message, method.origin);
+            error.line += compiled.line; // adjust for origin
+            errors.push(error);
+          } else {
+            // Transform super to callSuper since .dre files use super.
+            compiled = compiled.split(&#39;this[&quot;super&quot;](&#39;).join(&#39;this.callSuper(&#39;).split(&#39;this.super(&#39;).join(&#39;this.callSuper(&#39;).split(&#39;this[&quot;super&quot;] &#39;).join(&#39;this.callSuper &#39;);
+            
+            // lets build a nice function out of it
+            code += &#39;methods[&#39; + i + &#39;] = function &#39; + method.name + &#39;(&#39; + argsStr + &#39;){\n&#39; + compiled + &#39;\n}\n&#39;;
+          }
+        }
+        
+        if (errors.length === 0) {
+          var pkg = {
+            // the key/value set of dreem classes as JSON-XML
+            classes:classes,
+            
+            // Prefill compiled classes with classes defined in core
+            compiledClasses:{
+              animator:dr.Animator,
+              animgroup:dr.AnimGroup,
+              button:dr.Button,
+              draggable:dr.Draggable,
+              eventable:dr.Eventable,
+              layout:dr.Layout,
+              node:dr.Node,
+              view:dr.View
+            },
+            
+            // The code block split up into individual compiled functions
+            compiledMethods:[]
+          };
+          
+          // Compile pkg methods
+          try {
+            new Function(&#39;methods&#39;,&#39;dr&#39;, code)(pkg.compiledMethods, dr); // TAG:Global Scope
+          } catch(e) {
+            sprite.console.error(&#39;Exception evaluating methods &#39; + e.message);
+            return;
+          }
+          
+          // Make pkg available to dr since child processing is initiated from there.
+          dr.maker = maker;
+          dr.pkg = pkg;
+          dr.teem = teem;
+          
+          // Start processing from the root downward
+          maker.__walkDreemJSXML(rootdre, null, pkg);
+          
+          dr.notifyReady();
+        }
+      }
+    };
+    
+    return Compiler;
+  })();
+
+<span id='Compiler-property-builtin'>  /** Built in tags that dont resolve to class files or that resolve to 
+</span>      class files defined in the core. */
+  maker.builtin = {
+    // Specific Classes and Mixins from the core
+    animator:true,
+    animgroup:true,
+    button:true,
+    draggable:true,
+    eventable:true,
+    layout:true,
+    node:true,
+    view:true,
+    
+    // Class and Mixin Definition
+    class:true,
+    mixin:true,
+    
+    // Special child tags for a Mixin, Class or Class instance
+    method:true,
+    attribute:true,
+    handler:true,
+    setter:true
+  };
+
+  // Stack of instances used to determine classroot during instantiation
+  maker.__classroots = [];
+
+  // Entry point for instances creating their children. Called 
+  // from dr.makeChildren
+  maker.walkForInstance = function(targetObj, json, isClassroot, pkg) {
+    if (isClassroot) this.__classroots.unshift(targetObj);
+    for (var i = 0, len = json.length; len &gt; i;) this.__walkDreemJSXML(json[i++], targetObj, pkg);
+    if (isClassroot) this.__classroots.shift();
+  };
+
+  maker.__walkDreemJSXML = function(node, parentInstance, pkg) {
+    var tagName = node.tag;
+    
+    if (tagName.startsWith(&#39;$&#39;)) {
+      if (tagName === &#39;$comment&#39;) {
+        // Ignore comments
+      } else if (tagName === &#39;$text&#39;) {
+        parentInstance.setAttribute(&#39;$textcontent&#39;, (parentInstance.$textcontent || &#39;&#39;) + node.value.trim());
+      } else if (tagName === &#39;$cdata&#39;) {
+        parentInstance.setAttribute(&#39;$textcontent&#39;, (parentInstance.$textcontent || &#39;&#39;) + node.value);
+      } else {
+        dr.global.error.logWarn(&quot;Unexpected tag:&quot;, tagName);
+      }
+      return;
+    }
+    
+    // Lookup inline classes or mixins so that they will be available for use
+    // even if a declared instance is not used.
+    if (tagName === &#39;class&#39; || tagName === &#39;mixin&#39;) {
+      this.lookupClass(node.attr.name, pkg);
+      return;
+    }
+    
+    var isScreen = tagName === &#39;screen&#39;;
+    if (isScreen &amp;&amp; parentInstance) {
+      dr.global.error.logWarn(&#39;No nesting of screen tags. Skipping instance.&#39;);
+      return;
+    }
+    
+    var klass = this.lookupClass(tagName, pkg);
+    if (klass) {
+      var compiledMethods = pkg.compiledMethods,
+        attrs = this.__normalizeAttrs(node.attr || {}),
+        mixins = this.__extractMixins(attrs, pkg),
+        instanceMixin = {},
+        instanceChildrenJson,
+        instanceHandlers = [],
+        instanceAttrs, instanceAttrValues,
+        children = node.child,
+        i, len, childNode;
+      
+      // Ensure &quot;requires&quot; are loaded
+      this.__lookupRequires(attrs, pkg);
+      
+      if (children) {
+        for (i = 0, len = children.length; len &gt; i;) {
+          childNode = children[i++];
+          switch (childNode.tag) {
+            case &#39;setter&#39;:
+              this.__processSetter(childNode, compiledMethods, instanceMixin);
+              break;
+            case &#39;method&#39;:
+              this.__processMethod(childNode, compiledMethods, instanceMixin);
+              break;
+            case &#39;handler&#39;:
+              this.__processHandler(childNode, compiledMethods, instanceMixin, instanceHandlers);
+              break;
+            case &#39;attribute&#39;:
+              if (!instanceAttrs) {
+                instanceAttrs = {};
+                instanceAttrValues = {};
+              }
+              this.__processAttribute(childNode, instanceAttrs, instanceAttrValues);
+              break;
+            default:
+              if (!instanceChildrenJson) instanceChildrenJson = [];
+              instanceChildrenJson.push(childNode);
+          }
+        }
+      }
+      
+      // Build default attributes
+      var combinedAttrs = {};
+      this.__doMixinExtension(combinedAttrs, mixins);
+      if (instanceAttrValues) dr.extend(combinedAttrs, instanceAttrValues);
+      dr.extend(combinedAttrs, attrs);
+      
+      if (!isScreen) this.__setupMakeChildrenMethod(instanceChildrenJson, instanceMixin, false);
+      this.__setupRegisterHandlersMethod(instanceHandlers, instanceMixin);
+      this.__buildSettersForAttributes(instanceAttrs, instanceMixin);
+      this.__setupGetTypeForAttrNameMethod(instanceAttrs, instanceMixin);
+      
+      mixins = mixins ? mixins : [];
+      mixins.push(instanceMixin);
+      
+      // Root Nodes need a mixin that indicates this
+      if (!parentInstance) {
+          if (klass.isDescendantOf(dr.Node)) {
+              if (klass.isDescendantOf(dr.View)) {
+                  mixins.push(dr.SizeToViewport);
+              } else {
+                  mixins.push(dr.RootNode);
+              }
+          }
+      }
+      
+      combinedAttrs.classroot = this.__classroots[0] || null;
+      
+      // Calls the initialize method of dr.Node
+      new klass(parentInstance, combinedAttrs, mixins);
+      
+      if (isScreen &amp;&amp; instanceChildrenJson) {
+        for (i = 0, len = instanceChildrenJson.length; len &gt; i;) {
+          this.__walkDreemJSXML(instanceChildrenJson[i++], null, pkg);
+        }
+      }
+    }
+  };
+
+  maker.lookupClass = function(tagName, pkg) {
+    // First look for a compiled class
+    var classTable = pkg.compiledClasses;
+    if (tagName in classTable) return classTable[tagName];
+    
+    // Ignore built in tags
+    if (tagName in this.builtin) {
+      dr.global.error.logWarn(&#39;Built in tag encountered for class lookup:&#39;, tagName);
+      return null;
+    }
+    
+    // Try to build a class
+    var klassjsxml = pkg.classes[tagName];
+    if (!klassjsxml) throw new Error(&#39;Cannot find class definition &#39; + tagName);
+    if (klassjsxml === 2) throw new Error(&#39;Class still loading &#39; + tagName);
+    delete pkg.classes[tagName];
+    
+    var isMixin = klassjsxml.tag === &#39;mixin&#39;,
+      klassAttrs = this.__normalizeAttrs(klassjsxml.attr || {}),
+      mixins = this.__extractMixins(klassAttrs, pkg);
+    
+    // Ensure &quot;requires&quot; are loaded
+    this.__lookupRequires(klassAttrs, pkg);
+    
+    // Determine base class
+    var baseclass;
+    if (!isMixin) {
+      var extendsAttr = klassAttrs.extends;
+      delete klassAttrs.extends;
+      baseclass = extendsAttr ? this.lookupClass(extendsAttr, pkg) : classTable.view;
+    }
+    
+    // Process Children
+    var compiledMethods = pkg.compiledMethods,
+      children = klassjsxml.child,
+      klassBody = {},
+      staticBody = klassBody.extend = {},
+      klassChildrenJson,
+      klassHandlers = [],
+      klassDeclaredAttrs, klassDeclaredAttrValues,
+      i, len, childNode;
+    if (children) {
+      for (i = 0, len = children.length; len &gt; i;) {
+        childNode = children[i++];
+        switch (childNode.tag) {
+          case &#39;setter&#39;:
+            this.__processSetter(childNode, compiledMethods, klassBody);
+            break;
+          case &#39;method&#39;:
+            this.__processMethod(childNode, compiledMethods, klassBody, staticBody);
+            break;
+          case &#39;handler&#39;:
+            this.__processHandler(childNode, compiledMethods, klassBody, klassHandlers, staticBody);
+            break;
+          case &#39;attribute&#39;:
+            if (!klassDeclaredAttrs) {
+              klassDeclaredAttrs = {};
+              klassDeclaredAttrValues = {};
+            }
+            this.__processAttribute(childNode, klassDeclaredAttrs, klassDeclaredAttrValues, staticBody);
+            break;
+          default:
+            if (!klassChildrenJson) klassChildrenJson = [];
+            klassChildrenJson.push(childNode);
+        }
+      }
+    }
+    
+    this.__setupMakeChildrenMethod(klassChildrenJson, klassBody, true);
+    this.__setupRegisterHandlersMethod(klassHandlers, klassBody);
+    this.__buildSettersForAttributes(klassDeclaredAttrs, klassBody);
+    this.__setupGetTypeForAttrNameMethod(klassDeclaredAttrs, klassBody);
+    
+    // Instantiate the Class or Mixin
+    if (mixins) klassBody.include = mixins;
+    var Klass = dr[tagName] = isMixin ? new JS.Module(tagName, klassBody) : new JS.Class(tagName, baseclass, klassBody);
+    
+    // Create package object if necessary and also store the class reference
+    var packages = tagName.split(&#39;-&#39;), packageName, curPackage = dr;
+    while (packages.length &gt; 1) {
+      packageName = packages.shift();
+      if (curPackage[packageName] == null) curPackage[packageName] = {};
+      curPackage = curPackage[packageName];
+      if (packages.length === 1) curPackage[packages.shift()] = Klass;
+    }
+    
+    // Build default class attributes used for inheritance
+    var combinedAttrs = {};
+    if (baseclass &amp;&amp; baseclass.defaultAttrValues) dr.extend(combinedAttrs, baseclass.defaultAttrValues);
+    this.__doMixinExtension(combinedAttrs, mixins);
+    combinedAttrs.$tagname = tagName;
+    dr.extend(combinedAttrs, klassAttrs);
+    if (klassDeclaredAttrValues) dr.extend(combinedAttrs, klassDeclaredAttrValues);
+    delete combinedAttrs.name; // Instances only
+    delete combinedAttrs.id; // Instances only
+    Klass.defaultAttrValues = combinedAttrs;
+    
+    // Store and return class
+    return classTable[tagName] = Klass;
+  };
+
+  maker.__normalizeAttrs = function(attrs) {
+    var normalizedAttrs = {}, normName, name;
+    for (name in attrs) {
+        normName = name.toLowerCase();
+        normalizedAttrs[normName] = attrs[name];
+        if (normName !== name) {
+            sprite.console.warn(&#39;Attribute named: &#39; + name + &#39; converted to: &#39; + normName);
+        }
+    }
+    return normalizedAttrs;
+  };
+
+  maker.__extractMixins = function(attrs, pkg) {
+    var mixins, mixinNames = attrs.with;
+    delete attrs.with;
+    if (mixinNames) {
+      mixins = [];
+      mixinNames.split(define.SEPARATOR_REGEX).forEach(
+        function(mixinName) {
+          if (mixinName) mixins.unshift(maker.lookupClass(mixinName, pkg));
+        }
+      );
+    }
+    return mixins;
+  };
+
+  maker.__lookupRequires = function(attrs, pkg) {
+    var requiresNames = attrs.requires;
+    if (requiresNames) {
+      delete attrs.requires;
+      requiresNames.split(define.SEPARATOR_REGEX).forEach(
+        function(requireName) {
+          if (requireName) maker.lookupClass(requireName, pkg);
+        }
+      );
+    }
+  };
+
+  maker.__buildSettersForAttributes = function(attrs, targetObj) {
+    if (attrs) {
+      var setterName;
+      for (var attrName in attrs) {
+        setterName = dr.AccessorSupport.generateSetterName(attrName);
+        if (!targetObj[setterName]) { // Don&#39;t clobber an explicit setter
+          targetObj[setterName] = new Function(
+            &quot;value&quot;, &quot;this.setActual(&#39;&quot; + attrName + &quot;&#39;, value, &#39;&quot; + attrs[attrName] + &quot;&#39;);&quot;
+          );
+        }
+      }
+    }
+  };
+
+  maker.__doMixinExtension = function(attrs, mixins) {
+    if (mixins) {
+      len = mixins.length;
+      if (len &gt; 0) {
+        i = 0;
+        for (; len &gt; i;) {
+          dr.extend(attrs, mixins[i++].defaultAttrValues);
+        }
+      }
+    }
+  };
+
+  maker.__setupMakeChildrenMethod = function(childrenJson, targetObj, isClassroot) {
+    if (childrenJson) {
+      targetObj.__makeChildren = new Function(&#39;dr&#39;,
+        &#39;this.callSuper(); &#39; + 
+        (isClassroot ? &#39;&#39; : &#39;this.__disallowPlacement = false; &#39;) + 
+        &#39;dr.makeChildren(this, &#39; + JSON.stringify(childrenJson) + &#39;, &#39; + isClassroot + &#39;);&#39;
+      ); // TAG:Global Scope
+    }
+  };
+
+  maker.__setupRegisterHandlersMethod = function(handlersList, targetObj) {
+    if (handlersList.length &gt; 0) {
+      targetObj.__registerHandlers = new Function(&#39;dr&#39;,
+        &#39;this.callSuper(); dr.registerHandlers(this, &#39; + JSON.stringify(handlersList) + &#39;);&#39;
+      ); // TAG:Global Scope
+    }
+  };
+
+  maker.__setupGetTypeForAttrNameMethod = function(attrs, targetObj) {
+    if (attrs) {
+      targetObj.getTypeForAttrName = new Function(&#39;attrName&#39;,
+        &#39;var retval = &#39; + JSON.stringify(attrs) + &#39;[attrName]; return retval ? retval : this.callSuper();&#39;
+      );
+    }
+  };
+
+  maker.__processSetter = function(childNode, compiledMethods, targetObj) {
+    var methodId = childNode.method_id;
+    if (methodId) {
+      var compiledMethod = compiledMethods[methodId];
+      if (compiledMethod) {
+        targetObj[dr.AccessorSupport.generateSetterName(childNode.attr.name)] = compiledMethod;
+      } else {
+        throw new Error(&#39;Cannot find method id&#39; + methodId);
+      }
+    }
+  };
+
+  maker.__processMethod = function(childNode, compiledMethods, targetObj, altTargetObj) {
+    var methodId = childNode.method_id;
+    if (methodId) {
+      var compiledMethod = compiledMethods[methodId],
+        childAttrs = childNode.attr;
+      if (compiledMethod) {
+        if (altTargetObj &amp;&amp; childAttrs.allocation &amp;&amp; childAttrs.allocation === &#39;class&#39;) {
+          altTargetObj[childAttrs.name] = compiledMethod;
+        } else {
+          targetObj[childAttrs.name] = compiledMethod;
+        }
+      } else {
+        throw new Error(&#39;Cannot find method id&#39; + methodId);
+      }
+    }
+  };
+
+  maker.__processHandler = function(childNode, compiledMethods, targetObj, handlerList, altTargetObj) {
+    var childAttrs = childNode.attr;
+    if (childAttrs) {
+      var eventName = childAttrs.event,
+        reference = childAttrs.reference;
+      
+      if (reference === &#39;&#39;) dr.global.error.logWarn(&#39;Empty reference attribute in handler.&#39;);
+      
+      if (eventName) {
+        if (childAttrs.method) {
+          handlerList.push({name:childAttrs.method, event:eventName, reference:reference});
+        } else {
+          var methodId = childNode.method_id;
+          if (methodId) {
+            var compiledMethod = compiledMethods[methodId];
+            if (compiledMethod) {
+              var methodName = &#39;__handler_&#39; + methodId;
+              targetObj[methodName] = compiledMethod;
+              handlerList.push({name:methodName, event:eventName, reference:reference});
+            } else {
+              throw new Error(&#39;Cannot find method id&#39; + methodId);
+            }
+          }
+        }
+        
+        // Also process named handlers as methods
+        if (childAttrs.name) {
+            this.__processMethod(childNode, compiledMethods, targetObj, altTargetObj);
+        }
+      } else {
+        dr.global.error.logWarn(&#39;Handler has no event attribute.&#39;);
+      }
+    } else {
+      dr.global.error.logWarn(&#39;Handler has no attributes.&#39;);
+    }
+  };
+
+  maker.__processAttribute = function(childNode, attrs, attrValues, altTargetObj) {
+    var childAttrs = childNode.attr,
+      name = childAttrs.name.toLowerCase();
+    
+    if (altTargetObj &amp;&amp; childAttrs.allocation &amp;&amp; childAttrs.allocation === &#39;class&#39;) {
+      altTargetObj[name] = dr.AccessorSupport.coerce(name, childAttrs.value, childAttrs.type || &#39;string&#39;, null);
+    } else {
+      attrs[name] = childAttrs.type || &#39;string&#39;; // Default type is string
+      attrValues[name] = childAttrs.value;
+    }
+  };
+})</pre>
+</body>
+</html>

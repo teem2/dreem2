@@ -1,0 +1,18 @@
+<view width="150" height="100" bgcolor="red">
+  <text color="white" text="INCLUDED! 1"></text>
+  <handler type="coffee" event="oninit">
+    @parent.setAttribute("includedTarget1", "SET!")
+  </handler>
+</view>
+<view width="150" height="100" bgcolor="green">
+  <text color="white" text="INCLUDED! 2"></text>
+  <handler type="coffee" event="oninit">
+    @parent.setAttribute("includedTarget2", "SET!")
+  </handler>
+</view>
+<view width="150" height="100" bgcolor="blue">
+  <text color="white" text="INCLUDED! 3"></text>
+  <handler type="coffee" event="oninit">
+    @parent.setAttribute("includedTarget3", "SET!")
+  </handler>
+</view>

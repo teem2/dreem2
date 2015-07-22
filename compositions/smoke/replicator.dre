@@ -1,0 +1,136 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Replicator'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <testingtimer>500</testingtimer>
+    
+    <view width="100%" height="100%" clip="true">
+      <expectedoutput>missing classname for replicator [object Object]
+timeout ran</expectedoutput>
+      <replicator>
+        <handler event="oninit">
+          assert.equal(this.parent.subviews.length, 1, 'Replication should not have increased the number of subviews');
+        </handler>
+      </replicator>
+
+      <wrappinglayout></wrappinglayout>
+      <!-- Replicate over the data array -->
+      <replicator classname="text" data="[0,1,2,3]">
+        <handler event="onreplicated" args="replicated">
+          this.onreplicated = true;
+          assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
+          assert.equal(this.parent.subviews.length, 5, 'Replication should have increased the number of subviews');
+        </handler>
+        <handler event="oninit">
+          assert.equal(true, this.onreplicated, 'There should be an onreplicated event');
+        </handler>
+      </replicator>
+
+      <!-- Replicate over a datapath with a static dataset-->
+      <dataset name="static">
+        {
+          "store": {
+            "book": [
+              {
+                "category": "reference",
+                "author": "Nigel Rees",
+                "title": "Sayings of the Century",
+                "price": 8.95
+              },
+              {
+                "category": "fiction",
+                "author": "Evelyn Waugh",
+                "title": "Sword of Honour",
+                "price": 12.99
+              },
+              {
+                "category": "fiction",
+                "author": "Herman Melville",
+                "title": "Moby Dick",
+                "isbn": "0-553-21311-3",
+                "price": 8.99
+              },
+              {
+                "category": "fiction",
+                "author": "J. R. R. Tolkien",
+                "title": "The Lord of the Rings",
+                "isbn": "0-395-19395-8",
+                "price": 22.99
+              }
+            ],
+            "bicycle": {
+              "color": "red",
+              "price": 19.95
+            }
+          }
+        }
+      </dataset>
+      <replicator classname="text" datapath="$static/store/book[*]/title">
+        <handler event="onreplicated" args="replicated">
+          this.onreplicated = true;
+          assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
+          assert.equal(this.parent.subviews.length, 9, 'Replication should have increased the number of subviews');
+        </handler>
+        <handler event="oninit">
+          var _this = this;
+          dr.idle.callOnIdle(function() {
+            assert.equal(true, _this.onreplicated, 'There should be an onreplicated event')
+          });
+        </handler>
+      </replicator>
+
+      <!-- Replicate over a datapath with a dynamic dataset-->
+      <dataset name="dynamic"></dataset>
+      <replicator classname="text" datapath="$dynamic/store/book[*]/price">
+        <handler event="onreplicated" args="replicated">
+          if (this.onreplicated) {
+            this.onreplicated++;
+          } else {
+            this.onreplicated = 1
+          }
+          assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
+
+          // The first time the event fires, it will be for an empty array since the data hasn't loaded yet
+          if (this.onreplicated === 1) {
+            assert.equal(this.parent.subviews.length, 9, 'Replication on an empty array should not have increased the number of subviews');
+          } else {
+            assert.equal(this.parent.subviews.length, 13, 'Replication should have increased the number of subviews');
+          }
+        </handler>
+        <handler event="oninit">
+          var self = this;
+          
+          setTimeout(function(){
+            console.log('timeout ran');
+            assert.equal(2, self.onreplicated, 'There should be a second onreplicated event');
+          }.bind(this), 250)
+          
+          this.parent.dynamic.setAttribute('url', '/data/example.json')
+        </handler>
+      </replicator>
+    </view>
+  </screen>
+</screens>
+</composition>

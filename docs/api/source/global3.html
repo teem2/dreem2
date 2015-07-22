@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">define(function(require, exports, module)
+{
+	var view = require(&#39;$SPRITE/view.js&#39;);
+	
+	
+	function Global()
+	{
+		this.addEventListener= function(type, callback, capture)
+		{
+			log(&quot;addEventListener&quot; + type, callback, capture);
+		},
+		
+		this.idleCallBackID=0;
+		
+		this.idleCallbackMap={};
+		
+		this.attachEvent = function (eventname, func)
+		{
+			console.log(&quot;attach Event on global&quot;);
+			for(a in arguments)
+			{
+				console.log(a + &quot; &quot; + arguments[a]);
+			}
+			
+		}
+		
+		this.SetupIdleCallback=function(func)
+		{
+			this.idleCallBackID++;				
+			this.idleCallbackMap[this.idleCallBackID] = func;		
+			return this.idleCallBackID ;
+		};
+		
+		this.CancleIdleCallback= function(id)
+		{
+			delete this.idleCallbackMap[id];
+		};
+		
+		this.Time = 0;
+		
+		this.callAllIdleFunctions =function()
+		{
+		this.Time+=30;
+			for (a in this.idleCallbackMap)
+			{
+				this.idleCallbackMap[a](Time);			
+			}
+		};
+		
+		this.createTextNode=function()
+		{
+			return view.prototype.createPlatformObject();
+		}
+	};
+	
+	module.exports = new Global();
+});</pre>
+</body>
+</html>

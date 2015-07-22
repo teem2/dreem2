@@ -1,0 +1,155 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<class name="reticle" with="keyboarddraggable, button" visible="false" distancebeforedrag="5" cursor="move">
+  <handler event="onselected" args="selected" reference="selectionmanager">
+    var oldTarget = this.target;
+    this.target = selected;
+    if (selected) {
+      this.setAttribute('visible', true);
+      this._syncPosition();
+      if (!oldTarget) this.listenTo(dr.idle, 'onidle', this._syncPosition);
+    } else {
+      this.stopListening(dr.idle, 'onidle', this._syncPosition);
+      this.setAttribute('visible', false);
+    }
+  </handler>
+
+  <method name="_syncPosition">
+    var target = this.target,
+      pos = target.getAbsolutePosition();
+    this._isSync = true;
+    this.setAttributes({width:target.width, height:target.height, x:pos.x, y:pos.y});
+    this._isSync = false;
+  </method>
+
+  <method name="drawFocusedState">
+    this.fill.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+  </method>
+  <method name="drawHoverState">
+    this.fill.setAttribute('boxshadow', config.boxshadow_normal);
+  </method>
+  <method name="drawActiveState">
+    this.fill.setAttribute('boxshadow', null);
+  </method>
+  <method name="drawReadyState">
+    this.fill.setAttribute('boxshadow', config.boxshadow_normal);
+  </method>
+
+  <method name="_updateTarget" args="attr, value">
+    if (this.target && !this._isSync) this.target.setAttribute(attr, value);
+  </method>
+  <handler event="onx" args="x">
+    this._updateTarget('x', x + this.dx);
+  </handler>
+  <handler event="ony" args="y">
+    this._updateTarget('y', y + this.dy);
+  </handler>
+  <handler event="onwidth" args="width">
+    this._updateTarget('width', width);
+    this.resizer.setAttribute('x', this.width - 5)
+  </handler>
+  <handler event="onheight" args="height">
+    this._updateTarget('height', height);
+    this.resizer.setAttribute('y', this.height - 5)
+  </handler>
+
+  <method name="_start">
+    var target = this.target,
+      pos = target.getAbsolutePosition();
+    this.dx = target.x - pos.x;
+    this.dy = target.y - pos.y;
+    
+    // started dragging, create compound for target with current values
+    var attrundoable = dr.editor.attrundoable;
+    this._undoablew = new attrundoable({target:target, attribute:'width', oldvalue:target.getAttribute('width')});
+    this._undoableh = new attrundoable({target:target, attribute:'height', oldvalue:target.getAttribute('height')});
+    this._undoablex = new attrundoable({target:target, attribute:'x', oldvalue:target.getAttribute('x')});
+    this._undoabley = new attrundoable({target:target, attribute:'y', oldvalue:target.getAttribute('y')});
+  </method>
+  <method name="startDrag" args="event">
+    this._start();
+    this.super();
+  </method>
+  <method name="_stop">
+    // Target can be null if you undo/redo a create/delete while dragging
+    // the node that is created/deleted so make sure it exists first.
+    var target = this.target;
+    if (target) {
+      // stopped dragging, store new values
+      var compound = new dr.editor.compoundundoable();
+      this._undoablew.newvalue = target.getAttribute('width');
+      this._undoableh.newvalue = target.getAttribute('height');
+      this._undoablex.newvalue = target.getAttribute('x');
+      this._undoabley.newvalue = target.getAttribute('y');
+      compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
+      undo.do(compound);
+    }
+  </method>
+  <method name="_abort">
+    var target = this.target;
+    if (target) {
+      target.setAttribute('x', this._undoablex.oldvalue);
+      target.setAttribute('y', this._undoabley.oldvalue);
+      target.setAttribute('width', this._undoablew.oldvalue);
+      target.setAttribute('height', this._undoableh.oldvalue);
+    }
+  </method>
+  <method name="stopDrag" args="event, isAbort">
+    if (isAbort) {
+      this._abort();
+    } else {
+      this._stop();
+    }
+    this.super();
+  </method>
+
+  <view name="fill" width="100%" height="100%" clip="true">
+    <view name="inner" width="100%" height="100%" border="1" bordercolor="blue"></view>
+  </view>
+
+  <controlhandle name="resizer">
+    <handler event="onx" args="x">
+      this.parent.setAttribute('width', x + 5);
+    </handler>
+    <handler event="ony" args="y">
+      this.parent.setAttribute('height', y + 5);
+    </handler>
+    <method name="startDrag" args="event">
+      this.parent._start();
+      this.super();
+    </method>
+    <method name="updatePosition" args="x, y">
+      if (!this.disabled) {
+        this.setAttribute('x', Math.max(-5, x));
+        this.setAttribute('y', Math.max(-5, y));
+      }
+    </method>
+    <method name="stopDrag" args="event, isAbort">
+      if (isAbort) {
+        this.parent._abort();
+      } else {
+        this.parent._stop();
+      }
+      this.super();
+    </method>
+  </controlhandle>
+</class>

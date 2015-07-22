@@ -1,0 +1,97 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.compoundundoable {UI Components}
+  * @extends dr.editor.undoable
+  * An undoable that combines multiple undoables into a single group that can
+  * be done/undone as one. Use the add method to add undoables to this
+  * compoundundoable.
+  *
+  * The contained undoables will be done in the order they were added and
+  * undone in the reverse order they were added.
+  */-->
+<class name="editor-compoundundoable" extends="editor-undoable">
+  <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method destroy
+    * @overrides
+    * Destroys this undoable and all the undoables contained within it.
+    */-->
+  <method name="destroy">
+    if (!this.destroyed) {
+      var undoables = this.__undoables;
+      this.super();
+      if (undoables) while (undoables.length) undoables.pop().destroy();
+    }
+  </method>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method add
+    * Adds an undoable to this dr.editor.compoundundoable.
+    * @param {dr.editor.undoable} undoable The undoable to add.
+    * @returns {this}
+    */-->
+  <method name="add" args="undoable">
+    if (!undoable) {
+      dr.sprite.console.warn("No undoable provided to compoundundoable.add.");
+    } else if (undoable.done) {
+      dr.sprite.console.warn("Undoable already in the done state in compoundundoable.add.");
+    } else if (undoable === this) {
+      dr.sprite.console.warn("Adding compoundundoable to itself is not allowed.");
+    } else {
+      (this.__undoables || (this.__undoables = [])).push(undoable);
+    }
+    return this;
+  </method>
+
+  <!--/**
+    * @method undo
+    * @overrides
+    * Undoes all the contained undoables.
+    */-->
+  <method name="undo" args="callback">
+    if (this.done) {
+      var undoables = this.__undoables;
+      if (undoables) {
+        var i = undoables.length;
+        try {
+          this.done = false; // Provide cyclic protection
+          while (i) undoables[--i].undo(callback);
+        } finally {
+          this.done = true;
+        }
+      }
+      return this.super();
+    } else {
+      dr.global.error.notifyWarn('invalidCompoundUndo', "Invalid undo in compoundundoable.");
+      return this;
+    }
+  </method>
+
+  <!--/**
+    * @method undo
+    * @overrides
+    * Does all the contained undoables.
+    */-->
+  <method name="redo" args="callback">
+    if (!this.done) {
+      var undoables = this.__undoables;
+      if (undoables) {
+        var len = undoables.length, i = 0;
+        
+        try {
+          this.done = true; // Provide cyclic protection
+          for (; len > i;) undoables[i++].redo(callback);
+        } finally {
+          this.done = false;
+        }
+      }
+      return this.super();
+    } else {
+      dr.global.error.notifyWarn('invalidCompoundRedo', "Invalid redo in compoundundoable.");
+      return this;
+    }
+  </method>
+</class>

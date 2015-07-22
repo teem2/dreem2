@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+*/
+<span id='DaliGen'>/**
+</span> * @class DaliGen {Util}
+ * Class to create dali JS app (testing)
+ */
+define(function(require, exports, module) {
+  module.exports = DaliClient;
+
+  var http = require(&#39;http&#39;),
+    url = require(&#39;url&#39;),
+    fs = require(&#39;fs&#39;),
+    child_process = require(&#39;child_process&#39;),
+    NodeWebSocket = require(&#39;./nodewebsocket&#39;);
+
+  // lets monitor all our dependencies and terminate if they change
+  function DaliClient(args) {
+    this.args = args;
+    this.host = args[&#39;-dali&#39;] === true? &#39;http://127.0.0.1:8080/uitest/dali&#39;: args[&#39;-dali&#39;];
+    this.url = url.parse(this.host);
+    console.log(&quot;DaliClient connecting to &quot; + this.host);
+    this.reconnect();
+  };
+
+  body.call(DaliClient.prototype);
+
+  function body() {
+    // connect to server
+    this.redownload = function() {
+      console.log(&#39;starting redownload...&#39;);
+      
+      // lets fetch the main thing
+      http.get({
+        host: this.url.hostname,
+        port: this.url.port,
+        path: this.url.path
+      }, 
+      function(res) {
+        var data = &#39;&#39;;
+        res.on(&#39;data&#39;, function(buf) {data += buf;});
+        res.on(&#39;end&#39;, function() {
+        console.log(&#39;got data!&#39;);
+        
+          // write it and restart it.
+          try {
+            console.log(&#39;writing dali.js!&#39;);
+            fs.writeFileSync(&#39;./dali.js&#39;, data);
+            if (this.child) {
+              console.log(&#39;child process already running - removing it first.&#39;);
+              var kill = this.child;
+              this.child = undefined;
+              var i = 0;
+              var itv = this.setInterval(function() {
+                try {kill.kill(&#39;SIGTERM&#39;);console.log(&#39;attempting to stop process&#39;);} catch(e) {}
+                if (i++ &gt; 20) this.clearInterval(itv);
+              },10);
+            }
+            console.log(&#39;spawning dali process!&#39;);
+            this.child = child_process.spawn(&#39;./scriptrunner.example&#39;, [&#39;./dali.js&#39;]);
+            this.child.on(&#39;close&#39;, function(code) {
+              this.child = undefined;
+            }.bind(this));
+            this.child.on(&#39;error&#39;, function(){});
+          } catch(e) {
+            //console.log(e)
+          }
+        }.bind(this));
+      }.bind(this));
+    }
+    
+    this.reconnect = function() {
+      // put up websocket.
+      if (this.sock) this.sock.close();
+      
+      this.sock = new NodeWebSocket(this.host);
+      this.sock.onError = function(msg) {
+        setTimeout(function() {
+          this.reconnect();
+        }.bind(this), 500);
+      }.bind(this);
+      
+      this.sock.onMessage = function(msg) {
+        try {
+          msg = JSON.parse(msg);
+        } catch(e){}
+        if (msg.type == &quot;sessionCheck&quot;) {
+          console.log(&#39;attempting redownload!&#39;);
+          this.redownload();
+        }
+      }.bind(this);
+      
+      this.sock.onClose = function() {
+        setTimeout(function() {
+          this.reconnect();
+        }.bind(this), 500);
+      }.bind(this);
+    };
+  }
+})</pre>
+</body>
+</html>

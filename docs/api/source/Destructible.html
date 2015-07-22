@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides a destroy method that can be used as part of an Object creation
+</span>    and destruction lifecycle. When an object is &quot;destroyed&quot; it will have
+    a &#39;destroyed&#39; attribute with a value of true.
+    
+    Events:
+        None
+    
+    Attributes:
+        destroyed:boolean Set to true when the object is in the &quot;destroyed&quot;
+            state, undefinded otherwise.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    
+    module.exports = dr.Destructible = new JS.Module(&#39;Destructible&#39;, {
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-destroy'>        /** Destroys this Object. Subclasses must call callSuper.
+</span>            @returns void */
+        destroy: function() {
+            // See http://perfectionkills.com/understanding-delete/ for details
+            // on how delete works. This is why we use Object.keys below since it
+            // avoids iterating over many of the properties that are not deletable.
+            var keys, i;
+            
+            // OPTIMIZATION: Improve garbage collection for JS.Class
+            var meta = this.__meta__;
+            if (meta) {
+                keys = Object.keys(meta);
+                i = keys.length;
+                while (i) delete meta[keys[--i]];
+            }
+            
+            keys = Object.keys(this);
+            i = keys.length;
+            while (i) delete this[keys[--i]];
+            
+            this.destroyed = true;
+        }
+    });
+});
+</pre>
+</body>
+</html>

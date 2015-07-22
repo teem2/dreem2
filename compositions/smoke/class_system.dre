@@ -1,0 +1,167 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Class System'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <node>
+      <handler event="oninit">
+        var JS = dr.JS;
+        
+        assert.isObject(JS, "The JSClass class system is available under dr.JS");
+        
+        // Create a class, subclass and verify instanceof works. ///////////////
+        var classA = new JS.Class('ClassA');
+        
+        var classB = new JS.Class('ClassB', Object);
+        var classC = new JS.Class('ClassC', classB);
+        
+        var instA = new classA();
+        assert.isObject(instA, "instA exists");
+        assert.isTrue(instA instanceof classA, "Is an instance of classA");
+        assert.isFalse(instA instanceof classB, "Is not an instance of classB");
+        
+        var instB = new classB();
+        assert.isObject(instB, "instB exists");
+        assert.isTrue(instB instanceof classB, "Is an instance of classB");
+        assert.isFalse(instB instanceof classC, "Is not an instance of classC");
+        
+        var instC = new classC();
+        assert.isObject(instC, "instC exists");
+        assert.isTrue(instC instanceof classC, "Is an instance of classC");
+        assert.isTrue(instC instanceof classB, "Is an instance of classB through subclassing");
+        
+        
+        // Verify empty initializer gets run and methods exist. ////////////////
+        var classOne = new JS.Class('ClassOne', {
+            initialize: function() {
+                this.fieldOne = 'foo';
+            },
+            
+            methodOne: function(v) {
+                return 'bar' + v;
+            }
+        });
+        
+        var inst = new classOne();
+        assert.equal(inst.fieldOne, 'foo', 'The constructor got run.');
+        assert.equal(inst.methodOne('x'), 'barx', 'The method exists and functions as a method.');
+        
+        
+        // Verify initializer with arguments gets run. /////////////////////////
+        var classTwo = new JS.Class('ClassTwo', {
+            initialize: function(v1, v2) {
+                this.fieldOne = 'foo';
+                this.fieldTwo = v1;
+                this.fieldThree = v2;
+            }
+        });
+        
+        var inst = new classTwo('hey','you');
+        assert.equal(inst.fieldOne, 'foo', 'The constructor got run.');
+        assert.equal(inst.fieldTwo, 'hey', 'The constructor passed in at least the first arg.');
+        assert.equal(inst.fieldThree, 'you', 'The constructor passed in two args.');
+        
+        
+        // Super calls /////////////////////////////////////////////////////////
+        var classOne = new JS.Class('ClassOne', {
+            initialize: function(v1, v2) {
+                this.fieldOne = 'foo';
+                this.fieldTwo = v1;
+                this.fieldThree = v2;
+            },
+            
+            methodOne: function(v) {
+                return 'bar' + v;
+            }
+        });
+        
+        var classTwo = new JS.Class('ClassTwo', classOne, {
+            initialize: function(v1, v2) {
+                this.fieldOneChild = 'bar';
+                this.fieldTwoChild = v1;
+                this.fieldThreeChild = v2;
+                
+                this.super(v1, v2);
+            },
+            
+            methodOne: function(v) {
+                return 'foo' + this.super(v);
+            }
+        });
+        
+        var inst = new classTwo('hey','you');
+        assert.equal(inst.fieldOne, 'foo', 'The constructor got run.');
+        assert.equal(inst.fieldTwo, 'hey', 'The constructor passed in at least the first arg.');
+        assert.equal(inst.fieldThree, 'you', 'The constructor passed in two args.');
+        
+        assert.equal(inst.fieldOneChild, 'bar', 'The constructor got run.');
+        assert.equal(inst.fieldTwoChild, 'hey', 'The constructor passed in at least the first arg.');
+        assert.equal(inst.fieldThreeChild, 'you', 'The constructor passed in two args.');
+        
+        assert.equal(inst.methodOne('x'), 'foobarx', 'The method exists.');
+        
+        
+        // Create a singleton. /////////////////////////////////////////////////
+        var sing = new JS.Singleton('SingOne', {
+            initialize: function() {
+                this.fieldOne = 'foo';
+            },
+            
+            methodOne: function(v) {
+                return 'bar' + v;
+            }
+        });
+        
+        assert.equal(sing.fieldOne, 'foo', 'The constructor got run.');
+        assert.equal(sing.methodOne('x'), 'barx', 'The method exists.');
+        
+        
+        // Add a mixin (module) ////////////////////////////////////////////////
+        var mixinOne = new JS.Module('MixinOne', {
+            methodTwo: function(v) {
+                return 'baz' + v;
+            }
+        });
+        
+        var classOne = new JS.Class('ClassOne', {
+            include: [mixinOne],
+            
+            initialize: function() {
+                this.fieldOne = 'foo';
+            },
+            
+            methodOne: function(v) {
+                return 'bar' + v;
+            }
+        });
+        
+        var inst = new classOne();
+        assert.equal(inst.fieldOne, 'foo', 'The constructor got run.');
+        assert.equal(inst.methodOne('x'), 'barx', 'The method exists.');
+        assert.equal(inst.methodTwo('x'), 'bazx', 'The mixin method exists.');
+      </handler>
+    </node>
+  </screen>
+</screens>
+</composition>

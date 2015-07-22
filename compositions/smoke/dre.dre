@@ -1,0 +1,93 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <!-- The screen also gets stored as a root. -->
+  <screen id="theScreen" type="browser" name="default" title='Smoke Test - Dre Misc'>
+    <!-- Creates a root node with id "boilerplate" -->
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <!-- Creates a root view -->
+    <view id="rootView1" width="50%" height="50%" scrolling="true" bgcolor="#cccccc" padding="10">
+      <testingtimer>500</testingtimer>
+      <expectedoutput>No nesting of screen tags. Skipping instance.</expectedoutput>
+      
+      <spacedlayout axis="y" spacing="1"></spacedlayout>
+      
+      <!-- Should give a message about no nesting of screen tags. -->
+      <screen></screen>
+      
+      <!-- Oninit should only fire once for dre classes -->
+      <bitmap width="200" height="200" src="/img/shoarma.jpg">
+        <handler event="oninit">
+          window.initCount = !!window.initCount ? window.initCount + 1 : 1
+          
+          assert.equal(1, window.initCount);
+          
+          window.setTimeout(function() {
+            assert.equal(1, window.initCount, 'oninit handler should only fire once')
+          }, 100);
+        </handler>
+      </bitmap>
+      
+      <view type="coffee" width="25" height="25" bgcolor="chartreuse" border="1" bordercolor="black">
+        <handler event="oninit">
+          assert.equal(@width, 25, 'Verify that instances can be typed coffee.')
+        </handler>
+        <indicator></indicator>
+      </view>
+    </view>
+    
+    <!-- Creates another root view -->
+    <view id="rootView2" width="50%" height="50%" x="50%" y="50%" bgcolor="#999999">
+      <handler event="oninit">
+        assert.isTrue(this.isRoot(), 'This is also a root view.');
+        
+        var roots = dr.global.roots.getRoots(),
+          theScreen = dr.sprite.retrieveGlobal('theScreen'),
+          boilerplateNode = dr.sprite.retrieveGlobal('boilerplate'),
+          rootView1 = dr.sprite.retrieveGlobal('rootView1'),
+          rootView2 = dr.sprite.retrieveGlobal('rootView1');
+        
+        assert.lengthOf(roots, 4, 'There should now be three roots, The scren, the boilerpate node and the two views.');
+        assert.include(roots, theScreen, 'One of the roots is the screen.');
+        assert.include(roots, boilerplateNode, 'One of the roots is the boilerplate node.');
+        assert.include(roots, rootView1, 'One of the roots is the other view.');
+        assert.include(roots, rootView2, 'One of the roots is this view.');
+        
+        // Also verify that classroot is correct for each root node
+        assert.equal(theScreen, theScreen.classroot);
+        assert.equal(boilerplateNode, boilerplateNode.classroot);
+        assert.equal(rootView1, rootView1.classroot);
+        assert.equal(rootView2, rootView2.classroot);
+      </handler>
+      
+      <!-- Put it here so it doesn't make another root view. -->
+      <expectedoutput>oninit for screen fired</expectedoutput>
+    </view>
+    
+    <handler event="oninit">
+      console.log('oninit for screen fired');
+    </handler>
+  </screen>
+</screens>
+</composition>

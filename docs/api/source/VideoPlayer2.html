@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific VideoPlayer functionality. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = sprite.VideoPlayer = new JS.Class(&#39;sprite.VideoPlayer&#39;, require(&#39;$SPRITE/View.js&#39;), {
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+<span id='global-property-EVENT_TYPES'>            /** A map of supported video event types. */
+</span>            EVENT_TYPES:{
+                ondurationchange:true,
+                ontimeupdate:true,
+                onplay:true,
+                onpause:true,
+                onended:true
+            }
+        },
+        
+        
+        // Life Cycle //////////////////////////////////////////////////////////////
+        createPlatformObject: function(attrs) {
+            attrs.ELEMENT_TYPE = &#39;video&#39;;
+            return this.callSuper(attrs);
+        },
+        
+        
+        // Attributes //////////////////////////////////////////////////////////////
+        set_poster: function(v) {
+            this.platformObject.setAttribute(&#39;poster&#39;, v);
+            return v;
+        },
+        
+        set_controls: function(v) {
+            this.platformObject.setAttribute(&#39;controls&#39;, v);
+            return v;
+        },
+        
+        set_autoplay: function(v) {
+            this.platformObject.setAttribute(&#39;autoplay&#39;, v);
+            return v;
+        },
+        
+        set_loop: function(v) {
+            this.platformObject.setAttribute(&#39;loop&#39;, v);
+            return v;
+        },
+        
+        set_volume: function(v) {
+            this.platformObject.setAttribute(&#39;volume&#39;, v);
+            return v;
+        },
+        
+        set_preload: function(v) {
+            this.platformObject.setAttribute(&#39;preload&#39;, v ? &#39;auto&#39; : &#39;none&#39;);
+            return v;
+        },
+        
+        set_playing: function(v) {
+            var po = this.platformObject;
+            if (v) {
+                if (po.play) po.play();
+            } else {
+                if (po.pause) po.pause();
+            }
+            return v;
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+        getDuration: function() {
+            return this.platformObject.duration;
+        },
+        
+        getCurrentTime: function() {
+            return this.platformObject.currentTime;
+        },
+        
+        loadVideo: function(sources) {
+            var po = this.platformObject;
+            
+            if (po.canPlayType &amp;&amp; po.load) {
+                this.view.setAttribute(&#39;playing&#39;, false);
+                po.src = &#39;&#39;;
+                
+                for (var type in sources) {
+                    if (po.canPlayType(type)) {
+                        po.src = sources[type];
+                        po.load();
+                        return type;
+                    }
+                }
+            }
+            return null
+        },
+        
+<span id='global-method-createPlatformMethodRef'>        /** @overrides */
+</span>        createPlatformMethodRef: function(platformObserver, methodName, eventType) {
+            return this.createStandardPlatformMethodRef(platformObserver, methodName, eventType, sprite.VideoPlayer) || 
+                this.callSuper(platformObserver, methodName, type);
+        }
+    });
+});
+</pre>
+</body>
+</html>

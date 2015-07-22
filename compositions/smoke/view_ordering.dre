@@ -1,0 +1,163 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - View Ordering'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <view width="100%" height="100%" scrolling="true" padding="10">
+      <node name="n1"></node>
+      
+      <view name="c1" width="auto" height="auto" bgcolor="#999999" padding="5">
+        <view name="c1v1" height="100" width="100" bgcolor="blue">
+          <view name="c1v1sv1" height="10" width="10" bgcolor="yellow"></view>
+        </view>
+        <view name="c1v2" x="5" y="5" height="100" width="100" bgcolor="green"></view>
+        <view name="c1v3" x="10" y="10" height="100" width="100" bgcolor="red"></view>
+      </view>
+      
+      <node name="n2"></node>
+      
+      <view name="c2" x="60" y="60" width="auto" height="auto" bgcolor="#999999" padding="5">
+        <view name="c2v1" height="100" width="100" bgcolor="blue">
+          <view name="c2v1sv1" height="10" width="10" bgcolor="yellow"></view>
+        </view>
+        <view name="c2v2" x="5" y="5" height="100" width="100" bgcolor="green"></view>
+        <view name="c2v3" x="10" y="10" height="100" width="100" bgcolor="red"></view>
+      </view>
+      
+      <node name="n3"></node>
+      
+      <view name="c3" x="120" y="120" width="auto" height="auto" bgcolor="#999999" padding="5">
+        <view name="c3v1" height="100" width="100" bgcolor="lightblue">
+          <view name="c3v1sv1" height="10" width="10" bgcolor="yellow"></view>
+        </view>
+        <view name="c3v2" x="5" y="5" height="100" width="100" bgcolor="lightgreen"></view>
+        <view name="c3v3" x="10" y="10" height="100" width="100" bgcolor="pink"></view>
+      </view>
+      
+      <node name="n4"></node>
+      
+      <handler event="oninit">
+        // Initial position comparisons ////////////////////////////////////////
+        assert.isTrue(this.c1.isBehind(this.c2));
+        assert.isTrue(this.c1.isBehind(this.c3));
+        
+        assert.isTrue(this.c2.isInFrontOf(this.c1));
+        assert.isTrue(this.c2.isBehind(this.c3));
+        
+        assert.isTrue(this.c3.isInFrontOf(this.c2));
+        assert.isTrue(this.c3.isInFrontOf(this.c1));
+        
+        // A view is neither in front nor behind itself
+        assert.isFalse(this.c1.isBehind(this.c1));
+        assert.isFalse(this.c1.isInFrontOf(this.c1));
+        
+        // A view is behind its descendants
+        assert.isTrue(this.c1.isBehind(this.c1.c1v1));
+        assert.isTrue(this.c1.isBehind(this.c1.c1v2));
+        assert.isTrue(this.c1.isBehind(this.c1.c1v3));
+        
+        assert.isTrue(this.c1.isBehind(this.c1.c1v1.c1v1sv1));
+        
+        // A view is not in front of its descendants
+        assert.isFalse(this.c1.isInFrontOf(this.c1.c1v1));
+        assert.isFalse(this.c1.isInFrontOf(this.c1.c1v2));
+        assert.isFalse(this.c1.isInFrontOf(this.c1.c1v3));
+        
+        assert.isFalse(this.c1.isInFrontOf(this.c1.c1v1.c1v1sv1));
+        
+        // A view is in front of its ancestors
+        assert.isTrue(this.c1.c1v1.isInFrontOf(this.c1));
+        assert.isTrue(this.c1.c1v2.isInFrontOf(this.c1));
+        assert.isTrue(this.c1.c1v3.isInFrontOf(this.c1));
+        
+        assert.isTrue(this.c1.c1v1.c1v1sv1.isInFrontOf(this.c1));
+        
+        // A view is not behind its ancestors
+        assert.isFalse(this.c1.c1v1.isBehind(this.c1));
+        assert.isFalse(this.c1.c1v2.isBehind(this.c1));
+        assert.isFalse(this.c1.c1v3.isBehind(this.c1));
+        
+        assert.isFalse(this.c1.c1v1.c1v1sv1.isBehind(this.c1));
+        
+        // Cross Tree tests
+        assert.isTrue(this.c2.c2v1.isInFrontOf(this.c1));
+        assert.isTrue(this.c2.c2v1.isInFrontOf(this.c1.c1v3));
+        assert.isTrue(this.c2.c2v3.isBehind(this.c3));
+        assert.isTrue(this.c2.c2v3.isBehind(this.c3.c3v1));
+        
+        // A view is not in front of or behind nothing
+        assert.isFalse(this.c2.isInFrontOf());
+        assert.isFalse(this.c2.isBehind());
+        
+        // A view is not in front of or behind a node
+        assert.isFalse(this.c2.isInFrontOf(this.n1));
+        assert.isFalse(this.c2.isBehind(this.n1));
+        
+        // Reordering //////////////////////////////////////////////////////////
+        this.c1.c1v1.moveToFront();
+        assert.isTrue(this.c1.c1v1.isInFrontOf(this.c1.c1v2));
+        assert.isTrue(this.c1.c1v1.isInFrontOf(this.c1.c1v3));
+        
+        this.c1.c1v2.moveToBack();
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v3));
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v1));
+        
+        this.c1.c1v2.moveInFrontOf(this.c1.c1v3);
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v1));
+        assert.isTrue(this.c1.c1v2.isInFrontOf(this.c1.c1v3));
+        
+        this.c1.c1v2.moveBehind(this.c1.c1v3);
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v1));
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v3));
+        
+        // Move in front of self should do nothing
+        this.c1.c1v2.moveInFrontOf(this.c1.c1v2);
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v1));
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v3));
+        
+        // Move behind self should do nothing
+        this.c1.c1v2.moveBehind(this.c1.c1v2);
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v1));
+        assert.isTrue(this.c1.c1v2.isBehind(this.c1.c1v3));
+        
+        // Descendant views respect parent reordering
+        this.c2.moveToFront();
+        assert.isTrue(this.c2.isInFrontOf(this.c3));
+        assert.isTrue(this.c2.c2v1.isInFrontOf(this.c3.c3v3));
+        
+        // Reparenting /////////////////////////////////////////////////////////
+        assert.isTrue(this.c1.c1v2.isBehind(this.c3.c3v1));
+        assert.equal(this.c3.c1v2, undefined);
+        
+        this.c1.c1v2.setAttribute('parent', this.c3);
+        
+        assert.isTrue(this.c3.c1v2.isInFrontOf(this.c3.c3v1));
+        assert.isTrue(this.c3.c3v3.isBehind(this.c3.c1v2));
+        assert.isTrue(this.c1.c1v1.isBehind(this.c3.c1v2));
+        assert.isTrue(this.c1.c1v3.isBehind(this.c3.c1v2));
+      </handler>
+    </view>
+  </screen>
+</screens>
+</composition>

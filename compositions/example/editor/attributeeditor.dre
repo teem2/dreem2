@@ -1,0 +1,128 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<class name="texteditor" extends="inputtext" fontsize="14">
+  <handler event="onfocus">
+    this.oldvalue = this.text;
+  </handler>
+  <setter name="text" args="v">
+    // Clean up some common constraint patterns
+    switch (this.targetattr) {
+      case 'x':
+        if (v === '${this.boundsxdiff}') {
+          v = 'left';
+        } else if (v === '${((this.parent.innerwidth - this.boundswidth) / 2) + this.boundsxdiff}') {
+          v = 'center';
+        } else if (v === '${this.parent.innerwidth - this.boundswidth + this.boundsxdiff}') {
+          v = 'right';
+        } else {
+          var percent = this._parseAsPercentConstraint(v, 'innerwidth');
+          if (percent !== undefined) v = percent + '%';
+        }
+        break;
+      case 'y':
+        if (v === '${this.boundsydiff}') {
+          v = 'top';
+        } else if (v === '${((this.parent.innerheight - this.boundsheight) / 2) + this.boundsydiff}') {
+          v = 'middle';
+        } else if (v === '${this.parent.innerheight - this.boundsheight + this.boundsydiff}') {
+          v = 'bottom';
+        } else {
+          var percent = this._parseAsPercentConstraint(v, 'innerheight');
+          if (percent !== undefined) v = percent + '%';
+        }
+        break;
+      case 'width':
+        var percent = this._parseAsPercentConstraint(v, 'innerwidth');
+        if (percent !== undefined) v = percent + '%';
+        break;
+      case 'height':
+        var percent = this._parseAsPercentConstraint(v, 'innerheight');
+        if (percent !== undefined) v = percent + '%';
+        break;
+    }
+    return this.super(v);
+  </setter>
+  <method name="_parseAsPercentConstraint" args="value, innerAttr">
+    var prefix = '${this.parent.' + innerAttr + ' * ';
+    if (typeof value === 'string' && value.startsWith(prefix) && value.endsWith('}')) {
+      value = Number(value.substring(prefix.length, value.length - 1));
+      if (!isNaN(value)) return value * 100;
+    }
+  </method>
+  <handler event="ontext" args="text">
+    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, text);
+  </handler>
+  <handler event="onblur">
+    if (this.oldvalue !== this.text) {
+      undo.do(new dr.editor.attrundoable({
+        target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.text
+      }));
+    }
+  </handler>
+</class>
+
+<class name="attributeeditor" height="auto" width="100%">
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    var self = this;
+    var name = this.data.name;
+    var child = this.createChild({
+      class:'texteditor',
+      name:'field',
+      x:64, 
+      target:selectionmanager.selected, 
+      targetattr:name
+    });
+    
+    // Text may look like a constraint so call setActualAttribute rather than
+    // setAttribute to work around constraint binding.
+    child.setActualAttribute('text', selectionmanager.selected.getAttribute(name));
+    
+    // update when selected item's value changes
+    child.listenTo(selectionmanager.selected, 'on__cfg_' + name, function(val) {
+      this._isSync = true;
+      this.setActualAttribute('text', val);
+      self._checkActualIsDifferent();
+      this._isSync = false;
+    });
+    child.syncTo(this, 'oninnerwidth', function(w) {
+      this.setAttribute('width', w - this.x - 68);
+    });
+    
+    this.actual.syncTo(selectionmanager.selected, 'on' + name, function(val) {
+      this.setActualAttribute('text', val);
+      self._checkActualIsDifferent();
+    });
+    
+    this.label.setAttribute('text', name);
+  </method>
+  
+  <method name="_checkActualIsDifferent">
+    var actual = this.actual.text;
+    var cfg = this.field.text;
+    this.actual.setAttribute('color', cfg === actual ? '#999999' : '#000000');
+  </method>
+
+  <text name="label" x="${60 - this.width}" fontsize="14"></text>
+  <text name="actual" x="${this.parent.innerwidth - this.width - 4}" fontsize="14" width="60"></text>
+</class>

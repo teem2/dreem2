@@ -1,0 +1,254 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+  <!--/**
+     * @class dr.datapath {Data}
+     * @extends dr.node
+     * Handles data querying, filtering and transformation
+     *
+     * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
+     *
+     *     @example
+     *     <dataset name="bikeshop">
+     *      {
+     *        "bicycle": [
+     *          {
+     *           "color": "red",
+     *           "price": 19.95
+     *          },
+     *          {
+     *           "color": "green",
+     *           "price": 29.95
+     *          },
+     *          {
+     *           "color": "blue",
+     *           "price": 59.95
+     *          }
+     *        ]
+     *      }
+     *     </dataset>
+     *     <datapath path="$bikeshop/bicycle[*][@]">
+     *       <method name="filterfunction" args="obj, accum">
+     *         // add the color to the beginning of the results if the price is greater than 20
+     *         if (obj.price > 20)
+     *           accum.unshift(obj.color);
+     *         return accum
+     *       </method>
+     *     </datapath>
+     *
+     * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
+     */-->
+    <class name="datapath" type="coffee" extends="node" scriptincludes="/lib/json-path+json-ptr-0.1.3.min.js">
+      <attribute name="_arrayidentity" type="expression" value="[]" allocation="class"></attribute>
+      <attribute name="datasetmatcher" value="/^\$([^\/]+)/" type="expression" allocation="class"></attribute>
+      <!--/**
+        * @attribute {Object} data
+        * A pointer to the data to be evaluated
+        */-->
+      <attribute name="data" value="null" type="expression"></attribute>
+      <!--/**
+        * @attribute {Array} result
+        * The result of evaluating the path
+        */-->
+      <!--/**
+        * @attribute {String} path
+        * A jsonpath expression to be evaluated on local data if available, or data in a parent node.
+        * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for details.
+        */-->
+      <attribute name="path" value="" type="string"></attribute>
+      <setter name="path" args="path">
+        unless path
+          @_parsedpath = null
+          @_findDataset()
+          return path 
+        # console.log('evaluating path', path)
+
+        # Find the dataset if this is an absolute path
+        newpath = path
+        match = path.match(dr.datapath.datasetmatcher)
+        if match and match[1]
+          # found absolute path, e.g. $mydataset/, store name for lookup
+          @_findDataset(match[1])
+
+          # remove dataset declaration from the path
+          newpath = path.replace(dr.datapath.datasetmatcher, '')
+
+        # store the parsed path (with dataset stripped) for evaluation later
+        @_parsedpath = JsonPath.parseSelector(newpath)
+
+        # console.log('evaluated datapath', path, @_parsedpath)
+        return path
+      </setter>
+
+      <method name="_findDataset" args="datasetname">
+        @_datasetupdater ?= (data) =>
+          # console.log('callback', @, data)
+          @setAttribute('data', data)
+
+        if @dataset
+          @stopListening(@dataset, 'ondata', @_datasetupdater)
+          @dataset = null
+
+        if datasetname
+          @dataset = dr.dataset.datasets[datasetname]
+
+          if @dataset?
+            # console.log('listening to dataset', datasetname, @dataset.name, @dataset.data)
+            @listenTo(@dataset, 'ondata', @_datasetupdater)
+            @setAttribute('data', @dataset.data)
+      </method>
+
+      <!--/**
+        * @attribute {String} [sortpath=""]
+        * A jsonpath expression used to select values for sorting.
+        * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for details.
+        */-->
+      <attribute name="sortpath" value="" type="string"></attribute>
+
+      <!--/**
+        * @attribute {Expression} [sortasc=true]
+        * If null, don't sort. Otherwise, sort ascending if true, descending if false.
+        */-->
+      <attribute name="sortasc" value="null" type="expression"></attribute>
+
+      <!--/**
+        * @attribute {String} [filterexpression=""]
+        * If defined, data will be filtered against a [regular expression](https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions).
+        */-->
+      <attribute name="filterexpression" value="" type="string"></attribute>
+
+      <setter name="filterexpression" args="regex">
+        _filterexpression = new RegExp(regex)
+        # console.log('filtering on', regex, _filterexpression)
+        @_filterexpressionfunc = (value) ->
+          return (value + '').match(_filterexpression) if (value)
+        @_processData()
+        return regex
+      </setter>
+
+      <handler event="onsortfield,onsortasc">
+        @_buildsortfunc()
+        @_processData()
+      </handler>
+
+      <method name="_buildsortfunc">
+        if @sortpath or @sortasc?
+          # sort, optionally by @sortpath
+          sortselector = JsonPath.parseSelector(@sortpath) if @sortpath
+          sortasc = @sortasc
+          @sortfunc = (keyA, keyB) ->
+            if sortselector
+              # execute selectors to look up @sortpath
+              keyA = JsonPath.executeSelectors(keyA, sortselector)
+              keyB = JsonPath.executeSelectors(keyB, sortselector)
+              # console.log('sortpath', keyA, keyB)
+
+            # Compare the 2 sort fields
+            result = 0
+            if keyA > keyB
+              result = 1
+            else if keyA < keyB
+              result = -1
+
+            # console.log sortpath, sortasc
+            result = -result unless sortasc
+            result
+        else
+          @sortfunc = null
+      </method>
+
+      <!--/**
+        * @method filterfunction
+        * @abstract
+        * Called to filter data.
+        * @param obj An individual item to be processed.
+        * @param {Object[]} accum The array of items that have been accumulated. To keep a processed item, it must be added to the accum array.
+        * @returns {Object[]} The accum array. Must be returned otherwise results will be lost.
+        */-->
+
+      <handler event="onpath,ondata,oninit" method="refresh"></handler>
+      <!--/**
+        * @method refresh
+        * Refreshes the results manually
+        */-->
+      <method name="refresh">
+        return unless @inited
+        # console.log('refresh', @data, @classname, @parent, @children, @, @inited)
+
+        result = @data
+        filterfunction = @filterfunction?.bind(@)
+
+        if @_parsedpath
+          # have a datapath, run on data by default
+          rundata = @data
+          if @dataset and @path == "$#{@dataset.name}"
+            # console.log('dataset only', @path, @dataset)
+            # absolute datapath to dataset only, no need to executeSelectors
+            rundata = null
+          else unless @data
+            # relative datapath with no data, look for data in parents
+            parentdata = @getAncestorWithProperty('data')
+            if parentdata?.data
+              # execute selectors relative to parent data
+              rundata = parentdata.data
+            else unless @dataset
+              console.warn('No parent data found for', @path, @)
+
+          if rundata
+            # console.log('executing selector', @path, rundata, @_parsedpath)
+            result = JsonPath.executeSelectors(rundata, @_parsedpath, filterfunction)
+        else if @data and filterfunction
+          # no datapath, run filterfunction on data
+          accum = []
+          for datum in @data
+            accum = filterfunction(datum, accum)
+          result = accum
+
+        unless result?
+          @_origresult = dr.datapath._arrayidentity
+        else
+          @_origresult = if Array.isArray(result) then result else [result]
+
+        @_processData()
+      </method>
+
+      <method name="_processData">
+        return unless @inited
+        @result = @_origresult
+
+        if @filterexpression
+          @result = @result.filter(@_filterexpressionfunc)
+          # console.log('_filterexpressionfunc', @_filterexpressionfunc, @data, @result)
+
+        if @sortfunc?
+          @result.sort(@sortfunc)
+
+        @sendEvent('onresult', @result)
+        # console.log('result', @path, @result)
+      </method>
+
+      <method name="updateData" args="data">
+        # remove dataset declaration
+        path = @path.replace(dr.datapath.datasetmatcher, '')
+        # Apply the data back to the dataset
+        @dataset.updateData(path, data);
+      </method>
+    </class>

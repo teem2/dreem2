@@ -4,7 +4,7 @@
 */
 
 /**
- * @class parser.HTMLParser
+ * @class parser.HTMLParser {Internal}
  * Very fast and simple XML/HTML parser
  * Modifyable to output any JS datastructure from HTML/XML you prefer
  */
@@ -38,17 +38,19 @@ define(function(require, exports, module){
 			}
 		}
 		if(!node.tag) return child
-		if(node.tag.charAt(0) !== '$'){
+		if(!node.tag.startsWith('$')){
 			ret += indent + '<' + node.tag
 			var attr = node.attr
-			if(attr) for(var k in attr){
-				var val = attr[k]
-				if(ret[ret.length - 1] != ' ') ret += ' '
-				ret += k
-				var delim = "'"
-				if(val !== 1){
-					if(val.indexOf(delim) !== -1) delim = '"'
-					ret += '=' + delim + val + delim
+			if(attr) {
+				for(var k in attr){
+					var val = attr[k]
+					if(ret[ret.length - 1] != ' ') ret += ' '
+					ret += k
+					var delim = "'"
+					if(val !== 1){
+						if(typeof val === 'string' && val.indexOf(delim) !== -1) delim = '"'
+						ret += '=' + delim + val + delim
+					}
 				}
 			}
 			if(child) ret += '>\n' + child + indent + '</' + node.tag + '>\n'
@@ -57,7 +59,7 @@ define(function(require, exports, module){
 		else{
 			if(node.tag == '$text') ret += indent + node.value + '\n' 
 			else if(node.tag == '$cdata') ret += indent + '<![CDATA['+node.value+']]>\n'
-			else if(node.tag == '$comment') ret += indent + '<!--'+node.value+'-->\n'
+			else if(node.tag == '$comment') ret += indent + node.value+'-->\n'
 			else if(node.tag == '$root') ret += child
 		}
 		return ret
