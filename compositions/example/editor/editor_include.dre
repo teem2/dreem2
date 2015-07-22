@@ -288,7 +288,7 @@ SOFTWARE. -->
           deleteButton.doActivated();
           break;
         case 27: // Esc: Clear selection
-          selectionmanager.clear();
+          if (!reticle.isStarted) selectionmanager.clear();
           break;
       }
     }
@@ -303,7 +303,7 @@ SOFTWARE. -->
       xLoc.setAttribute('visible', false);
     } else {
       xLoc.setAttribute('visible', true);
-      xLoc.setAttribute('x', x);
+      xLoc.setAttribute('x', x - 1);
       xLoc.label.setAttribute('text', x - this.content.x + this.content.inner.scrollx);
     }
     
@@ -311,7 +311,7 @@ SOFTWARE. -->
       yLoc.setAttribute('visible', false);
     } else {
       yLoc.setAttribute('visible', true);
-      yLoc.setAttribute('y', y);
+      yLoc.setAttribute('y', y - 1);
       yLoc.label.setAttribute('text', y - this.content.y + this.content.inner.scrolly);
     }
   </method>
@@ -325,7 +325,7 @@ SOFTWARE. -->
     y="${config.topbar_height}"
     width="${this.parent.divider_right.x - this.x}"
     height="${config.ruler_thickness}"
-    scrollx="${this.parent.content.inner.scrollx + 99 - config.content_inset}"
+    scrollx="${this.parent.content.inner.scrollx + 100 - config.content_inset}"
   >
     <spacedlayout axis="x" spacing="100" inset="102"/>
     <replicator name="repl" classname="horizontal_rulertext" data="${config.ruler_marks}"/>
@@ -349,7 +349,7 @@ SOFTWARE. -->
     y="${this.parent.ruler_lead.y + this.parent.ruler_lead.height}"
     width="${config.ruler_thickness}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-    scrolly="${this.parent.content.inner.scrolly + 99 - config.content_inset}"
+    scrolly="${this.parent.content.inner.scrolly + 100 - config.content_inset}"
   >
     <spacedlayout axis="y" spacing="100" inset="97"/>
     <replicator name="repl" classname="vertical_rulertext" data="${config.ruler_marks}"/>
@@ -368,32 +368,242 @@ SOFTWARE. -->
     <verticaltext with="locationtext" name="label" x="2" y="-2"/>
   </view>
   
-  <view id="horizontal_selection" ignoreplacement="true"
+  <view id="horizontal_selection" with="keyboarddraggable, button" ignoreplacement="true"
     visible="${reticle.visible}" opacity="0.75"
     x="${reticle.x}" y="${this.parent.ruler_horizontal.y}"
     width="${Math.max(1, reticle.width)}" height="${config.ruler_thickness}"
   >
     <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
-    <view width="1" height="100%" bgcolor="${config.selection_color}"/>
-    <view width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
+    <view name="lower" width="1" height="100%" bgcolor="${config.selection_color}"/>
+    <view name="upper" width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
+    
+    <view with="keyboarddraggable, button" width="10" x="-5" height="100%" cursor="col-resize">
+      <method name="startDrag" args="event">
+        reticle._start();
+        this._origTargetX = reticle.target.x;
+        this._origTargetW = reticle.target.width;
+        this.super();
+      </method>
+      <method name="stopDrag" args="event, isAbort">
+        if (isAbort) {
+          reticle._abort();
+        } else {
+          reticle._stop();
+        }
+        this.super();
+      </method>
+      <method name="updatePosition" args="x, y">
+        var target = reticle.target;
+        if (!this.disabled && target) {
+          var diff = Math.min(this._origTargetW, x + 5);
+          target.setAttribute('x', this._origTargetX + diff);
+          target.setAttribute('width', this._origTargetW - diff);
+        }
+      </method>
+      
+      <method name="drawFocusedState">
+        this.parent.lower.setAttribute('bgcolor', 'black');
+        this.parent.lower.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+      </method>
+      <method name="drawHoverState">
+        this.parent.lower.setAttribute('bgcolor', 'black');
+        this.parent.lower.setAttribute('boxshadow', config.boxshadow_normal);
+      </method>
+      <method name="drawActiveState">
+        this.parent.lower.setAttribute('bgcolor', config.selection_color);
+        this.parent.lower.setAttribute('boxshadow', null);
+      </method>
+      <method name="drawReadyState">
+        this.parent.lower.setAttribute('bgcolor', config.selection_color);
+        this.parent.lower.setAttribute('boxshadow', null);
+      </method>
+    </view>
+    
+    <view with="keyboarddraggable, button" width="10" x="${this.parent.width - 5}" height="100%" cursor="col-resize">
+      <method name="startDrag" args="event">
+        reticle._start();
+        this.super();
+      </method>
+      <method name="stopDrag" args="event, isAbort">
+        if (isAbort) {
+          reticle._abort();
+        } else {
+          reticle._stop();
+        }
+        this.super();
+      </method>
+      <method name="updatePosition" args="x, y">
+        var target = reticle.target;
+        if (!this.disabled && target) target.setAttribute('width', Math.max(0, x + 5));
+      </method>
+      
+      <method name="drawFocusedState">
+        this.parent.upper.setAttribute('bgcolor', 'black');
+        this.parent.upper.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+      </method>
+      <method name="drawHoverState">
+        this.parent.upper.setAttribute('bgcolor', 'black');
+        this.parent.upper.setAttribute('boxshadow', config.boxshadow_normal);
+      </method>
+      <method name="drawActiveState">
+        this.parent.upper.setAttribute('bgcolor', config.selection_color);
+        this.parent.upper.setAttribute('boxshadow', null);
+      </method>
+      <method name="drawReadyState">
+        this.parent.upper.setAttribute('bgcolor', config.selection_color);
+        this.parent.upper.setAttribute('boxshadow', null);
+      </method>
+    </view>
     
     <horizontal_ruler_selecttext name="locstart" x="${-this.width - 3}"/>
     <horizontal_ruler_selecttext name="locsize" x="center"/>
     <horizontal_ruler_selecttext name="locend" x="${this.parent.width + 3}"/>
+    
+    <method name="startDrag" args="event">
+      reticle._start();
+      this.super();
+    </method>
+    <method name="stopDrag" args="event, isAbort">
+      if (isAbort) {
+        reticle._abort();
+      } else {
+        reticle._stop();
+      }
+      this.super();
+    </method>
+    <method name="updatePosition" args="x, y">
+      var target = reticle.target;
+      if (!this.disabled && target) target.setAttribute('x', x - target.getAbsolutePosition().x + target.x);
+    </method>
+    
+    <method name="drawHoverState">
+      this.fill.setAttribute('opacity', 0.25);
+    </method>
+    <method name="drawActiveState">
+      this.fill.setAttribute('opacity', 0.4);
+    </method>
+    <method name="drawReadyState">
+      this.fill.setAttribute('opacity', 0.15);
+    </method>
   </view>
   
-  <view id="vertical_selection" ignoreplacement="true"
+  <view id="vertical_selection" with="keyboarddraggable, button" ignoreplacement="true"
     visible="${reticle.visible}" opacity="0.75"
     x="${this.parent.ruler_vertical.x}" y="${reticle.y}"
     width="${config.ruler_thickness}" height="${Math.max(1, reticle.height)}"
   >
     <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
-    <view height="1" width="100%" bgcolor="${config.selection_color}"/>
-    <view height="1" y="bottom" width="100%" bgcolor="${config.selection_color}"/>
+    <view name="lower" height="1" width="100%" bgcolor="${config.selection_color}"/>
+    <view name="upper" height="1" y="bottom" width="100%" bgcolor="${config.selection_color}"/>
     
     <vertical_ruler_selecttext name="locstart" y="-3"/>
     <vertical_ruler_selecttext name="locsize" y="middle"/>
     <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + 3}"/>
+    
+    <view with="keyboarddraggable, button" height="10" y="-5" width="100%" cursor="row-resize">
+      <method name="startDrag" args="event">
+        reticle._start();
+        this._origTargetY = reticle.target.y;
+        this._origTargetH = reticle.target.height;
+        this.super();
+      </method>
+      <method name="stopDrag" args="event, isAbort">
+        if (isAbort) {
+          reticle._abort();
+        } else {
+          reticle._stop();
+        }
+        this.super();
+      </method>
+      <method name="updatePosition" args="x, y">
+        var target = reticle.target;
+        if (!this.disabled && target) {
+          var diff = Math.min(this._origTargetH, y + 5);
+          target.setAttribute('y', this._origTargetY + diff);
+          target.setAttribute('height', this._origTargetH - diff);
+        }
+      </method>
+      
+      <method name="drawFocusedState">
+        this.parent.lower.setAttribute('bgcolor', 'black');
+        this.parent.lower.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+      </method>
+      <method name="drawHoverState">
+        this.parent.lower.setAttribute('bgcolor', 'black');
+        this.parent.lower.setAttribute('boxshadow', config.boxshadow_normal);
+      </method>
+      <method name="drawActiveState">
+        this.parent.lower.setAttribute('bgcolor', config.selection_color);
+        this.parent.lower.setAttribute('boxshadow', null);
+      </method>
+      <method name="drawReadyState">
+        this.parent.lower.setAttribute('bgcolor', config.selection_color);
+        this.parent.lower.setAttribute('boxshadow', null);
+      </method>
+    </view>
+    
+    <view with="keyboarddraggable, button" height="10" y="${this.parent.height - 5}" width="100%" cursor="row-resize">
+      <method name="startDrag" args="event">
+        reticle._start();
+        this.super();
+      </method>
+      <method name="stopDrag" args="event, isAbort">
+        if (isAbort) {
+          reticle._abort();
+        } else {
+          reticle._stop();
+        }
+        this.super();
+      </method>
+      <method name="updatePosition" args="x, y">
+        var target = reticle.target;
+        if (!this.disabled && target) target.setAttribute('height', Math.max(0, y + 5));
+      </method>
+      
+      <method name="drawFocusedState">
+        this.parent.upper.setAttribute('bgcolor', 'black');
+        this.parent.upper.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+      </method>
+      <method name="drawHoverState">
+        this.parent.upper.setAttribute('bgcolor', 'black');
+        this.parent.upper.setAttribute('boxshadow', config.boxshadow_normal);
+      </method>
+      <method name="drawActiveState">
+        this.parent.upper.setAttribute('bgcolor', config.selection_color);
+        this.parent.upper.setAttribute('boxshadow', null);
+      </method>
+      <method name="drawReadyState">
+        this.parent.upper.setAttribute('bgcolor', config.selection_color);
+        this.parent.upper.setAttribute('boxshadow', null);
+      </method>
+    </view>
+    
+    <method name="startDrag" args="event">
+      reticle._start();
+      this.super();
+    </method>
+    <method name="stopDrag" args="event, isAbort">
+      if (isAbort) {
+        reticle._abort();
+      } else {
+        reticle._stop();
+      }
+      this.super();
+    </method>
+    <method name="updatePosition" args="x, y">
+      var target = reticle.target;
+      if (!this.disabled && target) target.setAttribute('y', y - target.getAbsolutePosition().y + target.y);
+    </method>
+    
+    <method name="drawHoverState">
+      this.fill.setAttribute('opacity', 0.25);
+    </method>
+    <method name="drawActiveState">
+      this.fill.setAttribute('opacity', 0.4);
+    </method>
+    <method name="drawReadyState">
+      this.fill.setAttribute('opacity', 0.15);
+    </method>
   </view>
 
   <view name="ruler_lead" ignoreplacement="true" bgcolor="white"
@@ -461,7 +671,9 @@ SOFTWARE. -->
   >
     <!-- Use an additional inner view so that scrollbars show up inside the
          "page" rather than over the boxshadow. -->
-    <view name="inner" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}">
+    <view name="inner" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
+      maskfocus="${editor.paused}" focuscage="true"
+    >
       <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     </view>
   </view>

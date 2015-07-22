@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <mixin name="keyboarddraggable" with="draggable" allowabort="true"
-  focusable="true" focusembellishment="false"
+  focusable="true" focusembellishment="false" distancebeforedrag="1"
 >
   <handler event="onkeydown" args="platformEvent">
     if (!this.disabled) {

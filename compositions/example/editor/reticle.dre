@@ -44,7 +44,7 @@ SOFTWARE. -->
     this._isSync = false;
     
     // Update selection bars
-    var startX = pos.x - content.x,
+    var startX = target.x,
       endX = startX + w,
       xDifferent = startX !== endX,
       hSel = horizontal_selection,
@@ -59,7 +59,7 @@ SOFTWARE. -->
       hLocend.setAttribute('text', endX);
     }
     
-    var startY = pos.y - content.y,
+    var startY = target.y,
       endY = startY + h,
       yDifferent = startY !== endY,
       vSel = vertical_selection,
@@ -107,6 +107,8 @@ SOFTWARE. -->
   </handler>
 
   <method name="_start">
+    this.isStarted = true;
+    
     var target = this.target,
       pos = target.getAbsolutePosition();
     this.dx = target.x - pos.x;
@@ -130,12 +132,21 @@ SOFTWARE. -->
     if (target) {
       // stopped dragging, store new values
       var compound = new dr.editor.compoundundoable();
-      this._undoablew.newvalue = target.getAttribute('width');
-      this._undoableh.newvalue = target.getAttribute('height');
-      this._undoablex.newvalue = target.getAttribute('x');
-      this._undoabley.newvalue = target.getAttribute('y');
+      this._undoablew.newvalue = '' + target.getAttribute('width'); // Coerce to string for consistent comparison
+      this._undoableh.newvalue = '' + target.getAttribute('height'); // Coerce to string for consistent comparison
+      this._undoablex.newvalue = '' + target.getAttribute('x'); // Coerce to string for consistent comparison
+      this._undoabley.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
       compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
-      undo.do(compound);
+      
+      // Only do it if something changed.
+      if (
+        this._undoablew.newvalue !== this._undoablew.oldvalue ||
+        this._undoableh.newvalue !== this._undoableh.oldvalue ||
+        this._undoablex.newvalue !== this._undoablex.oldvalue ||
+        this._undoabley.newvalue !== this._undoabley.oldvalue
+      ) {
+        undo.do(compound);
+      }
     }
   </method>
   <method name="_abort">
@@ -154,6 +165,8 @@ SOFTWARE. -->
       this._stop();
     }
     this.super();
+    
+    this.isStarted = false;
   </method>
 
   <view name="fill" width="100%" height="100%" clip="true">
