@@ -65,7 +65,7 @@ SOFTWARE. -->
   
 
     <view id="topview" width="100%" height="100%" padding="4">
-      <testingtimer>1000</testingtimer>
+      <testingtimer>2000</testingtimer>
       <attribute name="timeout" type="expression" value=""></attribute>
       <handler event="oninit">
         // Send a message to the server to start the unittest, and inspect the
@@ -74,7 +74,7 @@ SOFTWARE. -->
         this.timeout = setTimeout(function() {
           console.log('TIMEOUT');          
           assert.isTrue(false, 'Timeout. No response received from server');
-	}, 100);
+	}, 500);
 
         this.client_unittest();
       </handler>
