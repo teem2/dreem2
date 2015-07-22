@@ -26,7 +26,7 @@ SOFTWARE. -->
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
 
-<view name="editor" id="editor" width="100%" height="100%" defaultplacement="content" clip="true">
+<view name="editor" id="editor" width="100%" height="100%" defaultplacement="content" clip="true" bgcolor="white">
   <attribute name="paused" type="boolean" value="true"/>
 
   <!-- Enforce a minimum width for the editor. -->
@@ -47,6 +47,8 @@ SOFTWARE. -->
     <attribute name="bottombar_height" type="number" value="32"/>
     
     <attribute name="dragbar_width" type="number" value="2"/>
+    <attribute name="ruler_thickness" type="number" value="35"/>
+    <attribute name="content_inset" type="number" value="70"/>
     
     <attribute name="primary_panel_color" type="color" value="#999999"/>
     <attribute name="secondary_panel_color" type="color" value="#eeeeee"/>
@@ -328,13 +330,62 @@ SOFTWARE. -->
       if (!this.disabled) this.setAttribute('x', Math.max(config.leftbar_minwidth, Math.min(300, x)));
     </method>
   </view>
-  
-  <view name="content" ignoreplacement="true"
-    x="${this.parent.dragbar_left.x + this.parent.dragbar_left.width}"
+
+  <view name="ruler_horizontal_lead" ignoreplacement="true" bgcolor="#cccccc"
+    x="${this.parent.dragbar_left.x + this.parent.dragbar_left.width + config.ruler_thickness - 1}"
+    y="${config.topbar_height}"
+    width="1" height="${config.ruler_thickness}"
+  ></view>
+  <view name="ruler_horizontal" ignoreplacement="true" clip="true"
+    x="${this.parent.ruler_horizontal_lead.x + 1}"
     y="${config.topbar_height}"
     width="${this.parent.dragbar_right.x - this.x}"
+    height="${config.ruler_thickness}"
+    scrollx="${this.parent.content.scrollx + 100 - config.content_inset}"
+  >
+    <bitmap width="6000"
+      height="${config.ruler_thickness}"
+      src="/classes/editor/img/ruler_horizontal.png" stretches="contain" repeat="repeat-x"
+    >
+      <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    </bitmap>
+  </view>
+  
+  <view name="ruler_vertical_lead" ignoreplacement="true" bgcolor="#cccccc"
+    x="${this.parent.dragbar_left.x + this.parent.dragbar_left.width}"
+    y="${config.topbar_height + config.ruler_thickness - 1}"
+    height="1" width="${config.ruler_thickness}"
+  ></view>
+  <view name="ruler_vertical" ignoreplacement="true" clip="true"
+    x="${this.parent.dragbar_left.x + this.parent.dragbar_left.width}"
+    y="${this.parent.ruler_vertical_lead.y + 1}"
+    width="${config.ruler_thickness}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    scrolly="${this.parent.content.scrolly + 100 - config.content_inset}"
+  >
+    <bitmap height="6000"
+      width="${config.ruler_thickness}"
+      src="/classes/editor/img/ruler_vertical.png" stretches="contain" repeat="repeat-y"
+    >
+      <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    </bitmap>
+  </view>
+  
+  <view name="content_bg" bgcolor="#dddddd"
+    x="${this.parent.ruler_horizontal.x}"
+    y="${this.parent.ruler_vertical.y}"
+    width="${this.parent.dragbar_right.x - this.x}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+  />
+
+  <view name="content" ignoreplacement="true"
+    bgcolor="${editor.parent.bgcolor}"
+    x="${this.parent.ruler_horizontal.x + config.content_inset}"
+    y="${this.parent.ruler_vertical.y + config.content_inset}"
+    width="${this.parent.dragbar_right.x - this.x - config.content_inset}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height - config.content_inset}"
     scrollable="true"
+    boxshadow="[0,0,16,4,'#aaaaaa']"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
   </view>
