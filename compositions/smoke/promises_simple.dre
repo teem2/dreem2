@@ -36,12 +36,12 @@ SOFTWARE. -->
         var p1 = new Promise(function(resolve, reject) {
           setTimeout(function() {
             var elapsed = Date.now() - t0;
-	    resolve(elapsed);
-	  }, 100);
-	});
+            resolve(elapsed);
+          }, 100);
+        });
 
         p1.then(function(ret) {
-          assert.closeTo(ret, 100, 15, 'Test did not finish in a timely manner');
+          assert.closeTo(ret, 100, 35, 'Test did not finish in a timely manner');
           //console.log('client_unittest Finished', ret);
 	});
       </method>
