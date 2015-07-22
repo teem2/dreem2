@@ -26,6 +26,16 @@ SOFTWARE. -->
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
 
+<class name="horizontal_rulertext" extends="text" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0" y="2"/>
+<class name="vertical_rulertext" extends="text" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0" x="2"
+  xanchor="0" yanchor="0" rotation="-90"
+/>
+
+<class name="horizontal_ruler_selecttext" extends="text" y="20" fontsize="12" color="${config.selection_color}"/>
+<class name="vertical_ruler_selecttext" extends="text" x="20" fontsize="12" color="${config.selection_color}"
+  xanchor="0" yanchor="0" rotation="-90"
+/>
+
 <view name="editor" id="editor" width="100%" height="100%" defaultplacement="content.inner" clip="true" bgcolor="white">
   <attribute name="paused" type="boolean" value="true"/>
 
@@ -56,6 +66,7 @@ SOFTWARE. -->
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
+    <attribute name="selection_color" type="color" value="blue"/>
     
     <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
     <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
@@ -318,26 +329,6 @@ SOFTWARE. -->
     </view>
   </view>
   
-  <view name="leftbar" ignoreplacement="true" bgcolor="white"
-    y="${config.topbar_height}"
-    width="${this.parent.dragbar_left.x}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height}"
-  />
-  
-  <class name="horizontal_rulertext" extends="text" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0" y="2"/>
-  <class name="vertical_rulertext" extends="text" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0" x="2"
-    xanchor="0" yanchor="0" rotation="-90"
-  />
-
-  <view name="ruler_lead" ignoreplacement="true" bgcolor="white"
-    x="${this.parent.dragbar_left.x}"
-    y="${config.topbar_height}"
-    height="${config.ruler_thickness}" width="${config.ruler_thickness}"
-    border="1" bordercolor="${config.secondary_panel_color}"
-  >
-    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
-  </view>
-  
   <view name="ruler_horizontal" ignoreplacement="true" clip="true"
     x="${this.parent.ruler_lead.x + this.parent.ruler_lead.width}"
     y="${config.topbar_height}"
@@ -373,6 +364,51 @@ SOFTWARE. -->
       <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     </bitmap>
   </view>
+  
+  <view id="horizontal_selection" ignorelayout="true"
+    visible="${reticle.visible}"
+    x="${reticle.x}" y="${this.parent.ruler_horizontal.y}"
+    width="${Math.max(1, reticle.width)}" height="${config.ruler_thickness}"
+    opacity="0.75"
+  >
+    <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
+    <view width="1" height="100%" bgcolor="${config.selection_color}"/>
+    <view width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
+    
+    <horizontal_ruler_selecttext name="locstart" x="${-this.width - 3}"/>
+    <horizontal_ruler_selecttext name="locsize" x="center"/>
+    <horizontal_ruler_selecttext name="locend" x="${this.parent.width + 3}"/>
+  </view>
+  
+  <view id="vertical_selection" ignorelayout="true"
+    visible="${reticle.visible}"
+    y="${reticle.y}" x="${this.parent.ruler_vertical.x}"
+    width="${config.ruler_thickness}" height="${Math.max(1, reticle.height)}"
+    opacity="0.75"
+  >
+    <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
+    <view height="1" width="100%" bgcolor="${config.selection_color}"/>
+    <view height="1" y="bottom" width="100%" bgcolor="${config.selection_color}"/>
+    
+    <vertical_ruler_selecttext name="locstart" y="-3"/>
+    <vertical_ruler_selecttext name="locsize" y="middle"/>
+    <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + 3}"/>
+  </view>
+
+  <view name="ruler_lead" ignoreplacement="true" bgcolor="white"
+    x="${this.parent.dragbar_left.x}"
+    y="${config.topbar_height}"
+    height="${config.ruler_thickness}" width="${config.ruler_thickness}"
+    border="1" bordercolor="${config.secondary_panel_color}"
+  >
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+  </view>
+  
+  <view name="leftbar" ignoreplacement="true" bgcolor="white"
+    y="${config.topbar_height}"
+    width="${this.parent.dragbar_left.x}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+  />
   
   <view name="content_bg" bgcolor="#f8f8f8"
     x="${this.parent.ruler_horizontal.x}"

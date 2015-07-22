@@ -39,6 +39,31 @@ SOFTWARE. -->
     this._isSync = true;
     this.setAttributes({width:target.width, height:target.height, x:pos.x, y:pos.y});
     this._isSync = false;
+    
+    // Update selection bars
+    var startX = pos.x - editor.content.x,
+      endX = startX + target.width,
+      xDifferent = startX !== endX;
+    horizontal_selection.locstart.setAttribute('text', startX);
+    
+    horizontal_selection.locsize.setAttribute('visible', xDifferent);
+    horizontal_selection.locend.setAttribute('visible', xDifferent);
+    if (xDifferent) {
+      horizontal_selection.locsize.setAttribute('text', target.width);
+      horizontal_selection.locend.setAttribute('text', endX);
+    }
+    
+    var startY = pos.y - editor.content.y,
+      endY = startY + target.height,
+      yDifferent = startY !== endY;
+    vertical_selection.locstart.setAttribute('text', startY);
+    
+    vertical_selection.locsize.setAttribute('visible', yDifferent);
+    vertical_selection.locend.setAttribute('visible', yDifferent);
+    if (yDifferent) {
+      vertical_selection.locsize.setAttribute('text', target.height);
+      vertical_selection.locend.setAttribute('text', endY);
+    }
   </method>
 
   <method name="drawFocusedState">
@@ -123,7 +148,7 @@ SOFTWARE. -->
   </method>
 
   <view name="fill" width="100%" height="100%" clip="true">
-    <view name="inner" width="100%" height="100%" border="1" bordercolor="blue"></view>
+    <view name="inner" width="100%" height="100%" border="1" bordercolor="${config.selection_color}"></view>
   </view>
 
   <controlhandle name="resizer">
