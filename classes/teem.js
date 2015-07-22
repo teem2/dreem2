@@ -50,7 +50,7 @@ define(function (require, exports, module) {
 	};
 	
 		teem.__startup = function (main) {
-		console.log("teem.__startup called!");
+		
 		var dreemParser = require('$LIB/dr/dreemParser.js'),
 		dreemMaker = require('$LIB/dr/dreemMaker.js'),
 		compiler = new dreemParser.Compiler();
@@ -228,8 +228,6 @@ define(function (require, exports, module) {
 			}
 		}
 	} else if (define.env == 'v8') {
-		// dali environment
-		console.log("setting v8 teem.__startup");
 		
 		define.onMain = teem.__startup;
 	}

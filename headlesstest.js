@@ -1,4 +1,34 @@
-
+// Create a colorization function (ANSI output) use ~rb~ to set color in string
+// and ~~ to end colorization.
+console.color = (function colorize() {
+    var colors = {
+      bl:"30",   // black
+      bo:"1",    // bold current color
+      r:"0;31",  // red
+      g:"0;32",  // green
+      y:"0;33",  // yellow
+      b:"0;34",  // blue
+      m:"0;35",  // magenta
+      c:"0;36",  // cyan
+      w:"0;37",  // white
+      br:"1;31", // bold red
+      bg:"1;32", // bold green
+      by:"1;33", // bold yellow
+      bb:"1;34", // bold blue
+      bm:"1;35", // bold magenta
+      bc:"1;36", // bold cyan
+      bw:"1;37"  // bold white
+    };
+    return function() {
+      for (var v = Array.prototype.slice.call(arguments), i = 0; i < v.length; i++) {
+        v[i] = String(v[i]).replace(/~(\w*)~/g, function(m, a) {
+          return "\033[" + (colors[a] || 0) + "m";
+        }) + "\033[0m";
+        process.stdout.write(v[i] + "\n");
+      }
+    }
+  })();
+  
 var argv = process.argv,
     args = {};
 
@@ -22,10 +52,10 @@ var server = "http://localhost:8080";
    if (args["-screen"]) screen = args["-screen"];
 
 
-   console.log("*** Dreem Headless Runner ***");
-   console.log("using server:", server);
-   console.log("using composition:", composition);
-   console.log("using screen:", screen);
+   console.color("*** ~by~Dreem Headless Runner~~ ***");
+   console.log("** using server:", server);
+   console.log("** using composition:", composition);
+   console.log("** using screen:", screen);
 
 
 
@@ -53,7 +83,6 @@ var downloads = 0;
 var script_tags = {};
 
 function startMain() {
-	console.log("starting!");
 	define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
 	define.BUILD = "$ROOT/dalicache";
 	define.MAIN =  "$BUILD/compositions." + composition + ".dre.screens." + screen + ".js";
@@ -124,8 +153,10 @@ function requireWalker(script_url, from_file, save_path) {
 				if (!script_tags[dep_path])
 					requireWalker(dep_path, script_url, local_dep_path);
 			});
-			if (!--downloads)
-				startMain(); // no more deps
+			if (!--downloads){
+			  console.color('** ~by~download complete~~.');
+        	startMain(); // no more deps
+			}
 
 		});
 	}
@@ -163,7 +194,7 @@ var reconnect = function() {
           msg = JSON.parse(msg);
         } catch(e){}
         if (msg.type == "sessionCheck") {
-          console.log('attempting redownload!');
+          console.color('** ~by~download started~~.');
           LoadAll();
         }
       }.bind(this);

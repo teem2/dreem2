@@ -290,8 +290,7 @@
         var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module);
         if (ret !== undefined) module.exports = ret;
 		
-		console.log(define.onMain);
-        if (define.onMain) define.onMain(module.exports);
+		if (define.onMain) define.onMain(module.exports);
       }
 
 	  
