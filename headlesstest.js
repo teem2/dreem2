@@ -34,8 +34,6 @@ function startMain() {
 	define.MAIN =  "$BUILD/compositions." + composition + ".dre.screens." + screen + ".js";
 
 	var F = require(define.MAIN)();
-	console.dir(F);
-	console.dir(define.factory);
 	define.startMain();
 }
 

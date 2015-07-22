@@ -281,14 +281,7 @@
         var factory = define.factory[main_mod];
 		
 			
-		if (!factory) 
-		{
-			var repmainmod = main_mod.replace(/\\/g,'/');
-			console.log("attempting slashswap" , repmainmod);
-			factory = define.factory[repmainmod];
-		}
-        
-		
+	
         if (!factory) throw new Error("Cannot find main: " + main_mod, define.MAIN);
         
         // lets boot up
@@ -296,6 +289,8 @@
         define.module[main_mod] = module;
         var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module);
         if (ret !== undefined) module.exports = ret;
+		
+		console.log(define.onMain);
         if (define.onMain) define.onMain(module.exports);
       }
 
