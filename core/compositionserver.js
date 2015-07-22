@@ -667,27 +667,45 @@ define(function(require, exports, module) {
 
       return newdata
     }
+    this.__editableRE = /[,\s]*editable/;
+    this.__parent = null;
     this.__walkChildren = function(jsobj, stripids) {
       var children = jsobj.child;
       if (! children.length) return;
+      this.__parent = jsobj;
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
-        if (child.tag === '$comment') continue;
 
-        if (! child.attr) {
-          child.attr = {};
-        }
-
-        if (stripids) {
-          if ((typeof child.attr.id === 'string') && (child.attr.id.indexOf('lzeditor_') > -1)) {
-            // console.log('deleting', child.attr.id);
-            delete child.attr.id
+        if (child.tag !== 'screens' && child.tag !== 'composition' && child.tag !== '$comment' && child.tag !== 'screen' && child.tag !== 'handler' && child.tag !== 'method' && child.tag !== 'include' && (this.__parent.tag !== 'screen')) {
+          if (! child.attr) {
+            child.attr = {};
           }
-        } else if (! child.attr.id) {
-          child.attr.id = 'lzeditor_' + this.__guid++;
+          var attr = child.attr;
+          if (stripids) {
+            if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) {
+              delete attr.id;
+            }
+            if ((typeof attr.with === 'string') && attr.with.match(this.__editableRE)) {
+              attr.with = attr.with.replace(this.__editableRE, '');
+              console.log('replaced', attr.with);
+            }
+            if (attr.placement === 'editor') {
+              delete attr.placement;
+            }
+          } else {
+            if (! attr.id) {
+              attr.id = 'lzeditor_' + this.__guid++;
+            }
+            if (! attr.with) {
+              attr.with = 'editable';
+            } else if (! attr.with.match(this.__editableRE)){
+              attr.with += ',editable';
+            }
+            attr.placement = 'editor';
+          }
         }
 
-        //console.log(JSON.stringify(child));
+        // console.log(stripids, JSON.stringify(child));
         if (child.child) {
           this.__walkChildren(child, stripids);
         }
