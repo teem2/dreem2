@@ -26,17 +26,20 @@ SOFTWARE. -->
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
 
-<class name="horizontal_rulertext" extends="text" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0" y="2"/>
-<class name="vertical_rulertext" extends="text" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0" x="2"
-  xanchor="0" yanchor="0" rotation="-90"
-/>
+<class name="verticaltext" extends="text" xanchor="0" yanchor="0" rotation="-90"/>
 
-<class name="horizontal_ruler_selecttext" extends="text" y="21" fontsize="10" color="${config.selection_color}"/>
-<class name="vertical_ruler_selecttext" extends="text" x="21" fontsize="10" color="${config.selection_color}"
-  xanchor="0" yanchor="0" rotation="-90"
-/>
+<mixin name="rulertext" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0"/>
+<class name="horizontal_rulertext" extends="text" with="rulertext" y="2"/>
+<class name="vertical_rulertext" extends="verticaltext" with="rulertext" x="2"/>
+
+<mixin name="selecttext" fontsize="10" color="${config.selection_color}"/>
+<class name="horizontal_ruler_selecttext" extends="text" with="selecttext" y="21"/>
+<class name="vertical_ruler_selecttext" extends="verticaltext" with="selecttext" x="21"/>
+
+<mixin name="locationtext" fontsize="10" color="${config.location_color}"/>
 
 <view name="editor" id="editor" width="100%" height="100%" defaultplacement="content.inner" clip="true" bgcolor="white">
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="paused" type="boolean" value="true"/>
 
   <!-- Enforce a minimum width for the editor. -->
@@ -49,7 +52,9 @@ SOFTWARE. -->
     return this.super(Math.max(height, 500));
   </setter>
 
-  <!--// SERVICE NODES //-->
+
+
+  <!--// SERVICE NODES //////////////////////////////////////////////////////-->
   <node id="config">
     <attribute name="topbar_height" type="number" value="75"/>
     
@@ -60,16 +65,19 @@ SOFTWARE. -->
     <attribute name="rightbar_minx" type="number" value="700"/>
     <attribute name="bottombar_height" type="number" value="0"/>
     
-    <attribute name="dragbar_width" type="number" value="5"/>
+    <attribute name="divider_width" type="number" value="5"/>
     <attribute name="ruler_thickness" type="number" value="35"/>
     <attribute name="content_inset" type="number" value="69"/>
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
     <attribute name="selection_color" type="color" value="blue"/>
+    <attribute name="location_color" type="color" value="black"/>
     
     <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
     <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
+    
+    <attribute name="ruler_marks" type="object" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
   </node>
   
   <node id="selectionmanager">
@@ -234,8 +242,10 @@ SOFTWARE. -->
       }
     </method>
   </node>
-  
-  <!--// HANDLERS //-->
+
+
+
+  <!--// HANDLERS ///////////////////////////////////////////////////////////-->
   <handler event="onkeydown" reference="dr.keyboard" args="platformEvent">
     var keyboard = dr.keyboard,
       keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
@@ -305,17 +315,20 @@ SOFTWARE. -->
       yLoc.label.setAttribute('text', y - this.content.y + this.content.inner.scrolly);
     }
   </method>
-  
-  <!--// VIEWS //-->
+
+
+
+  <!--// VIEWS //////////////////////////////////////////////////////////////-->
+  <!--// Rulers, Location and Selection Overlays //-->
   <view name="ruler_horizontal" ignoreplacement="true" clip="true"
     x="${this.parent.ruler_lead.x + this.parent.ruler_lead.width}"
     y="${config.topbar_height}"
-    width="${this.parent.dragbar_right.x - this.x}"
+    width="${this.parent.divider_right.x - this.x}"
     height="${config.ruler_thickness}"
     scrollx="${this.parent.content.inner.scrollx + 99 - config.content_inset}"
   >
     <spacedlayout axis="x" spacing="100" inset="102"/>
-    <replicator name="repl" classname="horizontal_rulertext" data="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
+    <replicator name="repl" classname="horizontal_rulertext" data="${config.ruler_marks}"/>
     
     <bitmap width="6000" ignorelayout="true"
       height="${config.ruler_thickness}"
@@ -325,22 +338,21 @@ SOFTWARE. -->
     </bitmap>
   </view>
   
-  <view name="xLocation" ignorelayout="true"
-    y="${this.parent.ruler_horizontal.y}"
-    width="1" height="${config.ruler_thickness}" bgcolor="black"
+  <view name="xLocation" ignoreplacement="true"
+    y="${this.parent.ruler_horizontal.y}" width="1" height="${config.ruler_thickness}" bgcolor="${config.location_color}"
   >
-    <text name="label" x="3" y="2" fontsize="10" color="black"/>
+    <text with="locationtext" name="label" x="3" y="2"/>
   </view>
   
   <view name="ruler_vertical" ignoreplacement="true" clip="true"
-    x="${this.parent.dragbar_left.x}"
+    x="${this.parent.divider_left.x}"
     y="${this.parent.ruler_lead.y + this.parent.ruler_lead.height}"
     width="${config.ruler_thickness}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
     scrolly="${this.parent.content.inner.scrolly + 99 - config.content_inset}"
   >
     <spacedlayout axis="y" spacing="100" inset="97"/>
-    <replicator name="repl" classname="vertical_rulertext" data="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
+    <replicator name="repl" classname="vertical_rulertext" data="${config.ruler_marks}"/>
     
     <bitmap height="6000" ignorelayout="true"
       width="${config.ruler_thickness}"
@@ -350,18 +362,16 @@ SOFTWARE. -->
     </bitmap>
   </view>
     
-  <view name="yLocation" ignorelayout="true"
-    x="${this.parent.ruler_vertical.x}"
-    height="1" width="${config.ruler_thickness}" bgcolor="black"
+  <view name="yLocation" ignoreplacement="true"
+    x="${this.parent.ruler_vertical.x}" width="${config.ruler_thickness}" height="1" bgcolor="${config.location_color}"
   >
-    <text name="label" x="2" y="-2" fontsize="10" color="black" xanchor="0" yanchor="0" rotation="-90"/>
+    <verticaltext with="locationtext" name="label" x="2" y="-2"/>
   </view>
   
-  <view id="horizontal_selection" ignorelayout="true"
-    visible="${reticle.visible}"
+  <view id="horizontal_selection" ignoreplacement="true"
+    visible="${reticle.visible}" opacity="0.75"
     x="${reticle.x}" y="${this.parent.ruler_horizontal.y}"
     width="${Math.max(1, reticle.width)}" height="${config.ruler_thickness}"
-    opacity="0.75"
   >
     <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
     <view width="1" height="100%" bgcolor="${config.selection_color}"/>
@@ -372,11 +382,10 @@ SOFTWARE. -->
     <horizontal_ruler_selecttext name="locend" x="${this.parent.width + 3}"/>
   </view>
   
-  <view id="vertical_selection" ignorelayout="true"
-    visible="${reticle.visible}"
-    y="${reticle.y}" x="${this.parent.ruler_vertical.x}"
+  <view id="vertical_selection" ignoreplacement="true"
+    visible="${reticle.visible}" opacity="0.75"
+    x="${this.parent.ruler_vertical.x}" y="${reticle.y}"
     width="${config.ruler_thickness}" height="${Math.max(1, reticle.height)}"
-    opacity="0.75"
   >
     <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
     <view height="1" width="100%" bgcolor="${config.selection_color}"/>
@@ -388,98 +397,84 @@ SOFTWARE. -->
   </view>
 
   <view name="ruler_lead" ignoreplacement="true" bgcolor="white"
-    x="${this.parent.dragbar_left.x}"
-    y="${config.topbar_height}"
+    x="${this.parent.divider_left.x}" y="${config.topbar_height}"
     height="${config.ruler_thickness}" width="${config.ruler_thickness}"
     border="1" bordercolor="${config.secondary_panel_color}"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
   </view>
 
+
+  <!--// Main Panels //-->
   <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     width="100%" height="${config.topbar_height}"
   >
-    <view name="left" padding="2"
-      width="auto" height="${config.topbar_height}"
-    >
+    <view name="left" padding="2" width="auto" height="${config.topbar_height}">
       <spacedlayout spacing="4" inset="2"></spacedlayout>
       <constantlayout attribute="y" value="'middle'"></constantlayout>
       
       <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable || !editor.paused}">Undo</toolbarbutton>
       <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable|| !editor.paused}">Redo</toolbarbutton>
-      
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      
       <toolbarbutton id="bringToFrontButton" action="bringToFront" disabled="${!selectionmanager.selected}">Bring To Front</toolbarbutton>
       <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
       <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
       <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
-      
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      
       <toolbarbutton id="deleteButton" action="deleteSelected" disabled="${!selectionmanager.selected}">Delete</toolbarbutton>
       <toolbarbutton id="createButton" action="createView" disabled="${!editor.paused}">Create</toolbarbutton>
     </view>
-    <view name="center" padding="2"
-      x="${this.parent.left.width}"
-      width="${this.parent.right.x - this.x}"
-      height="${config.topbar_height}"
-    />
-    <view name="right" padding="2"
-      x="right"
-      width="auto" height="${config.topbar_height}"
-    >
+    
+    <view name="center" padding="2" x="${this.parent.left.width}" width="${this.parent.right.x - this.x}" height="${config.topbar_height}"/>
+    
+    <view name="right" padding="2" x="right" width="auto" height="${config.topbar_height}">
       <spacedlayout spacing="4" inset="2"></spacedlayout>
       <constantlayout attribute="y" value="'middle'"></constantlayout>
       
       <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
-      
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      
       <toolbarbutton id="pausePlayButton" action="pausePlay" width="54" textalign="center">Play</toolbarbutton>
     </view>
   </view>
-  
+
   <view name="leftbar" ignoreplacement="true" bgcolor="white"
     y="${config.topbar_height}"
-    width="${this.parent.dragbar_left.x}"
+    width="${this.parent.divider_left.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
   />
   
-  <view name="content_bg" bgcolor="#f8f8f8"
+  <view name="content_bg" ignoreplacement="true" bgcolor="#f8f8f8"
     x="${this.parent.ruler_horizontal.x}"
     y="${this.parent.ruler_vertical.y}"
-    width="${this.parent.dragbar_right.x - this.x}"
+    width="${this.parent.divider_right.x - this.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
   </view>
 
   <view name="content" ignoreplacement="true"
-    bgcolor="${editor.parent.bgcolor}"
     x="${this.parent.ruler_horizontal.x + config.content_inset}"
     y="${this.parent.ruler_vertical.y + config.content_inset}"
-    width="${this.parent.dragbar_right.x - this.x - config.content_inset}"
+    width="${this.parent.divider_right.x - this.x - config.content_inset}"
     height="${this.parent.innerheight - this.y - config.bottombar_height - config.content_inset}"
     boxshadow="[0,0,16,4,'#cccccc']"
   >
-    <view name="inner"
-      width="100%" height="100%"
-      scrollable="true"
-    >
+    <!-- Use an additional inner view so that scrollbars show up inside the
+         "page" rather than over the boxshadow. -->
+    <view name="inner" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}">
       <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     </view>
   </view>
 
   <view name="rightbar" ignoreplacement="true" bgcolor="#fcfcfc"
     x="right" y="${config.topbar_height}"
-    width="${this.parent.innerwidth - this.parent.dragbar_right.x}"
+    width="${this.parent.innerwidth - this.parent.divider_right.x}"
     height="${this.parent.leftbar.height}"
   >
     <spacedlayout axis="y" spacing="5" inset="5"/>
     <handler event="onselected" args="selected" reference="selectionmanager" type="coffee">
       attrs = []
-
+      
       compare = (a, b) ->
         if (b.name > a.name)
           return -1
@@ -487,65 +482,69 @@ SOFTWARE. -->
           return 1
         else
           0
-
+      
       if selected
         ancestors = this.klass.ancestors()
         # pull attributes from ancestor, since we don't want the editor mixin itself
         myattributes = ancestors[ancestors.length - 1].attributes
         
-        # console.log('hello', this, myattributes)
         # build list of attributes for the replicator
         for key, value of myattributes
           value.name = key
           attrs.push(value)
           # console.log('attribute', key, value)
-
+        
         attrs.sort(compare)
       
-      # console.log('attributelist', attrs)
       this.repl.setAttribute('data', attrs);
     </handler>
     <replicator name="repl" classname="attributeeditor"/>
   </view>
-  
+
   <view name="bottombar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     y="bottom" width="100%" height="${config.bottombar_height}"
   />
-  
-  <view name="header_line" ignoreplacement="true"
+
+
+  <!--// Misc Lines //-->
+  <!-- Line directly below the header. -->
+  <view ignoreplacement="true"
     width="100%" y="${config.topbar_height}" height="1"
     bgcolor="${config.secondary_panel_color}"
   />
-  <view name="rightbar_line" ignoreplacement="true"
+
+  <!-- Line at the left edge of the rightbar. -->
+  <view ignoreplacement="true"
     x="${this.parent.rightbar.x}" y="${this.parent.rightbar.y}"
     width="1" height="${this.parent.rightbar.height}"
     bgcolor="${config.secondary_panel_color}"
   />
-  
-  <view name="dragbar_left" with="keyboarddraggable" ignoreplacement="true"
-    cursor="col-resize" width="${config.dragbar_width}"
-    x="${config.leftbar_minwidth}"
-    y="${config.topbar_height}"
-    height="${this.parent.leftbar.height}"
+
+
+  <!--// Dividers //-->
+  <view name="divider_left" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
+    x="${config.leftbar_minwidth}" y="${config.topbar_height}"
+    width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
     <method name="updatePosition" args="x, y">
       if (!this.disabled) this.setAttribute('x', Math.max(config.leftbar_minwidth, Math.min(config.leftbar_maxwidth, x)));
     </method>
   </view>
 
-  <view name="dragbar_right" with="keyboarddraggable" ignoreplacement="true"
-    cursor="col-resize" width="${config.dragbar_width}"
-    x="${this.parent.innerwidth - this.width - config.rightbar_minwidth}"
-    y="${config.topbar_height}"
-    height="${this.parent.leftbar.height}"
+  <view name="divider_right" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
+    x="${this.parent.innerwidth - this.width - config.rightbar_minwidth}" y="${config.topbar_height}"
+    width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
     <handler event="onwidth" reference="parent">
+      // Respond to browser window resizing
       this.updatePosition(this.x, this.y);
     </handler>
     <method name="updatePosition" args="x, y">
       if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - this.width - config.rightbar_minwidth, x)));
     </method>
   </view>
-  
+
+
+  <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>
 </view>
