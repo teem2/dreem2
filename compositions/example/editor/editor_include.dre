@@ -31,8 +31,8 @@ SOFTWARE. -->
   xanchor="0" yanchor="0" rotation="-90"
 />
 
-<class name="horizontal_ruler_selecttext" extends="text" y="20" fontsize="12" color="${config.selection_color}"/>
-<class name="vertical_ruler_selecttext" extends="text" x="20" fontsize="12" color="${config.selection_color}"
+<class name="horizontal_ruler_selecttext" extends="text" y="21" fontsize="10" color="${config.selection_color}"/>
+<class name="vertical_ruler_selecttext" extends="text" x="21" fontsize="10" color="${config.selection_color}"
   xanchor="0" yanchor="0" rotation="-90"
 />
 
@@ -62,7 +62,7 @@ SOFTWARE. -->
     
     <attribute name="dragbar_width" type="number" value="5"/>
     <attribute name="ruler_thickness" type="number" value="35"/>
-    <attribute name="content_inset" type="number" value="70"/>
+    <attribute name="content_inset" type="number" value="69"/>
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
@@ -283,6 +283,28 @@ SOFTWARE. -->
       }
     }
   </handler>
+
+  <handler event="onmousemove" reference="dr.mouse" args="event">
+    var x = event.x, y = event.y,
+      xLoc = this.xLocation, yLoc = this.yLocation,
+      content_bg = this.content_bg;
+    
+    if (x > content_bg.x + content_bg.width || this.leftbar.width > x) {
+      xLoc.setAttribute('visible', false);
+    } else {
+      xLoc.setAttribute('visible', true);
+      xLoc.setAttribute('x', x);
+      xLoc.label.setAttribute('text', x - this.content.x + this.content.inner.scrollx);
+    }
+    
+    if (y > content_bg.y + content_bg.height || this.topbar.height > y) {
+      yLoc.setAttribute('visible', false);
+    } else {
+      yLoc.setAttribute('visible', true);
+      yLoc.setAttribute('y', y);
+      yLoc.label.setAttribute('text', y - this.content.y + this.content.inner.scrolly);
+    }
+  </method>
   
   <!--// VIEWS //-->
   <view name="ruler_horizontal" ignoreplacement="true" clip="true"
@@ -290,7 +312,7 @@ SOFTWARE. -->
     y="${config.topbar_height}"
     width="${this.parent.dragbar_right.x - this.x}"
     height="${config.ruler_thickness}"
-    scrollx="${this.parent.content.inner.scrollx + 100 - config.content_inset}"
+    scrollx="${this.parent.content.inner.scrollx + 99 - config.content_inset}"
   >
     <spacedlayout axis="x" spacing="100" inset="102"/>
     <replicator name="repl" classname="horizontal_rulertext" data="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
@@ -303,14 +325,21 @@ SOFTWARE. -->
     </bitmap>
   </view>
   
+  <view name="xLocation" ignorelayout="true"
+    y="${this.parent.ruler_horizontal.y}"
+    width="1" height="${config.ruler_thickness}" bgcolor="black"
+  >
+    <text name="label" x="3" y="2" fontsize="10" color="black"/>
+  </view>
+  
   <view name="ruler_vertical" ignoreplacement="true" clip="true"
     x="${this.parent.dragbar_left.x}"
     y="${this.parent.ruler_lead.y + this.parent.ruler_lead.height}"
     width="${config.ruler_thickness}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-    scrolly="${this.parent.content.inner.scrolly + 100 - config.content_inset}"
+    scrolly="${this.parent.content.inner.scrolly + 99 - config.content_inset}"
   >
-    <spacedlayout axis="y" spacing="100" inset="98"/>
+    <spacedlayout axis="y" spacing="100" inset="97"/>
     <replicator name="repl" classname="vertical_rulertext" data="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
     
     <bitmap height="6000" ignorelayout="true"
@@ -319,6 +348,13 @@ SOFTWARE. -->
     >
       <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     </bitmap>
+  </view>
+    
+  <view name="yLocation" ignorelayout="true"
+    x="${this.parent.ruler_vertical.x}"
+    height="1" width="${config.ruler_thickness}" bgcolor="black"
+  >
+    <text name="label" x="2" y="-2" fontsize="10" color="black" xanchor="0" yanchor="0" rotation="-90"/>
   </view>
   
   <view id="horizontal_selection" ignorelayout="true"
@@ -359,6 +395,7 @@ SOFTWARE. -->
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
   </view>
+
   <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     width="100%" height="${config.topbar_height}"
   >

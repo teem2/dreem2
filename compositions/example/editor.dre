@@ -22,34 +22,61 @@ SOFTWARE. -->
 <composition id='lzeditor_0'>
  <screens id='lzeditor_1'>
   <screen type='browser' name='default' title='Editor' id='lzeditor_2'>
-   <view width='100%' height='100%' id='lzeditor_3' bgcolor="#ff99cc">
+   <view width='100%' height='100%' bgcolor='#ff99cc' id='lzeditor_3'>
     <include href='./editor/editor_include.dre' id='lzeditor_4'/>
-    <view with='editable' placement='editor' x='173' y='127' bgcolor='red' width='100' height='100' id='lzeditor_5'/>
-    <view with='editable' placement='editor' x='235' y='187' bgcolor='green' width='103' height='135' id='lzeditor_6'/>
-    <view with='draggable, editable' placement='editor' x='299' y='213' bgcolor='orange' width='184' height='147' id='lzeditor_7'/>
-    <view with='button, editable' placement='editor' x='51' y='276' bgcolor='purple' width='235' height='228' id='lzeditor_8'>
-      <handler event="onmousedown" args="event">
-        console.log('playing mousedown');
-      </handler>
-      <handler event="onmouseup">
-        console.log('playing mouseup');
-      </handler>
-      <handler event="onclick">
-        console.log('playing click');
-      </handler>
+    <view with='editable' placement='editor' x='173' y='127' bgcolor='red' width='100' height='100' opacity='1' visible='true' id='lzeditor_5'/>
+    <view with='editable' placement='editor' x='235' y='187' bgcolor='green' width='103' height='135' opacity='1' visible='true' id='lzeditor_6'/>
+    <view with='draggable, editable' placement='editor' x='299' y='213' bgcolor='orange' width='184' height='147' opacity='1' visible='true' id='lzeditor_7'/>
+    <view with='button, editable' placement='editor' x='466' y='20' bgcolor='purple' width='235' height='228' opacity='1' visible='true' id='lzeditor_8'>
+     <handler event='onmousedown' args='event' id='lzeditor_9'>
       
-      <handler event="onactivated">
+      
+        console.log('playing mousedown');
+      
+     
+     </handler>
+     <handler event='onmouseup' id='lzeditor_11'>
+      
+      
+        console.log('playing mouseup');
+      
+     
+     </handler>
+     <handler event='onclick' id='lzeditor_13'>
+      
+      
+        console.log('playing click');
+      
+     
+     </handler>
+     <handler event='onactivated' id='lzeditor_15'>
+      
+      
         console.log('activated');
-      </handler>
-      <method name="drawHoverState">
+      
+     
+     </handler>
+     <method name='drawHoverState' id='lzeditor_17'>
+      
+      
         this.setAttribute('bgcolor', 'pink');
-      </method>
-      <method name="drawActiveState">
+      
+     
+     </method>
+     <method name='drawActiveState' id='lzeditor_19'>
+      
+      
         this.setAttribute('bgcolor', 'blue');
-      </method>
-      <method name="drawReadyState">
+      
+     
+     </method>
+     <method name='drawReadyState' id='lzeditor_21'>
+      
+      
         this.setAttribute('bgcolor', 'purple');
-      </method>
+      
+     
+     </method>
     </view>
    </view>
   </screen>
