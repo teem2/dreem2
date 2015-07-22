@@ -19,7 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="texteditor" extends="inputtext" fontsize="14">
+<class name="texteditor" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee">
   <handler event="onfocus">
     this.oldvalue = this.text;
   </handler>
