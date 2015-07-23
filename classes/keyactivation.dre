@@ -1,0 +1,167 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.keyactivation {UI Behavior}
+   * Provides keyboard handling to "activate" the component when a key is 
+   * pressed down or released up. By default, when a keyup event occurs for
+   * an activation key and this view is not disabled, the 'doActivated' method
+   * will get called.
+   */-->
+<mixin name="keyactivation">
+  <!--// Class Attributes ///////////////////////////////////////////////////-->
+  <!--/**
+    * The default activation keys are enter (13) and spacebar (32).
+    */-->
+  <attribute name="default_activation_keys" type="object" value="[13,32]" allocation="class"/>
+
+
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.activateKeyDown = -1;
+    
+    if (attrs.activationkeys === undefined) attrs.activationkeys = dr.keyactivation.default_activation_keys;
+    
+    this.super();
+    
+    this.listenToPlatform(this, 'onkeydown', '__handleKeyDown');
+    this.listenToPlatform(this, 'onkeypress', '__handleKeyPress');
+    this.listenToPlatform(this, 'onkeyup', '__handleKeyUp');
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Array} activationkeys
+    * An array of chars The keys that when keyed down will activate this 
+    * component. Note: The value is not copied so modification of the array 
+    * outside the scope of this object will effect behavior.
+    */-->
+  <attribute name="activationkeys" type="object" value="[]"/>
+  <setter name="activationkeys" args="v">this.setSimpleActual('activationkeys', v);</setter>
+
+  <!--/**
+    * @attribute {Number} activateKeyDown
+    * @readonly
+    * The keycode of the activation key that is currently down. This will 
+    * be -1 when no key is down.
+    */-->
+  <attribute name="activateKeyDown" type="number" value="-1"/>
+  <setter name="activateKeyDown" args="v">this.setSimpleActual('activationkeys', v);</setter>
+
+  <!--/**
+    * @attribute {Boolean} repeatkeydown
+    * Indicates if doActivationKeyDown will be called for repeated keydown 
+    * events or not.
+    */-->
+  <attribute name="repeatkeydown" type="boolean" value="false"/>
+  <setter name="repeatkeydown" args="v">this.setSimpleActual('repeatkeydown', v);</setter>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/** @private */-->
+  <method name="__handleKeyDown" args="platformEvent">
+    if (!this.disabled) {
+      if (this.activateKeyDown === -1 || this.repeatkeydown) {
+        var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
+          keys = this.activationkeys, i = keys.length;
+        while (i) {
+          if (keyCode === keys[--i]) {
+            if (this.activateKeyDown === keyCode) {
+              this.doActivationKeyDown(keyCode, true);
+            } else {
+              this.activateKeyDown = keyCode;
+              this.doActivationKeyDown(keyCode, false);
+            }
+            dr.sprite.preventDefault(platformEvent);
+            return;
+          }
+        }
+      }
+    }
+  </method>
+
+  <!--/** @private */-->
+  <method name="__handleKeyPress" args="platformEvent">
+    if (!this.disabled) {
+      var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+      if (this.activateKeyDown === keyCode) {
+        var keys = this.activationkeys, i = keys.length;
+        while (i) {
+          if (keyCode === keys[--i]) {
+            dr.sprite.preventDefault(platformEvent);
+            return;
+          }
+        }
+      }
+    }
+  </method>
+
+  <!--/** @private */-->
+  <method name="__handleKeyUp" args="platformEvent">
+    if (!this.disabled) {
+      var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+      if (this.activateKeyDown === keyCode) {
+        var keys = this.activationkeys, i = keys.length;
+        while (i) {
+          if (keyCode === keys[--i]) {
+            this.activateKeyDown = -1;
+            this.doActivationKeyUp(keyCode);
+            dr.sprite.preventDefault(platformEvent);
+            return;
+          }
+        }
+      }
+    }
+  </method>
+
+  <!--/**
+    * @method doBlur
+    * @overrides dr.view
+    * @returns {void} 
+    */-->
+  <method name="doBlur">
+    this.super();
+    
+    if (!this.disabled) {
+      var keyThatWasDown = this.activateKeyDown;
+      if (keyThatWasDown !== -1) {
+        this.activateKeyDown = -1;
+        this.doActivationKeyAborted(keyThatWasDown);
+      }
+    }
+  </method>
+
+  <!--/**
+    * @method doActivationKeyDown
+    * @abstract
+    * Called when an activation key is pressed down.
+    * @param {Number} key the keycode that is down.
+    * @param {Boolean} isRepeat Indicates if this is a key repeat event or not.
+    * @returns {void} 
+    */-->
+  <method name="doActivationKeyDown" args="key, isRepeat">
+    // Subclasses to implement as needed.
+  </method>
+
+  <!--/**
+    * @method doActivationKeyUp
+    * Called when an activation key is release up. This executes the 
+    * 'doActivated' method by default. 
+    * @param {Number} key the keycode that is up.
+    * @returns {void} 
+    */-->
+  <method name="doActivationKeyUp" args="key">
+    this.doActivated();
+  </method>
+
+  <!--/**
+    * @method doActivationKeyAborted
+    * @abstract
+    * Called when focus is lost while an activation key is down.
+    * @param {Number} key the keycode that is down.
+    * @returns {void} 
+    */-->
+  <method name="doActivationKeyAborted" args="key">
+    // Subclasses to implement as needed.
+  </method>
+</mixin>

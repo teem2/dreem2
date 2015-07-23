@@ -1,0 +1,17 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.activateable {UI Behavior}
+   * Adds the capability for an dr.View to be "activated". A doActivated method
+   * is added that gets called when the view is "activated".
+   */-->
+<mixin name="activateable">
+  <!--/**
+    * @method doActivated
+    * Called when this view should be activated.
+    * @returns {void}
+    */-->
+  <method name="doActivated">
+    this.sendEvent('onactivated', true);
+  </method>
+</mixin>

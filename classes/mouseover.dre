@@ -1,0 +1,117 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.mouseover {UI Behavior}
+   * Provides an 'ismouseover' attribute that tracks mouse over/out state. Also
+   * provides a mechanism to smoothe over/out events so only one call to
+   * 'doSmoothMouseOver' occurs per onidle event.
+   */-->
+<!--
+  Private Attributes:
+    __attachedToOverIdle:boolean Used by the code that smoothes out mouseover 
+      events. Indicates that we are registered with the onidle event.
+    __lastOverIdleValue:boolean Used by the code that smoothes out
+      mouseover events. Stores the last mouseover value.
+-->
+    Attributes:
+        ismouseover:boolean Indicates if the mouse is over this view or not.
+    
+<mixin name="mouseover" requires="disableable">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    if (attrs.ismouseover === undefined) attrs.ismouseover = false;
+    if (attrs.clickable === undefined) attrs.clickable = true;
+    
+    this.super();
+    
+    this.listenToPlatform(this, 'onmouseover', 'doMouseOver');
+    this.listenToPlatform(this, 'onmouseout', 'doMouseOut');
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Boolean} ismouseover
+    * Indicates if the mouse is over this view or not.
+    */-->
+  <attribute name="ismouseover" type="boolean" value="false"/>
+  <setter name="ismouseover" args="v">
+    if (this.setActual('ismouseover', v, 'boolean', false)) {
+      // Smooth over/out events by delaying until the next onidle event.
+      if (this.initing === false && !this.__attachedToOverIdle) {
+        this.__attachedToOverIdle = true;
+        this.listenTo(dr.global.idle, 'onidle', '__doMouseOverOnIdle');
+      }
+    }
+  </setter>
+
+  <!--/**
+    * @overrides dr.disableable
+    */-->
+  <setter name="disabled" args="v">
+    if (this.super) this.super();
+    
+    // When about to disable make sure ismouseover is not true. This 
+    // helps prevent unwanted behavior of a disabled view.
+    if (this.disabled && this.ismouseover) this.set_ismouseover(false);
+  </setter>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/** @private */-->
+  <method name="__doMouseOverOnIdle" args="event">
+    this.stopListening(dr.global.idle, 'onidle', '__doMouseOverOnIdle');
+    this.__attachedToOverIdle = false;
+    
+    // Only call doSmoothOver if the over/out state has changed since the
+    // last time it was called.
+    var isOver = this.ismouseover;
+    if (this.__lastOverIdleValue !== isOver) {
+      this.__lastOverIdleValue = isOver;
+      this.doSmoothMouseOver(isOver);
+    }
+  </method>
+
+  <!--/**
+    * @method doSmoothMouseOver
+    * Called when ismouseover state changes. This method is called after
+    * an event filtering process has reduced frequent over/out events
+    * originating from the dom.
+    * @param {Boolean} isOver
+    * @return {void}
+    */-->
+  <method name="doSmoothMouseOver" args="isOver">
+    if (this.initing === false && this.updateUI) this.updateUI();
+  </method>
+
+  <!--/**
+    * @method trigger
+    * @overrides
+    * Try to update the UI immediately if an event was triggered programatically.
+    */-->
+  <method name="trigger" args="platformEventName, opts">
+    this.super();
+    
+    if (this.initing === false && this.updateUI) this.updateUI();
+  </method>
+
+  <!--/**
+    * @method doMouseOver
+    * Called when the mouse is over this view. Subclasses must call call super.
+    * @param {Object} event
+    * @returns {void}
+    */-->
+  <method name="doMouseOver" args="event">
+    if (!this.disabled) this.set_ismouseover(true);
+  </method>
+
+  <!--/**
+    * @method doMouseOut
+    * Called when the mouse leaves this view. Subclasses must call call super.
+    * @param {Object} event
+    * @returns {void}
+    */-->
+  <method name="doMouseOut" args="event">
+    if (!this.disabled) this.set_ismouseover(false);
+  </method>
+</mixin>

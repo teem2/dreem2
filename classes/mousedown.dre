@@ -1,0 +1,134 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.mousedown {UI Behavior}
+   * Provides an 'ismousedown' attribute that tracks mouse up/down state.
+   * 
+   * Suggested: dr.updateableui and dr.activateable super mixins.
+   */-->
+<mixin name="mousedown" requires="mouseover">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    if (attrs.ismousedown === undefined) attrs.ismousedown = false;
+    if (attrs.clickable === undefined) attrs.clickable = true;
+    
+    this.super();
+    
+    this.listenToPlatform(this, 'onmousedown', 'doMouseDown');
+    this.listenToPlatform(this, 'onmouseup', 'doMouseUp');
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Boolean} ismousedown
+    * Indicates if the mouse is down or not.
+    */-->
+  <attribute name="ismousedown" type="boolean" value="false"/>
+  <setter name="ismousedown" args="v">
+    if (this.setActual('ismousedown', v, 'boolean', false)) {
+      if (this.initing === false) {
+        if (this.ismousedown) this.focus(true);
+        if (this.updateUI) this.updateUI();
+      }
+    }
+  </setter>
+
+  <!--/**
+    * @overrides dr.disableable
+    */-->
+  <setter name="disabled" args="v">
+    if (this.super) this.super();
+    
+    // When about to disable the view make sure ismousedown is not 
+    // true. This helps prevent unwanted activation of a disabled view.
+    if (this.disabled && this.ismousedown) this.set_ismousedown(false);
+  </setter>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method doMouseOver
+    * @overrides dr.mouseover
+    */-->
+  <method name="doMouseOver" args="event">
+    this.super(event);
+    if (this.ismousedown) this.stopListeningToPlatform(dr.global.mouse, 'onmouseup', 'doMouseUp', true);
+  </method>
+
+  <!--/**
+    * @method doMouseOut
+    * @overrides dr.mouseover
+    */-->
+  <method name="doMouseOut" args="event">
+    this.super(event);
+    
+    // Wait for a mouse up anywhere if the user moves the mouse out of the
+    // view while the mouse is still down. This allows the user to move
+    // the mouse in and out of the view with the view still behaving 
+    // as moused down.
+    if (!this.disabled && this.ismousedown) this.listenToPlatform(dr.global.mouse, 'onmouseup', 'doMouseUp', true);
+  </method>
+
+  <!--/**
+    * @method doMouseDown
+    * Called when the mouse is down on this view. Subclasses must call call super.
+    * @param {Object} event
+    * @return {void}
+    */-->
+  <method name="doMouseDown" args="event">
+    if (!this.disabled) this.set_ismousedown(true);
+  </method>
+
+  <!--/**
+    * @method doMouseUp
+    * Called when the mouse is up on this view. Subclasses must call call super.
+    * @param {Object} event
+    * @return {void}
+    */-->
+  <method name="doMouseUp" args="event">
+    // Cleanup global mouse listener since the mouseUp occurred outside
+    // the view.
+    if (!this.ismouseover) this.stopListeningToPlatform(dr.global.mouse, 'onmouseup', 'doMouseUp', true);
+    
+    if (!this.disabled && this.ismousedown) {
+      this.set_ismousedown(false);
+      
+      // Only do mouseUpInside if the mouse is actually over the view.
+      // This means the user can mouse down on a view, move the mouse
+      // out and then mouse up and not "activate" the view.
+      if (this.ismouseover) {
+        this.doMouseUpInside(event);
+      } else {
+        this.doMouseUpOutside(event);
+      }
+    }
+  </method>
+
+  <!--/**
+    * @method doMouseUpInside
+    * Called when the mouse is up and we are still over the view. Executes
+    * the 'doActivated' method by default.
+    * @param {Object} event
+    * @return {void}
+    */-->
+  <method name="doMouseUpInside" args="event">
+    if (this.doActivated) this.doActivated();
+  </method>
+
+  <!--/**
+    * @method doMouseUpOutside
+    * Called when the mouse is up and we are not over the view. Fires
+    * an 'onmouseupoutside' event.
+    * @param {Object} event
+    * @return {void}
+    */-->
+  <method name="doMouseUpOutside" args="event">
+    if (!this.disabled) {
+      this.sendEvent('onmouseupoutside', true);
+      
+      // Also try and send it to the global mouse
+      dr.mouse.sendEvent('onmouseupoutside', true);
+    }
+  </method>
+</mixin>

@@ -1,0 +1,49 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.disableable {UI Behavior}
+   * Adds the capability to be "disabled" to a dr.Node. When a dr.Node is 
+   * disabled the user should typically not be able to interact with it.
+   *
+   * When disabled becomes true an attempt will be made to give away the focus
+   * using dr.View's giveAwayFocus method.
+   */-->
+<mixin name="disableable" requires="updateableui">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    if (attrs.disabled === undefined) attrs.disabled = false;
+    
+    this.super();
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Boolean} disabled
+    * Indicates that this component is disabled.
+    */-->
+  <attribute name="disabled" type="boolean" value="false"/>
+
+  <setter name="disabled" args="v">
+    if (this.setActual('disabled', v, 'boolean', false)) this.doDisabled();
+  </setter>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method doDisabled
+    * Called after the disabled attribute is set. Default behavior attempts
+    * to give away focus and calls the updateUI method of dr.UpdateableUI if 
+    * it is defined.
+    * @returns {void}
+    */-->
+  <method name="doDisabled">
+    if (this.initing === false) {
+      // Give away focus if we become disabled and this instance is
+      // a dr.View
+      if (this.disabled && this.giveAwayFocus) this.giveAwayFocus();
+      
+      if (this.updateUI) this.updateUI();
+    }
+  </method>
+</mixin>
