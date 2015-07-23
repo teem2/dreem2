@@ -1,0 +1,126 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+
+<!--/**
+   * @class dr.textlistbox {UI Components}
+   * @extends dr.view
+   * Displays a list of items, typically text.
+   */-->
+
+    <class name="listboxtext" type="coffee" width="auto" height="auto" scrollable="true" scrollbars="auto">
+
+      <!--/**
+      * @attribute {String} [selectcolor="white"]
+      * The color of the selected element.
+      */-->
+      <attribute name="selectcolor" type="string" value="white"></attribute>
+
+      <!--/**
+          * @attribute {Number} [maxwidth=0]
+          * The largest width of any subview.
+          */-->
+      <attribute name="maxwidth" value="0" type="number"></attribute>
+
+      <!--/**
+          * @attribute {Number} [maxheight=0]
+          * The largest height of any subview.
+          */-->
+      <attribute name="maxheight" value="0" type="number"></attribute>
+
+      <!--/**
+          * @attribute {Number} [safewidth=0]
+          * The largest width of any subview, including a scrollbar
+          */-->
+      <attribute name="safewidth" value="0" type="number"></attribute>
+
+      <!--/**
+          * @attribute {Number} [spacing=0]
+          * The vertical spacing between elements.
+          */-->
+      <attribute name="spacing" value="0" type="number"></attribute>
+
+      <spacedlayout axis="y" spacing="${this.parent.spacing}"></spacedlayout>
+      <replicator name="items" classname="listboxtextitem"></replicator>
+
+      <handler event="onreplicated" reference="items">
+        @findSize()
+      </handler>
+      
+      <!-- Set the background color of all subviews -->
+      <handler event="onbgcolor">
+        for subview in @subviews
+          subview.setAttribute('bgcolor', @bgcolor) if subview != @selected
+      </handler>
+
+      <!-- Set the selected color -->
+      <handler event="onselectcolor">
+        @selected.setAttribute('bgcolor', @selectcolor) if @selected        
+      </handler>
+
+      <!--/**
+          * @attribute {Object}
+          * The currently selected dr.listboxtextitem object.
+          */-->
+      <attribute name="selected" type="expression" value=""></attribute>
+
+      <!-- Unselect the current selection, and show the new selection -->
+      <setter name="selected" args="view">
+        @selected.setAttribute('bgcolor', @bgcolor) if @selected
+        @setActual('selected', view, 'expression')
+        @selected.setAttribute('bgcolor', @selectcolor) if @selected
+      </setter>
+
+
+      <!--/**
+        * Select an item, by name. The value is ignored if missing.
+        * @param {String} item to select.
+        */-->
+      <method name="select" args="value">
+        for subview in @subviews
+          if subview.text == value
+            @setAttribute('selected', subview)
+            return
+      </method>
+
+
+      <!--/**
+        * @method findSize
+        * Find and return the maximum [width, height] of any text field.
+        */-->
+      <method name="findSize">
+        w = 0
+        h = 0
+        for subview in @subviews
+          w = subview.width if subview.width > w
+          h = subview.height if subview.height > h
+
+        @setAttribute('maxwidth', w);
+        @setAttribute('maxheight', h);
+
+        #TODO Use the actual scrollbar size
+        @setAttribute('safewidth', @maxwidth+32)
+
+        return [w,h]
+      </method>
+
+    </class>
