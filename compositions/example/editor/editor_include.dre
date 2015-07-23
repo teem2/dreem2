@@ -176,6 +176,7 @@ SOFTWARE. -->
     <method name="createView">
       var attrs = {
         class:'view', with:'editable',
+        id:'lzeditor_client_' + dr.generateGuid(),
         width:50, height:50, x:'center', y:'middle', 
         bgcolor:'#999999'
       };
@@ -211,12 +212,13 @@ SOFTWARE. -->
           var parser = new dr.htmlparser();
           var jsobj = parser.parse(data)
           _this.setAttribute('model', jsobj);
-          // console.log('loaded model', jsobj)
+          //console.log('loaded model', jsobj)
         }
       );
     </handler>
     
     <method name="updateAttr" args="id, name, value">
+      //console.log('updateAttr', id, name, value);
       var model = this.model;
       if (model) {
         var child = this._findChild(id, model);
@@ -225,6 +227,7 @@ SOFTWARE. -->
     </method>
     
     <method name="deleteNode" args="id, oldParentId">
+      //console.log('delete', id, oldParentId);
       var model = this.model;
       if (model) {
         var child = this._findChild(id, model),
@@ -236,10 +239,11 @@ SOFTWARE. -->
       }
     </method>
     
-    <method name="createNode" args="child">
+    <method name="createNode" args="child, newParentId">
+      //console.log('create', newParentId, child);
       var model = this.model;
       if (model) {
-        var parent = this._findChild(child.parent.id, model);
+        var parent = this._findChild(newParentId, model);
         if (child && parent) {
          var prevSiblingView = child.getPrevSiblingView();
          var prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null;
@@ -257,6 +261,7 @@ SOFTWARE. -->
     </method>
     
     <method name="moveInFrontOf" args="id, siblingId, parentId">
+      //console.log('moveInFrontOf', id, siblingId, parentId);
       var model = this.model;
       if (model) {
         var child = this._findChild(id, model),
@@ -275,6 +280,7 @@ SOFTWARE. -->
     </method>
     
     <method name="moveToBack" args="id, parentId">
+      //console.log('moveToBack', id, parentId);
       var model = this.model;
       if (model) {
         var child = this._findChild(id, model),
@@ -318,6 +324,8 @@ SOFTWARE. -->
     </method>
     
     <method name="_findChild" args="id, jsobj">
+      if (!id) return null;
+      
       var children = jsobj.child, child;
       for (var i = 0; children.length > i; i++) {
         child = children[i]
@@ -404,7 +412,7 @@ SOFTWARE. -->
     }
     
     return true;
-  </method>
+  </handler>
 
 
 

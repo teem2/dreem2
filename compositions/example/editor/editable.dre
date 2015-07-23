@@ -30,10 +30,10 @@ SOFTWARE. -->
     if (paused) {
       this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
       this._origClickable = this.getAttribute('clickable');
-      this.setAttribute('clickable', true);
+      this.setAttribute('clickable', true, true);
     } else {
       this.stopListening(this, 'onmousedown', '__editable_handleMouseDown');
-      this.setAttribute('clickable', this._origClickable);
+      this.setAttribute('clickable', this._origClickable, true);
     }
   </handler>
   
@@ -62,18 +62,21 @@ SOFTWARE. -->
     var existingParent = this.parent;
     var retval = this.super(parent);
     
-    if (editor.paused) {
-      if (existingParent) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
-      if (this.parent) editormodel.createNode(this);
+    if (editor.paused && !this.isBeingDestroyed) {
+      if (existingParent && this.inited) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
+      if (this.parent && this.parent.inited) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
     }
     
     return retval;
   </setter>
 
-  <method name="setAttribute" args="name, value">
+  <method name="setAttribute" args="name, value, noModelUpdate">
+    // Optional attribute, noModelUpdate, is used to prevent updated to the
+    // model that are unnecessary or possibly incorrect.
+    
     var retval = this.super(name, value);
     
-    if (editor.paused) {
+    if (editor.paused && !noModelUpdate) {
         var parent = this.parent;
         if (parent && parent.inited) editormodel.updateAttr(this.id, name, this.getAttribute(name));
     }
@@ -121,6 +124,8 @@ SOFTWARE. -->
   <method name="getAttrsToSave">
     // FIXME: implement a better way to know what to save
     return {
+      id:this.id,
+      
       x:this.__cfg_x,
       y:this.__cfg_y,
       width:this.__cfg_width,
