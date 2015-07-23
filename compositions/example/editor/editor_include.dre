@@ -758,9 +758,9 @@ SOFTWARE. -->
       <spacedlayout spacing="4" inset="2"></spacedlayout>
       <constantlayout attribute="y" value="'middle'"></constantlayout>
       
-      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       <toolbarbutton id="pausePlayButton" action="pausePlay" width="54" textalign="center">Play</toolbarbutton>
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
       <toolbarbutton id="stopButton" action="stop" width="54" textalign="center">Exit</toolbarbutton>
     </view>
   </view>
