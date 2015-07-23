@@ -123,6 +123,6 @@ SOFTWARE. -->
     this.actual.setAttribute('color', cfg === actual ? '#999999' : '#000000');
   </method>
 
-  <text name="label" x="${60 - this.width}" fontsize="14"></text>
-  <text name="actual" x="${this.parent.innerwidth - this.width - 4}" fontsize="14" width="60"></text>
+  <text name="label" x="${60 - this.width}" y="2" fontsize="14"></text>
+  <text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" fontsize="14" width="60"></text>
 </class>
