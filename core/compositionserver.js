@@ -668,13 +668,19 @@ define(function(require, exports, module) {
       return newdata
     }
     this.__editableRE = /[,\s]*editable/;
-    this.__walkChildren = function(jsobj, strip) {
+    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter/;
+    this.__walkChildren = function(jsobj, strip, sawscreen) {
+      var setplacement = false;
+      if (jsobj.tag === 'view' && sawscreen) {
+        setplacement = true;
+        sawscreen = false;
+      }
       var children = jsobj.child;
       if (! children.length) return;
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
 
-        if (child.tag !== 'screens' && child.tag !== 'composition' && child.tag !== '$comment' && child.tag !== 'screen' && child.tag !== 'handler' && child.tag !== 'method' && child.tag !== 'include') {
+        if (! child.tag.match(this.__skiptagsRE)) {
           if (! child.attr) {
             child.attr = {};
           }
@@ -699,14 +705,18 @@ define(function(require, exports, module) {
               } else if (! attr.with.match(this.__editableRE)){
                 attr.with += ',editable';
               }
-              attr.placement = 'editor';
+              if (setplacement) {
+                attr.placement = 'editor';
+              }
+            } else {
+              sawscreen = true;
             }
           }
         }
 
         // console.log(strip, JSON.stringify(child));
         if (child.child) {
-          this.__walkChildren(child, strip);
+          this.__walkChildren(child, strip, sawscreen);
         }
       }
     }
