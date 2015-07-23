@@ -56,34 +56,44 @@ SOFTWARE. -->
     this._isSync = false;
     
     // Update selection bars
-    var startX = target.x,
+    var startX = horizontal_selection.x - ruler_horizontal.x + ruler_horizontal.scrollx - 100,
+      startXRelative = target.x,
       endX = startX + w,
       xDifferent = startX !== endX,
       hSel = horizontal_selection,
       hLocsize = hSel.locsize,
-      hLocend = hSel.locend;
+      hLocend = hSel.locend,
+      hLocrelend = hSel.locrelend;
     hSel.locstart.setAttribute('text', startX);
+    hSel.locrelstart.setAttribute('text', startXRelative);
     
     hLocsize.setAttribute('visible', xDifferent);
     hLocend.setAttribute('visible', xDifferent);
+    hLocrelend.setAttribute('visible', xDifferent);
     if (xDifferent) {
       hLocsize.setAttribute('text', w);
       hLocend.setAttribute('text', endX);
+      hLocrelend.setAttribute('text', startXRelative + w);
     }
     
-    var startY = target.y,
+    var startY = vertical_selection.y - ruler_vertical.y + ruler_vertical.scrolly - 100,
+      startYRelative = target.y,
       endY = startY + h,
       yDifferent = startY !== endY,
       vSel = vertical_selection,
       vLocsize = vSel.locsize,
-      vLocend = vSel.locend;
+      vLocend = vSel.locend,
+      vLocrelend = vSel.locrelend;
     vSel.locstart.setAttribute('text', startY);
+    vSel.locrelstart.setAttribute('text', startYRelative);
     
     vLocsize.setAttribute('visible', yDifferent);
     vLocend.setAttribute('visible', yDifferent);
+    vLocrelend.setAttribute('visible', yDifferent);
     if (yDifferent) {
       vLocsize.setAttribute('text', h);
       vLocend.setAttribute('text', endY);
+      vLocrelend.setAttribute('text', startYRelative + w);
     }
   </method>
 

@@ -33,8 +33,13 @@ SOFTWARE. -->
 <class name="vertical_rulertext" extends="verticaltext" with="rulertext" x="2"/>
 
 <mixin name="selecttext" fontsize="10" color="${config.selection_color}"/>
-<class name="horizontal_ruler_selecttext" extends="text" with="selecttext" y="21"/>
-<class name="vertical_ruler_selecttext" extends="verticaltext" with="selecttext" x="21"/>
+<mixin name="relselecttext" fontsize="10" color="${config.relselection_color}"/>
+
+<class name="horizontal_ruler_selecttext" extends="text" with="selecttext" y="23"/>
+<class name="vertical_ruler_selecttext" extends="verticaltext" with="selecttext" x="23"/>
+
+<class name="horizontal_ruler_relselecttext" extends="text" with="relselecttext" y="12"/>
+<class name="vertical_ruler_relselecttext" extends="verticaltext" with="relselecttext" x="12"/>
 
 <mixin name="locationtext" fontsize="10" color="${config.location_color}"/>
 
@@ -72,6 +77,7 @@ SOFTWARE. -->
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
     <attribute name="selection_color" type="color" value="blue"/>
+    <attribute name="relselection_color" type="color" value="green"/>
     <attribute name="location_color" type="color" value="black"/>
     
     <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
@@ -419,7 +425,7 @@ SOFTWARE. -->
 
   <!--// VIEWS //////////////////////////////////////////////////////////////-->
   <!--// Rulers, Location and Selection Overlays //-->
-  <view name="ruler_horizontal" ignoreplacement="true" clip="true"
+  <view id="ruler_horizontal" name="ruler_horizontal" ignoreplacement="true" clip="true"
     x="${this.parent.ruler_lead.x + this.parent.ruler_lead.width}"
     y="${config.topbar_height}"
     width="${this.parent.divider_right.x - this.x}"
@@ -443,7 +449,7 @@ SOFTWARE. -->
     <text with="locationtext" name="label" x="3" y="2"/>
   </view>
   
-  <view name="ruler_vertical" ignoreplacement="true" clip="true"
+  <view id="ruler_vertical" name="ruler_vertical" ignoreplacement="true" clip="true"
     x="${this.parent.divider_left.x}"
     y="${this.parent.ruler_lead.y + this.parent.ruler_lead.height}"
     width="${config.ruler_thickness}"
@@ -554,9 +560,11 @@ SOFTWARE. -->
       </method>
     </view>
     
+    <horizontal_ruler_relselecttext name="locrelstart" x="${-this.width - 3}"/>
     <horizontal_ruler_selecttext name="locstart" x="${-this.width - 3}"/>
     <horizontal_ruler_selecttext name="locsize" x="center"/>
     <horizontal_ruler_selecttext name="locend" x="${this.parent.width + 3}"/>
+    <horizontal_ruler_relselecttext name="locrelend" x="${this.parent.width + 3}"/>
     
     <method name="startDrag" args="event">
       reticle._start();
@@ -595,9 +603,11 @@ SOFTWARE. -->
     <view name="lower" height="1" width="100%" bgcolor="${config.selection_color}"/>
     <view name="upper" height="1" y="bottom" width="100%" bgcolor="${config.selection_color}"/>
     
+    <vertical_ruler_relselecttext name="locrelstart" y="-3"/>
     <vertical_ruler_selecttext name="locstart" y="-3"/>
     <vertical_ruler_selecttext name="locsize" y="middle"/>
     <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + 3}"/>
+    <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + 3}"/>
     
     <view with="keyboarddraggable, button" height="10" y="-5" width="100%" cursor="row-resize">
       <method name="startDrag" args="event">
