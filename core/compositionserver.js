@@ -668,26 +668,23 @@ define(function(require, exports, module) {
       return newdata
     }
     this.__editableRE = /[,\s]*editable/;
-    this.__parent = null;
-    this.__walkChildren = function(jsobj, stripids) {
+    this.__walkChildren = function(jsobj, strip) {
       var children = jsobj.child;
       if (! children.length) return;
-      this.__parent = jsobj;
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
 
-        if (child.tag !== 'screens' && child.tag !== 'composition' && child.tag !== '$comment' && child.tag !== 'screen' && child.tag !== 'handler' && child.tag !== 'method' && child.tag !== 'include' && (this.__parent.tag !== 'screen')) {
+        if (child.tag !== 'screens' && child.tag !== 'composition' && child.tag !== '$comment' && child.tag !== 'screen' && child.tag !== 'handler' && child.tag !== 'method' && child.tag !== 'include') {
           if (! child.attr) {
             child.attr = {};
           }
           var attr = child.attr;
-          if (stripids) {
+          if (strip) {
             if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) {
               delete attr.id;
             }
             if ((typeof attr.with === 'string') && attr.with.match(this.__editableRE)) {
               attr.with = attr.with.replace(this.__editableRE, '');
-              console.log('replaced', attr.with);
             }
             if (attr.placement === 'editor') {
               delete attr.placement;
@@ -696,18 +693,20 @@ define(function(require, exports, module) {
             if (! attr.id) {
               attr.id = 'lzeditor_' + this.__guid++;
             }
-            if (! attr.with) {
-              attr.with = 'editable';
-            } else if (! attr.with.match(this.__editableRE)){
-              attr.with += ',editable';
+            if (jsobj.tag !== 'screen') {
+              if (! attr.with) {
+                attr.with = 'editable';
+              } else if (! attr.with.match(this.__editableRE)){
+                attr.with += ',editable';
+              }
+              attr.placement = 'editor';
             }
-            attr.placement = 'editor';
           }
         }
 
-        // console.log(stripids, JSON.stringify(child));
+        // console.log(strip, JSON.stringify(child));
         if (child.child) {
-          this.__walkChildren(child, stripids);
+          this.__walkChildren(child, strip);
         }
       }
     }
