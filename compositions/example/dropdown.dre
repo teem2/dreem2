@@ -1,0 +1,83 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+
+<!--
+  This example demonstrates a dropdown box
+-->
+<composition>
+  <screens>
+    <screen type='browser' name='default' title='Dropdown example'>
+      <view width='100%' height='100%'>
+        <spacedlayout axis='x' spacing='20'></spacedlayout>
+
+        <fontdetect name="fonts"></fontdetect>
+    
+        <!-- Dropdown without explicit width -->
+        <dropdown name='drop1' bgcolor='gray' selectcolor='white'>
+          <handler event='oninit'>
+            var items = [];
+            for (var i=0; i<100; i++)
+              items.push(i.toString());
+            this.listbox.items.setAttribute('data', items);
+          </handler>
+        </dropdown>
+    
+
+        <!-- Dropdown with explicit width, and set default -->
+        <dropdown name='drop2' bgcolor='gray' width='75' selectcolor='white'>
+          <handler event='oninit'>
+            var items = [];
+            for (var i=0; i<100; i++)
+              items.push(i.toString());
+            this.listbox.items.setAttribute('data', items);
+            this.setAttribute('selected', '50');
+          </handler>
+        </dropdown>
+
+        <!-- Dropdown with alternate colors -->
+        <dropdown name='drop3' bgcolor='salmon' width='75' selectcolor='green'>
+          <handler event='oninit'>
+            var items = [];
+            for (var i=0; i<100; i++)
+              items.push((i*10).toString());
+            this.listbox.items.setAttribute('data', items);
+            this.setAttribute('selected', '500');
+          </handler>
+        </dropdown>
+
+        <!-- Dropdown with font list -->
+        <dropdownfont name='drop4' bgcolor='white' selectcolor='green'>
+        </dropdownfont>
+
+        <text name="textblock" width="300" fontfamily="${this.parent.drop4.selected}" multiline="true">
+        This contains a sample paragraph. The font style is changed when the font is changed using the dropdownfont.
+	</text>
+
+      </view>
+
+
+    </screen>
+   </screens>
+
+  <server></server>
+</composition>
