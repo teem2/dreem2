@@ -165,6 +165,10 @@ SOFTWARE. -->
       editormodel.save();
       undo.reset();
     </method>
+
+    <method name="stop">
+      editormodel.stop();
+    </method>
     
     <method name="pausePlay">
       editor.setAttribute('paused', !editor.paused);
@@ -213,7 +217,7 @@ SOFTWARE. -->
     <handler event="oninit">
       var _this = this;
       // rewrite the file to be editable, which will reload this page automatically
-      dr.global.requestor.fetch(window.location.toString() + '?edit=1&raw=1').success(
+      dr.global.requestor.fetch(window.location.toString() + '?raw=1').success(
         function(data, status) {
           var parser = new dr.htmlparser();
           var jsobj = parser.parse(data)
@@ -310,6 +314,10 @@ SOFTWARE. -->
     
     <method name="save">
       dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model) );
+    </method>
+
+    <method name="stop">
+      dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model) );
     </method>
     
     <method name="_findChildIndex" args="parent, child">
@@ -753,6 +761,7 @@ SOFTWARE. -->
       <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       <toolbarbutton id="pausePlayButton" action="pausePlay" width="54" textalign="center">Play</toolbarbutton>
+      <toolbarbutton id="stopButton" action="stop" width="54" textalign="center">Exit</toolbarbutton>
     </view>
   </view>
 

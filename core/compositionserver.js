@@ -84,19 +84,21 @@ define(function(require, exports, module) {
           req.on('data', function(data) {buf += data.toString();});
           req.on('end', function() {
             var comppath = define.expandVariables(this.__getCompositionPath())
-            this.__saveEditableFile(comppath, buf);
+            this.__saveEditableFile(comppath, buf, query.stripeditor === '1');
           }.bind(this));
           return;
         } else {
           var comppath = define.expandVariables(this.__getCompositionPath())
           data = this.__makeFileEditable(comppath);
-          if (query.raw) {
-            res.writeHead(200, {"Content-Type":"text/text"});
-            res.write(data);
-            res.end();
-            return;
-          }
+          return;
         }
+      }
+      if (query.raw) {
+        var comppath = define.expandVariables(this.__getCompositionPath())
+        res.writeHead(200, {"Content-Type":"text/text"});
+        res.write(this.__readFile(comppath));
+        res.end();
+        return;
       }
 
       // Serve our Composition device
@@ -649,12 +651,18 @@ define(function(require, exports, module) {
     };
 
     this.__guid = 0;
-    this.__makeFileEditable = function(filepath) {
+    this.__readFile = function(filepath) {
       var data, newdata;
       try {
         data = fs.readFileSync(filepath);
         if (data) data = data.toString();
       } catch(e) {}
+      return data;
+    }
+
+    this.__makeFileEditable = function(filepath) {
+      var data, newdata;
+      data = this.__readFile(filepath)
 
       if (data.indexOf('lzeditor_') > 0) {
         // already editable, don't do anything
@@ -671,37 +679,39 @@ define(function(require, exports, module) {
     }
     this.__editableRE = /[,\s]*editable/;
     this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter/;
-    this.__walkChildren = function(jsobj, strip, sawscreen) {
+    this.__walkChildren = function(jsobj, stripeditor, insidescreen) {
       var setplacement = false, setwith = false;
       if (jsobj.tag !== 'screen') {
         setwith = true;
       } else {
-        sawscreen = true;
+        // track if we're inside the screen tag
+        insidescreen = true;
       }
 
       var children = jsobj.child;
       if (! children.length) return;
 
-      // strip out includes
+      // strip out editor include
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
         if (child.tag === 'include' && child.attr.href === './editor/editor_include.dre') {
-          // console.log('found include', child)
           children.splice(i, 1);
           break;
         }
       }
-      if (jsobj.tag === 'view' && sawscreen) {
-        // add top-level include
+      if (jsobj.tag === 'view' && insidescreen) {
+        // only set placement='editor' for tags in the top-level view immediately inside the screen tag
+        insidescreen = false;
         setplacement = true;
-        sawscreen = false;
-        jsobj.child.unshift({
-          tag: 'include',
-          attr: {
-            href: './editor/editor_include.dre'
-          }
-        });
-        // console.log(jsobj)
+        if (! stripeditor) {
+          // add top-level editor include
+          jsobj.child.unshift({
+            tag: 'include',
+            attr: {
+              href: './editor/editor_include.dre'
+            }
+          });
+        }
       }
 
       for (var i = 0; i < children.length; i++) {
@@ -712,7 +722,7 @@ define(function(require, exports, module) {
             child.attr = {};
           }
           var attr = child.attr;
-          if (strip) {
+          if (stripeditor) {
             if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) {
               delete attr.id;
             }
@@ -739,18 +749,18 @@ define(function(require, exports, module) {
           }
         }
 
-        // console.log(strip, JSON.stringify(child));
+        // console.log(stripeditor, JSON.stringify(child));
         if (child.child) {
-          this.__walkChildren(child, strip, sawscreen);
+          this.__walkChildren(child, stripeditor, insidescreen);
         }
       }
     }
-    this.__saveEditableFile = function(filepath, data) {
+    this.__saveEditableFile = function(filepath, data, stripeditor) {
       var jsobj = JSON.parse(data);
-      this.__walkChildren(jsobj, true);
+      this.__walkChildren(jsobj, stripeditor);
       var newdata = HTMLParser.reserialize(jsobj, ' ');
       this.__writeFileIfChanged(filepath, newdata);
-      // console.log('saved', filepath);
+      // console.log('saved', filepath, stripeditor);
     }
   };
 })
