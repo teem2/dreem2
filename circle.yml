@@ -11,7 +11,7 @@ test:
 #    - FIREFOX=yes bundle exec rspec
   post:
 #    # Run smoke tests
-    - 'if [ "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "dev" ]; then grunt; fi':
+    - 'if [ "${CIRCLE_BRANCH}" == "dev" ]; then grunt; fi':
         timeout: 500
         
 #    # Run smoke tests on mobile
