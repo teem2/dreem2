@@ -88,8 +88,13 @@ define(function(require, exports, module) {
           }.bind(this));
           return;
         } else {
+          res.writeHead(302, {
+            'Location': req.url.substring(0, req.url.indexOf('?'))
+            //add other headers here...
+          });
+          res.end();
           var comppath = define.expandVariables(this.__getCompositionPath())
-          data = this.__makeFileEditable(comppath);
+          this.__makeFileEditable(comppath);
           return;
         }
       }
@@ -728,6 +733,7 @@ define(function(require, exports, module) {
             }
             if ((typeof attr.with === 'string') && attr.with.match(this.__editableRE)) {
               attr.with = attr.with.replace(this.__editableRE, '');
+              if (! attr.with) delete attr.with;
             }
             if (attr.placement === 'editor') {
               delete attr.placement;
