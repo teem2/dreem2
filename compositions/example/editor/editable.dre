@@ -20,7 +20,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <mixin name="editable">
-  <handler event="onpaused" args="paused" reference="editor">
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    this.handleEditorPaused(editor.paused);
+  </method>
+  
+  <handler name="handleEditorPaused" event="onpaused" args="paused" reference="editor">
     if (paused) {
       this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
       this._origClickable = this.getAttribute('clickable');
@@ -51,17 +57,27 @@ SOFTWARE. -->
       return this.super();
     }
   </method>
+  
+  <setter name="parent" args="parent">
+    var existingParent = this.parent;
+    var retval = this.super(parent);
+    
+    if (editor.paused) {
+      if (existingParent) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
+      if (this.parent) editormodel.createNode(this);
+    }
+    
+    return retval;
+  </setter>
 
   <method name="setAttribute" args="name, value">
     var retval = this.super(name, value);
+    
     if (editor.paused) {
-      if (name === 'parent') {
-        // FIXME: update model for create/delete
-      } else {
         var parent = this.parent;
-        if (parent && parent.inited) editormodel.update(this.id, name, this.getAttribute(name));
-      }
+        if (parent && parent.inited) editormodel.updateAttr(this.id, name, this.getAttribute(name));
     }
+    
     return retval;
   </method>
 
@@ -78,16 +94,38 @@ SOFTWARE. -->
   </method>
 
   <method name="moveInFrontOf" args="sibling">
-    if (editor.paused) {
-      // FIXME: update model
-    }
+    if (editor.paused) editormodel.moveInFrontOf(this.id, sibling.id, this.parent.id || this.getRoot().id);
     return this.super();
   </method>
   
   <method name="moveToBack">
-    if (editor.paused) {
-      // FIXME: update model
-    }
+    if (editor.paused) editormodel.moveToBack(this.id, this.parent.id || this.getRoot().id);
     return this.super();
+  </method>
+  
+  <method name="objectify" args="obj">
+    obj.tag = this.$tagname;
+    obj.attr = this.getAttrsToSave();
+    
+    if (!obj.child) obj.child = [];
+    
+    var subnodes = this.getSubnodes(), subnode;
+    for (var i = 0, len = subnodes.length; len > i; i++) {
+      subnode = subnodes[i];
+      if (subnode.__NEW) obj.child.push(subnode.objectify({}));
+    }
+    
+    return obj;
+  </method>
+  
+  <method name="getAttrsToSave">
+    // FIXME: implement a better way to know what to save
+    return {
+      x:this.__cfg_x,
+      y:this.__cfg_y,
+      width:this.__cfg_width,
+      height:this.__cfg_height,
+      bgcolor:this.__cfg_bgcolor
+    };
   </method>
 </mixin>

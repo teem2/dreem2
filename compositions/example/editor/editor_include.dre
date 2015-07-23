@@ -185,6 +185,10 @@ SOFTWARE. -->
         parent = this.getRoot();
       }
       var instance = parent.createChild(attrs);
+      
+      // Mark an instance as "new" so we know it needs serialization.
+      instance.__NEW = true;
+      
       undo.do(new dr.editor.createundoable({target:instance}));
       selectionmanager.select(instance);
     </method>
@@ -212,12 +216,85 @@ SOFTWARE. -->
       );
     </handler>
     
-    <method name="update" args="id, name, value">
-      if (this.model) {
-        var child = this._findChild(id, this.model);
-        if (child) {
-          child.attr[name] = value;
-          // console.log('found child', child, id, child.attr);
+    <method name="updateAttr" args="id, name, value">
+      var model = this.model;
+      if (model) {
+        var child = this._findChild(id, model);
+        if (child) child.attr[name] = value;
+      }
+    </method>
+    
+    <method name="deleteNode" args="id, oldParentId">
+      var model = this.model;
+      if (model) {
+        var child = this._findChild(id, model),
+          parent = this._findChild(oldParentId, model);
+        if (child && parent) {
+         var idx = this._findChildIndex(parent, child);
+         if (idx >= 0) parent.child.splice(idx, 1);
+        }
+      }
+    </method>
+    
+    <method name="createNode" args="child">
+      var model = this.model;
+      if (model) {
+        var parent = this._findChild(child.parent.id, model);
+        if (child && parent) {
+         var prevSiblingView = child.getPrevSiblingView();
+         var prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null;
+         var idx = prevSibling ? this._findChildIndex(parent, prevSibling) : 0;
+         
+         if (!parent.child) parent.child = [];
+         
+         // Convert child (and tree) to object structure
+         var childObjTree = child.objectify({});
+         
+         parent.child.splice(idx, 0, childObjTree);
+         // console.log('create child', childObjTree);
+        }
+      }
+    </method>
+    
+    <method name="moveInFrontOf" args="id, siblingId, parentId">
+      var model = this.model;
+      if (model) {
+        var child = this._findChild(id, model),
+          sibling = this._findChild(siblingId, model),
+          parent = this._findChild(parentId, model);
+        if (child && sibling && parent) {
+          // Remove child
+          var idx = this._findChildIndex(parent, child);
+          if (idx >= 0) parent.child.splice(idx, 1);
+          
+          // Insert child
+          idx = this._findChildIndex(parent, sibling);
+          if (idx >= 0) parent.child.splice(idx + 1, 0, child);
+        }
+      }
+    </method>
+    
+    <method name="moveToBack" args="id, parentId">
+      var model = this.model;
+      if (model) {
+        var child = this._findChild(id, model),
+          parent = this._findChild(parentId, model);
+        if (child && parent) {
+          var idx = this._findChildIndex(parent, child);
+          if (idx > 0) {
+            parent.child.splice(idx, 1);
+            
+            // HACK: if the parent is the root then the first child must continue
+            // to be the editor include tag.
+            var searchChild;
+            for (var i = 0, len = parent.child.length; len > i; i++) {
+              searchChild = parent.child[i];
+              if (searchChild.tag !== 'include') {
+                parent.child.splice(i, 0, child);
+                break;
+              }
+            }
+          }
         }
       }
     </method>
@@ -226,18 +303,29 @@ SOFTWARE. -->
       dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model) );
     </method>
     
+    <method name="_findChildIndex" args="parent, child">
+      var children = parent.child;
+      if (children) {
+        var i = children.length, child,
+          searchId = child.attr.id;
+        while (i) {
+          child = children[--i];
+          if (child.attr.id === searchId) return i;
+        }
+      } else {
+        return -1;
+      }
+    </method>
+    
     <method name="_findChild" args="id, jsobj">
-      var children = jsobj.child;
+      var children = jsobj.child, child;
       for (var i = 0; children.length > i; i++) {
-        var child = children[i]
-        if (child.attr && (child.attr.id === id)) {
-          // console.log('found child', child)
+        child = children[i]
+        if (child.attr && child.attr.id === id) {
           return child;
         } else if (child.child) {
-          newchild = this._findChild(id, child);
-          if (newchild) {
-            return newchild;
-          }
+          var newchild = this._findChild(id, child);
+          if (newchild) return newchild;
         }
       }
     </method>

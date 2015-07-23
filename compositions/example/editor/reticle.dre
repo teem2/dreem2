@@ -35,8 +35,15 @@ SOFTWARE. -->
 
   <method name="_syncPosition">
     var content = editor.content,
-      target = this.target,
-      pos = target.getAbsolutePosition(),
+      target = this.target;
+    
+    if (target.destroyed) {
+      console.log('Selection target was destroyed so aborting _syncPosition.');
+      selectionmanager.clear();
+      return;
+    }
+    
+    var pos = target.getAbsolutePosition(),
       w = target.width,
       h = target.height;
     this._isSync = true;
