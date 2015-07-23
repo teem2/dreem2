@@ -725,7 +725,7 @@ define(function(require, exports, module) {
       this.__walkChildren(jsobj, true);
       var newdata = HTMLParser.reserialize(jsobj, ' ');
       this.__writeFileIfChanged(filepath, newdata);
-      console.log('saved', filepath);
+      // console.log('saved', filepath);
     }
   };
 })
