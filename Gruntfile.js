@@ -8,7 +8,7 @@ module.exports = function(grunt) {
     'saucelabs-custom': {
       all: {
         options: {
-          "max-duration": 1200,
+          "max-duration": 420,
           "throttled": 3,
           "tunneled": true,
           "tunnelArgs": ['--vm-version', 'dev-varnish'],
@@ -70,22 +70,22 @@ module.exports = function(grunt) {
               platform: 'OS X 10.10',
               browserName: 'chrome',
               version: 'beta'
-            },
-            {
-              platform: 'OS X 10.10',
-              browserName: 'firefox',
-              version: 'beta'
-            },
-            {
-              platform: 'Windows 8.1',
-              browserName: 'chrome',
-              version: 'beta'
-            },
-            {
-              platform: 'Windows 8.1',
-              browserName: 'firefox',
-              version: 'beta'
             }//,
+//            {
+//              platform: 'OS X 10.10',
+//              browserName: 'firefox',
+//              version: 'beta'
+//            },
+//            {
+//              platform: 'Windows 8.1',
+//              browserName: 'chrome',
+//              version: 'beta'
+//            },
+//            {
+//              platform: 'Windows 8.1',
+//              browserName: 'firefox',
+//              version: 'beta'
+//            }//,
 //            {
 //              platform: 'Linux',
 //              browserName: 'chrome',
