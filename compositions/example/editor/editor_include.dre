@@ -207,7 +207,7 @@ SOFTWARE. -->
     <handler event="oninit">
       var _this = this;
       // rewrite the file to be editable, which will reload this page automatically
-      dr.global.requestor.fetch(window.location.toString() + '?edit=1').success(
+      dr.global.requestor.fetch(window.location.toString() + '?edit=1&raw=1').success(
         function(data, status) {
           var parser = new dr.htmlparser();
           var jsobj = parser.parse(data)

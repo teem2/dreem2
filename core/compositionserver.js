@@ -90,10 +90,12 @@ define(function(require, exports, module) {
         } else {
           var comppath = define.expandVariables(this.__getCompositionPath())
           data = this.__makeFileEditable(comppath);
-          res.writeHead(200, {"Content-Type":"text/text"});
-          res.write(data);
-          res.end();
-          return;
+          if (query.raw) {
+            res.writeHead(200, {"Content-Type":"text/text"});
+            res.write(data);
+            res.end();
+            return;
+          }
         }
       }
 
