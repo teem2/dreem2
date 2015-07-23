@@ -25,14 +25,20 @@ SOFTWARE. -->
     
     this.handleEditorPaused(editor.paused);
   </method>
-  
+
+
+  <!-- Sets up mousedown/up handlers which send simulated events to the
+       reticle. This allows the reticle to behave as the draggable object
+       while still having clickability based on the view structure. -->
   <handler name="handleEditorPaused" event="onpaused" args="paused" reference="editor">
     if (paused) {
       this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
+      this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
       this._origClickable = this.getAttribute('clickable');
       this.setAttribute('clickable', true, true);
     } else {
       this.stopListening(this, 'onmousedown', '__editable_handleMouseDown');
+      this.stopListening(this, 'onmouseup', '__editable_handleMouseUp');
       this.setAttribute('clickable', this._origClickable, true);
     }
   </handler>
@@ -42,10 +48,18 @@ SOFTWARE. -->
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
     reticle.doMouseOver(true);
   </method>
+  
+  <method name="__editable_handleMouseUp" args="event">
+    dr.sprite.simulatePlatformEvent(reticle, 'mouseup', {pointerX:event.x, pointerY:event.y});
+    //reticle.doMouseOver(true);
+  </method>
 
   <method name="invokePlatformObserverCallback" args="methodName, eventType, returnEvent">
     if (editor.paused) {
-      if (eventType === 'onmousedown' && methodName === '__editable_handleMouseDown') {
+      if (
+        eventType === 'onmousedown' && methodName === '__editable_handleMouseDown' ||
+        eventType === 'onmouseup' && methodName === '__editable_handleMouseUp'
+      ) {
         // Only process platform events that editable has registered
         return this.super();
       } else {

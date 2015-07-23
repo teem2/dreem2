@@ -245,14 +245,14 @@ SOFTWARE. -->
       if (model) {
         var parent = this._findChild(newParentId, model);
         if (child && parent) {
-         var prevSiblingView = child.getPrevSiblingView(),
-           prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
-           idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
+          var prevSiblingView = child.getPrevSiblingView(),
+            prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
+            idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
+          
+          if (!parent.child) parent.child = [];
          
-         if (!parent.child) parent.child = [];
-         
-         // Convert child (and tree) to object structure and insert
-         parent.child.splice(idx + 1, 0, child.objectify({}));
+          // Convert child (and tree) to object structure and insert
+          parent.child.splice(idx + 1, 0, child.objectify({}));
         }
       }
     </method>
@@ -410,6 +410,10 @@ SOFTWARE. -->
     
     return true;
   </handler>
+
+  <!-- Eat attempts to open the context menu since this typically messes up
+       drag and drop. -->
+  <handler event="oncontextmenu" args="event"/>
 
 
 

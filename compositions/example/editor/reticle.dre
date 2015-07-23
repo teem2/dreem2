@@ -19,7 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="reticle" with="keyboarddraggable, button" visible="false" distancebeforedrag="5" cursor="move">
+<class name="reticle" with="keyboarddraggable, button" visible="false"
+  distancebeforedrag="5" cursor="move" clickable="false"
+>
+  <!-- clickable:false is because the mousedown/up events are in fact
+       simulated from the editable. This prevents the reticle from covering
+       but still allows it to behave as draggable. -->
   <handler event="onselected" args="selected" reference="selectionmanager">
     var oldTarget = this.target;
     this.target = selected;
