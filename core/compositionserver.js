@@ -670,13 +670,38 @@ define(function(require, exports, module) {
     this.__editableRE = /[,\s]*editable/;
     this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter/;
     this.__walkChildren = function(jsobj, strip, sawscreen) {
-      var setplacement = false;
-      if (jsobj.tag === 'view' && sawscreen) {
-        setplacement = true;
-        sawscreen = false;
+      var setplacement = false, setwith = false;
+      if (jsobj.tag !== 'screen') {
+        setwith = true;
+      } else {
+        sawscreen = true;
       }
+
       var children = jsobj.child;
       if (! children.length) return;
+
+      // strip out includes
+      for (var i = 0; i < children.length; i++) {
+        var child = children[i]
+        if (child.tag === 'include' && child.attr.href === './editor/editor_include.dre') {
+          // console.log('found include', child)
+          children.splice(i, 1);
+          break;
+        }
+      }
+      if (jsobj.tag === 'view' && sawscreen) {
+        // add top-level include
+        setplacement = true;
+        sawscreen = false;
+        jsobj.child.unshift({
+          tag: 'include',
+          attr: {
+            href: './editor/editor_include.dre'
+          }
+        });
+        // console.log(jsobj)
+      }
+
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
 
@@ -699,7 +724,7 @@ define(function(require, exports, module) {
             if (! attr.id) {
               attr.id = 'lzeditor_' + this.__guid++;
             }
-            if (jsobj.tag !== 'screen') {
+            if (setwith) {
               if (! attr.with) {
                 attr.with = 'editable';
               } else if (! attr.with.match(this.__editableRE)){
@@ -708,8 +733,6 @@ define(function(require, exports, module) {
               if (setplacement) {
                 attr.placement = 'editor';
               }
-            } else {
-              sawscreen = true;
             }
           }
         }
