@@ -67,7 +67,7 @@ if (args["-dali"]) {
   console.log("** using dali runtime");
 } else {
   define.SPRITE = "$ROOT/lib/dr/sprite_headless";
-  console.color("*** ~by~Dreem Headless Runtime~~ ***");
+  console.color("*** ~bw~D~bb~r~bg~e~by~e~br~m ~bw~Headless Runtime~~ ***");
 }
 
 console.log("** using server:", server);
@@ -127,7 +127,6 @@ return ret;
 }
 
 function requireWalker(script_url, from_file, save_path) {
-
 var script = {}
 var scripturl = url.parse(script_url);
 var base_path = define.filePath(script_url);
@@ -167,7 +166,7 @@ function (res) {
 				requireWalker(dep_path, script_url, local_dep_path);
 		});
   if (!--downloads){
-   console.color('** ~by~download complete~~.');
+   console.color('** ~bg~download complete~~.');
       	startMain(); // no more deps
       }
 
@@ -180,20 +179,21 @@ function (res) {
 var main_file = "./dalicache/compositions." + composition + ".dre.screens." + screen + ".js";
 
 function LoadAll() {
-  var originalroot = define.ROOT;
+	var originalroot = define.ROOT;
   define.ROOT = server + "/" + composition + "/default";
   define.MAIN = server + "/build/compositions." + composition + ".dre.screens." + screen + ".js";
   requireWalker(define.MAIN, define.ROOT, main_file);
 }
 
 var sock;
-var sockethost = server + "/" + composition + "/default";
+var sockethost = server + "/compositions/" + composition + ".dre"
 var reconnect = function() {
     // put up websocket.
+  console.color("~~** reconnect started");
   if (sock) sock.close();
-  
   sock = new NodeWebSocket(sockethost);
   sock.onError = function(msg) {
+	console.log("error in socket!");
     setTimeout(function() {
       reconnect();
     }.bind(this), 500);
@@ -204,11 +204,14 @@ var reconnect = function() {
       msg = JSON.parse(msg);
     } catch(e){}
     if (msg.type == "sessionCheck") {
-      console.color('** ~by~download started~~.');
+      console.color('** ~by~Files updated on server: downloading~~.');
       LoadAll();
     }
   }.bind(this);
-  
+  sock.onConnect = function(){
+	  
+      console.color('** ~bg~Connected to server~~.');
+  }
   sock.onClose = function() {
     setTimeout(function() {
       reconnect();
@@ -245,4 +248,4 @@ var viewMode={
 
 // attempt to connect to the notifier service, download initial version and download again if changes have been made.
 reconnect();
-
+//LoadAll();

@@ -255,7 +255,7 @@ define(function(require, exports, module){
 					this.expected--
 				}
 			}
-
+			
 			if(this.expected) return false
 			this.onMessage(this.output.toString('utf8', this.masked?0:2, this.written))
 			this.expected = 1

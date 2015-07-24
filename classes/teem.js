@@ -182,6 +182,12 @@ define(function(require, exports, module) {
     }
   } else if (define.env == 'v8') {
     // dali environment
+//	var BusClient = require('$CORE/busclient');
+    
+//	teem.bus = new BusClient();
+  //  var rpcpromise = new RpcPromise(teem.bus);
+
+	
     define.onMain = teem.__startup;
   }
 

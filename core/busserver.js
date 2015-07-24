@@ -50,7 +50,7 @@ define(function(require, exports, module) {
      * @param {Object} message
      * @param {WebSocket} socket
      */
-    this.onConnect = function(message, socket) {};
+    this.onConnect = function( socket) {};
     
     /** 
       * @method broadcast
