@@ -127,8 +127,6 @@ define(function(require, exports, module) {
       */
     this.__getComposition = function(url) {
       // Strip Query
-	  
-	  console.log(url);
       var queryIndex = url.indexOf('?');
       if (queryIndex !== -1) url = url.substring(0, queryIndex);
       
