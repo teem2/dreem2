@@ -149,6 +149,10 @@ define(function(require, exports, module) {
       }
     };
 
+    this.mount = function(dir) {
+      console.log('MOUNTING', dir)
+    };
+
     /** 
       * Handle protocol upgrade to WebSocket
       * @param {Request} req 

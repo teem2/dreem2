@@ -18,6 +18,7 @@ define(function(require, exports, module) {
     FileWatcher = require('./filewatcher'),
     HTMLParser = require('./htmlparser'),
     DreemError = require('./dreemerror'),
+    PluginLoader = require('./pluginloader'),
     dreemCompiler = require('./dreemcompiler');
 
   /**
@@ -30,7 +31,8 @@ define(function(require, exports, module) {
     this.teemserver = teemserver;
     this.args = args;
     this.name = name;
-    
+
+    this.pluginLoader = new PluginLoader(this.args, this.name, this);
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
@@ -233,7 +235,19 @@ define(function(require, exports, module) {
       var htmlParser = new HTMLParser(),
         source = data.toString(),
         jsobj = htmlParser.parse(source);
-      
+
+      if (jsobj.tag == '$root' && jsobj.child) {
+
+        var children = jsobj.child;
+        var composition;
+        for (var i=0;i<children.length;i++) {
+          var child = children[i];
+          if (child.tag == 'composition') {
+            this.pluginLoader.inject(child);
+          }
+        }
+      }
+
       // forward the parser errors 
       if (htmlParser.errors.length) {
         htmlParser.errors.map(function(e) {
@@ -326,6 +340,7 @@ define(function(require, exports, module) {
               if (root) {
                 jsfile = '$BUILD/' + thePath.replace(/\$/g,'').toLowerCase() + '.js';
                 this.compile_once[drefile] = jsfile;
+
                 this.__compileAndWriteDreToJS(root, jsfile, null, local_err, [drefile]);
                 ignore_watch = true;
               }
@@ -760,7 +775,7 @@ define(function(require, exports, module) {
           this.__walkChildren(child, stripeditor, insidescreen);
         }
       }
-    }
+    };
     this.__saveEditableFile = function(filepath, data, stripeditor) {
       var jsobj = JSON.parse(data);
       this.__walkChildren(jsobj, stripeditor);
