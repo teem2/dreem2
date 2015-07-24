@@ -63,16 +63,15 @@ if (args["-screen"]) screen = args["-screen"];
 
 if (args["-dali"]) {
   define.SPRITE = "$ROOT/lib/dr/sprite_daliruntime";
-  console.color("*** ~by~Dreem Dali Runtime~~ ***");
-  console.log("** using dali runtime");
+  console.color("*** ~bw~D~bb~r~bg~e~by~e~br~m ~bw~Dali Runtime~~ ***");
 } else {
   define.SPRITE = "$ROOT/lib/dr/sprite_headless";
   console.color("*** ~bw~D~bb~r~bg~e~by~e~br~m ~bw~Headless Runtime~~ ***");
 }
 
-console.log("** using server:", server);
-console.log("** using composition:", composition);
-console.log("** using screen:", screen);
+console.color("** using server: ~by~" +  server  + "~~");
+console.color("** using composition: ~by~" + composition + "~~");
+console.color("** using screen: ~by~" + screen + "~~");
 
 
 
