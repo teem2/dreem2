@@ -120,7 +120,7 @@ SOFTWARE. -->
   <method name="_checkActualIsDifferent">
     var actual = this.actual.text;
     var cfg = this.field.text;
-    this.actual.setAttribute('color', cfg === actual ? '#999999' : '#000000');
+    this.actual.setAttribute('visible', cfg !== actual);
   </method>
 
   <text name="label" x="${60 - this.width}" y="2" fontsize="14"></text>
