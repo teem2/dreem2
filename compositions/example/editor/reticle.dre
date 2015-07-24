@@ -113,10 +113,19 @@ SOFTWARE. -->
   <method name="_updateTarget" args="attr, value">
     if (this.target && !this._isSync) this.target.setAttribute(attr, value);
   </method>
+  <attribute name="draglockthresh" type="number" value="20"/>
   <handler event="onx" args="x">
+    if (dr.keyboard.isShiftKeyDown()
+       && Math.abs(this.__initAbsLocX - x) < this.draglockthresh) {
+        x = this.__initAbsLocX;
+    }
     this._updateTarget('x', x + this.dx);
   </handler>
   <handler event="ony" args="y">
+    if (dr.keyboard.isShiftKeyDown()
+       && Math.abs(this.__initAbsLocY - y) < this.draglockthresh) {
+        y = this.__initAbsLocY;
+    }
     this._updateTarget('y', y + this.dy);
   </handler>
   <handler event="onwidth" args="width">
