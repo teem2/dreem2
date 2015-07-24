@@ -43,6 +43,12 @@ SOFTWARE. -->
 
 <mixin name="locationtext" fontsize="10" color="${config.location_color}"/>
 
+<class name="subhead" extends="text" leftpadding="10" toppadding="4" bottompadding="4"
+  topborder="1" bottomborder="1" bordercolor="${config.secondary_panel_color}"
+  bgcolor="${config.primary_panel_color}" color="${config.label_text_color}"
+  fontsize="14"
+/>
+
 <view name="editor" id="editor" width="100%" height="100%" defaultplacement="content.inner" clip="true" bgcolor="white">
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="paused" type="boolean" value="true"/>
@@ -66,7 +72,7 @@ SOFTWARE. -->
     <attribute name="leftbar_minwidth" type="number" value="50"/>
     <attribute name="leftbar_maxwidth" type="number" value="300"/>
     
-    <attribute name="rightbar_minwidth" type="number" value="250"/>
+    <attribute name="rightbar_minwidth" type="number" value="290"/>
     <attribute name="rightbar_minx" type="number" value="700"/>
     <attribute name="bottombar_height" type="number" value="0"/>
     
@@ -76,6 +82,7 @@ SOFTWARE. -->
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
+    <attribute name="label_text_color" type="color" value="#666666"/>
     <attribute name="selection_color" type="color" value="blue"/>
     <attribute name="relselection_color" type="color" value="green"/>
     <attribute name="location_color" type="color" value="black"/>
@@ -434,7 +441,7 @@ SOFTWARE. -->
   <!--// VIEWS //////////////////////////////////////////////////////////////-->
   <!--// Rulers, Location and Selection Overlays //-->
   <view id="ruler_horizontal" name="ruler_horizontal" ignoreplacement="true" clip="true"
-    x="${this.parent.ruler_lead.x + this.parent.ruler_lead.width}"
+    x="${this.parent.ruler_corner.x + this.parent.ruler_corner.width}"
     y="${config.topbar_height}"
     width="${this.parent.divider_right.x - this.x}"
     height="${config.ruler_thickness}"
@@ -451,15 +458,9 @@ SOFTWARE. -->
     </bitmap>
   </view>
   
-  <view name="xLocation" ignoreplacement="true"
-    y="${this.parent.ruler_horizontal.y}" width="1" height="${config.ruler_thickness}" bgcolor="${config.location_color}"
-  >
-    <text with="locationtext" name="label" x="3" y="2"/>
-  </view>
-  
   <view id="ruler_vertical" name="ruler_vertical" ignoreplacement="true" clip="true"
     x="${this.parent.divider_left.x}"
-    y="${this.parent.ruler_lead.y + this.parent.ruler_lead.height}"
+    y="${this.parent.ruler_corner.y + this.parent.ruler_corner.height}"
     width="${config.ruler_thickness}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
     scrolly="${this.parent.content.inner.scrolly + 100 - config.content_inset}"
@@ -474,7 +475,13 @@ SOFTWARE. -->
       <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     </bitmap>
   </view>
-    
+  
+  <view name="xLocation" ignoreplacement="true"
+    y="${this.parent.ruler_horizontal.y}" width="1" height="${config.ruler_thickness}" bgcolor="${config.location_color}"
+  >
+    <text with="locationtext" name="label" x="3" y="2"/>
+  </view>
+
   <view name="yLocation" ignoreplacement="true"
     x="${this.parent.ruler_vertical.x}" width="${config.ruler_thickness}" height="1" bgcolor="${config.location_color}"
   >
@@ -723,7 +730,7 @@ SOFTWARE. -->
     </method>
   </view>
 
-  <view name="ruler_lead" ignoreplacement="true" bgcolor="white"
+  <view name="ruler_corner" ignoreplacement="true" bgcolor="white"
     x="${this.parent.divider_left.x}" y="${config.topbar_height}"
     height="${config.ruler_thickness}" width="${config.ruler_thickness}"
     border="1" bordercolor="${config.secondary_panel_color}"
@@ -801,34 +808,84 @@ SOFTWARE. -->
     width="${this.parent.innerwidth - this.parent.divider_right.x}"
     height="${this.parent.leftbar.height}"
   >
-    <spacedlayout axis="y" spacing="5" inset="5"/>
-    <handler event="onselected" args="selected" reference="selectionmanager" type="coffee">
-      attrs = []
+    
+    <view name="component_list_panel" width="100%" height="195" bgcolor="white" scrollable="true">
+      <view width="100%">
+        <wrappinglayout axis="x" spacing="5" inset="5" outset="5" linespacing="5" lineinset="5" lineoutset="5" updateparent="true"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+        <view width="90" height="90" bgcolor="#999999"/>
+      </view>
+    </view>
+    
+    <view y="195" width="100%" height="${this.parent.innerheight - this.y}" scrollable="true">
+      <spacedlayout axis="y"/>
       
-      compare = (a, b) ->
-        if (b.name > a.name)
-          return -1
-        else if (a.name > b.name)
-          return 1
-        else
-          0
+      <subhead width="100%" text="Attributes"/>
       
-      if selected
-        ancestors = this.klass.ancestors()
-        # pull attributes from ancestor, since we don't want the editor mixin itself
-        myattributes = ancestors[ancestors.length - 1].attributes
+      <view name="attrs_panel" width="100%" clip="true">
+        <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
+          <method name="__positionView" args="view, attrName, value">
+            // Only animate the parent updates
+            var isParent = view === this.parent;
+            if (isParent) this.speed = 500;
+            this.super();
+            if (isParent) this.speed = 0;
+          </method>
+        </spacedlayout>
+        <handler event="onselected" args="selected" reference="selectionmanager" type="coffee">
+          attrs = []
+          
+          compare = (a, b) ->
+            if (b.name > a.name)
+              return -1
+            else if (a.name > b.name)
+              return 1
+            else
+              0
+          
+          if selected
+            ancestors = this.klass.ancestors()
+            # pull attributes from ancestor, since we don't want the editor mixin itself
+            myattributes = ancestors[ancestors.length - 1].attributes
+            
+            # build list of attributes for the replicator
+            for key, value of myattributes
+              value.name = key
+              attrs.push(value)
+              # console.log('attribute', key, value)
+            
+            attrs.sort(compare)
+          
+          this.repl.setAttribute('data', attrs);
+        </handler>
+        <replicator name="repl" classname="attributeeditor"/>
+      </view>
+      
+      <subhead width="100%" text="Layouts"/>
+      
+      <view name="layouts_panel" width="100%" clip="true">
+        <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
+          <method name="__positionView" args="view, attrName, value">
+            // Only animate the parent updates
+            var isParent = view === this.parent;
+            if (isParent) this.speed = 500;
+            this.super();
+            if (isParent) this.speed = 0;
+          </method>
+        </spacedlayout>
         
-        # build list of attributes for the replicator
-        for key, value of myattributes
-          value.name = key
-          attrs.push(value)
-          # console.log('attribute', key, value)
-        
-        attrs.sort(compare)
-      
-      this.repl.setAttribute('data', attrs);
-    </handler>
-    <replicator name="repl" classname="attributeeditor"/>
+        <handler event="onselected" args="selected" reference="selectionmanager">
+          // FIXME: implement layouts
+        </handler>
+      </view>
+    </view>
   </view>
 
   <view name="bottombar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
@@ -862,15 +919,15 @@ SOFTWARE. -->
   </view>
 
   <view name="divider_right" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
-    x="${this.parent.innerwidth - this.width - config.rightbar_minwidth}" y="${config.topbar_height}"
+    x="${this.parent.innerwidth - config.rightbar_minwidth}" y="${config.topbar_height}"
     width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
-    <handler event="onwidth" reference="parent">
+    <handler event="oninnerwidth" reference="parent">
       // Respond to browser window resizing
       this.updatePosition(this.x, this.y);
     </handler>
     <method name="updatePosition" args="x, y">
-      if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - this.width - config.rightbar_minwidth, x)));
+      if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
     </method>
   </view>
 

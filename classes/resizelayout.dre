@@ -129,7 +129,7 @@
     return @super()
   </method>
   
-  <method name="updateParent" args="attribute, value">
+  <method name="updateParent" args="attribute, value, count">
     # No resizing of parent since this view expands to fill the parent.
   </method>
 </class>
