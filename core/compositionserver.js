@@ -18,7 +18,6 @@ define(function(require, exports, module) {
     FileWatcher = require('./filewatcher'),
     HTMLParser = require('./htmlparser'),
     DreemError = require('./dreemerror'),
-    PluginLoader = require('./pluginloader'),
     dreemCompiler = require('./dreemcompiler');
 
   /**
@@ -32,7 +31,6 @@ define(function(require, exports, module) {
     this.args = args;
     this.name = name;
 
-    this.pluginLoader = new PluginLoader(this.args, this.name, this);
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
@@ -168,7 +166,7 @@ define(function(require, exports, module) {
             }
           } else {
             res.writeHead(404, {"Content-Type":"text/html"});
-            res.write('NOT FOUND');
+            res.write('NO SCREENS FOUND');
             res.end();
           }
         }
@@ -243,7 +241,7 @@ define(function(require, exports, module) {
         for (var i=0;i<children.length;i++) {
           var child = children[i];
           if (child.tag == 'composition') {
-            this.pluginLoader.inject(child);
+            this.teemserver.pluginLoader.inject(child);
           }
         }
       }
@@ -388,8 +386,19 @@ define(function(require, exports, module) {
     
     /** @private */
     this.__getCompositionPath = function() {
-      var compositionName = this.name,
-        filepath = '$ROOT/' + compositionName + define.DREEM_EXTENSION;
+      var compositionName = this.name;
+      var filepath = '$ROOT/' + compositionName + define.DREEM_EXTENSION;
+
+      var match = /^plugins\/([^\/]+)\/examples\/([^\/]+)$/.exec(compositionName)
+      if (match) {
+        var pluginName = match[1];
+        var compName = match[2];
+        var plugin = this.teemserver.pluginLoader.plugins[pluginName];
+        if (plugin.rootDir) {
+          filepath = plugin.rootDir + '/examples/' + compName + define.DREEM_EXTENSION
+        }
+      }
+
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
@@ -400,6 +409,7 @@ define(function(require, exports, module) {
           }
         }
       }
+
       return filepath;
     };
     

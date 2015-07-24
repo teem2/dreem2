@@ -88,6 +88,13 @@
         function(all, lut) {
           if (lut in define) {
             if (lut == 'PLUGIN') {
+
+              //FIXME: there is probably a better way to do this but by this point
+              // there's no information as to where the str came from, so we can't
+              // tell which plugin is asking for it's library.  So just iterate
+              // through all the plugin directories and use the first match.
+              // This will cause problems someday.
+
               if (!define.__FS) {
                 define.__FS = require('fs');
               }

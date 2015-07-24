@@ -13,19 +13,13 @@ define(function(require, exports, module) {
     var path = require('path'),
         fs = require('fs'),
 
-        ExternalApps = require('./externalapps'),
-        BusServer = require('./busserver'),
-        FileWatcher = require('./filewatcher'),
         HTMLParser = require('./htmlparser'),
-        DreemError = require('./dreemerror'),
-        dreemCompiler = require('./dreemcompiler');
+        DreemError = require('./dreemerror');
 
-    function PluginLoader(args, name, compositionserver, teemserver) {
-        this.compositionServer = compositionserver;
+    function PluginLoader(args, teemserver) {
         this.teemServer = teemserver;
         this.args = args;
-        this.name = name;
-        this.plugins = [];
+        this.plugins = {};
 
         this.__findPlugins();
     }
@@ -86,9 +80,10 @@ define(function(require, exports, module) {
         };
 
         this.__extractObjects = function (plugins) {
+
             var objects = [];
-            for (var i = 0;i< plugins.length;i++) {
-                var plugin = plugins[i];
+            for (var n in plugins) {
+                var plugin = plugins[n];
                 var root = plugin.child;
                 if (root && root.length > 0) {
                     var children = root[0].child;
@@ -122,6 +117,7 @@ define(function(require, exports, module) {
                 var htmlParser = new HTMLParser();
                 var source = data.toString();
                 var plugin = htmlParser.parse(source);
+                plugin.rootDir = dir;
 
                 // forward the parser errors
                 if (htmlParser.errors.length) {
@@ -148,23 +144,13 @@ define(function(require, exports, module) {
 
                 this.__originate(plugin, plugin.pkg.name);
 
-                this.plugins.push(plugin);
-
-                var examplesDir = dir + '/examples';
-                if (fs.existsSync(examplesDir)) {
-                    this.teemServer.mount(examplesDir);
-                }
-
+                this.plugins[plugin.pkg.name] = plugin;
 
             } catch(e) {
                 errors.push(new DreemError("Error during readFileSync in __loadPlugin: " + e.toString()));
             }
 
         };
-
-        //mounted examples
-        //require Just Works
-
 
     }
 
