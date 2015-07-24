@@ -22,6 +22,17 @@ SOFTWARE. -->
 <class name="controlhandle" with="keyboarddraggable, button" cursor="se-resize"
   border="1" bordercolor="blue" width="9" height="9"
 >
+  <!-- If shift is down, restrict the aspect ratio -->
+  <handler event="onx" args="x">
+    if (dr.keyboard.isShiftKeyDown()) {
+      this.setAttribute('y', x);
+    }
+  </handler>
+  <handler event="ony" args="y">
+    if (dr.keyboard.isShiftKeyDown()) {
+      this.setAttribute('x', y);
+    }
+  </handler>
   <method name="drawFocusedState">
     this.setAttribute('bgcolor', '#ffffff');
     this.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
