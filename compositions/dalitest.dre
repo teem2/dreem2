@@ -1,17 +1,15 @@
 <composition>
-<screens>
-<screen type="browser" name="default" title='Example - Even Layout'>
-<view with="button" width="100%" height="100%" clip="true">
-
-<handler event="oninit">
-	console.log("init called!!!");
-</handler>
-</view>
-<view with="button" width="100%" height="100%" clip="false"></view>
-	<view x="10" y="10" bgcolor="blue" width="200" height="200"></view>
-</screen>
-
-
-</screens>
+	<screens>
+		<screen type="browser" name="default" title='Example - Simple dalitest'>
+			<view with="button" width="100" height="100" clip="true" bgcolor="blue" >
+			<handler event="oninit">
+				console.log("onInit handler called on client!");
+			</handler>
+			</view>
+			<view with="button" width="100" height="100" clip="false"></view>
+			<view x="10" y="10" bgcolor="red" width="200" height="200"></view>
+			<view x="10" y="10" bgcolor="red" width="200" height="200"></view>
+		</screen>
+	</screens>
 </composition>
 
