@@ -22,16 +22,12 @@ SOFTWARE. -->
 <class name="controlhandle" with="keyboarddraggable, button" cursor="se-resize"
   border="1" bordercolor="blue" width="9" height="9"
 >
-  <!-- If shift is down, restrict the aspect ratio -->
+  <!-- If shift is down, make square -->
   <handler event="onx" args="x">
-    if (dr.keyboard.isShiftKeyDown()) {
-      this.setAttribute('y', x);
-    }
+    if (this.isdragging && dr.keyboard.isShiftKeyDown()) this.setAttribute('y', x);
   </handler>
   <handler event="ony" args="y">
-    if (dr.keyboard.isShiftKeyDown()) {
-      this.setAttribute('x', y);
-    }
+    if (this.isdragging && dr.keyboard.isShiftKeyDown()) this.setAttribute('x', y);
   </handler>
   <method name="drawFocusedState">
     this.setAttribute('bgcolor', '#ffffff');

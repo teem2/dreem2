@@ -1,0 +1,87 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.droptarget {UI Behavior}
+   * Makes a dr.view support having dr.dropable views dropped on it.
+   */-->
+<mixin name="droptarget" with="draggroupsupport">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    dr.global.dragManager.registerDropTarget(this);
+  </method>
+
+  <method name="destroyAfterOrphaning">
+    dr.global.dragManager.unregisterDropTarget(this);
+    this.super();
+  </method>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method willAcceptDrop
+    * Called by dr.GlobalDragManager when a dropable is dragged over this
+    * target. Gives this drop target a chance to reject a drop regardless
+    * of drag group. The default implementation returns true if the view
+    * is not disabled.
+    * @param {dr.dropable} The dropable being dragged.
+    * @returns {Boolean} True if the drop will be allowed, false otherwise.
+    */-->
+  <method name="willAcceptDrop" args="dropable">
+    // Handle the common case of a disabled or not visible component.
+    if (this.disabled || !this.isVisible()) return false;
+    
+    return true;
+  </method>
+
+  <!--/**
+    * @method notifyDragStart
+    * @abstract
+    * Called by dr.GlobalDragManager when a dropable starts being dragged
+    * that has a matching drag group.
+    * @param {dr.dropable} The dropable being dragged.
+    * @returns {void}
+    */-->
+  <method name="notifyDragStart" args="dropable"/>
+
+  <!--/**
+    * @method notifyDragStop
+    * @abstract
+    * Called by dr.GlobalDragManager when a dropable stops being dragged
+    * that has a matching drag group.
+    * @param {dr.dropable} The dropable no longer being dragged.
+    * @returns {void}
+    */-->
+  <method name="notifyDragStop" args="dropable"/>
+
+  <!--/**
+    * @method notifyDragEnter
+    * @abstract
+    * Called by dr.GlobalDragManager when a dropable is dragged over this
+    * view and has a matching drag group.
+    * @param {dr.dropable} The dropable being dragged over this view.
+    * @returns {void}
+    */-->
+  <method name="notifyDragEnter" args="dropable"/>
+
+  <!--/**
+    * @method notifyDragLeave
+    * @abstract
+    * Called by dr.GlobalDragManager when a dropable is dragged out of this
+    * view and has a matching drag group.
+    * @param {dr.dropable} The dropable being dragged out of this view.
+    * @returns {void}
+    */-->
+  <method name="notifyDragLeave" args="dropable"/>
+
+  <!--/**
+    * @method notifyDrop
+    * @abstract
+    * Called by dr.GlobalDragManager when a dropable is dropped onto this
+    * view and has a matching drag group.
+    * @param {dr.dropable} The dropable being dropped onto this view.
+    * @returns {void}
+    */-->
+  <method name="notifyDrop" args="dropable"/>
+</mixin>

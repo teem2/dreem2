@@ -22,6 +22,8 @@ SOFTWARE. -->
 <class name="reticle" with="keyboarddraggable, button" visible="false"
   distancebeforedrag="5" cursor="move" clickable="false"
 >
+  <attribute name="draglockthresh" type="number" value="20"/>
+
   <!-- clickable:false is because the mousedown/up events are in fact
        simulated from the editable. This prevents the reticle from covering
        but still allows it to behave as draggable. -->
@@ -113,19 +115,10 @@ SOFTWARE. -->
   <method name="_updateTarget" args="attr, value">
     if (this.target && !this._isSync) this.target.setAttribute(attr, value);
   </method>
-  <attribute name="draglockthresh" type="number" value="20"/>
   <handler event="onx" args="x">
-    if (dr.keyboard.isShiftKeyDown()
-       && Math.abs(this.__initAbsLocX - x) < this.draglockthresh) {
-        x = this.__initAbsLocX;
-    }
     this._updateTarget('x', x + this.dx);
   </handler>
   <handler event="ony" args="y">
-    if (dr.keyboard.isShiftKeyDown()
-       && Math.abs(this.__initAbsLocY - y) < this.draglockthresh) {
-        y = this.__initAbsLocY;
-    }
     this._updateTarget('y', y + this.dy);
   </handler>
   <handler event="onwidth" args="width">
@@ -136,6 +129,24 @@ SOFTWARE. -->
     this._updateTarget('height', height);
     this.resizer.setAttribute('y', this.height - 5)
   </handler>
+  
+  <method name="_handleKeyChange" args="platformEvent">
+    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+    if (keyCode === 16) {
+      this.__requestDragPosition();
+    }
+  </method>
+  
+  <method name="updatePosition" args="x, y">
+    if (!this.disabled) {
+      if (dr.keyboard.isShiftKeyDown()) {
+        var origLoc = this.getOriginalLocation();
+        if (this.draglockthresh > Math.abs(x - origLoc.x)) x = origLoc.x;
+        if (this.draglockthresh > Math.abs(y - origLoc.y)) y = origLoc.y;
+      }
+      this.super(x, y);
+    }
+  </method>
 
   <method name="_start">
     this.isStarted = true;
@@ -151,6 +162,9 @@ SOFTWARE. -->
     this._undoableh = new attrundoable({target:target, attribute:'height', oldvalue:target.getAttribute('height')});
     this._undoablex = new attrundoable({target:target, attribute:'x', oldvalue:target.getAttribute('x')});
     this._undoabley = new attrundoable({target:target, attribute:'y', oldvalue:target.getAttribute('y')});
+    
+    this.listenTo(dr.keyboard, 'onkeydown', this._handleKeyChange);
+    this.listenTo(dr.keyboard, 'onkeyup', this._handleKeyChange);
   </method>
   <method name="startDrag" args="event">
     this._start();
@@ -179,6 +193,11 @@ SOFTWARE. -->
         undo.do(compound);
       }
     }
+    
+    this.stopListening(dr.keyboard, 'onkeydown', this._handleKeyChange);
+    this.stopListening(dr.keyboard, 'onkeyup', this._handleKeyChange);
+    
+    this.isStarted = false;
   </method>
   <method name="_abort">
     var target = this.target;
@@ -188,6 +207,11 @@ SOFTWARE. -->
       target.setAttribute('width', this._undoablew.oldvalue);
       target.setAttribute('height', this._undoableh.oldvalue);
     }
+    
+    this.stopListening(dr.keyboard, 'onkeydown', this._handleKeyChange);
+    this.stopListening(dr.keyboard, 'onkeyup', this._handleKeyChange);
+    
+    this.isStarted = false;
   </method>
   <method name="stopDrag" args="event, isAbort">
     if (isAbort) {
@@ -196,8 +220,6 @@ SOFTWARE. -->
       this._stop();
     }
     this.super();
-    
-    this.isStarted = false;
   </method>
 
   <view name="fill" width="100%" height="100%" clip="true">

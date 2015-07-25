@@ -1,0 +1,135 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.dropable {UI Behavior}
+   * Makes a dr.view drag and dropable via the mouse.
+   */-->
+<mixin name="dropable" with="draggroupsupport, draggable">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Boolean} dropped
+    * Indicates this dropable was just dropped.
+    */-->
+  <attribute name="dropped" type="boolean" value="false"/>
+
+  <!--/**
+    * @attribute {Boolean} dropfailed
+    * Indicates this dropable was just dropped outside of a drop target.
+    */-->
+  <attribute name="dropfailed" type="boolean" value="false"/>
+
+  <!--/**
+    * @attribute {Object} droptarget
+    * The drop target this dropable is currently over.
+    */-->
+  <attribute name="droptarget" type="expression" value="null"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method willPermitDrop
+    * Called by dr.GlobalDragManager when a dropable is dragged over a
+    * target. Gives this dropable a chance to reject a drop regardless
+    * of drag group. The default implementation returns true.
+    * @param {dr.droptarget} droptarget The drop target dragged over.
+    * @returns {Boolean} True if the drop will be allowed, false otherwise.
+    */-->
+  <method name="willPermitDrop" args="droptarget">
+    return true;
+  </method>
+
+  <!--/**
+    * @method startDrag
+    * @overrides dr.draggable
+    */-->
+  <method name="startDrag" args="event">
+    this.set_dropped(false);
+    this.set_dropfailed(false);
+    
+    dr.global.dragManager.startDrag(this);
+    this.super();
+  </method>
+
+  <!--/**
+    * @method updateDrag
+    * @overrides dr.draggable
+    */-->
+  <method name="updateDrag" args="event">
+    dr.global.dragManager.updateDrag(event, this);
+    this.super();
+  </method>
+
+  <!--/**
+    * @method stopDrag
+    * @overrides dr.draggable
+    */-->
+  <method name="stopDrag" args="event, isAbort">
+    dr.global.dragManager.stopDrag(event, this, isAbort);
+    this.super();
+    
+    if (isAbort) {
+      this.notifyDropAborted();
+    } else if (this.dropfailed) {
+      this.notifyDropFailed();
+    }
+  </method>
+
+  <!--/**
+    * @method notifyDragEnter
+    * Called by dr.GlobalDragManager when this view is dragged over a drop
+    * target.
+    * @param {dr.droptarget} droptarget The target that was dragged over.
+    * @returns {void}
+    */-->
+  <method name="notifyDragEnter" args="droptarget">
+    this.set_droptarget(droptarget);
+  </method>
+
+  <!--/**
+    * @method notifyDragLeave
+    * Called by dr.GlobalDragManager when this view is dragged out of a drop
+    * target.
+    * @param {dr.droptarget} droptarget The target that was dragged out of.
+    * @returns {void}
+    */-->
+  <method name="notifyDragLeave" args="droptarget">
+    this.set_droptarget();
+  </method>
+
+  <!--/**
+    * @method notifyDrop
+    * Called by dr.GlobalDragManager when this view is dropped.
+    * @param {dr.droptarget} droptarget The target that was dropped on. Will
+    *     be undefined if this dropable was dropped on no drop target.
+    * @param {Boolean} isAbort Indicates if the drop was the result of an
+    *     abort or a normal drop.
+    * @returns {void}
+    */-->
+  <method name="notifyDrop" args="droptarget, isAbort">
+    this.set_dropped(true);
+    
+    if (!this.droptarget) this.set_dropfailed(true);
+  </method>
+
+  <!--/**
+    * @method notifyDropFailed
+    * @abstract
+    * Called after dragging stops and the drop failed. The default
+    * implementation does nothing.
+    * @returns {void}
+    */-->
+  <method name="notifyDropFailed">
+    // Subclasses to implement
+  </method>
+
+  <!--/**
+    * @method notifyDropAborted
+    * @abstract
+    * Called after dragging stops and the drop was aborted. The default
+    * implementation does nothing.
+    * @returns {void}
+    */-->
+  <method name="notifyDropAborted">
+    // Subclasses to implement
+  </method>
+</mixin>

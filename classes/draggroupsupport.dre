@@ -1,0 +1,65 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.draggroupsupport {UI Behavior}
+   * Adds drag group support to drag and drop related classes.
+   */-->
+<!--
+  Private Attributes:
+    __acceptAny:boolean The precalculated return value for the
+      acceptAnyDragGroup method.
+-->
+<mixin name="draggroupsupport">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Object} draggroups
+    * The keys are the set of drag groups this view supports. By default the 
+    * special drag group of '*' which accepts all drag groups is defined.
+    */-->
+  <attribute name="draggroups" type="expression" value="{'*':true}"/>
+  <setter name="draggroups" args="v">
+    v = this.coerce('draggroups', v, 'expression', {'*':true});
+    
+    var newDragGroups = {};
+    for (var dragGroup in v) newDragGroups[dragGroup] = true;
+    this.draggroups = newDragGroups;
+    this.__acceptAny = newDragGroups.hasOwnProperty('*');
+  </setter>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method addDragGroup
+    * Adds the provided dragGroup to the draggroups.
+    * @param {String} dragGroup The drag group to add.
+    * @returns {void} 
+    */-->
+  <method name="addDragGroup" args="dragGroup">
+    if (dragGroup) {
+      this.draggroups[dragGroup] = true;
+      if (dragGroup === '*') this.__acceptAny = true;
+    }
+  </method>
+
+  <!--/**
+    * @method removeDragGroup
+    * Removes the provided dragGroup from the draggroups.
+    * @param {String} dragGroup The drag group to remove.
+    * @returns {void} 
+    */-->
+  <method name="removeDragGroup" args="dragGroup">
+    if (dragGroup) {
+      delete this.draggroups[dragGroup];
+      if (dragGroup === '*') this.__acceptAny = false;
+    }
+  </method>
+
+  <!--/**
+    * @method acceptAnyDragGroup
+    * Determines if this drop target will accept drops from any drag group.
+    * @returns {void} True if any drag group will be accepted, false otherwise.
+    */-->
+  <method name="acceptAnyDragGroup">
+    return this.__acceptAny;
+  </method>
+</mixin>

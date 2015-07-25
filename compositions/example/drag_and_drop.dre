@@ -1,0 +1,280 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Example - Drag and Drop'>
+    <class name="sourcething" with="button, dropsource"
+      width="30" height="30" cornerradius="8" focusembellishment="false"
+    >
+      <attribute name="readycolor" type="color" value="#cccccc"/>
+      <attribute name="activecolor" type="color" value="#bbbbbb"/>
+      <attribute name="hovercolor" type="color" value="#dddddd"/>
+      
+      <method name="drawHoverState">
+        this.setAttribute('bgcolor', this.hovercolor);
+      </method>
+      <method name="drawActiveState">
+        this.setAttribute('bgcolor', this.activecolor);
+      </method>
+      <method name="drawReadyState">
+        this.setAttribute('bgcolor', this.readycolor);
+      </method>
+    </class>
+    
+    <class name="dragbox" with="button, dropable"
+      width="30" height="30" cornerradius="8" ignorelayout="true"
+      centeronmouse="true" distancebeforedrag="2" allowabort="true"
+      focusembellishment="false"
+    >
+      <attribute name="readycolor" type="color" value="#cc0000"/>
+      <attribute name="activecolor" type="color" value="#aa0000"/>
+      <attribute name="hovercolor" type="color" value="#ff0000"/>
+      <method name="initNode" args="parent, attrs">
+        this.super();
+        
+        this._origW = this.width;
+        this._origH = this.height;
+        this.animDuration = 100;
+      </method>
+      <method name="drawHoverState">
+        this.setAttribute('bgcolor', this.hovercolor);
+      </method>
+      <method name="drawActiveState">
+        this.setAttribute('bgcolor', this.activecolor);
+      </method>
+      <method name="drawReadyState">
+        this.setAttribute('bgcolor', this.readycolor);
+      </method>
+      
+      <method name="willPermitDrop" args="dropTarget">
+        // Create a "dead zone".
+        if (dropTarget.x > 500 && 300 > dropTarget.y) return false;
+        return this.super();
+      </method>
+      
+      <method name="startDrag">
+        var root = this.getRoot();
+        if (this.parent !== root) {
+          // Prevent dragging from the "dead zone".
+          if (!this.willPermitDrop(this.parent)) return;
+          
+          var pos = this.getAbsolutePosition(root);
+          this.setAttribute('x', pos.x);
+          this.setAttribute('y', pos.y);
+          
+          var self = this;
+          dr.sprite.retainFocusDuringDomUpdate(this, function() {
+            self.setAttribute('parent', root);
+          });
+        }
+        this.moveToFront();
+        
+        this.super();
+      </method>
+      
+      <method name="notifyDropAborted">
+        console.log('aborted: behave as a drop fail.');
+        this.notifyDropFailed();
+      </method>
+      
+      <method name="notifyDropFailed">
+        var self = this;
+        this.setAttribute('disabled', true);
+        this.animate({attribute:'opacity', to:0, from:1, duration:500}).next(
+          function(success) {self.destroy();}
+        );
+      </method>
+      
+      <method name="updatePosition" args="x, y">
+        if (!this.disabled && this.droptarget) {
+          // Do nothing since animators handle positioning
+        } else {
+          if (this._doCatchup) {
+            this._doCatchup = false;
+            
+            var dur = this.animDuration,
+              startx = this.x - x, 
+              starty = this.y - y;
+            this.setDragOffsetX(startx, true);
+            this.setDragOffsetY(starty, true);
+            this.animate({attribute:'dragoffsetx', to:0, from:startx, duration:dur});
+            this.animate({attribute:'dragoffsety', to:0, from:starty, duration:dur});
+          } else {
+            this.super();
+          }
+        }
+      </method>
+    </class>
+    
+    <class name="targetthing" with="disableable, droptarget" width="60" height="60" bgcolor="#999999" cornerradius="10">
+      <method name="doDisabled">
+        this.setAttribute('opacity', this.disabled ? 0.5 : 1);
+        this.super();
+      </method>
+      
+      <method name="notifyDragStart" args="dropable">
+        if (this.willAcceptDrop(dropable) && dropable.willPermitDrop(this)) this.setAttribute('bgcolor', '#666666');
+      </method>
+      
+      <method name="notifyDragStop" args="dropable">
+        this.setAttribute('bgcolor', '#999999');
+      </method>
+      
+      <method name="notifyDragEnter" args="dropable">
+        this.setAttribute('boxshadow', [0, 0, 9, 0, '#666666']);
+        
+        dropable.stopActiveAnimators('width');
+        dropable.stopActiveAnimators('height');
+        
+        dropable.stopActiveAnimators('dragoffsetx');
+        dropable.stopActiveAnimators('dragoffsety');
+        dropable.setDragOffsetX(0, true);
+        dropable.setDragOffsetY(0, true);
+        
+        var pos = this.getAbsolutePosition(dropable.parent),
+          dur = dropable.animDuration;
+        dropable.animate({attribute:'x', to:pos.x + 5, duration:dur});
+        dropable.animate({attribute:'y', to:pos.y + 5, duration:dur});
+        dropable.animate({attribute:'width', to:this.width - 10, duration:dur});
+        dropable.animate({attribute:'height', to:this.height - 10, duration:dur});
+      </method>
+      
+      <method name="notifyDragLeave" args="dropable">
+        this.setAttribute('boxshadow', null);
+        
+        dropable.stopActiveAnimators('width');
+        dropable.stopActiveAnimators('height');
+        dropable.stopActiveAnimators('x');
+        dropable.stopActiveAnimators('y');
+        
+        if (!dropable.dropped) {
+          var dur = dropable.animDuration;
+          dropable.animate({attribute:'width', to:dropable._origW, duration:dur});
+          dropable.animate({attribute:'height', to:dropable._origH, duration:dur});
+          dropable._doCatchup = true;
+        }
+      </method>
+      
+      <method name="notifyDrop" args="dropable">
+        // Reparent if necessary.
+        if (dropable.parent !== this) {
+          var self = this;
+          dr.sprite.retainFocusDuringDomUpdate(dropable, function() {
+            dropable.setAttribute('parent', self);
+          });
+        }
+        
+        dropable.setAttribute('x', (this.width - dropable.width) / 2);
+        dropable.setAttribute('y', (this.height - dropable.height) / 2);
+      </method>
+      
+      <method name="willAcceptDrop" args="dropable">
+        if (this.hasContent()) {
+          return false;
+        } else {
+          return this.super();
+        }
+      </method>
+      
+      <method name="hasContent">
+        return this.getSubviews().length > 0;
+      </method>
+    </class>
+    
+    <node id="config">
+      <attribute name="attrs_1" type="expression" value="{x:10, y:10, draggroups:{foo:true}, activecolor:'#00aa00', readycolor:'#00cc00', hovercolor:'#00ff00'}"/>
+      <attribute name="attrs_2" type="expression" value="{x:70, y:10, draggroups:{foo:true, bar:true}, activecolor:'#aaaa00', readycolor:'#cccc00', hovercolor:'#ffff00'}"/>
+      <attribute name="attrs_3" type="expression" value="{x:130, y:10, draggroups:{bar:true}}"/>
+      <attribute name="attrs_4" type="expression" value="{x:190, y:10, activecolor:'#00aaaa', readycolor:'#00cccc', hovercolor:'#00ffff'}"/>
+    </node>
+    
+    <view width="100%" height="100%">
+      <view name="leftView" with="autoscroller" bgcolor="#eeeeee" width="${this.parent.divider.x}" height="100%">
+        <view name="content" width="100%">
+          <wrappinglayout inset="5" lineinset="5" outset="5" lineoutset="5" spacing="5" linespacing="5" updateparent="true"/>
+          
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_1}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_2}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_3}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_4}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_1}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_2}"/>
+          
+          <targetthing width="100" height="100" layouthint='{"break":true}'/>
+          <targetthing width="100" height="150"/>
+          <targetthing width="100" height="200"/>
+          
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_1}" layouthint='{"break":true}'/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_2}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_3}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_4}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_1}"/>
+          <sourcething dropclass="dragbox" dropclassattrs="${config.attrs_2}"/>
+        </view>
+      </view>
+      
+      <view name="rightView" with="autoscroller" bgcolor="#ffffff"
+        x="${this.parent.divider.x + this.parent.divider.width}"
+        width="${this.parent.innerwidth - this.x}" height="100%"
+      >
+        <view name="content" width="100%">
+          <wrappinglayout inset="5" lineinset="5" outset="5" lineoutset="5" spacing="5" linespacing="5" updateparent="true"/>
+          
+          <method name="initNode" args="parent, attrs">
+            this.super();
+            
+            var i = 200, disabled;
+            while (i--) {
+                disabled = i % 10 === 5;
+                if (i % 3 === 0) {
+                    new dr.targetthing(this, {width:80, disabled:disabled, draggroups:{foo:true}});
+                } else if (i % 3 === 1) {
+                    new dr.targetthing(this, {width:100, disabled:disabled, draggroups:{foo:true, bar:true}});
+                } else {
+                    new dr.targetthing(this, {disabled:disabled, draggroups:{bar:true}});
+                }
+            }
+          </method>
+        </view>
+      </view>
+      
+      <view name="divider" with="draggable" cursor="col-resize"
+        x="110" height="100%" width="10" bgcolor="black"
+      >
+        <method name="updatePosition" args="x, y">
+          if (!this.disabled) this.setAttribute('x', Math.max(110, Math.min(500, x)));
+        </method>
+      </view>
+      
+      <method name="initNode" args="parent, attrs">
+        this.super();
+        
+        new dr.dragbox(this, config.attrs_1);
+        new dr.dragbox(this, config.attrs_2);
+        var bar = new dr.dragbox(this, config.attrs_3);
+        bar.addDragGroup('baz');
+        new dr.dragbox(this, config.attrs_4);
+      </method>
+    </view>
+  </screen>
+</screens>
+</composition>

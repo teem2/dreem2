@@ -9,12 +9,8 @@
    */-->
 <!--
   Private Attributes:
-    __initMouseX:number The initial x location of the mouse relative to the viewport.
-    __initMouseY:number The initial y location of the mouse relative to the viewport.
     __initLocX:number The initial x location of this view relative to the parent view.
     __initLocY:number The initial y location of this view relative to the parent view.
-    __initAbsLocX:number The initial x location of the view relative to the viewport.
-    __initAbsLocY:number The initial x location of the view relative to the viewport.
 -->
 <mixin name="draggable" with="mouseoveranddown">
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
@@ -71,14 +67,12 @@
     * Indicates that this view is currently being dragged.
     */-->
   <attribute name="isdragging" type="boolean" value="false"/>
-  <setter name="isdragging" args="v">this.setActual('isdragging', v, 'boolean', false);</setter>
 
   <!--/**
     * @attribute {Boolean} allowabort
     * Allows a drag to be aborted by the user by pressing the 'esc' key.
     */-->
   <attribute name="allowabort" type="boolean" value="false"/>
-  <setter name="allowabort" args="v">this.setActual('allowabort', v, 'boolean', false);</setter>
 
   <!--/**
     * @attribute {Boolean} centeronmouse
@@ -86,7 +80,6 @@
     * the view centered on the mouse.
     */-->
   <attribute name="centeronmouse" type="boolean" value="false"/>
-  <setter name="centeronmouse" args="v">this.setActual('centeronmouse', v, 'boolean', false);</setter>
 
   <!--/**
     * @attribute {Number} distancebeforedrag
@@ -94,14 +87,56 @@
     * drag action.
     */-->
   <attribute name="distancebeforedrag" type="number" value="0"/>
-  <setter name="distancebeforedrag" args="v">this.setActual('distancebeforedrag', v, 'number', 0);</setter>
 
   <!--/**
     * @attribute {String} dragaxis
     * Limits dragging to a single axis. Supported values: 'x', 'y', 'both'.
     */-->
   <attribute name="dragaxis" type="string" value="both"/>
-  <setter name="dragaxis" args="v">this.setActual('dragaxis', v, 'string', 'both');</setter>
+
+  <!--/**
+    * @attribute {Boolean} draggableallowbubble
+    * Determines if mousedown and mouseup platform events handled by this component will bubble or not.
+    */-->
+  <attribute name="draggableallowbubble" type="boolean" value="true"/>
+
+  <!--/**
+    * @attribute {Number} dragoffsetx
+    * The x amount to offset the position during dragging.
+    */-->
+  <attribute name="dragoffsetx" type="number" value="0"/>
+  <setter name="dragoffsetx" args="v">this.setDragOffsetX(v, false);</setter>
+  
+  <method name="setDragOffsetX" args="v, supressUpdate">
+    if (this.setActual('dragoffsetx', v, 'number', 0)) {
+      if (this.inited && this.isdragging && !supressUpdate) this.__requestDragPosition();
+    }
+  </method>
+
+  <!--/**
+    * @attribute {Number} dragoffsety
+    * The y amount to offset the position during dragging.
+    */-->
+  <attribute name="dragoffsety" type="number" value="0"/>
+  <setter name="dragoffsety" args="v">this.setDragOffsetY(v, false);</setter>
+
+  <method name="setDragOffsetY" args="v, supressUpdate">
+    if (this.setActual('dragoffsety', v, 'number', 0)) {
+      if (this.inited && this.isdragging && !supressUpdate) this.__requestDragPosition();
+    }
+  </method>
+
+  <!--/**
+    * @attribute {Number} draginitx
+    * Stores initial mouse x position during dragging.
+    */-->
+  <attribute name="draginitx" type="number" value="0"/>
+
+  <!--/**
+    * @attribute {Number} draginity
+    * Stores initial mouse y position during dragging.
+    */-->
+  <attribute name="draginity" type="number" value="0"/>
 
   <!--/** @overrides dr.disableable */-->
   <setter name="disabled" args="v">
@@ -133,13 +168,10 @@
 
   <!--/** @private */-->
   <method name="__doMouseDown" args="event">
-    var absPosition = this.getAbsolutePosition();
-    this.__initMouseX = event.x;
-    this.__initMouseY = event.y;
     this.__initLocX = this.x;
     this.__initLocY = this.y;
-    this.__initAbsLocX = absPosition.x;
-    this.__initAbsLocY = absPosition.y;
+    this.draginitx = event.x - this.x;
+    this.draginity = event.y - this.y;
     
     var gm = dr.global.mouse;
     this.listenToPlatform(gm, 'onmouseup', '__doMouseUp', true);
@@ -151,7 +183,7 @@
     
     dr.sprite.preventDefault(event);
     
-    return true; // Allow platform event bubbling
+    return this.draggableallowbubble;
   </method>
 
   <!--/** @private */-->
@@ -163,12 +195,12 @@
       this.stopListeningToPlatform(gm, 'onmouseup', '__doMouseUp', true);
       this.stopListeningToPlatform(gm, 'onmousemove', '__doDragCheck', true);
     }
-    return true; // Allow platform event bubbling
+    return this.draggableallowbubble;
   </method>
 
   <!--/** @private */-->
   <method name="__doDragCheck" args="event">
-    var distance = dr.measureDistance(event.x, event.y, this.__initMouseX, this.__initMouseY);
+    var distance = dr.measureDistance(event.x, event.y, this.draginitx + this.x, this.draginity + this.y);
     if (distance >= this.distancebeforedrag) {
       this.stopListeningToPlatform(dr.global.mouse, 'onmousemove', '__doDragCheck', true);
       this.startDrag(event);
@@ -185,6 +217,11 @@
     */-->
   <method name="startDrag" args="event">
     if (!this.disabled) {
+      if (this.centeronmouse) {
+          this.syncTo(this, 'onwidth', '__updateDragInitX');
+          this.syncTo(this, 'onheight', '__updateDragInitY');
+      }
+      
       var g = dr.global;
       if (this.allowabort) this.listenTo(g.keys, 'onkeycodeup', '__watchForAbort');
       
@@ -200,20 +237,27 @@
     * @returns {void} 
     */-->
   <method name="updateDrag" args="event">
-    this.__requestDragPosition(event);
+    this.__lastMousePosition = {x:event.x, y:event.y};
+    this.__requestDragPosition();
+  </method>
+  
+  <!--/** @private */-->
+  <method name="__updateDragInitX" args="event">
+    this.draginitx = this.width / 2 * (this.xscale || 1);
   </method>
 
   <!--/** @private */-->
-  <method name="__requestDragPosition" args="mousePos">
-    var x = mousePos.x - this.__initMouseX + this.__initLocX,
-      y = mousePos.y - this.__initMouseY + this.__initLocY;
-    
-    if (this.centeronmouse) {
-      x -= (this.boundswidth / 2) + this.__initAbsLocX - this.__initMouseX;
-      y -= (this.boundsheight / 2)  + this.__initAbsLocY - this.__initMouseY;
-    }
-    
-    this.updatePosition(x, y);
+  <method name="__updateDragInitY" args="event">
+    this.draginity = this.height / 2 * (this.yscale || 1);
+  </method>
+
+  <!--/** @private */-->
+  <method name="__requestDragPosition">
+    var pos = this.__lastMousePosition;
+    this.updatePosition(
+        pos.x - this.draginitx + this.dragoffsetx, 
+        pos.y - this.draginity + this.dragoffsety
+    );
   </method>
 
   <!--/**
@@ -244,6 +288,10 @@
     var g = dr.global, gm = g.mouse;
     this.stopListeningToPlatform(gm, 'onmouseup', '__doMouseUp', true);
     this.stopListeningToPlatform(gm, 'onmousemove', 'updateDrag', true);
+    if (this.centeronmouse) {
+      this.stopListening(this, 'onwidth', '__updateDragInitX');
+      this.stopListening(this, 'onheight', '__updateDragInitY');
+    }
     this.stopListening(g.keys, 'onkeycodeup', '__watchForAbort');
     
     this.setAttribute('isdragging', false);
@@ -258,9 +306,20 @@
   <!--/**
     * @method getDistanceFromOriginalLocation
     * Gets the distance dragged from the location of the start of the drag.
+    * If an axis of 'x' or 'y' is provided the value is the pos/neg distance
+    * along that axis. Otherwise, the standard euclidean distance is returned.
     * @returns {Number} 
     */-->
-  <method name="getDistanceFromOriginalLocation" args="x, y">
+  <method name="getDistanceFromOriginalLocation" args="axis">
+    if (axis === 'x') {
+      return this.x - this.__initLocX;
+    } else if (axis === 'y') {
+        return this.y - this.__initLocY;
+    }
     return dr.measureDistance(this.x, this.y, this.__initLocX, this.__initLocY);
+  </method>
+  
+  <method name="getOriginalLocation">
+    return {x:this.__initLocX, y:this.__initLocY};
   </method>
 </mixin>
