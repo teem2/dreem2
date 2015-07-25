@@ -84,9 +84,15 @@ var fs = require('fs');
 if (fs.existsSync("./dalicache") == false) {
  fs.mkdir("./dalicache");
 }
+if (fs.existsSync("./dalicache/classes") == false) {
+ fs.mkdir("./dalicache/classes");
+}
+if (fs.existsSync("./dalicache/compositions") == false) {
+ fs.mkdir("./dalicache/compositions");
+}
 
 
-define.MAIN = './build/compositions.example_spirallayout.dre.screens.default.js';
+define.MAIN = './build/compositions/example_spirallayout.dre.screens.default.js';
 
 var loadedscripts = [];
 
@@ -97,7 +103,7 @@ var script_tags = {};
 function startMain() {
 define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
 define.BUILD = "$ROOT/dalicache";
-define.MAIN =  "$BUILD/compositions." + composition + ".dre.screens." + screen + ".js";
+define.MAIN =  "$BUILD/compositions/" + composition + ".dre.screens." + screen + ".js";
 
 var F = require(define.MAIN)();
 define.startMain();
@@ -175,12 +181,12 @@ function (res) {
   loadedscripts.push(script);
 }
 
-var main_file = "./dalicache/compositions." + composition + ".dre.screens." + screen + ".js";
+var main_file = "./dalicache/compositions/" + composition + ".dre.screens." + screen + ".js";
 
 function LoadAll() {
 	var originalroot = define.ROOT;
   define.ROOT = server + "/" + composition + "/default";
-  define.MAIN = server + "/build/compositions." + composition + ".dre.screens." + screen + ".js";
+  define.MAIN = server + "/build/compositions/" + composition + ".dre.screens." + screen + ".js";
   requireWalker(define.MAIN, define.ROOT, main_file);
 }
 
