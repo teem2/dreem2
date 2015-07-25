@@ -115,27 +115,24 @@ SOFTWARE. -->
   <method name="_updateTarget" args="attr, value">
     if (this.target && !this._isSync) this.target.setAttribute(attr, value);
   </method>
+  
   <handler event="onx" args="x">
     this._updateTarget('x', x + this.dx);
   </handler>
+  
   <handler event="ony" args="y">
     this._updateTarget('y', y + this.dy);
   </handler>
+  
   <handler event="onwidth" args="width">
     this._updateTarget('width', width);
     this.resizer.setAttribute('x', this.width - 5)
   </handler>
+  
   <handler event="onheight" args="height">
     this._updateTarget('height', height);
     this.resizer.setAttribute('y', this.height - 5)
   </handler>
-  
-  <method name="_handleKeyChange" args="platformEvent">
-    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-    if (keyCode === 16) {
-      this.__requestDragPosition();
-    }
-  </method>
   
   <method name="updatePosition" args="x, y">
     if (!this.disabled) {
@@ -146,6 +143,20 @@ SOFTWARE. -->
       }
       this.super(x, y);
     }
+  </method>
+
+  <method name="startDrag" args="event">
+    this._start();
+    this.super();
+  </method>
+
+  <method name="stopDrag" args="event, isAbort">
+    if (isAbort) {
+      this._abort();
+    } else {
+      this._stop();
+    }
+    this.super();
   </method>
 
   <method name="_start">
@@ -166,10 +177,7 @@ SOFTWARE. -->
     this.listenTo(dr.keyboard, 'onkeydown', this._handleKeyChange);
     this.listenTo(dr.keyboard, 'onkeyup', this._handleKeyChange);
   </method>
-  <method name="startDrag" args="event">
-    this._start();
-    this.super();
-  </method>
+
   <method name="_stop">
     // Target can be null if you undo/redo a create/delete while dragging
     // the node that is created/deleted so make sure it exists first.
@@ -196,9 +204,9 @@ SOFTWARE. -->
     
     this.stopListening(dr.keyboard, 'onkeydown', this._handleKeyChange);
     this.stopListening(dr.keyboard, 'onkeyup', this._handleKeyChange);
-    
     this.isStarted = false;
   </method>
+
   <method name="_abort">
     var target = this.target;
     if (target) {
@@ -210,16 +218,23 @@ SOFTWARE. -->
     
     this.stopListening(dr.keyboard, 'onkeydown', this._handleKeyChange);
     this.stopListening(dr.keyboard, 'onkeyup', this._handleKeyChange);
-    
     this.isStarted = false;
   </method>
-  <method name="stopDrag" args="event, isAbort">
-    if (isAbort) {
-      this._abort();
-    } else {
-      this._stop();
+
+  <method name="_handleKeyChange" args="platformEvent">
+    var sprite = dr.sprite,
+      keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+    if (keyCode === sprite.GlobalKeys.KEYCODE_SHIFT) {
+      if (this.focused) {
+        this.__requestDragPosition();
+      } else if (this.resizer.focused) {
+        this.resizer.__requestDragPosition();
+      }
+    } else if (keyCode === sprite.GlobalKeys.KEYCODE_ALT) {
+      if (this.resizer.focused) {
+        this.resizer.__requestDragPosition();
+      }
     }
-    this.super();
   </method>
 
   <view name="fill" width="100%" height="100%" clip="true">
@@ -230,19 +245,42 @@ SOFTWARE. -->
     <handler event="onx" args="x">
       this.parent.setAttribute('width', x + 5);
     </handler>
+    
     <handler event="ony" args="y">
       this.parent.setAttribute('height', y + 5);
     </handler>
+    
     <method name="startDrag" args="event">
+      this._origAspectRatio = this.parent.height / this.parent.width;
       this.parent._start();
       this.super();
     </method>
+    
     <method name="updatePosition" args="x, y">
       if (!this.disabled) {
+        if (dr.keyboard.isShiftKeyDown()) {
+          // If shift is down, preserver aspect ratio
+          var ar = this._origAspectRatio;
+          if (ar === 0) {
+            y = -5;
+          } else if (ar === Infinity) {
+            x = -5;
+          } else {
+            var closestPoint = dr.getClosestPointOnALineToAPoint(0, 0, 1, ar, x + 5, y + 5);
+            x = Math.round(closestPoint.x - 5);
+            y = Math.round(closestPoint.y - 5);
+          }
+        } else if (dr.keyboard.isAltKeyDown()) {
+          // If alt key down make square
+          var closestPoint = dr.getClosestPointOnALineToAPoint(0, 0, 1, 1, x + 5, y + 5);
+          x = Math.round(closestPoint.x - 5);
+          y = Math.round(closestPoint.y - 5);
+        }
         this.setAttribute('x', Math.max(-5, x));
         this.setAttribute('y', Math.max(-5, y));
       }
     </method>
+    
     <method name="stopDrag" args="event, isAbort">
       if (isAbort) {
         this.parent._abort();

@@ -34,11 +34,15 @@ SOFTWARE. -->
     if (paused) {
       this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
       this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
+      this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
+      this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
       this._origClickable = this.getAttribute('clickable');
       this.setAttribute('clickable', true, true);
     } else {
       this.stopListening(this, 'onmousedown', '__editable_handleMouseDown');
       this.stopListening(this, 'onmouseup', '__editable_handleMouseUp');
+      this.stopListening(this, 'onmouseover', '__editable_handleMouseOver');
+      this.stopListening(this, 'onmouseout', '__editable_handleMouseOut');
       this.setAttribute('clickable', this._origClickable, true);
     }
   </handler>
@@ -51,14 +55,23 @@ SOFTWARE. -->
   
   <method name="__editable_handleMouseUp" args="event">
     dr.sprite.simulatePlatformEvent(reticle, 'mouseup', {pointerX:event.x, pointerY:event.y});
-    //reticle.doMouseOver(true);
+  </method>
+
+  <method name="__editable_handleMouseOver" args="event">
+    if (reticle.target === this) dr.sprite.simulatePlatformEvent(reticle, 'mouseover', {pointerX:event.x, pointerY:event.y});
+  </method>
+  
+  <method name="__editable_handleMouseOut" args="event">
+    if (reticle.target === this) dr.sprite.simulatePlatformEvent(reticle, 'mouseout', {pointerX:event.x, pointerY:event.y});
   </method>
 
   <method name="invokePlatformObserverCallback" args="methodName, eventType, returnEvent">
     if (editor.paused) {
       if (
         eventType === 'onmousedown' && methodName === '__editable_handleMouseDown' ||
-        eventType === 'onmouseup' && methodName === '__editable_handleMouseUp'
+        eventType === 'onmouseup' && methodName === '__editable_handleMouseUp' ||
+        eventType === 'onmouseover' && methodName === '__editable_handleMouseOver' ||
+        eventType === 'onmouseout' && methodName === '__editable_handleMouseOut'
       ) {
         // Only process platform events that editable has registered
         return this.super();

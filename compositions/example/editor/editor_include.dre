@@ -397,11 +397,12 @@ SOFTWARE. -->
           break;
       }
     } else {
+      var GK = dr.sprite.GlobalKeys;
       switch (keyCode) {
-        case 8: // Delete: Delete selected view
+        case GK.KEYCODE_BACKSPACE: // Delete selected view
           deleteButton.doActivated();
           break;
-        case 27: // Esc: Clear selection
+        case GK.KEYCODE_ESC: // Clear selection
           if (!reticle.isStarted) selectionmanager.clear();
           break;
       }
