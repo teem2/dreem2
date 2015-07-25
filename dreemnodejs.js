@@ -255,11 +255,7 @@ if (args["-dali"]){
   global.dalihost =  require('./lib/dr/sprite_daliruntime/dalihost.js');
   global.dalihost.init();
 
-  RootActor = new dali.Actor();
-  RootActor.parentOrigin = dali.CENTER;
-  RootActor.anchorPoint = dali.CENTER;
-  RootActor.size = [120,120,1.0];
-  dali.stage.add(RootActor);
+
 
 
 }
