@@ -165,7 +165,7 @@ function (res) {
 				requireWalker(dep_path, script_url, local_dep_path);
 		});
   if (!--downloads){
-   console.color('** ~bg~download complete~~.');
+   console.color('~~** ~bg~download complete~~.');
       	startMain(); // no more deps
       }
 
@@ -203,13 +203,13 @@ var reconnect = function() {
       msg = JSON.parse(msg);
     } catch(e){}
     if (msg.type == "sessionCheck") {
-      console.color('** ~by~Files updated on server: downloading~~.');
+      console.color('~~** ~by~Files updated on server: downloading~~.');
       LoadAll();
     }
   }.bind(this);
   sock.onConnect = function(){
 	  
-      console.color('** ~bg~Connected to server~~.');
+      console.color('~~** ~bg~Connected to server~~.');
   }
   sock.onClose = function() {
     setTimeout(function() {
@@ -222,7 +222,8 @@ var reconnect = function() {
 
 var dalicontainer;
 var dalihost;
-var wallRootActor;
+var RootActor;
+
 if (args["-dali"]){
    var window= {
         x:800,
@@ -232,7 +233,8 @@ if (args["-dali"]){
        transparent: false,
        name:'Dreem Dali Runtime: ' + composition
  };
-var viewMode={
+
+ var viewMode={
        'stereoscopic-mode':'mono', // stereo-horizontal, stereo-vertical, stereo-interlaced,
        'stereo-base': 65 // Distance in millimeters between left/right cameras typically between (50-70mm)
  };
@@ -241,24 +243,18 @@ var viewMode={
     'view-mode': viewMode,
  }
 
- console.log("** loading Dali")
- dalinode = require('./dalinode/dali')( options );
- console.color("~~** Dali loaded")
- dalihost = require('./lib/dr/sprite_daliruntime/dalihost.js');
- dalihost.init(dalinode);
+  console.log("** loading Dali")
+  global.dali = require('./dalinode/dali')( options );
+  console.color("~~** Dali loaded")
+  global.dalihost =  require('./lib/dr/sprite_daliruntime/dalihost.js');
+  global.dalihost.init();
 
-  wallRootActor = new dalinode.Actor();
-    wallRootActor.parentOrigin = dali.CENTER;
-    wallRootActor.anchorPoint = dali.CENTER;
-    wallRootActor.size = [120,120,1.0];
-    dalinode.stage.add(wallRootActor);
+  RootActor = new dali.Actor();
+  RootActor.parentOrigin = dali.CENTER;
+  RootActor.anchorPoint = dali.CENTER;
+  RootActor.size = [120,120,1.0];
+  dali.stage.add(RootActor);
 
-  var field = new dalinode.Control("TextField");
-    field.parentOrigin = dalinode.CENTER;
-    field.anchorPoint = dalinode.CENTER;
-
-    field.placeholderText = "DALi netflix netflix-roulette demo";
-    dalinode.stage.add( field );
 
 }
 

@@ -6,9 +6,9 @@
 <handler event="oninit">
 	console.log("init called!!!");
 </handler>
-
 </view>
 <view with="button" width="100%" height="100%" clip="false"></view>
+	<view x="10" y="10" bgcolor="blue" width="200" height="200"></view>
 </screen>
 
 
