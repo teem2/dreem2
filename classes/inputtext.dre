@@ -80,9 +80,9 @@ SOFTWARE. -->
     * Fired the rows attribute changes.
     * @param {number} The number of rows displayed for multiline text input.
     */-->
-  <attribute name="rows" type="number" value="3"></attribute>
+  <attribute name="rows" type="number" value="3"/>
 
-  <attribute name="value" type="string" value=""></attribute>
+  <attribute name="value" type="string" value=""/>
   <setter name="value" args="v">
     if @setActual('value', v, 'string', '')
       if this.text isnt this.value then @setActualAttribute('text', this.value)
@@ -91,6 +91,12 @@ SOFTWARE. -->
     @super()
     @setActualAttribute('value', this.text)
   </setter>
+
+  <!-- A string containing characters that can be entered. -->
+  <attribute name="allowedchars" type="string" value=""/>
+
+  <!-- The maximum number of characters that can be entered. -->
+  <attribute name="maxlength" type="number" value="-1"/>
 
   <!--// Handlers //-->
   <handler event="onchange">
@@ -124,6 +130,13 @@ SOFTWARE. -->
       delete attrs.value
     
     @super()
+    
+    # Allow filtering of input
+    @listenToPlatform(@, 'onkeypress', @__filterInputPress)
+  </method>
+
+  <method name="__filterInputPress" args="platformEvent">
+    @sprite.filterInputPress(platformEvent)
   </method>
 
   <method name="isPlatformEvent" args="eventType">

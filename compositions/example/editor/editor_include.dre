@@ -32,14 +32,14 @@ SOFTWARE. -->
 <class name="horizontal_rulertext" extends="text" with="rulertext" y="2"/>
 <class name="vertical_rulertext" extends="verticaltext" with="rulertext" x="2"/>
 
-<mixin name="selecttext" fontsize="10" color="${config.selection_color}"/>
-<mixin name="relselecttext" fontsize="10" color="${config.relselection_color}"/>
+<mixin name="selecttext" fontsize="14" color="${config.selection_color}"/>
+<mixin name="relselecttext" fontsize="14" color="${config.relselection_color}"/>
 
-<class name="horizontal_ruler_selecttext" extends="text" with="selecttext" y="23"/>
-<class name="vertical_ruler_selecttext" extends="verticaltext" with="selecttext" x="23"/>
+<class name="horizontal_ruler_selecttext" extends="text" with="selecttext" y="17"/>
+<class name="vertical_ruler_selecttext" extends="verticaltext" with="selecttext" x="17"/>
 
-<class name="horizontal_ruler_relselecttext" extends="text" with="relselecttext" y="12"/>
-<class name="vertical_ruler_relselecttext" extends="verticaltext" with="relselecttext" x="12"/>
+<class name="horizontal_ruler_relselecttext" extends="text" with="relselecttext" y="2"/>
+<class name="vertical_ruler_relselecttext" extends="verticaltext" with="relselecttext" x="2"/>
 
 <mixin name="locationtext" fontsize="10" color="${config.location_color}"/>
 
@@ -49,9 +49,14 @@ SOFTWARE. -->
   fontsize="14"
 />
 
+<class name="editor_text" extends="text" fontsize="14"/>
+<class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee"/>
+
 <view name="editor" id="editor" width="100%" height="100%" defaultplacement="content.inner" clip="true" bgcolor="white">
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="paused" type="boolean" value="true"/>
+
+  <attribute name="showlocationmarkers" type="boolean" value="true"/>
 
   <!-- Enforce a minimum width for the editor. -->
   <setter name="width" args="width">
@@ -79,6 +84,7 @@ SOFTWARE. -->
     <attribute name="divider_width" type="number" value="5"/>
     <attribute name="ruler_thickness" type="number" value="35"/>
     <attribute name="content_inset" type="number" value="69"/>
+    <attribute name="selection_marker_offset" type="number" value="6"/>
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
@@ -410,25 +416,18 @@ SOFTWARE. -->
   </handler>
 
   <handler event="onmousemove" reference="dr.mouse" args="event">
-    var x = event.x, y = event.y,
-      xLoc = this.xLocation, yLoc = this.yLocation,
-      content_bg = this.content_bg;
+    var x = event.x, 
+      y = event.y,
+      xLoc = this.xLocation,
+      yLoc = this.yLocation;
     
-    if (x > content_bg.x + content_bg.width || this.leftbar.width > x) {
-      xLoc.setAttribute('visible', false);
-    } else {
-      xLoc.setAttribute('visible', true);
-      xLoc.setAttribute('x', x - 1);
-      xLoc.label.setAttribute('text', x - this.content.x + this.content.inner.scrollx);
-    }
+    xLoc.setAttribute('visible', this.showlocationmarkers);
+    xLoc.setAttribute('x', x - 1);
+    xLoc.label.setAttribute('text', x - this.content.x + this.content.inner.scrollx);
     
-    if (y > content_bg.y + content_bg.height || this.topbar.height > y) {
-      yLoc.setAttribute('visible', false);
-    } else {
-      yLoc.setAttribute('visible', true);
-      yLoc.setAttribute('y', y - 1);
-      yLoc.label.setAttribute('text', y - this.content.y + this.content.inner.scrolly);
-    }
+    yLoc.setAttribute('visible', this.showlocationmarkers);
+    yLoc.setAttribute('y', y - 1);
+    yLoc.label.setAttribute('text', y - this.content.y + this.content.inner.scrolly);
     
     return true;
   </handler>
@@ -477,13 +476,13 @@ SOFTWARE. -->
     </bitmap>
   </view>
   
-  <view name="xLocation" ignoreplacement="true"
+  <view id="xLocation" name="xLocation" ignoreplacement="true"
     y="${this.parent.ruler_horizontal.y}" width="1" height="${config.ruler_thickness}" bgcolor="${config.location_color}"
   >
     <text with="locationtext" name="label" x="3" y="2"/>
   </view>
 
-  <view name="yLocation" ignoreplacement="true"
+  <view id="yLocation" name="yLocation" ignoreplacement="true"
     x="${this.parent.ruler_vertical.x}" width="${config.ruler_thickness}" height="1" bgcolor="${config.location_color}"
   >
     <verticaltext with="locationtext" name="label" x="2" y="-2"/>
@@ -517,6 +516,12 @@ SOFTWARE. -->
         var target = reticle.target;
         if (!this.disabled && target) {
           var diff = Math.min(this._origTargetW, x + 5);
+          
+          x = this._origTargetX + diff;
+          var gx = Number(gridsizex.value);
+          if (gx > 0) x = gx * Math.round(x / gx);
+          diff = x - this._origTargetX;
+          
           target.setAttribute('x', this._origTargetX + diff);
           target.setAttribute('width', this._origTargetW - diff);
         }
@@ -555,7 +560,12 @@ SOFTWARE. -->
       </method>
       <method name="updatePosition" args="x, y">
         var target = reticle.target;
-        if (!this.disabled && target) target.setAttribute('width', Math.max(0, x + 5));
+        if (!this.disabled && target) {
+          x = Math.max(0, x + 5);
+          var gx = Number(gridsizex.value);
+          if (gx > 0) x = gx * Math.round(x / gx);
+          target.setAttribute('width', x);
+        }
       </method>
       
       <method name="drawFocusedState">
@@ -576,11 +586,11 @@ SOFTWARE. -->
       </method>
     </view>
     
-    <horizontal_ruler_relselecttext name="locrelstart" x="${-this.width - 3}"/>
-    <horizontal_ruler_selecttext name="locstart" x="${-this.width - 3}"/>
+    <horizontal_ruler_relselecttext name="locrelstart" x="${-this.width - config.selection_marker_offset}"/>
+    <horizontal_ruler_selecttext name="locstart" x="${-this.width - config.selection_marker_offset}"/>
     <horizontal_ruler_selecttext name="locsize" x="center"/>
-    <horizontal_ruler_selecttext name="locend" x="${this.parent.width + 3}"/>
-    <horizontal_ruler_relselecttext name="locrelend" x="${this.parent.width + 3}"/>
+    <horizontal_ruler_selecttext name="locend" x="${this.parent.width + config.selection_marker_offset}"/>
+    <horizontal_ruler_relselecttext name="locrelend" x="${this.parent.width + config.selection_marker_offset}"/>
     
     <method name="startDrag" args="event">
       reticle._start();
@@ -596,7 +606,12 @@ SOFTWARE. -->
     </method>
     <method name="updatePosition" args="x, y">
       var target = reticle.target;
-      if (!this.disabled && target) target.setAttribute('x', x - target.getAbsolutePosition().x + target.x);
+      if (!this.disabled && target) {
+        x = x - target.getAbsolutePosition().x + target.x;
+        var gx = Number(gridsizex.value);
+        if (gx > 0) x = gx * Math.round(x / gx);
+        target.setAttribute('x', x);
+      }
     </method>
     
     <method name="drawHoverState">
@@ -619,11 +634,11 @@ SOFTWARE. -->
     <view name="lower" height="1" width="100%" bgcolor="${config.selection_color}"/>
     <view name="upper" height="1" y="bottom" width="100%" bgcolor="${config.selection_color}"/>
     
-    <vertical_ruler_relselecttext name="locrelstart" y="-3"/>
-    <vertical_ruler_selecttext name="locstart" y="-3"/>
+    <vertical_ruler_relselecttext name="locrelstart" y="${-config.selection_marker_offset}"/>
+    <vertical_ruler_selecttext name="locstart" y="${-config.selection_marker_offset}"/>
     <vertical_ruler_selecttext name="locsize" y="middle"/>
-    <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + 3}"/>
-    <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + 3}"/>
+    <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
+    <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     
     <view with="keyboarddraggable, button" height="10" y="-5" width="100%" cursor="row-resize">
       <method name="startDrag" args="event">
@@ -644,6 +659,12 @@ SOFTWARE. -->
         var target = reticle.target;
         if (!this.disabled && target) {
           var diff = Math.min(this._origTargetH, y + 5);
+          
+          y = this._origTargetY + diff;
+          var gy = Number(gridsizey.value);
+          if (gy > 0) y = gy * Math.round(y / gy);
+          diff = y - this._origTargetY;
+          
           target.setAttribute('y', this._origTargetY + diff);
           target.setAttribute('height', this._origTargetH - diff);
         }
@@ -682,7 +703,12 @@ SOFTWARE. -->
       </method>
       <method name="updatePosition" args="x, y">
         var target = reticle.target;
-        if (!this.disabled && target) target.setAttribute('height', Math.max(0, y + 5));
+        if (!this.disabled && target) {
+          y = Math.max(0, y + 5);
+          var gy = Number(gridsizey.value);
+          if (gy > 0) y = gy * Math.round(y / gy);
+          target.setAttribute('height', y);
+        }
       </method>
       
       <method name="drawFocusedState">
@@ -717,7 +743,12 @@ SOFTWARE. -->
     </method>
     <method name="updatePosition" args="x, y">
       var target = reticle.target;
-      if (!this.disabled && target) target.setAttribute('y', y - target.getAbsolutePosition().y + target.y);
+      if (!this.disabled && target) {
+        y = y - target.getAbsolutePosition().y + target.y;
+        var gy = Number(gridsizey.value);
+        if (gy > 0) y = gy * Math.round(y / gy);
+        target.setAttribute('y', y);
+      }
     </method>
     
     <method name="drawHoverState">
@@ -760,7 +791,16 @@ SOFTWARE. -->
       <toolbarbutton id="createButton" action="createView" disabled="${!editor.paused}">Create</toolbarbutton>
     </view>
     
-    <view name="center" padding="2" x="${this.parent.left.width}" width="${this.parent.right.x - this.x}" height="${config.topbar_height}"/>
+    <view name="center" padding="2" x="${this.parent.left.width}" width="${this.parent.right.x - this.x}" height="${config.topbar_height}">
+      <view x="center" y="middle">
+        <spacedlayout spacing="4" inset="2" updateparent="true"></spacedlayout>
+        <constantlayout attribute="y" value="'middle'"></constantlayout>
+        <editor_text text="grid x:"/>
+        <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+        <editor_text text="y:"/>
+        <editor_inputtext id="gridsizey" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+      </view>
+    </view>
     
     <view name="right" padding="2" x="right" width="auto" height="${config.topbar_height}">
       <spacedlayout spacing="4" inset="2"></spacedlayout>

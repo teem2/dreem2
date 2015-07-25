@@ -45,11 +45,41 @@ SOFTWARE. -->
   <method name="_shiftPos" args="isX, increase">
     var shiftKeyDown = dr.keyboard.isShiftKeyDown(),
       amount = shiftKeyDown ? 10 : 1,
+      gridAmt = Math.max(1, isX ? gridsizex.value : gridsizey.value),
       isdragging = this.isdragging,
       event = {x:this.x, y:this.y};
+    this._isArrowAdj = true;
     if (!isdragging) this.startDrag(event);
-    event[isX ? 'x' : 'y'] += (increase ? 1 : -1) * amount;
+    event[isX ? 'x' : 'y'] += (increase ? 1 : -1) * amount * gridAmt;
     this.updatePosition(event.x, event.y);
     if (!isdragging) this.stopDrag(event);
+    this._isArrowAdj = false;
+  </method>
+  
+  <method name="__doMouseDown" args="event">
+    this.super();
+    xLocation.setAttribute('visible', false);
+    yLocation.setAttribute('visible', false);
+    editor.setAttribute('showlocationmarkers', false);
+  </method>
+  <method name="__doMouseUp" args="event">
+    this.super();
+    editor.setAttribute('showlocationmarkers', true);
+    xLocation.setAttribute('visible', true);
+    yLocation.setAttribute('visible', true);
+  </method>
+  
+  <method name="startDrag" args="event">
+    xLocation.setAttribute('visible', false);
+    yLocation.setAttribute('visible', false);
+    editor.setAttribute('showlocationmarkers', false);
+    this.super();
+  </method>
+  
+  <method name="stopDrag" args="event, isAbort">
+    this.super();
+    editor.setAttribute('showlocationmarkers', true);
+    xLocation.setAttribute('visible', true);
+    yLocation.setAttribute('visible', true);
   </method>
 </mixin>

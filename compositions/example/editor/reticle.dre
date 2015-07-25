@@ -136,11 +136,19 @@ SOFTWARE. -->
   
   <method name="updatePosition" args="x, y">
     if (!this.disabled) {
-      if (dr.keyboard.isShiftKeyDown()) {
-        var origLoc = this.getOriginalLocation();
-        if (this.draglockthresh > Math.abs(x - origLoc.x)) x = origLoc.x;
-        if (this.draglockthresh > Math.abs(y - origLoc.y)) y = origLoc.y;
+      if (!this._isArrowAdj) {
+        if (dr.keyboard.isShiftKeyDown()) {
+          var origLoc = this.getOriginalLocation();
+          if (this.draglockthresh > Math.abs(x - origLoc.x)) x = origLoc.x;
+          if (this.draglockthresh > Math.abs(y - origLoc.y)) y = origLoc.y;
+        }
       }
+      
+      var gx = Number(gridsizex.value),
+        gy = Number(gridsizey.value);
+      if (gx > 0) x = (gx * Math.round((x + this.dx) / gx)) - this.dx;
+      if (gy > 0) y = (gy * Math.round((y + this.dy) / gy)) - this.dy;
+      
       this.super(x, y);
     }
   </method>
@@ -258,24 +266,32 @@ SOFTWARE. -->
     
     <method name="updatePosition" args="x, y">
       if (!this.disabled) {
-        if (dr.keyboard.isShiftKeyDown()) {
-          // If shift is down, preserver aspect ratio
-          var ar = this._origAspectRatio;
-          if (ar === 0) {
-            y = -5;
-          } else if (ar === Infinity) {
-            x = -5;
-          } else {
-            var closestPoint = dr.getClosestPointOnALineToAPoint(0, 0, 1, ar, x + 5, y + 5);
+        if (!this._isArrowAdj) {
+          if (dr.keyboard.isShiftKeyDown()) {
+            // If shift is down, preserver aspect ratio
+            var ar = this._origAspectRatio;
+            if (ar === 0) {
+              y = -5;
+            } else if (ar === Infinity) {
+              x = -5;
+            } else {
+              var closestPoint = dr.getClosestPointOnALineToAPoint(0, 0, 1, ar, x + 5, y + 5);
+              x = Math.round(closestPoint.x - 5);
+              y = Math.round(closestPoint.y - 5);
+            }
+          } else if (dr.keyboard.isAltKeyDown()) {
+            // If alt key down make square
+            var closestPoint = dr.getClosestPointOnALineToAPoint(0, 0, 1, 1, x + 5, y + 5);
             x = Math.round(closestPoint.x - 5);
             y = Math.round(closestPoint.y - 5);
           }
-        } else if (dr.keyboard.isAltKeyDown()) {
-          // If alt key down make square
-          var closestPoint = dr.getClosestPointOnALineToAPoint(0, 0, 1, 1, x + 5, y + 5);
-          x = Math.round(closestPoint.x - 5);
-          y = Math.round(closestPoint.y - 5);
         }
+        
+        var gx = Number(gridsizex.value),
+          gy = Number(gridsizey.value);
+        if (gx > 0) x = (gx * Math.round((x + 5) / gx)) - 5;
+        if (gy > 0) y = (gy * Math.round((y + 5) / gy)) - 5;
+        
         this.setAttribute('x', Math.max(-5, x));
         this.setAttribute('y', Math.max(-5, y));
       }

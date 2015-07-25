@@ -19,7 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="texteditor" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee">
+<class name="texteditor" extends="editor_inputtext">
   <handler event="onfocus">
     this.oldvalue = this.text;
   </handler>
@@ -123,6 +123,6 @@ SOFTWARE. -->
     this.actual.setAttribute('visible', cfg !== actual);
   </method>
 
-  <text name="label" x="${60 - this.width}" y="2" fontsize="14"></text>
-  <text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" fontsize="14" width="60"></text>
+  <editor_text name="label" x="${60 - this.width}" y="2"/>
+  <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" width="60"/>
 </class>
