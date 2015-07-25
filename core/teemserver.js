@@ -161,10 +161,8 @@ define(function(require, exports, module) {
       sock.url = req.url;
       var composition = this.__getComposition(req.url);
       if (composition) {
-		console.log("adding socket to composition");
-        composition.busserver.addWebSocket(sock);
+		composition.busserver.addWebSocket(sock);
       } else {
-        console.log("adding socket to bus");
         this.busserver.addWebSocket(sock);
       }
     };
