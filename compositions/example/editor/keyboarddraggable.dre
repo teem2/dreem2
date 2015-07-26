@@ -61,12 +61,14 @@ SOFTWARE. -->
     xLocation.setAttribute('visible', false);
     yLocation.setAttribute('visible', false);
     editor.setAttribute('showlocationmarkers', false);
+    return true;
   </method>
   <method name="__doMouseUp" args="event">
     this.super();
     editor.setAttribute('showlocationmarkers', true);
     xLocation.setAttribute('visible', true);
     yLocation.setAttribute('visible', true);
+    return true;
   </method>
   
   <method name="startDrag" args="event">
