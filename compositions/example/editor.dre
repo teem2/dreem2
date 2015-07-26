@@ -39,7 +39,7 @@ SOFTWARE. -->
         console.log('playing click');
      </handler>
      <handler event='onactivated'>
-        console.log('activated');
+       this.parent.createChild({width:100, height:100, x:100, y:100, bgcolor:'#99cc55', clickable:true, focusable:true, class:'view', with:'editable, draggable'});
      </handler>
      <method name='drawHoverState'>
         this.setAttribute('bgcolor', 'pink');
@@ -64,7 +64,7 @@ SOFTWARE. -->
         console.log('playing click');
      </handler>
      <handler event='onactivated'>
-        console.log('activated');
+        this.destroy();
      </handler>
      <method name='drawHoverState'>
         this.setAttribute('bgcolor', 'pink');

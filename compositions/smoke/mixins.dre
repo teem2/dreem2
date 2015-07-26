@@ -227,6 +227,22 @@ SOFTWARE. -->
         </handler>
       </def>
     </view>
+    
+    <!-- Verify attribute values are inherited from mixins on instances created
+         programatically. -->
+    <mixin name="blah">
+      <attribute name="foo" type="number" value="10"/>
+    </mixin>
+    
+    <view with="blah">
+      <method name="initNode" args="parent, attrs">
+        this.super();
+        
+        var child = this.createChild({class:'view', with:'blah'});
+        
+        assert.equal(child.foo, 10);
+      </method>
+    </view>
   </screen>
 </screens>
 </composition>

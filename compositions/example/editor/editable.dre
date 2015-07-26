@@ -23,6 +23,7 @@ SOFTWARE. -->
   <method name="initNode" args="parent, attrs">
     this.super();
     
+    this._origClickable = this.getAttribute('clickable');
     this.handleEditorPaused(editor.paused);
   </method>
 
