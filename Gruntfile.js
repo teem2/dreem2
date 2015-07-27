@@ -70,22 +70,22 @@ module.exports = function(grunt) {
               platform: 'OS X 10.10',
               browserName: 'chrome',
               version: 'beta'
+            },
+            {
+              platform: 'OS X 10.10',
+              browserName: 'firefox',
+              version: 'beta'
+            },
+            {
+              platform: 'Windows 8.1',
+              browserName: 'chrome',
+              version: 'beta'
+            },
+            {
+              platform: 'Windows 8.1',
+              browserName: 'firefox',
+              version: 'beta'
             }//,
-//            {
-//              platform: 'OS X 10.10',
-//              browserName: 'firefox',
-//              version: 'beta'
-//            },
-//            {
-//              platform: 'Windows 8.1',
-//              browserName: 'chrome',
-//              version: 'beta'
-//            },
-//            {
-//              platform: 'Windows 8.1',
-//              browserName: 'firefox',
-//              version: 'beta'
-//            }//,
 //            {
 //              platform: 'Linux',
 //              browserName: 'chrome',
