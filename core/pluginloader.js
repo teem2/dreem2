@@ -29,19 +29,25 @@ define(function(require, exports, module) {
 
         this.__findPlugins = function() {
             var pluginDirs = this.args['-plugin'];
+            if (!pluginDirs) {
+                pluginDirs = []
+            }
             if (!Array.isArray(pluginDirs)) {
                 pluginDirs = [pluginDirs]
             }
 
             var errors = [];
             for (var i=0;i<pluginDirs.length;i++) {
-                var dir = path.resolve(pluginDirs[i]);
-                if (fs.existsSync(dir + '/index.dre')) {
-                    if (!define['PLUGIN']) {
-                        define['PLUGIN'] = [];
+                var pdir = pluginDirs[i];
+                if (pdir) {
+                    var dir = path.resolve(pdir);
+                    if (fs.existsSync(dir + '/index.dre')) {
+                        if (!define['PLUGIN']) {
+                            define['PLUGIN'] = [];
+                        }
+                        define['PLUGIN'].push(dir + '/node_modules/');
+                        this.__loadPlugin(dir, errors);
                     }
-                    define['PLUGIN'].push(dir + '/node_modules/');
-                    this.__loadPlugin(dir, errors);
                 }
             }
 
