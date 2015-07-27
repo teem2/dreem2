@@ -181,7 +181,7 @@
     return value
   </method>
   
-  <method name="updateParent" args="attribute, value">
+  <method name="updateParent" args="attribute, value, count">
     # Resize the parent and allow for the difference between innersize and size
     # due to border and padding.
     parent = @parent

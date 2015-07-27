@@ -1,0 +1,185 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Example - Floating Panel'>
+    <class name="mybtn" extends="text" with="button" border="1" bordercolor="black" padding="4" cornerradius="4"
+      focusembellishment="false"
+    >
+      <method name="drawFocusedState">
+        this.setAttribute('bgcolor', '#ffffff');
+      </method>
+      <method name="drawHoverState">
+        this.setAttribute('bgcolor', '#ffffff');
+      </method>
+      <method name="drawActiveState">
+        this.setAttribute('bgcolor', '#eeeeee');
+      </method>
+      <method name="drawReadyState">
+        this.setAttribute('bgcolor', '#dddddd');
+      </method>
+    </class>
+    
+    <mixin name="buildpanelmixin">
+      <method name="doActivated">
+        var panelId = 'baz';
+        var fp = this.getFloatingPanel(panelId);
+        if (!fp) {
+          fp = this.createFloatingPanel(panelId, dr.floatingpanel, {
+            bgcolor:'#0000ff', width:'auto', height:'auto'
+          });
+          fp.extend({
+            getFirstFocusableDescendant: function() {return this.subbtn1;}
+          });
+          
+          fp.createChild({class:'mybtn', name:'subbtn1', text:'here'}, [{
+            doActivated: function() {this.parent.hide();}
+          }]);
+          fp.createChild({class:'mybtn', name:'subbtn2', text:'there', y:35}, [{
+            doActivated: function() {this.parent.hide();}
+          }]);
+        }
+        this.toggleFloatingPanel(panelId);
+      </method>
+    </mixin>
+    
+    <view width="100%" height="100%" bgcolor="#eeeeee">
+      <mybtn with="floatingpanelanchor" name="btn1" text="button 1">
+        <method name="doActivated">
+          var panelId = 'foo';
+          var fp = this.getFloatingPanel(panelId);
+          if (!fp) fp = this.createFloatingPanel(panelId, dr.floatingpanel, {
+            bgcolor:'#ff0000', width:100, height:25
+          });
+          this.toggleFloatingPanel(panelId);
+        </method>
+        
+        <method name="getNextFocusAfterPanel">
+          return this.parent.btn2;
+        </method>
+      </mybtn>
+      
+      <mybtn with="floatingpanelanchor" name="btn2" text="hide on mouse down: false"
+        floatingalign="outsideright" floatingvalign="insidetop" floatingalignoffset="2"
+      >
+        <method name="doActivated">
+          var panelId = 'bar';
+          var fp = this.getFloatingPanel(panelId);
+          if (!fp) this.createFloatingPanel(panelId, dr.floatingpanel, {
+            bgcolor:'#00ff00', width:30, height:50, hideonmousedown:false
+          });
+          this.toggleFloatingPanel(panelId);
+        </method>
+        
+        <method name="getNextFocusAfterPanel">
+          return this.parent.btn3;
+        </method>
+      </mybtn>
+      
+      <mybtn with="buildpanelmixin, floatingpanelanchor" name="btn3" text="button 3"/>
+      <mybtn with="buildpanelmixin, floatingpanelanchor" name="btn4" text="button 4"/>
+      
+      <mybtn with="floatingpanelanchor" name="btn5" text="hide on blur: false"
+        floatingalign="outsideright" floatingvalign="insidetop" floatingalignoffset="2"
+      >
+        <method name="doActivated">
+          var panelId = '5';
+          var fp = this.getFloatingPanel(panelId);
+          if (!fp) this.createFloatingPanel(panelId, dr.floatingpanel, {
+            bgcolor:'#00ff99', width:30, height:50, hideonblur:false
+          });
+          this.toggleFloatingPanel(panelId);
+        </method>
+        
+        <method name="getNextFocusAfterPanel">
+          return this.parent.btn6;
+        </method>
+      </mybtn>
+      
+      <mybtn with="floatingpanelanchor" name="btn6" text="button 6"
+        floatingalign="outsideright" floatingvalign="insidetop" floatingalignoffset="2"
+      >
+        <method name="doActivated">
+          var panelId = '6';
+          var fp = this.getFloatingPanel(panelId);
+          if (!fp) this.createFloatingPanel(panelId, dr.floatingpanel, {bgcolor:'#00ff99', width:30, height:50, hideonblur:false});
+          this.toggleFloatingPanel(panelId);
+        </method>
+        
+        <method name="getNextFocusAfterPanel">
+          return this.parent.btn7;
+        </method>
+      </mybtn>
+      
+      <mybtn with="floatingpanelanchor" name="btn7" text="ignore owner for hide on blur"
+        floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
+      >
+        <method name="doActivated">
+          var panelId = '7';
+          var fp = this.getFloatingPanel(panelId);
+          if (!fp) this.createFloatingPanel(panelId, dr.floatingpanel, {
+            bgcolor:'#00ff99', width:30, height:50, ignoreownerforhideonblur:false
+          });
+          this.showFloatingPanel(panelId);
+        </method>
+      </mybtn>
+      
+      <mybtn with="floatingpanelanchor" name="btn8" text="ignore owner for hide on mouse down"
+        floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
+      >
+        <method name="doActivated">
+          var panelId = '8';
+          var fp = this.getFloatingPanel(panelId);
+          if (!fp) this.createFloatingPanel(panelId, dr.floatingpanel, {
+            bgcolor:'#00ff99', width:30, height:50, ignoreownerforhideonmousedown:false
+          });
+          this.showFloatingPanel(panelId);
+        </method>
+        
+        <method name="getNextFocusAfterPanel">
+          return this.parent.btn9;
+        </method>
+      </mybtn>
+      
+      <mybtn with="floatingpanelanchor" name="btn9" text="button 9"
+        floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
+      >
+        <method name="doActivated">
+          var panelId = '9';
+          var fp = this.getFloatingPanel(panelId);
+          if (!fp) this.createFloatingPanel(panelId, dr.floatingpanel, {
+            bgcolor:'#00ff99', width:30, height:50
+          });
+          this.showFloatingPanel(panelId);
+        </method>
+        
+        <method name="getNextFocusAfterPanel">
+          return this.parent.btn1;
+        </method>
+      </mybtn>
+      
+      <constantlayout attribute="y" value="10"/>
+      <wrappinglayout axis="x" spacing="10" inset="10" lineinset="10" linespacing="10"/>
+    </view>
+  </screen>
+</screens>
+</composition>

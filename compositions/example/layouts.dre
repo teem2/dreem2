@@ -134,7 +134,7 @@ SOFTWARE. -->
             view.setAttribute(attribute, value)
             return value + view.height + 5
           </method>
-          <method name="updateParent" args="attribute, value">
+          <method name="updateParent" args="attribute, value, count">
             this.parent.setAttribute(attribute === 'x' ? 'width' : 'height', value + 5)
           </method>
         </variablelayout>

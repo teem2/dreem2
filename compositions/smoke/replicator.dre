@@ -24,7 +24,7 @@ SOFTWARE. -->
   <screen type="browser" name="default" title='Smoke Test - Replicator'>
     <include href="./includes/boilerplate.dre"></include>
     
-    <testingtimer>500</testingtimer>
+    <testingtimer>1000</testingtimer>
     
     <view width="100%" height="100%" clip="true">
       <expectedoutput>missing classname for replicator [object Object]
@@ -125,7 +125,7 @@ timeout ran</expectedoutput>
           setTimeout(function(){
             console.log('timeout ran');
             assert.equal(2, self.onreplicated, 'There should be a second onreplicated event');
-          }.bind(this), 250)
+          }.bind(this), 750)
           
           this.parent.dynamic.setAttribute('url', '/data/example.json')
         </handler>

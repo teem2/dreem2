@@ -1,0 +1,248 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.floatingpanel {UI Component}
+   * A panel that floats above everything else.
+   *
+   * Configured as visible false since panels will always begin by not being
+   * seen.
+   * 
+   * Configured as focusable true and focuscage true to ensure the focus 
+   * starts and ends with the panel
+   */-->
+<class name="floatingpanel" with="sizetoviewport"
+  visible="false" focusembellishment="false"
+  focusable="true" focuscage="true"
+>
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {String} panelid
+    * The unique ID for this panel instance.
+    */-->
+  <attribute name="panelid" type="string" value=""/>
+
+  <!--/**
+    * @attribute {dr.floatingpanelanchor} owner
+    * The anchor that currently "owns" this panel.
+    */-->
+  <attribute name="owner" type="expression" value="null"/>
+
+  <!--/**
+    * @attribute {Boolean} ignoreownerforhideonmousedown
+    * If true the owner view will also be ignored for mousedown events.
+    */-->
+  <attribute name="ignoreownerforhideonmousedown" type="boolean" value="true"/>
+
+  <!--/**
+    * @attribute {Boolean} ignoreownerforhideonblur
+    * If true the owner view will also be ignored for blur events.
+    */-->
+  <attribute name="ignoreownerforhideonblur" type="boolean" value="true"/>
+
+  <!--/**
+    * @attribute {Boolean} hideonmousedown
+    * If true this panel will be hidden when a mousedown occurs outside the panel.
+    */-->
+  <attribute name="hideonmousedown" type="boolean" value="true"/>
+
+  <!--/**
+    * @attribute {Boolean} hideonblur
+    * If true this panel will be hidden when a focus traverses outside the panel.
+    */-->
+  <attribute name="hideonblur" type="boolean" value="true"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/** @private */-->
+  <method name="__doMouseDown" args="event">
+    var x = event.x, y = event.y;
+    if (!this.containsPoint(x, y) && (this.ignoreownerforhideonmousedown ? !this.owner.containsPoint(x, y) : true)) {
+      this.doMouseDownOutside();
+    }
+    return true;
+  </method>
+
+  <!--/**
+    * @method doMouseDownOutside
+    * Called when a mousedown occurs outside the floating panel. The default
+    * behavior is to hide the panel. This gives subclasses a chance to 
+    * provide different behavior.
+    * @returns {void}
+    */-->
+  <method name="doMouseDownOutside">
+    if (this.hideonmousedown) this.hide();
+  </method>
+
+  <!--/**
+    * @method focus
+    * @overrides dr.view
+    * Intercepts focus on this panel and refocuses to the "best" view.
+    * When focus enters the panel we give focus to the first focusable
+    * descendant of the panel. When leaving we ask the panel anchor
+    * where to give focus.
+    */-->
+  <method name="focus" args="noscroll">
+    var gf = dr.global.focus;
+    if (this.owner && this.isAncestorOf(gf.focusedView)) {
+      this.owner[gf.lastTraversalWasForward ? 'getNextFocusAfterPanel' : 'getPrevFocusAfterPanel'](this.panelid).focus(noscroll);
+    } else {
+      var ffv = this.getFirstFocusableDescendant();
+      if (ffv === this) {
+        // Process normally since focus is actually being set
+        // on the panel.
+        this.super();
+      } else {
+        ffv.focus(noscroll);
+      }
+    }
+  </method>
+
+  <!--/**
+    * @method getFirstFocusableDescendant
+    * Gets the view to give focus to when this panel gets focus. Should be
+    * a descendant of the floating panel or the panel itself. Returns this 
+    * floating panel by default.
+    * @returns {dr.view} The view to give focus to.
+    */-->
+  <method name="getFirstFocusableDescendant">
+    return this;
+  </method>
+
+  <!--/** @private */-->
+  <method name="__doFocusChange" args="event">
+    var v = event;
+    if (v && !this.isAncestorOf(v)) this.doLostFocus();
+  </method>
+
+  <!--/**
+    * @method doLostFocus
+    * Called when focus moves out of the floating panel. Hides the
+    * floating panel by default.
+    * @returns {void}
+    */-->
+  <method name="doLostFocus">
+    if (this.hideonblur) {
+      if (this.ignoreownerforhideonblur && dr.global.focus.focusedView === this.owner) return;
+      
+      this.hide(true);
+    }
+  </method>
+
+  <!--/**
+    * @method isShown
+    * Determines if this floating panel is being "shown" or not. Typically
+    * this means the floating panel is visible.
+    * @returns {Boolean} True if this panel is shown, otherwise false.
+    */-->
+  <method name="isShown">
+    return this.visible;
+  </method>
+
+  <!--/**
+    * @method show
+    * Shows the floating panel for the provided dr.floatingpanelanchor.
+    * @param {dr.floatingpanelanchor} panelAnchor The floating panel anchor 
+    * to show the panel for.
+    * @returns {void}
+    */-->
+  <method name="show" args="panelAnchor">
+    if (!this.isShown()) {
+      this.moveToFront();
+      this.updateLocation(panelAnchor);
+      this.setAttribute('visible', true);
+      
+      this.owner.notifyPanelShown(this);
+      
+      var g = dr.global;
+      this.listenToPlatform(g.mouse, 'onmousedown', '__doMouseDown', true);
+      this.listenTo(g.focus, 'onfocused', '__doFocusChange');
+    }
+  </method>
+
+  <!--/**
+    * @method hide
+    * Hides the floating panel for the provided dr.floatingpanelanchor.
+    * @param {Boolean} ignoreRestoreFocus Optional If true the restoreFocus
+    * method will not be called. Defaults to undefined which is equivalent to 
+    * false.
+    * @returns {void}
+    */-->
+  <method name="hide" args="ignoreRestoreFocus">
+    if (this.isShown()) {
+      var g = dr.global;
+      this.stopListeningToPlatform(g.mouse, 'onmousedown', '__doMouseDown', true);
+      this.stopListening(g.focus, 'onfocused', '__doFocusChange');
+      
+      this.setAttribute('visible', false);
+      this.owner.notifyPanelHidden(this);
+      if (!ignoreRestoreFocus) this.restoreFocus();
+      this.setAttribute('owner', null);
+    }
+  </method>
+
+  <!--/**
+    * @method restoreFocus
+    * Sends the focus back to the owner. Can be overridden to
+    * send the focus elsewhere.
+    * @returns {void}
+    */-->
+  <method name="restoreFocus">
+    if (this.owner) this.owner.focus();
+  </method>
+
+  <!--/**
+    * @method updateLocation
+    * Updates the x and y position of the floating panel for the provided 
+    * floating panel anchor.
+    * @param {dr.floatingpanelanchor} panelAnchor The floating panel anchor 
+    * to update the location for.
+    * @returns {void}
+    */-->
+  <method name="updateLocation" args="panelAnchor">
+    this.setAttribute('owner', panelAnchor);
+    
+    var panelId = this.panelid,
+      align = panelAnchor.getFloatingAlignForPanelId(panelId),
+      valign = panelAnchor.getFloatingValignForPanelId(panelId),
+      anchorLocation = panelAnchor.getAbsolutePosition(),
+      x = 0, y = 0,
+      type = typeof align;
+    
+    if (type === 'string') {
+      x = anchorLocation.x + panelAnchor.getFloatingAlignOffsetForPanelId(panelId);
+      switch(align) {
+        case 'outsideright': x += panelAnchor.width; break;
+        case 'insideright': x += panelAnchor.width - this.width; break;
+        case 'outsideleft': x -= this.width; break;
+        case 'insideleft': break;
+        default: dr.sprite.console.warn("Unexpected align value", type, align);
+      }
+    } else if (type === 'number') {
+      // Absolute position
+      x = align;
+    } else {
+      dr.sprite.console.warn("Unexpected align type", type, align);
+    }
+    this.setAttribute('x', x);
+    
+    // Vertical positioning
+    type = typeof valign;
+    
+    if (type === 'string') {
+      y = anchorLocation.y + panelAnchor.getFloatingValignOffsetForPanelId(panelId);
+      switch(valign) {
+        case 'outsidebottom': y += panelAnchor.height; break;
+        case 'insidebottom': y += panelAnchor.height - this.height; break;
+        case 'outsidetop': y -= this.height; break;
+        case 'insidetop': break;
+        default: dr.sprite.console.warn("Unexpected valign value", type, valign);
+      }
+    } else if (type === 'number') {
+      // Absolute position
+      y = valign;
+    } else {
+      dr.sprite.console.warn("Unexpected valign type", type, valign);
+    }
+    this.setAttribute('y', y);
+  </method>
+</class>

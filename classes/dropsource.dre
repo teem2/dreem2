@@ -1,0 +1,110 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.dropsource {UI Behavior}
+   * Makes a dr.view support being a source for dr.dropable instances. Makes
+   * use of dr.draggable for handling drag initiation but this view is not
+   * itself, actually draggable.
+   */-->
+<mixin name="dropsource" with="draggable" distancebeforedrag="2">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    if (attrs.dropparent === undefined || attrs.dropparent === 'undefined') attrs.dropparent = parent.getRoot();
+    
+    this.super();
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {dr.view} dropparent
+    * The view to make the dr.dropable instances in. Defaults to the 
+    * dr.RootView that contains this drop source.
+    */-->
+  <attribute name="dropparent" type="object" value="undefined"/>
+
+  <!--/**
+    * @attribute {Object} dropclass
+    * The dr.dropable class that gets created in the default implementation 
+    * of makeDropable.
+    */-->
+  <attribute name="dropclass" type="object" value=""/>
+
+  <!--/**
+    * @attribute {Object} dropclassattrs
+    * The attrs to use when making the dropClass instance.
+    */-->
+  <attribute name="dropclassattrs" type="object" value="null"/>
+
+  <!--/**
+    * @attribute {Object} dropable
+    * @readonly
+    * The dropable that was most recently created. Once the dropable has been 
+    * dropped this will be set to null.
+    */-->
+  <attribute name="dropable" type="object" value="null"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method startDrag
+    * @overrides dr.draggable
+    */-->
+  <method name="startDrag" args="event">
+    var dropable = this.dropable = this.makeDropable();
+    
+    // Emulate mouse down on the dropable
+    if (dropable) {
+      // Remember distance and set to zero so a drag will begin for sure.
+      var origDistance = dropable.distancebeforedrag;
+      dropable.distancebeforedrag = 0;
+      
+      dropable.doMouseDown(event); // Execute MouseDownMixin
+      dropable.__doMouseDown(event); // Execute Draggable
+      
+      // Restore distance
+      dropable.distancebeforedrag = origDistance;
+    }
+  </method>
+
+  <!--/**
+    * @method doMouseUp
+    * @overrides dr.mousedown
+    */-->
+  <method name="doMouseUp" args="event">
+    this.super();
+    
+    // Emulate mouse up on the dropable
+    var dropable = this.dropable;
+    if (dropable) {
+      dropable.__doMouseUp(event);
+      dropable.doMouseUp(event);
+      this.dropable = null;
+    }
+  </method>
+
+  <!--/**
+    * @method makeDropable
+    * Called by startDrag to make a dropable.
+    * @returns {dr.dropable} or undefined if one can't be created.
+    */-->
+  <method name="makeDropable" args="event">
+    var dropClass = this.dropclass,
+      dropParent = this.dropparent;
+    if (dropClass && dropParent) {
+      if (typeof dropClass === 'string') {
+        dropClass = dr.lookupClass(dropClass);
+        if (!dropClass) {
+          console.log('no drop class found for: ', this.dropclass);
+          return;
+        }
+      }
+      
+      var pos = this.getAbsolutePosition(dropParent),
+        attrs = this.dropclassattrs || {};
+      attrs.x = pos.x || 0;
+      attrs.y = pos.y || 0;
+      return new dropClass(dropParent, attrs);
+    }
+  </method>
+</mixin>

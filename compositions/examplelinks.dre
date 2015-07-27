@@ -79,6 +79,8 @@ SOFTWARE. -->
           <subhead>Components</subhead>
           <link url="./example/components">Standard Components</link>
           <link url="./example/bitmap">Bitmap</link>
+          <link url="./example/drag_and_drop">Drag and Drop</link>
+          <link url="./example/floating_panel">Floating Panel</link>
           
           <subhead>Multiple Screens</subhead>
           <link url="./example/multiscreen/basic">Basic</link>

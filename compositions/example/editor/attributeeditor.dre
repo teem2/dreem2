@@ -19,11 +19,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="texteditor" extends="inputtext" fontsize="14">
+<class name="texteditor" extends="editor_inputtext">
   <handler event="onfocus">
     this.oldvalue = this.text;
   </handler>
-  <setter name="text" args="v">
+  <setter name="value" args="v">
     // Clean up some common constraint patterns
     switch (this.targetattr) {
       case 'x':
@@ -69,25 +69,71 @@ SOFTWARE. -->
     }
   </method>
   <handler event="ontext" args="text">
-    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, text);
+    this.setAttribute('value', text);
+  </handler>
+  <attribute name="value" type="string" value=""></attribute>
+  <handler event="onvalue" args="value">
+    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value);
   </handler>
   <handler event="onblur">
-    if (this.oldvalue !== this.text) {
+    if (this.oldvalue !== this.value) {
       undo.do(new dr.editor.attrundoable({
-        target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.text
+        target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
       }));
     }
   </handler>
 </class>
 
+<class name="coloreditor" with="floatingpanelanchor, button"
+  floatingalign="insideright" floatingvalign="outsidebottom"
+  border="1" bordercolor="#eeeeee" width="100" height="20"
+  floatingpanelid="colorpicker"
+>
+  <method name="destroy">
+    this.hideFloatingPanel();
+    this.super();
+  </method>
+  
+  <method name="doActivated">
+    var fp = this.getFloatingPanel();
+    if (!fp) fp = this.createFloatingPanel(this.floatingpanelid, dr.colorpicker);
+    this.toggleFloatingPanel();
+    fp.setAttribute('color', this.target[this.targetattr]);
+    this.oldvalue = fp.color;
+  </method>
+
+  <handler event="onvalue" args="value">
+    this.setAttribute('bgcolor', value);
+    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value);
+  </handler>
+
+  <method name="notifyPanelHidden" args="panel">
+    if (this.oldvalue !== this.value) {
+      undo.do(new dr.editor.attrundoable({
+        target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
+      }));
+    }
+  </method>
+  
+  <method name="getNextFocusAfterPanel" args="panelId">
+    var nsv = this.parent.getNextSiblingView();
+    return nsv && nsv.field ? nsv.field : this;
+  </method>
+</class>
+
 <class name="attributeeditor" height="auto" width="100%">
   <method name="initNode" args="parent, attrs">
     this.super();
+
+    var classname = 'texteditor';
+    if (this.data.type === 'color') {
+      classname = 'coloreditor';
+    }
     
     var self = this;
     var name = this.data.name;
     var child = this.createChild({
-      class:'texteditor',
+      class:classname,
       name:'field',
       x:64, 
       target:selectionmanager.selected, 
@@ -96,12 +142,12 @@ SOFTWARE. -->
     
     // Text may look like a constraint so call setActualAttribute rather than
     // setAttribute to work around constraint binding.
-    child.setActualAttribute('text', selectionmanager.selected.getAttribute(name));
+    child.setActualAttribute('value', selectionmanager.selected.getAttribute(name));
     
     // update when selected item's value changes
     child.listenTo(selectionmanager.selected, 'on__cfg_' + name, function(val) {
       this._isSync = true;
-      this.setActualAttribute('text', val);
+      this.setActualAttribute('value', val);
       self._checkActualIsDifferent();
       this._isSync = false;
     });
@@ -119,10 +165,10 @@ SOFTWARE. -->
   
   <method name="_checkActualIsDifferent">
     var actual = this.actual.text;
-    var cfg = this.field.text;
-    this.actual.setAttribute('color', cfg === actual ? '#999999' : '#000000');
+    var cfg = this.field.value;
+    this.actual.setAttribute('visible', cfg !== actual);
   </method>
 
-  <text name="label" x="${60 - this.width}" fontsize="14"></text>
-  <text name="actual" x="${this.parent.innerwidth - this.width - 4}" fontsize="14" width="60"></text>
+  <editor_text name="label" x="${60 - this.width}" y="2"/>
+  <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" width="60"/>
 </class>

@@ -1,0 +1,30 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.updateableui {UI Behavior}
+   * Adds an udpateUI method that should be called to update the UI. Various
+   * mixins will rely on the updateUI method to trigger visual updates.
+   */-->
+<mixin name="updateableui">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    // Call updateUI one time after initialization is complete to give
+    // this View a chance to update itself.
+    this.updateUI();
+  </method>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method updateUI
+    * @abstract
+    * Updates the UI whenever a change occurs that requires a visual update.
+    * Subclasses should implement this as needed.
+    * @returns {void}
+    */-->
+  <method name="updateUI">
+    // Subclasses to implement as needed.
+  </method>
+</mixin>

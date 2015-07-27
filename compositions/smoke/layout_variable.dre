@@ -43,7 +43,7 @@ SOFTWARE. -->
             this.afterCallCount++;
             this.afterValue = value;
           </method>
-          <method name="updateParent" args="attribute, value">
+          <method name="updateParent" args="attribute, value, count">
             this.parent.setAttribute('width', value);
           </method>
         </variablelayout>
@@ -66,7 +66,7 @@ SOFTWARE. -->
           <method name="skipSubview" args="view">
             return 5 >= view.height || this.super()
           </method>
-          <method name="updateParent" args="attribute, value">
+          <method name="updateParent" args="attribute, value, count">
             this.parent.setAttribute(attribute, value);
           </method>
         </variablelayout>

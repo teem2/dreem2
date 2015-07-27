@@ -1,0 +1,7 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.mouseoveranddown {UI Behavior}
+   * Provides both MouseOver and MouseDown mixins as a single mixin.
+   */-->
+<mixin name="mouseoveranddown" with="mousedown, mouseover"></mixin>

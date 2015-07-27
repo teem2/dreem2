@@ -84,17 +84,26 @@ define(function(require, exports, module) {
           req.on('data', function(data) {buf += data.toString();});
           req.on('end', function() {
             var comppath = define.expandVariables(this.__getCompositionPath())
-            this.__saveEditableFile(comppath, buf);
+            this.__saveEditableFile(comppath, buf, query.stripeditor === '1');
           }.bind(this));
           return;
         } else {
-          var comppath = define.expandVariables(this.__getCompositionPath())
-          data = this.__makeFileEditable(comppath);
-          res.writeHead(200, {"Content-Type":"text/text"});
-          res.write(data);
+          res.writeHead(302, {
+            'Location': req.url.substring(0, req.url.indexOf('?'))
+            //add other headers here...
+          });
           res.end();
+          var comppath = define.expandVariables(this.__getCompositionPath())
+          this.__makeFileEditable(comppath);
           return;
         }
+      }
+      if (query.raw) {
+        var comppath = define.expandVariables(this.__getCompositionPath())
+        res.writeHead(200, {"Content-Type":"text/text"});
+        res.write(this.__readFile(comppath));
+        res.end();
+        return;
       }
 
       // Serve our Composition device
@@ -647,12 +656,18 @@ define(function(require, exports, module) {
     };
 
     this.__guid = 0;
-    this.__makeFileEditable = function(filepath) {
+    this.__readFile = function(filepath) {
       var data, newdata;
       try {
         data = fs.readFileSync(filepath);
         if (data) data = data.toString();
       } catch(e) {}
+      return data;
+    }
+
+    this.__makeFileEditable = function(filepath) {
+      var data, newdata;
+      data = this.__readFile(filepath)
 
       if (data.indexOf('lzeditor_') > 0) {
         // already editable, don't do anything
@@ -667,38 +682,91 @@ define(function(require, exports, module) {
 
       return newdata
     }
-    this.__walkChildren = function(jsobj, stripids) {
+    this.__editableRE = /[,\s]*editable/;
+    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter/;
+    this.__walkChildren = function(jsobj, stripeditor, insidescreen) {
+      var setplacement = false, setwith = false;
+      if (jsobj.tag !== 'screen') {
+        setwith = true;
+      } else {
+        // track if we're inside the screen tag
+        insidescreen = true;
+      }
+
       var children = jsobj.child;
       if (! children.length) return;
+
+      // strip out editor include
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
-        if (child.tag === '$comment') continue;
-
-        if (! child.attr) {
-          child.attr = {};
+        if (child.tag === 'include' && child.attr.href === './editor/editor_include.dre') {
+          children.splice(i, 1);
+          break;
         }
+      }
+      if (jsobj.tag === 'view' && insidescreen) {
+        // only set placement='editor' for tags in the top-level view immediately inside the screen tag
+        insidescreen = false;
+        setplacement = true;
+        if (! stripeditor) {
+          // add top-level editor include
+          jsobj.child.unshift({
+            tag: 'include',
+            attr: {
+              href: './editor/editor_include.dre'
+            }
+          });
+        }
+      }
 
-        if (stripids) {
-          if ((typeof child.attr.id === 'string') && (child.attr.id.indexOf('lzeditor_') > -1)) {
-            // console.log('deleting', child.attr.id);
-            delete child.attr.id
+      for (var i = 0; i < children.length; i++) {
+        var child = children[i]
+
+        if (! child.tag.match(this.__skiptagsRE)) {
+          if (! child.attr) {
+            child.attr = {};
           }
-        } else if (! child.attr.id) {
-          child.attr.id = 'lzeditor_' + this.__guid++;
+          var attr = child.attr;
+          if (stripeditor) {
+            if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) {
+              delete attr.id;
+            }
+            if ((typeof attr.with === 'string') && attr.with.match(this.__editableRE)) {
+              attr.with = attr.with.replace(this.__editableRE, '');
+              if (! attr.with) delete attr.with;
+            }
+            if (attr.placement === 'editor') {
+              delete attr.placement;
+            }
+          } else {
+            if (! attr.id) {
+              attr.id = 'lzeditor_' + this.__guid++;
+            }
+            if (setwith) {
+              if (! attr.with) {
+                attr.with = 'editable';
+              } else if (! attr.with.match(this.__editableRE)){
+                attr.with += ',editable';
+              }
+              if (setplacement) {
+                attr.placement = 'editor';
+              }
+            }
+          }
         }
 
-        //console.log(JSON.stringify(child));
+        // console.log(stripeditor, JSON.stringify(child));
         if (child.child) {
-          this.__walkChildren(child, stripids);
+          this.__walkChildren(child, stripeditor, insidescreen);
         }
       }
     }
-    this.__saveEditableFile = function(filepath, data) {
+    this.__saveEditableFile = function(filepath, data, stripeditor) {
       var jsobj = JSON.parse(data);
-      this.__walkChildren(jsobj, true);
+      this.__walkChildren(jsobj, stripeditor);
       var newdata = HTMLParser.reserialize(jsobj, ' ');
       this.__writeFileIfChanged(filepath, newdata);
-      console.log('saved', filepath);
+      // console.log('saved', filepath, stripeditor);
     }
   };
 })

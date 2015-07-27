@@ -1,0 +1,165 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.autoscroller {UI Behavior}
+   * Makes a dr.view auto scroll during drag and drop.
+   */-->
+<!--
+  Private Attributes:
+    __amountscrollUp:number
+    __amountscrollDown:number
+    __amountscrollLeft:number
+    __amountscrollRight:number
+    __isAutoscrollUp:boolean
+    __timerIdAutoscrollUp:number
+    __isAutoscrollDown:boolean
+    __timerIdAutoscrollDown:number
+    __isAutoscrollLeft:boolean
+    __timerIdAutoscrollLeft:number
+    __isAutoscrollRight:boolean
+    __timerIdAutoscrollRight:number
+-->
+<mixin name="autoscroller" with="draggroupsupport" scrollable="true">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    dr.global.dragManager.registerAutoScroller(this);
+  </method>
+
+  <method name="destroyAfterOrphaning">
+    dr.global.dragManager.unregisterAutoScroller(this);
+    this.super();
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Number} scrollborder
+    * The thickness of the auto scroll border.
+    */-->
+  <attribute name="scrollborder" type="number" value="40"/>
+
+  <!--/**
+    * @attribute {Number} scrollfrequency
+    * The time between autoscroll adjustments.
+    */-->
+  <attribute name="scrollfrequency" type="number" value="50"/>
+
+  <!--/**
+    * @attribute {Number} scrollamount
+    * The number of pixels to adjust by each time.
+    */-->
+  <attribute name="scrollamount" type="number" value="2"/>
+
+  <!--/**
+    * @attribute {Number} scrollacceleration
+    * The amount to increase scrolling by as the mouse gets closer to the 
+    * edge of the view. Setting this to 0 will result in no acceleration.
+    */-->
+  <attribute name="scrollacceleration" type="number" value="7"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method notifyDragStart
+    * Called by dr.GlobalDragManager when a dropable starts being dragged
+    * that has a matching drag group.
+    * @param (dr.dropable} dropable The dropable being dragged.
+    * @returns {void} 
+    */-->
+  <method name="notifyDragStart" args="dropable">
+    var sprite = this.sprite;
+    if (sprite.getScrollHeight() > this.height || sprite.getScrollWidth() > this.width) { // Was clientHeight/clientWidth not height/width
+      this.listenToPlatform(dr.global.mouse, 'onmousemove', '__handleMouseMove', true);
+    }
+  </method>
+
+  <!--/**
+    * @method notifyDragStop
+    * Called by dr.GlobalDragManager when a dropable stops being dragged
+    * that has a matching drag group.
+    * @param (dr.dropable} dropable The dropable no longer being dragged.
+    * @returns {void} 
+    */-->
+  <method name="notifyDragStop" args="dropable">
+    this.stopListeningToPlatform(dr.global.mouse, 'onmousemove', '__handleMouseMove', true);
+    
+    this.__resetVScroll();
+    this.__resetHScroll();
+  </method>
+
+  <!--/** @private */-->
+  <method name="__handleMouseMove" args="event">
+    var mouseX = event.x, 
+      mouseY = event.y;
+    
+    if (this.containsPoint(mouseX, mouseY)) {
+      var pos = this.getAbsolutePosition(), 
+        scrollborder = this.scrollborder;
+      
+      mouseX -= pos.x;
+      mouseY -= pos.y;
+      
+      if (scrollborder > mouseY) {
+        this.__isAutoscrollUp = true;
+        this.__amountscrollUp = this.__calculateAmount((scrollborder - mouseY) / scrollborder);
+        if (!this.__timerIdAutoscrollUp) this.__doAutoScrollAdj('scrollUp', -1);
+      } else if (scrollborder > this.height - mouseY) {
+        this.__isAutoscrollDown = true;
+        this.__amountscrollDown = this.__calculateAmount((scrollborder - (this.height - mouseY)) / scrollborder);
+        if (!this.__timerIdAutoscrollDown) this.__doAutoScrollAdj('scrollDown', 1);
+      } else {
+        this.__resetVScroll();
+      }
+      
+      if (scrollborder > mouseX) {
+        this.__isAutoscrollLeft = true;
+        this.__amountscrollLeft = this.__calculateAmount((scrollborder - mouseX) / scrollborder);
+        if (!this.__timerIdAutoscrollLeft) this.__doAutoScrollAdj('scrollLeft', -1);
+      } else if (scrollborder > this.width - mouseX) {
+        this.__isAutoscrollRight = true;
+        this.__amountscrollRight = this.__calculateAmount((scrollborder - (this.width - mouseX)) / scrollborder);
+        if (!this.__timerIdAutoscrollRight) this.__doAutoScrollAdj('scrollRight', 1);
+      } else {
+        this.__resetHScroll();
+      }
+    } else {
+      this.__resetVScroll();
+      this.__resetHScroll();
+    }
+  </method>
+
+  <!--/** @private */-->
+  <method name="__calculateAmount" args="percent">
+    return Math.round(this.scrollamount * (1 + this.scrollacceleration * percent));
+  </method>
+
+  <!--/** @private */-->
+  <method name="__resetVScroll">
+    this.__isAutoscrollUp = false;
+    this.__timerIdAutoscrollUp = null;
+    this.__isAutoscrollDown = false;
+    this.__timerIdAutoscrollDown = null;
+  </method>
+
+  <!--/** @private */-->
+  <method name="__resetHScroll">
+    this.__isAutoscrollLeft = false;
+    this.__timerIdAutoscrollLeft = null;
+    this.__isAutoscrollRight = false;
+    this.__timerIdAutoscrollRight = null;
+  </method>
+
+  <!--/** @private */-->
+  <method name="__doAutoScrollAdj" args="dir, amt">
+    if (this['__isAuto' + dir]) {
+      var attrName = dir === 'scrollUp' || dir === 'scrollDown' ? 'scrolly' : 'scrollx';
+      this.setAttribute(attrName, this[attrName] + (amt * this['__amount' + dir]));
+      
+      var self = this;
+      this['__timerIdAuto' + dir] = setTimeout(function() {
+        self.__doAutoScrollAdj(dir, amt);
+      }, this.scrollfrequency);
+    }
+  </method>
+</mixin>

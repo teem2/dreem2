@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <mixin name="keyboarddraggable" with="draggable" allowabort="true"
-  focusable="true" focusembellishment="false"
+  focusable="true" focusembellishment="false" distancebeforedrag="1"
 >
   <handler event="onkeydown" args="platformEvent">
     if (!this.disabled) {
@@ -45,11 +45,43 @@ SOFTWARE. -->
   <method name="_shiftPos" args="isX, increase">
     var shiftKeyDown = dr.keyboard.isShiftKeyDown(),
       amount = shiftKeyDown ? 10 : 1,
+      gridAmt = Math.max(1, isX ? gridsizex.value : gridsizey.value),
       isdragging = this.isdragging,
       event = {x:this.x, y:this.y};
+    this._isArrowAdj = true;
     if (!isdragging) this.startDrag(event);
-    event[isX ? 'x' : 'y'] += (increase ? 1 : -1) * amount;
+    event[isX ? 'x' : 'y'] += (increase ? 1 : -1) * amount * gridAmt;
     this.updatePosition(event.x, event.y);
     if (!isdragging) this.stopDrag(event);
+    this._isArrowAdj = false;
+  </method>
+  
+  <method name="__doMouseDown" args="event">
+    this.super();
+    xLocation.setAttribute('visible', false);
+    yLocation.setAttribute('visible', false);
+    editor.setAttribute('showlocationmarkers', false);
+    return true;
+  </method>
+  <method name="__doMouseUp" args="event">
+    this.super();
+    editor.setAttribute('showlocationmarkers', true);
+    xLocation.setAttribute('visible', true);
+    yLocation.setAttribute('visible', true);
+    return true;
+  </method>
+  
+  <method name="startDrag" args="event">
+    xLocation.setAttribute('visible', false);
+    yLocation.setAttribute('visible', false);
+    editor.setAttribute('showlocationmarkers', false);
+    this.super();
+  </method>
+  
+  <method name="stopDrag" args="event, isAbort">
+    this.super();
+    editor.setAttribute('showlocationmarkers', true);
+    xLocation.setAttribute('visible', true);
+    yLocation.setAttribute('visible', true);
   </method>
 </mixin>

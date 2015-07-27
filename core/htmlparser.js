@@ -31,10 +31,12 @@ define(function(require, exports, module){
 		if(spacing === undefined) spacing = '\t'
 		var ret = ''
 		var child = ''
+		var textonly = false;
 		if(node.child){
 			for(var i = 0, l = node.child.length; i<l; i++){
 				var sub = node.child[i]
-				child += this.reserialize(node.child[i], spacing, indent === undefined?'': indent + spacing)
+				textonly = sub.tag === '$text'
+				child += this.reserialize(sub, spacing, indent === undefined?'': indent + spacing)
 			}
 		}
 		if(!node.tag) return child
@@ -53,11 +55,19 @@ define(function(require, exports, module){
 					}
 				}
 			}
-			if(child) ret += '>\n' + child + indent + '</' + node.tag + '>\n'
-			else ret += '/>\n'
+
+			if(child) {
+				if (textonly) {
+					ret += '>' + child + '</' + node.tag + '>\n'
+				} else {
+					ret += '>\n' + child + indent + '</' + node.tag + '>\n'
+				}
+			} else {
+				ret += '/>\n'
+			}
 		}
 		else{
-			if(node.tag == '$text') ret += indent + node.value + '\n' 
+			if(node.tag == '$text') ret += node.value
 			else if(node.tag == '$cdata') ret += indent + '<![CDATA['+node.value+']]>\n'
 			else if(node.tag == '$comment') ret += indent + node.value+'-->\n'
 			else if(node.tag == '$root') ret += child

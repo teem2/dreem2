@@ -1,0 +1,89 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+
+<!--/**
+   * @class dr.dropdown {UI Components}
+   * @extends dr.view
+   * Displays a dropdown list of items, and displays the current selection.
+   */-->
+
+    <class name="dropdown" type="coffee" width="${this.listbox.safewidth}" height="auto">
+
+      <!--/**
+      * @attribute {Boolean} [expanded="false"]
+      * The listbox portion is displayed only when expanded = true
+      */-->
+      <attribute name="expanded" type="boolean" value="false"></attribute>
+
+      <!--/**
+      * @attribute {String} [selected=""]
+      * The currently selected element
+      */-->
+      <attribute name="selected" type="string" value=""></attribute>
+
+      <setter name="selected" args="value">
+        return unless @listbox
+        # Ignore the value if it is not a valid selection
+        @listbox.select(value)
+        current = if @listbox.selected then @listbox.selected.text else ''
+        @setActual('selected', current, 'string')
+      </setter>
+
+
+      <!--/**
+      * @attribute {String} [selectcolor="white"]
+      * The color of the selected element.
+      */-->
+      <attribute name="selectcolor" type="string" value="white"></attribute>
+
+      <!--/**
+      * @attribute {Number} [dropdownsize=5]
+      * The number of items to display in the dropdown list.
+      */-->
+      <attribute name="dropdownsize" type="number" value="5"></attribute>
+
+      <!-- Clicking on the text region will open the listbox -->
+      <handler event="onclick" reference="container.current">
+        @setAttribute('expanded', true)
+      </handler>
+
+      <!-- Selecting an item in the listbox will hide it -->
+      <handler event="onselected" reference="listbox">
+        @setAttribute('selected', @listbox.selected)
+        @setAttribute('expanded', false)        
+      </handler>
+
+
+      <spacedlayout axis="y" spacing="0"></spacedlayout>
+
+
+      <!-- Use a second text component to indicate this is a dropdown. -->
+      <view name="container" width="${this.classroot.width}" height="${this.classroot.listbox.maxheight}">
+        <text name="current" width="${this.classroot.width}" height="${this.classroot.listbox.maxheight}" bordercolor="black" border="1" bgcolor="${this.classroot.bgcolor}" text="${this.classroot.listbox.selected ? this.classroot.listbox.selected.text : ''}" clickable="true"></text>
+        <text name="current" width="${this.classroot.width}" height="${this.classroot.listbox.maxheight}" text="v" opacity="0.4" textalign="right"></text>
+      </view>
+
+      <listboxtext name="listbox" visible="${this.classroot.expanded}" bgcolor="${this.classroot.bgcolor}" selectcolor="${this.classroot.selectcolor}" width="${this.classroot.width}" height="${this.classroot.dropdownsize * this.maxheight}"></listboxtext>
+
+    </class>
+

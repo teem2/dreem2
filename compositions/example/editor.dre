@@ -19,37 +19,62 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<composition id='lzeditor_0'>
- <screens id='lzeditor_1'>
-  <screen type='browser' name='default' title='Editor' id='lzeditor_2'>
-   <view width='100%' height='100%' id='lzeditor_3'>
-    <include href='./editor/editor_include.dre' id='lzeditor_4'/>
-    <view with='editable' placement='editor' x='173' y='127' bgcolor='red' width='100' height='100' id='lzeditor_5'/>
-    <view with='editable' placement='editor' x='235' y='187' bgcolor='green' width='103' height='135' id='lzeditor_6'/>
-    <view with='draggable, editable' placement='editor' x='299' y='213' bgcolor='orange' width='184' height='147' id='lzeditor_7'/>
-    <view with='button, editable' placement='editor' x='51' y='276' bgcolor='purple' width='235' height='228' id='lzeditor_8'>
-      <handler event="onmousedown" args="event">
+<composition>
+ <screens>
+  <screen type='browser' name='default' title='Editor'>
+   <view width='100%' height='100%' bgcolor='#ff99cc' id='lzeditor_23'>
+    <include href='./editor/editor_include.dre'/>
+    <view x='235' y='187' bgcolor='green' width='103' height='135' opacity='1' visible='true' id='lzeditor_24' with='editable' placement='editor'/>
+    <view with='draggable,editable' x='299' y='213' bgcolor='orange' width='184' height='147' opacity='1' visible='true' id='lzeditor_25' placement='editor'>
+     <view id='lzeditor_client_1' x='${((this.parent.innerwidth - this.boundswidth) / 2) + this.boundsxdiff}' y='${((this.parent.innerheight - this.boundsheight) / 2) + this.boundsydiff}' width='93' height='93' bgcolor='#999999' opacity='1' visible='true' with='editable'/>
+    </view>
+    <view with='button,editable' x='0' y='0' bgcolor='purple' width='100' height='100' opacity='1' visible='true' id='lzeditor_26' placement='editor'>
+     <handler event='onmousedown' args='event'>
         console.log('playing mousedown');
-      </handler>
-      <handler event="onmouseup">
+     </handler>
+     <handler event='onmouseup'>
         console.log('playing mouseup');
-      </handler>
-      <handler event="onclick">
+     </handler>
+     <handler event='onclick'>
         console.log('playing click');
-      </handler>
-      
-      <handler event="onactivated">
-        console.log('activated');
-      </handler>
-      <method name="drawHoverState">
+     </handler>
+     <handler event='onactivated'>
+       this.parent.createChild({width:100, height:100, x:100, y:100, bgcolor:'#99cc55', clickable:true, focusable:true, class:'view', with:'editable, draggable'});
+     </handler>
+     <method name='drawHoverState'>
         this.setAttribute('bgcolor', 'pink');
-      </method>
-      <method name="drawActiveState">
+     </method>
+     <method name='drawActiveState'>
         this.setAttribute('bgcolor', 'blue');
-      </method>
-      <method name="drawReadyState">
+     </method>
+     <method name='drawReadyState'>
         this.setAttribute('bgcolor', 'purple');
-      </method>
+     </method>
+    </view>
+    <view with='button,editable' x='175' y='122' scrollable='true' bgcolor='red' width='100' height='100' opacity='1' visible='true' id='lzeditor_34' placement='editor'>
+     <text text='hello world.' id='lzeditor_35' with='editable' height='auto' opacity='1' visible='true' width='auto' x='0' y='0'/>
+     <view x='75' y='75' width='50' height='50' bgcolor='#999999' opacity='1' visible='true' id='lzeditor_36' with='editable'/>
+     <handler event='onmousedown' args='event'>
+        console.log('playing mousedown');
+     </handler>
+     <handler event='onmouseup'>
+        console.log('playing mouseup');
+     </handler>
+     <handler event='onclick'>
+        console.log('playing click');
+     </handler>
+     <handler event='onactivated'>
+        this.destroy();
+     </handler>
+     <method name='drawHoverState'>
+        this.setAttribute('bgcolor', 'pink');
+     </method>
+     <method name='drawActiveState'>
+        this.setAttribute('bgcolor', 'blue');
+     </method>
+     <method name='drawReadyState'>
+        this.setAttribute('bgcolor', 'red');
+     </method>
     </view>
    </view>
   </screen>

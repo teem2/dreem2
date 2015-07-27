@@ -66,6 +66,13 @@ SOFTWARE. -->
   <attribute name="naturalsize" type="boolean" value="false"></attribute>
 
   <!--/**
+      * @attribute {String} [repeat='no-repeat']
+      * Determines if the image will be repeated within the bounds.
+      * Supported values are 'no-repeat', 'repeat', 'repeat-x' and 'repeat-y'.
+      */-->
+  <attribute name="repeat" type="string" value="no-repeat"></attribute>
+
+  <!--/**
     * @attribute {String} [window='']
     * A window (section) of the image is displayed by specifying four,
     * comma-separated values:
