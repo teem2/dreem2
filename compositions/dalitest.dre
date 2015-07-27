@@ -6,9 +6,9 @@
 				console.log("onInit handler called on client!");
 			</handler>
 			</view>
-			<view with="button" width="100" height="100" clip="false"></view>
-			<view x="10" y="10" bgcolor="red" width="200" height="200"></view>
-			<view x="10" y="10" bgcolor="red" width="200" height="200"></view>
+			<view with="button" width="100" height="100" clip="false" x="200"></view>
+			<view x="300" y="300" bgcolor="yellow" width="200" height="200"></view>
+			<view x="400" y="40" bgcolor="red" width="700" height="400"></view>
 		</screen>
 	</screens>
 </composition>
