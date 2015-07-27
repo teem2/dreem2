@@ -170,6 +170,13 @@ define(function(require, exports, module) {
         
         
         // Methods /////////////////////////////////////////////////////////////////
+        isPlatformEvent: function(eventType) {
+            // GlobalKeys sprite already sets itself up as a listener for the
+            // keyboard events, so we never need to register additional
+            // platform events.
+            return false;
+        },
+        
 <span id='global-method-isKeyDown'>        /** Tests if a key is currently pressed down or not.
 </span>            @param keyCode:number the key to test.
             @returns true if the key is down, false otherwise. */

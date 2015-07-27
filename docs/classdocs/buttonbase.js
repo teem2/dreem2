@@ -10,13 +10,13 @@
    * that is inside the button.
    *
    * The following example shows a subclass that has a plain view as the visual 
-   * element, and sets selected to true onmousedown. The selectcolor is 
+   * element, and sets selected to true onismousedown. The selectcolor is 
    * automatically applied when selected is true.
    * 
    *     @example
    *     <class name="purplebutton" extends="buttonbase" defaultcolor="purple" selectcolor="plum" width="100" height="40" visual="${this}">
-   *        <handler event="onmousedown" args="mousedown">
-   *          this.setAttribute('selected', mousedown)
+   *        <handler event="onismousedown" args="ismousedown">
+   *          this.setAttribute('selected', ismousedown)
    *        </handler>
    *     </class>
    *     <purplebutton></purplebutton>

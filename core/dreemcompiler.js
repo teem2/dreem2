@@ -369,7 +369,8 @@ define(function(require, exports, module) {
       var nodeChildren = node.child;
       if (nodeChildren) {
         var attributes = {};
-        
+        var usedNames = [];
+
         for (var i = 0; i < nodeChildren.length; i++) {
           var child = nodeChildren[i],
             tagName = child.tag,
@@ -429,8 +430,17 @@ define(function(require, exports, module) {
                   attrname = 'set_' + attrname;
                 }
                 
-                if (tagName == 'handler') attrname = 'handle_' + attrname;
-                props += attrname + ': function(' + fn.args.join(', ') + '){' + fn.comp + '}';
+                if (tagName == 'handler') {
+                  attrname = 'handle_' + attrname;
+                  while (usedNames.indexOf(attrname) != -1) {
+                    attrname = 'chained_' + attrname
+                  }
+                  usedNames.push(attrname);
+                  if (child.origin) {
+                    fn.comp = 'try {' + fn.comp + '} finally { if (this.chained_' + attrname + ') { this.chained_' + attrname + '(); } }'
+                  }
+                }
+                props += attrname + ': function(' + fn.args.join(', ') + ') {' + fn.comp + '}';
               }
               break;
             case 'attribute':

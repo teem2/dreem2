@@ -358,6 +358,17 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n204" name="n204">204</a>
 <a href="#n205" name="n205">205</a>
 <a href="#n206" name="n206">206</a>
+<a href="#n207" name="n207">207</a>
+<a href="#n208" name="n208">208</a>
+<a href="#n209" name="n209">209</a>
+<strong><a href="#n210" name="n210">210</a></strong>
+<a href="#n211" name="n211">211</a>
+<a href="#n212" name="n212">212</a>
+<a href="#n213" name="n213">213</a>
+<a href="#n214" name="n214">214</a>
+<a href="#n215" name="n215">215</a>
+<a href="#n216" name="n216">216</a>
+<a href="#n217" name="n217">217</a>
 </pre></td>
   <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
      Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
@@ -442,6 +453,17 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">fontfamily</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">fontfamily</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('fontfamily', v, 'string', '')
+      if @inited then @sizeToPlatform()
+  <span class="tag">&lt;/setter&gt;</span>
+
+  <span class="comment">&lt;!--/**
+        * @attribute {Number} [textalign=&quot;&quot;]
+        * Align text within its bounds. Supported values are 
+        * 'left', 'right', 'center' and 'inherit'.
+        */--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">textalign</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">textalign</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if @setActual('textalign', v, 'string', '')
       if @inited then @sizeToPlatform()
   <span class="tag">&lt;/setter&gt;</span>
 

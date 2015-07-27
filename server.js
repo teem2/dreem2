@@ -4,6 +4,7 @@
 
  TEEM ES6 server
 */
+node_require = require;
 require = require('./define'); // support define.js modules
 
 // Pull in the language shim
@@ -57,9 +58,19 @@ function main() {
     arg = argv[i];
     if (arg.charAt(0) == '-') {
       lastkey = arg;
-      args[lastkey] = true;
+      if (lastkey == '-plugin') {
+        if (!args[lastkey]) {
+          args[lastkey] = [];
+        }
+      } else {
+        args[lastkey] = true;
+      }
     } else {
-      args[lastkey] = arg;
+      if (Array.isArray(args[lastkey])) {
+        args[lastkey].push(arg);
+      } else {
+        args[lastkey] = arg;
+      }
     }
   }
 

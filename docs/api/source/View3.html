@@ -707,6 +707,43 @@ define(function(require, exports, module) {
                 y:&#39;number&#39;,
                 width:&#39;positivenumber&#39;,
                 height:&#39;positivenumber&#39;
+            },
+            attributes: {
+              x: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 1,
+              },
+              y: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 1,
+              },
+              width: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 1,
+              },
+              height: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 1,
+              },
+              opacity: {
+                type: &#39;number&#39;,
+                value: 1,
+                importance: 1,
+              },
+              visible: {
+                type: &#39;boolean&#39;,
+                value: false,
+                importance: 1,
+              },
+              bgcolor: {
+                type: &#39;color&#39;,
+                value: &#39;transparent&#39;,
+                importance: 1,
+              }
             }
         },
         
@@ -715,12 +752,14 @@ define(function(require, exports, module) {
 <span id='dr-view-method-initNode'>        /** @overrides dr.Node */
 </span>        initNode: function(parent, attrs) {
             this.subviews = [];
+            if (attrs.$tagname === undefined) {
+              attrs.$tagname = &#39;view&#39;;
+            }
             
             // Used in many calculations so precalculating for performance.
             this.__fullBorderPaddingWidth = this.__fullBorderPaddingHeight = 0;
             
             // Initialize default values to reduce setter calls during initialization
-            // FIXME: __cfg_ values should be set too.
             this.x = this.y = this.width = this.height = this.innerwidth = this.innerheight =
                 this.boundsx = this.boundsy = this.boundswidth = this.boundsheight = this.boundsxdiff = this.boundsydiff = 
                 this.rotation = this.z = 
@@ -728,24 +767,45 @@ define(function(require, exports, module) {
                 this.leftpadding = this.rightpadding = this.toppadding = this.bottompadding = this.padding = 
                 this.topleftcornerradius = this.toprightcornerradius = this.bottomleftcornerradius = this.bottomrightcornerradius = this.cornerradius = 
                 this.scrollx = this.scrolly = 0;
-            
             this.opacity = this.xscale = this.yscale = 1;
-            
             this.visible = this.focusembellishment = true;
-            
-            this.focusable = this.clickable = this.ignorelayout = this.clip = this.scrollable = 
-                this.isaligned = this.isvaligned = false;
-            
+            this.focusable = this.clickable = this.ignorelayout = this.clip = this.scrollable = this.isaligned = this.isvaligned = false;
             this.bgcolor = this.bordercolor = &#39;transparent&#39;;
             this.borderstyle = &#39;solid&#39;;
             this.cursor = &#39;auto&#39;;
-            
             this.xanchor = this.yanchor = &#39;center&#39;;
             this.zanchor = 0;
             
+            // Initialize __cfg_ values too
+            this.__cfg_x = this.__cfg_y = this.__cfg_width = this.__cfg_height = this.__cfg_innerwidth = this.__cfg_innerheight =
+                this.__cfg_boundsx = this.__cfg_boundsy = this.__cfg_boundswidth = this.__cfg_boundsheight = this.__cfg_boundsxdiff = this.__cfg_boundsydiff = 
+                this.__cfg_rotation = this.__cfg_z = 
+                this.__cfg_leftborder = this.__cfg_rightborder = this.__cfg_topborder = this.__cfg_bottomborder = this.__cfg_border = 
+                this.__cfg_leftpadding = this.__cfg_rightpadding = this.__cfg_toppadding = this.__cfg_bottompadding = this.__cfg_padding = 
+                this.__cfg_topleftcornerradius = this.__cfg_toprightcornerradius = this.__cfg_bottomleftcornerradius = this.__cfg_bottomrightcornerradius = this.__cfg_cornerradius = 
+                this.__cfg_scrollx = this.__cfg_scrolly = 0;
+            this.__cfg_opacity = this.__cfg_xscale = this.__cfg_yscale = 1;
+            this.__cfg_visible = this.__cfg_focusembellishment = true;
+            this.__cfg_focusable = this.__cfg_clickable = this.__cfg_ignorelayout = this.__cfg_clip = this.__cfg_scrollable = this.__cfg_isaligned = this.__cfg_isvaligned = false;
+            this.__cfg_bgcolor = this.__cfg_bordercolor = &#39;transparent&#39;;
+            this.__cfg_borderstyle = &#39;solid&#39;;
+            this.__cfg_cursor = &#39;auto&#39;;
+            this.__cfg_xanchor = this.__cfg_yanchor = &#39;center&#39;;
+            this.__cfg_zanchor = 0;
+            
             this.set_sprite(this.createSprite(attrs));
             
+            var clickableWasDisabled = attrs.clickable === &#39;false&#39;;
             this.callSuper(parent, attrs);
+            if (clickableWasDisabled) return;
+            
+            var clickableEvents = [&#39;onmousedown&#39;, &#39;onmouseup&#39;, &#39;onmouseover&#39;, &#39;onmouseout&#39;, &#39;onclick&#39;]; 
+            for (var i = 0; i &lt; clickableEvents.length; i++) {
+                if (this.hasObservers(clickableEvents[i])) {
+                    this.setAttribute(&#39;clickable&#39;, true);
+                    break;
+                }
+            }
         },
         
         doBeforeAdoption: function() {
@@ -1229,8 +1289,8 @@ define(function(require, exports, module) {
 </span>            the page. Transforms are not supported.
             @returns object with &#39;x&#39; and &#39;y&#39; keys or null if no position could
                 be determined. */
-        getAbsolutePosition: function() {
-            return this.sprite.getAbsolutePosition();
+        getAbsolutePosition: function(ancestorView) {
+            return this.sprite.getAbsolutePosition(ancestorView);
         },
         
         getBoundsRelativeToParent: function() {
@@ -1321,6 +1381,27 @@ define(function(require, exports, module) {
             }
         },
         
+        // Siblings //
+<span id='dr-view-method-getNextSiblingView'>        /** Gets the next sibling view of this view. */
+</span>        getNextSiblingView: function() {
+            return this.sprite.getNextSiblingView();
+        },
+        
+<span id='dr-view-method-getLastSiblingView'>        /** Gets the last sibling view. */
+</span>        getLastSiblingView: function() {
+            return this.sprite.getLastSiblingView();
+        },
+        
+<span id='dr-view-method-getPrevSiblingView'>        /** Gets the previous sibling view. */
+</span>        getPrevSiblingView: function() {
+            return this.sprite.getPrevSiblingView();
+        },
+        
+<span id='dr-view-method-getFirstSiblingView'>        /** Gets the first sibling view. */
+</span>        getFirstSiblingView: function() {
+            return this.sprite.getFirstSiblingView();
+        },
+        
         // Subviews //
 <span id='dr-view-method-hasSubview'>        /** Checks if this View has the provided View in the subviews array.
 </span>            @param sv:View the view to look for.
@@ -1334,6 +1415,13 @@ define(function(require, exports, module) {
             @returns the index of the subview or -1 if not found. */
         getSubviewIndex: function(sv) {
             return this.getSubviews().indexOf(sv);
+        },
+        
+<span id='dr-view-method-getSubviewAtIndex'>        /** Gets the subview at the provided index. */
+</span>        getSubviewAtIndex: function(index) {
+            var subviews = this.getSubviews();
+            if (subviews.length &gt; index) return subviews[index];
+            return null;
         },
         
 <span id='dr-view-method-doSubviewAdded'>        /** Called when a View is added to this View. Do not call this method to 
@@ -1523,6 +1611,16 @@ define(function(require, exports, module) {
             return this;
         },
         
+        moveForward: function() {
+            var nextSibling = this.getNextSiblingView();
+            if (nextSibling) this.moveInFrontOf(nextSibling);
+        },
+        
+        moveBackward: function() {
+            var prevSibling = this.getPrevSiblingView();
+            if (prevSibling) this.moveBehind(prevSibling);
+        },
+        
 <span id='dr-view-method-moveInFrontOf'>        /** Moves this view in front of the provided sibling view.
 </span>            @param {dr.view} The view to move in front of.
             @returns This object for chainability. */
@@ -1541,6 +1639,94 @@ define(function(require, exports, module) {
                 this.sprite.moveBehind(siblingView);
             }
             return this;
+        },
+        
+        // Hit Testing //
+<span id='dr-view-method-containsPoint'>        /** Checks if the provided location is inside this view or not.
+</span>            @param locX:number the x position to test.
+            @param locY:number the y position to test.
+            @param referenceFrameView:dr.view (optional) The view
+                the locX and locY are relative to. If not provided the page is
+                assumed.
+            @returns boolean True if the location is inside this view, false 
+                if not. */
+        containsPoint: function(locX, locY, referenceFrameView) {
+            if (this.destroyed) return false;
+            var pos = this.getAbsolutePosition(referenceFrameView);
+            return this.rectContainsPoint(locX, locY, pos.x, pos.y, this.width, this.height);
+        },
+        
+<span id='dr-view-method-rectContainsPoint'>        /** Checks if the provided point is inside or on the edge of the provided 
+</span>            rectangle.
+            @param pX:number the x coordinate of the point to test.
+            @param pY:number the y coordinate of the point to test.
+            @param rX:number the x coordinate of the rectangle.
+            @param rY:number the y coordinate of the rectangle.
+            @param rW:number the width of the rectangle.
+            @param rH:number the height of the rectangle.
+            
+            Alternate Params:
+            @param pX:object a point object with properties x and y.
+            @param rX:object a rect object with properties x, y, width and height.
+            
+            @returns boolean True if the point is inside or on the rectangle. */
+        rectContainsPoint: function(pX, pY, rX, rY, rW, rH) {
+            if (typeof pX === &#39;object&#39;) {
+                rH = rW;
+                rW = rY;
+                rY = rX;
+                rX = pY;
+                pY = pX.y;
+                pX = pX.x;
+            }
+            
+            if (typeof rX === &#39;object&#39;) {
+                rH = rX.height;
+                rW = rX.width;
+                rY = rX.y;
+                rX = rX.x;
+            }
+            
+            return pX &gt;= rX &amp;&amp; pY &gt;= rY &amp;&amp; pX &lt;= rX + rW &amp;&amp; pY &lt;= rY + rH;
+        },
+        
+<span id='dr-view-method-isPointVisible'>        /** Checks if the provided location is visible on this view and is not
+</span>            masked by the bounding box of the view or any of its ancestor views.
+            @returns boolean: true if visible, false otherwise. */
+        isPointVisible: function(locX, locY) {
+            var pos = this.getAbsolutePosition();
+            this.calculateEffectiveScale();
+            return this.__isPointVisible(locX - pos.x, locY - pos.y);
+        },
+        
+<span id='dr-view-method-__isPointVisible'>        /** @private */
+</span>        __isPointVisible: function(x, y) {
+            var effectiveScale = this.__effectiveScale;
+            
+            if (this.rectContainsPoint(x, y, 0, 0, this.width * effectiveScale, this.height * effectiveScale)) {
+                var p = this.parent;
+                if (p) {
+                    var parentSprite = p.sprite, pScale = p.__effectiveScale;
+                    return p.__isPointVisible(x + (this.x - parentSprite.getScrollX()) * pScale, y + (this.y - parentSprite.getScrollY()) * pScale);
+                }
+                return true;
+            }
+            return false;
+        },
+        
+        calculateEffectiveScale: function() {
+            var ancestors = this.getAncestors(), i = ancestors.length, ancestor,
+                effectiveScale = 1;
+            while (i) {
+                ancestor = ancestors[--i];
+                effectiveScale *= ancestor.xscale || 1;
+                ancestor.__effectiveScale = effectiveScale;
+            }
+        },
+        
+        getEffectiveScale: function() {
+            this.calculateEffectiveScale();
+            return this.__effectiveScale;
         }
     });
 });

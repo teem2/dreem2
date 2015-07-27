@@ -40,7 +40,7 @@
       *             view.setAttribute('x', count % 2 === 0 ? 5 : 10);
       *             return value + view.height + 1;
       *         </method>
-      *         <method name="updateParent" args="attribute, value">
+      *         <method name="updateParent" args="attribute, value, count">
       *             this.parent.setAttribute('height', value + 10);
       *         </method>
       *     </variablelayout>
@@ -63,7 +63,7 @@
       *             view.setAttribute('x', count % 2 === 0 ? 5 : 10);
       *             return value + view.height + 1;
       *         </method>
-      *         <method name="updateParent" args="attribute, value">
+      *         <method name="updateParent" args="attribute, value, count">
       *             this.parent.setAttribute('height', value + 10);
       *         </method>
       *         <method name="startMonitoringSubview" args="view">
@@ -166,5 +166,6 @@
     * implement this if they want to modify the parent view.
     * @param {String} attribute The name of the attribute to update.
     * @param {*} value The value to set on the parent.
+    * @param {Number} count The number of views that were layed out.
     * @return {void}
     */

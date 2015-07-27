@@ -48,33 +48,45 @@ define(function(require, exports, module){
 		if(spacing === undefined) spacing = &#39;\t&#39;
 		var ret = &#39;&#39;
 		var child = &#39;&#39;
+		var textonly = false;
 		if(node.child){
 			for(var i = 0, l = node.child.length; i&lt;l; i++){
 				var sub = node.child[i]
-				child += this.reserialize(node.child[i], spacing, indent === undefined?&#39;&#39;: indent + spacing)
+				textonly = sub.tag === &#39;$text&#39;
+				child += this.reserialize(sub, spacing, indent === undefined?&#39;&#39;: indent + spacing)
 			}
 		}
 		if(!node.tag) return child
 		if(!node.tag.startsWith(&#39;$&#39;)){
 			ret += indent + &#39;&lt;&#39; + node.tag
 			var attr = node.attr
-			if(attr) for(var k in attr){
-				var val = attr[k]
-				if(ret[ret.length - 1] != &#39; &#39;) ret += &#39; &#39;
-				ret += k
-				var delim = &quot;&#39;&quot;
-				if(val !== 1){
-					if(val.indexOf(delim) !== -1) delim = &#39;&quot;&#39;
-					ret += &#39;=&#39; + delim + val + delim
+			if(attr) {
+				for(var k in attr){
+					var val = attr[k]
+					if(ret[ret.length - 1] != &#39; &#39;) ret += &#39; &#39;
+					ret += k
+					var delim = &quot;&#39;&quot;
+					if(val !== 1){
+						if(typeof val === &#39;string&#39; &amp;&amp; val.indexOf(delim) !== -1) delim = &#39;&quot;&#39;
+						ret += &#39;=&#39; + delim + val + delim
+					}
 				}
 			}
-			if(child) ret += &#39;&gt;\n&#39; + child + indent + &#39;&lt;/&#39; + node.tag + &#39;&gt;\n&#39;
-			else ret += &#39;/&gt;\n&#39;
+
+			if(child) {
+				if (textonly) {
+					ret += &#39;&gt;&#39; + child + &#39;&lt;/&#39; + node.tag + &#39;&gt;\n&#39;
+				} else {
+					ret += &#39;&gt;\n&#39; + child + indent + &#39;&lt;/&#39; + node.tag + &#39;&gt;\n&#39;
+				}
+			} else {
+				ret += &#39;/&gt;\n&#39;
+			}
 		}
 		else{
-			if(node.tag == &#39;$text&#39;) ret += indent + node.value + &#39;\n&#39; 
+			if(node.tag == &#39;$text&#39;) ret += node.value
 			else if(node.tag == &#39;$cdata&#39;) ret += indent + &#39;&lt;![CDATA[&#39;+node.value+&#39;]]&gt;\n&#39;
-			else if(node.tag == &#39;$comment&#39;) ret += indent + &#39;&lt;!--&#39;+node.value+&#39;--&gt;\n&#39;
+			else if(node.tag == &#39;$comment&#39;) ret += indent + node.value+&#39;--&gt;\n&#39;
 			else if(node.tag == &#39;$root&#39;) ret += child
 		}
 		return ret
