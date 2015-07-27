@@ -8,19 +8,8 @@
    * will get called.
    */-->
 <mixin name="keyactivation">
-  <!--// Class Attributes ///////////////////////////////////////////////////-->
-  <!--/**
-    * The default activation keys are enter (13) and spacebar (32).
-    */-->
-  <attribute name="default_activation_keys" type="object" value="[13,32]" allocation="class"/>
-
-
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
-    this.activateKeyDown = -1;
-    
-    if (attrs.activationkeys === undefined) attrs.activationkeys = dr.keyactivation.default_activation_keys;
-    
     this.super();
     
     this.listenToPlatform(this, 'onkeydown', '__handleKeyDown');
@@ -35,18 +24,17 @@
     * An array of chars The keys that when keyed down will activate this 
     * component. Note: The value is not copied so modification of the array 
     * outside the scope of this object will effect behavior.
+    * The default activation keys are enter (13) and spacebar (32).
     */-->
-  <attribute name="activationkeys" type="object" value="[]"/>
-  <setter name="activationkeys" args="v">this.setSimpleActual('activationkeys', v);</setter>
+  <attribute name="activationkeys" type="expression" value="[13,32]"/>
 
   <!--/**
-    * @attribute {Number} activateKeyDown
+    * @attribute {Number} activatekeydown
     * @readonly
     * The keycode of the activation key that is currently down. This will 
     * be -1 when no key is down.
     */-->
-  <attribute name="activateKeyDown" type="number" value="-1"/>
-  <setter name="activateKeyDown" args="v">this.setSimpleActual('activationkeys', v);</setter>
+  <attribute name="activatekeydown" type="number" value="-1"/>
 
   <!--/**
     * @attribute {Boolean} repeatkeydown
@@ -54,22 +42,21 @@
     * events or not.
     */-->
   <attribute name="repeatkeydown" type="boolean" value="false"/>
-  <setter name="repeatkeydown" args="v">this.setSimpleActual('repeatkeydown', v);</setter>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <!--/** @private */-->
   <method name="__handleKeyDown" args="platformEvent">
     if (!this.disabled) {
-      if (this.activateKeyDown === -1 || this.repeatkeydown) {
+      if (this.activatekeydown === -1 || this.repeatkeydown) {
         var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
           keys = this.activationkeys, i = keys.length;
         while (i) {
           if (keyCode === keys[--i]) {
-            if (this.activateKeyDown === keyCode) {
+            if (this.activatekeydown === keyCode) {
               this.doActivationKeyDown(keyCode, true);
             } else {
-              this.activateKeyDown = keyCode;
+              this.activatekeydown = keyCode;
               this.doActivationKeyDown(keyCode, false);
             }
             dr.sprite.preventDefault(platformEvent);
@@ -84,7 +71,7 @@
   <method name="__handleKeyPress" args="platformEvent">
     if (!this.disabled) {
       var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-      if (this.activateKeyDown === keyCode) {
+      if (this.activatekeydown === keyCode) {
         var keys = this.activationkeys, i = keys.length;
         while (i) {
           if (keyCode === keys[--i]) {
@@ -100,11 +87,11 @@
   <method name="__handleKeyUp" args="platformEvent">
     if (!this.disabled) {
       var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-      if (this.activateKeyDown === keyCode) {
+      if (this.activatekeydown === keyCode) {
         var keys = this.activationkeys, i = keys.length;
         while (i) {
           if (keyCode === keys[--i]) {
-            this.activateKeyDown = -1;
+            this.activatekeydown = -1;
             this.doActivationKeyUp(keyCode);
             dr.sprite.preventDefault(platformEvent);
             return;
@@ -123,9 +110,9 @@
     this.super();
     
     if (!this.disabled) {
-      var keyThatWasDown = this.activateKeyDown;
+      var keyThatWasDown = this.activatekeydown;
       if (keyThatWasDown !== -1) {
-        this.activateKeyDown = -1;
+        this.activatekeydown = -1;
         this.doActivationKeyAborted(keyThatWasDown);
       }
     }
