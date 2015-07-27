@@ -22,11 +22,21 @@
         globalScope = require(&#39;$SPRITE/global.js&#39;),
         sprite = require(&#39;./sprite.js&#39;);
     
-   module.exports = new JS.Class(&#39;sprite.GlobalKeys&#39;, {
+   module.exports = sprite.GlobalKeys = new JS.Class(&#39;sprite.GlobalKeys&#39;, {
         include: [
             require(&#39;$SPRITE/events/PlatformObservable.js&#39;),
             require(&#39;$SPRITE/events/KeyObservable.js&#39;)
         ],
+        
+        
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+            KEYCODE_SHIFT:16,
+            KEYCODE_CONTROL:17,
+            KEYCODE_ALT:18,
+            KEYCODE_COMMAND:91,
+            KEYCODE_RIGHT_COMMAND:93
+        },
         
         
         // Constructor /////////////////////////////////////////////////////////////
@@ -37,13 +47,6 @@
         initialize: function(view, attrs) {
             this.view = view;
             this.platformObject = globalScope.document;
-            
-            // Constants
-            this.KEYCODE_SHIFT = 16;
-            this.KEYCODE_CONTROL = 17;
-            this.KEYCODE_ALT = 18;
-            this.KEYCODE_COMMAND =  91;
-            this.KEYCODE_RIGHT_COMMAND =   93;
             
             this.__keysDown = {};
         },
@@ -56,17 +59,17 @@
         isKeyDown: function(keyCode) {return !!this.__keysDown[keyCode];},
         
 <span id='global-method-isShiftKeyDown'>        /** Tests if the &#39;shift&#39; key is down. */
-</span>        isShiftKeyDown: function() {return this.isKeyDown(this.KEYCODE_SHIFT);},
+</span>        isShiftKeyDown: function() {return this.isKeyDown(sprite.GlobalKeys.KEYCODE_SHIFT);},
         
 <span id='global-method-isControlKeyDown'>        /** Tests if the &#39;control&#39; key is down. */
-</span>        isControlKeyDown: function() {return this.isKeyDown(this.KEYCODE_CONTROL);},
+</span>        isControlKeyDown: function() {return this.isKeyDown(sprite.GlobalKeys.KEYCODE_CONTROL);},
         
 <span id='global-method-isAltKeyDown'>        /** Tests if the &#39;alt&#39; key is down. */
-</span>        isAltKeyDown: function() {return this.isKeyDown(this.KEYCODE_ALT);},
+</span>        isAltKeyDown: function() {return this.isKeyDown(sprite.GlobalKeys.KEYCODE_ALT);},
         
 <span id='global-method-isCommandKeyDown'>        /** Tests if the &#39;command&#39; key is down. */
 </span>        isCommandKeyDown: function() {
-            return this.isKeyDown(this.KEYCODE_COMMAND) || this.isKeyDown(this.KEYCODE_RIGHT_COMMAND);
+            return this.isKeyDown(sprite.GlobalKeys.KEYCODE_COMMAND) || this.isKeyDown(sprite.GlobalKeys.KEYCODE_RIGHT_COMMAND);
         },
         
 <span id='global-method-isAcceleratorKeyDown'>        /** Tests if the platform specific &quot;accelerator&quot; key is down. */
@@ -119,19 +122,10 @@
             // Keyup events do not fire when command key is down so fire a keyup
             // event immediately. Not an issue for other meta keys: shift, ctrl 
             // and option.
-            if (this.isCommandKeyDown() &amp;&amp; keyCode !== 16 &amp;&amp; keyCode !== 17 &amp;&amp; keyCode !== 18) {
+            var GK = sprite.GlobalKeys;
+            if (this.isCommandKeyDown() &amp;&amp; keyCode !== GK.KEYCODE_SHIFT &amp;&amp; keyCode !== GK.KEYCODE_CONTROL &amp;&amp; keyCode !== GK.KEYCODE_ALT) {
                 this.view.sendEvent(&#39;onkeydown&#39;, keyCode);
                 this.view.sendEvent(&#39;onkeyup&#39;, keyCode);
-                
-                // Assume command key goes back up since it is common for the page
-                // to lose focus after the command key is used. Do this for every 
-                // key other than &#39;z&#39; since repeated undo/redo is 
-                // nice to have and doesn&#39;t typically result in loss of focus 
-                // to the page.
-                if (keyCode !== 90) {
-                    this.view.sendEvent(&#39;onkeyup&#39;, this.KEYCODE_COMMAND);
-                    this.__keysDown[this.KEYCODE_COMMAND] = false;
-                }
             } else {
                 this.__keysDown[keyCode] = true;
                 

@@ -54,6 +54,7 @@ define(function(require, exports, module) {
   require(&#39;$LIB/dr/globals/GlobalKeys.js&#39;);
   require(&#39;$LIB/dr/globals/GlobalMouse.js&#39;);
   require(&#39;$LIB/dr/globals/GlobalIdle.js&#39;);
+  require(&#39;$LIB/dr/globals/GlobalDragManager.js&#39;);
   require(&#39;$LIB/dr/Eventable.js&#39;);
   require(&#39;$LIB/dr/view/SizeToViewport.js&#39;);
   require(&#39;$LIB/dr/animation/Animator.js&#39;);
@@ -288,7 +289,8 @@ define(function(require, exports, module) {
               eventable:dr.Eventable,
               layout:dr.Layout,
               node:dr.Node,
-              view:dr.View
+              view:dr.View,
+              sizetoviewport:dr.SizeToViewport
             },
             
             // The code block split up into individual compiled functions
@@ -335,6 +337,7 @@ define(function(require, exports, module) {
     layout:true,
     node:true,
     view:true,
+    sizetoviewport:true,
     
     // Class and Mixin Definition
     class:true,
@@ -431,7 +434,7 @@ define(function(require, exports, module) {
       
       // Build default attributes
       var combinedAttrs = {};
-      this.__doMixinExtension(combinedAttrs, mixins);
+      // Note: Mixin attrs are combined in the initialization method of Node/Eventable.
       if (instanceAttrValues) dr.extend(combinedAttrs, instanceAttrValues);
       dr.extend(combinedAttrs, attrs);
       
@@ -563,7 +566,7 @@ define(function(require, exports, module) {
     // Build default class attributes used for inheritance
     var combinedAttrs = {};
     if (baseclass &amp;&amp; baseclass.defaultAttrValues) dr.extend(combinedAttrs, baseclass.defaultAttrValues);
-    this.__doMixinExtension(combinedAttrs, mixins);
+    this.doMixinExtension(combinedAttrs, mixins);
     combinedAttrs.$tagname = tagName;
     dr.extend(combinedAttrs, klassAttrs);
     if (klassDeclaredAttrValues) dr.extend(combinedAttrs, klassDeclaredAttrValues);
@@ -627,7 +630,7 @@ define(function(require, exports, module) {
     }
   };
 
-  maker.__doMixinExtension = function(attrs, mixins) {
+  maker.doMixinExtension = function(attrs, mixins) {
     if (mixins) {
       len = mixins.length;
       if (len &gt; 0) {

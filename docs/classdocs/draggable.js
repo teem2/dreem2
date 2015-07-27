@@ -31,6 +31,26 @@
     * @attribute {String} dragaxis
     * Limits dragging to a single axis. Supported values: 'x', 'y', 'both'.
     */
+/**
+    * @attribute {Boolean} draggableallowbubble
+    * Determines if mousedown and mouseup platform events handled by this component will bubble or not.
+    */
+/**
+    * @attribute {Number} dragoffsetx
+    * The x amount to offset the position during dragging.
+    */
+/**
+    * @attribute {Number} dragoffsety
+    * The y amount to offset the position during dragging.
+    */
+/**
+    * @attribute {Number} draginitx
+    * Stores initial mouse x position during dragging.
+    */
+/**
+    * @attribute {Number} draginity
+    * Stores initial mouse y position during dragging.
+    */
 /** @overrides dr.disableable */
 /**
     * @method getDragViews
@@ -58,6 +78,8 @@
     * @returns {void} 
     */
 /** @private */
+/** @private */
+/** @private */
 /**
     * @method updatePosition
     * Repositions the view to the provided values. The default implementation
@@ -78,5 +100,7 @@
 /**
     * @method getDistanceFromOriginalLocation
     * Gets the distance dragged from the location of the start of the drag.
+    * If an axis of 'x' or 'y' is provided the value is the pos/neg distance
+    * along that axis. Otherwise, the standard euclidean distance is returned.
     * @returns {Number} 
     */

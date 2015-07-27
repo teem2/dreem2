@@ -4,8 +4,7 @@
  */
 /**
  * @class PluginLoader {Internal}
- * Holder of the dreem <plugin> for the server
- * Manages all iOT objects and the BusServer for each Plugin
+ * Reads plugins and injects them into compositins when requested.
  */
 define(function(require, exports, module) {
     module.exports = PluginLoader;

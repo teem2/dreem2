@@ -6,16 +6,14 @@
    * will get called.
    */
 /**
-    * The default activation keys are enter (13) and spacebar (32).
-    */
-/**
     * @attribute {Array} activationkeys
     * An array of chars The keys that when keyed down will activate this 
     * component. Note: The value is not copied so modification of the array 
     * outside the scope of this object will effect behavior.
+    * The default activation keys are enter (13) and spacebar (32).
     */
 /**
-    * @attribute {Number} activateKeyDown
+    * @attribute {Number} activatekeydown
     * @readonly
     * The keycode of the activation key that is currently down. This will 
     * be -1 when no key is down.

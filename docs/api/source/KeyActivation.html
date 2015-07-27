@@ -306,19 +306,6 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n152" name="n152">152</a>
 <a href="#n153" name="n153">153</a>
 <a href="#n154" name="n154">154</a>
-<a href="#n155" name="n155">155</a>
-<a href="#n156" name="n156">156</a>
-<a href="#n157" name="n157">157</a>
-<a href="#n158" name="n158">158</a>
-<a href="#n159" name="n159">159</a>
-<strong><a href="#n160" name="n160">160</a></strong>
-<a href="#n161" name="n161">161</a>
-<a href="#n162" name="n162">162</a>
-<a href="#n163" name="n163">163</a>
-<a href="#n164" name="n164">164</a>
-<a href="#n165" name="n165">165</a>
-<a href="#n166" name="n166">166</a>
-<a href="#n167" name="n167">167</a>
 </pre></td>
   <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
      Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
@@ -330,19 +317,8 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
    * will get called.
    */--&gt;</span>
 <span class="tag">&lt;mixin</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">keyactivation</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-  <span class="comment">&lt;!--// Class Attributes ///////////////////////////////////////////////////--&gt;</span>
-  <span class="comment">&lt;!--/**
-    * The default activation keys are enter (13) and spacebar (32).
-    */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">default_activation_keys</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">object</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">[13,32]</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
-
-
   <span class="comment">&lt;!--// Life Cycle /////////////////////////////////////////////////////////--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">initNode</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">parent, attrs</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    this.activateKeyDown = -1;
-    
-    if (attrs.activationkeys === undefined) attrs.activationkeys = dr.keyactivation.default_activation_keys;
-    
     this.super();
     
     this.listenToPlatform(this, 'onkeydown', '__handleKeyDown');
@@ -357,18 +333,17 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     * An array of chars The keys that when keyed down will activate this 
     * component. Note: The value is not copied so modification of the array 
     * outside the scope of this object will effect behavior.
+    * The default activation keys are enter (13) and spacebar (32).
     */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">activationkeys</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">object</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">[]</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
-  <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">activationkeys</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>this.setSimpleActual('activationkeys', v);<span class="tag">&lt;/setter&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">activationkeys</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">[13,32]</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
 
   <span class="comment">&lt;!--/**
-    * @attribute {Number} activateKeyDown
+    * @attribute {Number} activatekeydown
     * @readonly
     * The keycode of the activation key that is currently down. This will 
     * be -1 when no key is down.
     */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">activateKeyDown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">number</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">-1</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
-  <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">activateKeyDown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>this.setSimpleActual('activationkeys', v);<span class="tag">&lt;/setter&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">activatekeydown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">number</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">-1</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
 
   <span class="comment">&lt;!--/**
     * @attribute {Boolean} repeatkeydown
@@ -376,22 +351,21 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     * events or not.
     */--&gt;</span>
   <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">repeatkeydown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
-  <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">repeatkeydown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>this.setSimpleActual('repeatkeydown', v);<span class="tag">&lt;/setter&gt;</span>
 
 
   <span class="comment">&lt;!--// Methods ////////////////////////////////////////////////////////////--&gt;</span>
   <span class="comment">&lt;!--/** @private */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__handleKeyDown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">platformEvent</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if (!this.disabled) {
-      if (this.activateKeyDown === -1 || this.repeatkeydown) {
+      if (this.activatekeydown === -1 || this.repeatkeydown) {
         var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
           keys = this.activationkeys, i = keys.length;
         while (i) {
           if (keyCode === keys[--i]) {
-            if (this.activateKeyDown === keyCode) {
+            if (this.activatekeydown === keyCode) {
               this.doActivationKeyDown(keyCode, true);
             } else {
-              this.activateKeyDown = keyCode;
+              this.activatekeydown = keyCode;
               this.doActivationKeyDown(keyCode, false);
             }
             dr.sprite.preventDefault(platformEvent);
@@ -406,7 +380,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__handleKeyPress</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">platformEvent</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if (!this.disabled) {
       var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-      if (this.activateKeyDown === keyCode) {
+      if (this.activatekeydown === keyCode) {
         var keys = this.activationkeys, i = keys.length;
         while (i) {
           if (keyCode === keys[--i]) {
@@ -422,11 +396,11 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__handleKeyUp</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">platformEvent</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if (!this.disabled) {
       var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-      if (this.activateKeyDown === keyCode) {
+      if (this.activatekeydown === keyCode) {
         var keys = this.activationkeys, i = keys.length;
         while (i) {
           if (keyCode === keys[--i]) {
-            this.activateKeyDown = -1;
+            this.activatekeydown = -1;
             this.doActivationKeyUp(keyCode);
             dr.sprite.preventDefault(platformEvent);
             return;
@@ -445,9 +419,9 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     this.super();
     
     if (!this.disabled) {
-      var keyThatWasDown = this.activateKeyDown;
+      var keyThatWasDown = this.activatekeydown;
       if (keyThatWasDown !== -1) {
-        this.activateKeyDown = -1;
+        this.activatekeydown = -1;
         this.doActivationKeyAborted(keyThatWasDown);
       }
     }

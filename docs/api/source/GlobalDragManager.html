@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides global drag and drop functionality.
+</span>    
+    Events:
+        dragLeave:dr.droptarget Fired when a dr.dropable is dragged out of
+            the drop target.
+        dragEnter:dr.droptarget Fired when a dr.dropable is dragged over
+            the drop target.
+        startDrag:object Fired when a drag starts. Value is the object
+            being dragged.
+        stopDrag:object Fired when a drag ends. Value is the object 
+            that is no longer being dragged.
+        drop:object Fired when a drag ends over a drop target. The value is
+            an array containing the dropable at index 0 and the drop target
+            at index 1.
+    
+    Attributes:
+        dragView:dr.view The view currently being dragged.
+        overView:dr.view The view currently being dragged over.
+        dropTargets:array The list of dr.droptargets currently registered
+            for notification when drag and drop events occur.
+        autoScrollers:array The list of dr.autoscrollers currently registered
+            for notification when drags start and stop.
+*/
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        GlobalRegistry = require(&#39;./Global.js&#39;);
+    
+    module.exports = new JS.Singleton(&#39;GlobalDragManager&#39;, {
+        include: [require(&#39;$LIB/dr/events/Observable.js&#39;)],
+        
+        
+        // Constructor /////////////////////////////////////////////////////////////
+        initialize: function() {
+            this.dropTargets = [];
+            this.autoScrollers = [];
+            
+            GlobalRegistry.register(&#39;dragManager&#39;, this);
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+        set_dragview: function(v) {
+            var cur = this.dragview;
+            if (cur !== v) {
+                this.dragview = v;
+                
+                var isStart = !!v, targets, i, dv, funcName, eventName;
+                
+                if (isStart) {
+                    dv = v;
+                    funcName = &#39;notifyDragStart&#39;;
+                    eventName = &#39;onstartDrag&#39;;
+                } else {
+                    dv = cur;
+                    funcName = &#39;notifyDragStop&#39;;
+                    eventName = &#39;onstopDrag&#39;;
+                }
+                
+                targets = this.__filterList(dv, this.dropTargets);
+                i = targets.length;
+                while (i) targets[--i][funcName](dv);
+                
+                targets = this.__filterList(dv, this.autoScrollers);
+                i = targets.length;
+                while (i) targets[--i][funcName](dv);
+                
+                this.sendEvent(eventName, v);
+            }
+        },
+        
+        set_overview: function(v) {
+            var cur = this.overview;
+            if (cur !== v) {
+                var dv = this.dragview;
+                if (cur) {
+                    cur.notifyDragLeave(dv);
+                    dv.notifyDragLeave(cur);
+                    this.sendEvent(&#39;ondragLeave&#39;, cur);
+                }
+                
+                this.overview = v;
+                
+                if (v) {
+                    v.notifyDragEnter(dv);
+                    dv.notifyDragEnter(v);
+                    this.sendEvent(&#39;ondragEnter&#39;, cur);
+                }
+            }
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-registerAutoScroller'>        /** Registers the provided auto scroller to receive notifications.
+</span>            @param autoScroller:dr.autoscroller The auto scroller to register.
+            @returns void */
+        registerAutoScroller: function(autoScroller) {
+            this.autoScrollers.push(autoScroller);
+        },
+        
+<span id='global-method-unregisterAutoScroller'>        /** Unregisters the provided auto scroller.
+</span>            @param autoScroller:dr.autoscroller The auto scroller to unregister.
+            @returns void */
+        unregisterAutoScroller: function(autoScroller) {
+            var autoScrollers = this.autoScrollers, i = autoScrollers.length;
+            while (i) {
+                if (autoScrollers[--i] === autoScroller) {
+                    autoScrollers.splice(i, 1);
+                    break;
+                }
+            }
+        },
+        
+<span id='global-method-registerDropTarget'>        /** Registers the provided drop target to receive notifications.
+</span>            @param dropTarget:dr.droptarget The drop target to register.
+            @returns void */
+        registerDropTarget: function(dropTarget) {
+            this.dropTargets.push(dropTarget);
+        },
+        
+<span id='global-method-unregisterDropTarget'>        /** Unregisters the provided drop target.
+</span>            @param dropTarget:dr.droptarget The drop target to unregister.
+            @returns void */
+        unregisterDropTarget: function(dropTarget) {
+            var dropTargets = this.dropTargets, i = dropTargets.length;
+            while (i) {
+                if (dropTargets[--i] === dropTarget) {
+                    dropTargets.splice(i, 1);
+                    break;
+                }
+            }
+        },
+        
+<span id='global-method-startDrag'>        /** Called by a dr.dropable when a drag starts.
+</span>            @param dropable:dr.dropable The dropable that started the drag.
+            @returns void */
+        startDrag: function(dropable) {
+            this.set_dragview(dropable);
+        },
+        
+<span id='global-method-stopDrag'>        /** Called by a dr.dropable when a drag stops.
+</span>            @param event:event The mouse event that triggered the stop drag.
+            @param dropable:dr.dropable The dropable that stopped being dragged.
+            @returns void */
+        stopDrag: function(event, dropable, isAbort) {
+            var overview = this.overview;
+            dropable.notifyDrop(overview, isAbort);
+            if (overview &amp;&amp; !isAbort) overview.notifyDrop(dropable);
+            
+            this.set_overview();
+            this.set_dragview();
+            
+            if (overview &amp;&amp; !isAbort) this.sendEvent(&#39;ondrop&#39;, [dropable, overview]);
+        },
+        
+<span id='global-method-updateDrag'>        /** Called by a dr.dropable during dragging.
+</span>            @param event:event The mousemove event for the drag update.
+            @param dropable:dr.dropable The dropable that is being dragged.
+            @returns void */
+        updateDrag: function(event, dropable) {
+            // Get the frontmost dr.DropTarget that is registered with this 
+            // manager and is under the current mouse location and has a 
+            // matching drag group.
+            var topDropTarget,
+                dropTargets = this.__filterList(dropable, this.dropTargets);
+                i = dropTargets.length;
+            
+            if (i &gt; 0) {
+                var mouseX = event.x,
+                    mouseY = event.y,
+                    dropTarget;
+                
+                while (i) {
+                    dropTarget = dropTargets[--i];
+                    if (dropTarget.willAcceptDrop(dropable) &amp;&amp;
+                        dropable.willPermitDrop(dropTarget) &amp;&amp;
+                        dropTarget.isPointVisible(mouseX, mouseY) &amp;&amp; 
+                        (!topDropTarget || dropTarget.isInFrontOf(topDropTarget))
+                    ) {
+                        topDropTarget = dropTarget;
+                    }
+                }
+            }
+            
+            this.set_overview(topDropTarget);
+        },
+        
+<span id='global-method-__filterList'>        /** Filters the provided array of dr.draggroupsupport items for the
+</span>            provided dropable.
+            @private
+            @param dropable:dr.dropable The dropable to filter for.
+            @returns array: An array of the matching list items. */
+        __filterList: function(dropable, list) {
+            var retval;
+            
+            if (dropable.acceptAnyDragGroup()) {
+                retval = list;
+            } else {
+                retval = [];
+                
+                var dragGroups = dropable.draggroups,
+                    i = list.length, 
+                    item, targetGroups, dragGroup;
+                while (i) {
+                    item = list[--i];
+                    if (item.acceptAnyDragGroup()) {
+                        retval.push(item);
+                    } else {
+                        targetGroups = item.draggroups;
+                        for (dragGroup in dragGroups) {
+                            if (targetGroups[dragGroup]) {
+                                retval.push(item);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return retval;
+        }
+    });
+});
+</pre>
+</body>
+</html>
