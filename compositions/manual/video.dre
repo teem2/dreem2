@@ -20,27 +20,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <composition>
-<screens>
-  <screen type="browser" name="default" title='Smoke Test - Webpage'>
-    <include href="./includes/boilerplate.dre"></include>
-    
-    <view width="100%" height="100%" clip="true">
-      
-      <videoplayer id="vp" controls="true" width="25%" height="25%" volume="0"
-        src="['http://www.quirksmode.org/html5/videos/big_buck_bunny.mp4','http://www.quirksmode.org/html5/videos/big_buck_bunny.webm','http://www.quirksmode.org/html5/videos/big_buck_bunny.ogv']">
-      </videoplayer>
-    
-      <handler event="oninit">
-        assert.equal(vp.playing, false, 'Should not be playing initially.');
-        assert.equal(vp.currenttime, 0, 'Initial time should be 0.');
+  <screens>
+    <screen type="browser" name="default" title='Manual Test - Video'>
+      <include href="./includes/boilerplate.dre"></include>
+
+      <view width="100%" height="100%" clip="true">
+        <spacedlayout axis="y" spacing="25"></spacedlayout>
         
-        vp.setAttribute('playing', true);
-        vp.setAttribute('volume', 0); // seems to be a bug in the native 'video' tag
-        
-        assert.equal(vp.playing, true, 'Should now be playing.');
-        assert.equal(vp.volume, 0, 'Volume should now be 0.');
-      </handler>
-    </view>
-  </screen>
-</screens>
+        <text>Clicking play should play the video</text>
+
+        <videoplayer id="vp" controls="true" width="25%" height="25%" volume="0"
+                     src="['http://www.quirksmode.org/html5/videos/big_buck_bunny.mp4','http://www.quirksmode.org/html5/videos/big_buck_bunny.webm','http://www.quirksmode.org/html5/videos/big_buck_bunny.ogv']">
+        </videoplayer>
+      </view>
+    </screen>
+  </screens>
 </composition>
