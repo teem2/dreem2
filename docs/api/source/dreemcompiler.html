@@ -50,11 +50,11 @@ define(function(require, exports, module) {
 
   /* Concats all the childnodes of a jsonxml node*/
   function concatCode(node) {
-    var out = &#39;&#39;, children = node.child;
-    if (children) {
-      var i = 0, len = children.length, child;
+    var out = &#39;&#39;, nodeChildren = node.child;
+    if (nodeChildren) {
+      var i = 0, len = nodeChildren.length, child;
       for (; i &lt; len; i++) {
-        child = children[i];
+        child = nodeChildren[i];
         if (child.tag === &#39;$text&#39; || child.tag === &#39;$cdata&#39;) out += child.value;
       }
     }
@@ -160,13 +160,15 @@ define(function(require, exports, module) {
   exports.classnameToJS = function(name) {
     return name.replace(/-/g,&#39;_&#39;);
   };
-  
+
   exports.resolveFilePathStack = function(filePathStack, useRootPrefix) {
     var src, i = 0, len = filePathStack.length,
       resolvedPath = &#39;&#39;;
     for (; len &gt; i; i++) {
       src = filePathStack[i];
-      if (src.indexOf(&#39;/&#39;) === 0) {
+      if (define.isFullyQualifiedURL(src)) {
+        return src;
+      } else if (src.indexOf(&#39;/&#39;) === 0) {
         resolvedPath = define.expandVariables(&#39;$ROOT/&#39; + src);
       } else {
         resolvedPath = (resolvedPath ? path.dirname(resolvedPath) + &#39;/&#39; : &#39;&#39;) + define.expandVariables(src);
@@ -244,11 +246,12 @@ define(function(require, exports, module) {
     }
     
     // ok lets compile a dreem class to a module
-    if (node.child) {
+    var nodeChildren = node.child;
+    if (nodeChildren) {
       var attributes = {};
       
-      for (var i = 0; i &lt; node.child.length; i++) {
-        var child = node.child[i],
+      for (var i = 0; i &lt; nodeChildren.length; i++) {
+        var child = nodeChildren[i],
           childTagName = child.tag,
           childAttrs = child.attr;
         switch (childTagName) {
@@ -258,7 +261,7 @@ define(function(require, exports, module) {
               var newNodes = onInclude(errors, filePathStack);
               console.log(filePathStack.join(&#39; | &#39;));
               newNodes.push({tag:&#39;$filePathStackPop&#39;});
-              node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+              nodeChildren.splice.apply(nodeChildren, [i, 1].concat(newNodes));
               i--;
             } else {
               errors.push(new DreemError(&#39;Cant support include in this location&#39;, node.pos));
@@ -293,7 +296,8 @@ define(function(require, exports, module) {
             if (childTagName.startsWith(&#39;$&#39;)) {
               if (childTagName === &#39;$filePathStackPop&#39;) {
                 filePathStack.pop();
-                node.child.splice(i, 1);
+                nodeChildren.splice(i, 1);
+                i--;
               }
             } else { // its our render-node
               var inst = this.compileInstance(child, errors, &#39;\t\t\t&#39;, onInclude, filePathStack);
@@ -379,11 +383,13 @@ define(function(require, exports, module) {
         }
       }
       
-      if (node.child) {
+      var nodeChildren = node.child;
+      if (nodeChildren) {
         var attributes = {};
-        
-        for (var i = 0; i &lt; node.child.length; i++) {
-          var child = node.child[i],
+        var usedNames = [];
+
+        for (var i = 0; i &lt; nodeChildren.length; i++) {
+          var child = nodeChildren[i],
             tagName = child.tag,
             attr = child.attr;
           
@@ -393,7 +399,7 @@ define(function(require, exports, module) {
                 filePathStack.push(attr.href);
                 var newNodes = onInclude(errors, filePathStack);
                 newNodes.push({tag:&#39;$filePathStackPop&#39;});
-                node.child.splice.apply(node.child, [i, 1].concat(newNodes));
+                nodeChildren.splice.apply(nodeChildren, [i, 1].concat(newNodes));
                 i--;
               } else {
                 errors.push(new DreemError(&#39;Cant support include in this location&#39;, node.pos));
@@ -441,8 +447,17 @@ define(function(require, exports, module) {
                   attrname = &#39;set_&#39; + attrname;
                 }
                 
-                if (tagName == &#39;handler&#39;) attrname = &#39;handle_&#39; + attrname;
-                props += attrname + &#39;: function(&#39; + fn.args.join(&#39;, &#39;) + &#39;){&#39; + fn.comp + &#39;}&#39;;
+                if (tagName == &#39;handler&#39;) {
+                  attrname = &#39;handle_&#39; + attrname;
+                  while (usedNames.indexOf(attrname) != -1) {
+                    attrname = &#39;chained_&#39; + attrname
+                  }
+                  usedNames.push(attrname);
+                  if (child.origin) {
+                    fn.comp = &#39;try {&#39; + fn.comp + &#39;} finally { if (this.chained_&#39; + attrname + &#39;) { this.chained_&#39; + attrname + &#39;(); } }&#39;
+                  }
+                }
+                props += attrname + &#39;: function(&#39; + fn.args.join(&#39;, &#39;) + &#39;) {&#39; + fn.comp + &#39;}&#39;;
               }
               break;
             case &#39;attribute&#39;:
@@ -464,7 +479,8 @@ define(function(require, exports, module) {
               if (tagName.startsWith(&#39;$&#39;)) {
                 if (tagName === &#39;$filePathStackPop&#39;) {
                   filePathStack.pop();
-                  node.child.splice(i, 1);
+                  nodeChildren.splice(i, 1);
+                  i--;
                 }
               } else {
                 if (children) {

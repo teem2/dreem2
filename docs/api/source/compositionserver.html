@@ -47,7 +47,7 @@ define(function(require, exports, module) {
     this.teemserver = teemserver;
     this.args = args;
     this.name = name;
-    
+
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
@@ -94,6 +94,35 @@ define(function(require, exports, module) {
         }
       }
       
+      // handle editor requests
+      if (query.edit) {
+        if (req.method == &#39;POST&#39;) {
+          var buf = &#39;&#39;
+          req.on(&#39;data&#39;, function(data) {buf += data.toString();});
+          req.on(&#39;end&#39;, function() {
+            var comppath = define.expandVariables(this.__getCompositionPath())
+            this.__saveEditableFile(comppath, buf, query.stripeditor === &#39;1&#39;);
+          }.bind(this));
+          return;
+        } else {
+          res.writeHead(302, {
+            &#39;Location&#39;: req.url.substring(0, req.url.indexOf(&#39;?&#39;))
+            //add other headers here...
+          });
+          res.end();
+          var comppath = define.expandVariables(this.__getCompositionPath())
+          this.__makeFileEditable(comppath);
+          return;
+        }
+      }
+      if (query.raw) {
+        var comppath = define.expandVariables(this.__getCompositionPath())
+        res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/text&quot;});
+        res.write(this.__readFile(comppath));
+        res.end();
+        return;
+      }
+
       // Serve our Composition device
       if (req.method == &#39;POST&#39;) {
         // lets do an RPC call
@@ -115,29 +144,48 @@ define(function(require, exports, module) {
           }
         }.bind(this));
       } else {
-        var screenName = query.screen || &#39;default&#39;,
-          screen = this.screens[screenName];
-        if (screen) {
-          var name = this.name;
-          if (screenName === &#39;dali&#39;) {
-            var stream = fs.createReadStream(define.expandVariables(this.__buildScreenPath(&#39;dali.dali&#39;)));
-            res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/html&quot;});
-            stream.pipe(res);
+        var action = query.action;
+        if (action === &#39;edit&#39;) {
+          // Retreive the a pkg directly as json. See examples/editor.io.dre
+          // for an example that uses this.
+          res.writeHead(200, {
+            &quot;Cache-control&quot;:&quot;max-age=0&quot;,
+            &quot;Content-Type&quot;:&quot;text/html&quot;
+          });
+          var modules = this.modules,
+            i = 0, len = modules.length,
+            pkg = {
+              classmap:this.classmap,
+              composition:[]
+            };
+          for (; len &gt; i;) pkg.composition.push(modules[i++].jsxml);
+          res.write(JSON.stringify(pkg));
+          res.end();
+        } else {
+          var screenName = query.screen || &#39;default&#39;,
+            screen = this.screens[screenName];
+          if (screen) {
+            var name = this.name;
+            if (screenName === &#39;dali&#39;) {
+              var stream = fs.createReadStream(define.expandVariables(this.__buildScreenPath(&#39;dali.dali&#39;)));
+              res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/html&quot;});
+              stream.pipe(res);
+            } else {
+              res.writeHead(200, {
+                &quot;Cache-control&quot;:&quot;max-age=0&quot;,
+                &quot;Content-Type&quot;:&quot;text/html&quot;
+              });
+              res.write(this.__renderHTMLTemplate(
+                screen.attr &amp;&amp; screen.attr.title || name, 
+                this.__buildScreenPath(screenName)
+              ));
+              res.end();
+            }
           } else {
-            res.writeHead(200, {
-              &quot;Cache-control&quot;:&quot;max-age=0&quot;,
-              &quot;Content-Type&quot;:&quot;text/html&quot;
-            });
-            res.write(this.__renderHTMLTemplate(
-              screen.attr &amp;&amp; screen.attr.title || name, 
-              this.__buildScreenPath(screenName)
-            ));
+            res.writeHead(404, {&quot;Content-Type&quot;:&quot;text/html&quot;});
+            res.write(&#39;NO SCREENS FOUND&#39;);
             res.end();
           }
-        } else {
-          res.writeHead(404, {&quot;Content-Type&quot;:&quot;text/html&quot;});
-          res.write(&#39;NOT FOUND&#39;);
-          res.end();
         }
       }
     };
@@ -202,7 +250,19 @@ define(function(require, exports, module) {
       var htmlParser = new HTMLParser(),
         source = data.toString(),
         jsobj = htmlParser.parse(source);
-      
+
+      if (jsobj.tag == &#39;$root&#39; &amp;&amp; jsobj.child) {
+
+        var children = jsobj.child;
+        var composition;
+        for (var i=0;i&lt;children.length;i++) {
+          var child = children[i];
+          if (child.tag == &#39;composition&#39;) {
+            this.teemserver.pluginLoader.inject(child);
+          }
+        }
+      }
+
       // forward the parser errors 
       if (htmlParser.errors.length) {
         htmlParser.errors.map(function(e) {
@@ -242,6 +302,8 @@ define(function(require, exports, module) {
 </span>    this.__lookupDep = function(type, classname, compname, out) {
       // Scriptincludes are type 2
       if (type === 2) {
+        if (define.isFullyQualifiedURL(classname)) return classname;
+        
         var expandedPath = define.expandVariables(classname);
         if (fs.existsSync(expandedPath)) {
           return classname;
@@ -293,6 +355,7 @@ define(function(require, exports, module) {
               if (root) {
                 jsfile = &#39;$BUILD/&#39; + thePath.replace(/\$/g,&#39;&#39;).toLowerCase() + &#39;.js&#39;;
                 this.compile_once[drefile] = jsfile;
+
                 this.__compileAndWriteDreToJS(root, jsfile, null, local_err, [drefile]);
                 ignore_watch = true;
               }
@@ -340,8 +403,19 @@ define(function(require, exports, module) {
     
 <span id='CompositionServer-method-__getCompositionPath'>    /** @private */
 </span>    this.__getCompositionPath = function() {
-      var compositionName = this.name,
-        filepath = &#39;$ROOT/&#39; + compositionName + define.DREEM_EXTENSION;
+      var compositionName = this.name;
+      var filepath = &#39;$ROOT/&#39; + compositionName + define.DREEM_EXTENSION;
+
+      var match = /^plugins\/([^\/]+)\/examples\/([^\/]+)$/.exec(compositionName)
+      if (match) {
+        var pluginName = match[1];
+        var compName = match[2];
+        var plugin = this.teemserver.pluginLoader.plugins[pluginName];
+        if (plugin.rootDir) {
+          filepath = plugin.rootDir + &#39;/examples/&#39; + compName + define.DREEM_EXTENSION
+        }
+      }
+
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
@@ -352,6 +426,7 @@ define(function(require, exports, module) {
           }
         }
       }
+
       return filepath;
     };
     
@@ -415,7 +490,7 @@ define(function(require, exports, module) {
         } else if (tag === &#39;classes&#39;) {
           // generate local classes
           for (var j = 0, classes = child.child, clen = classes.length; j &lt; clen; j++) {
-              this.__compileLocalClass(classes[j], errors, [compositionPath]);
+            this.__compileLocalClass(classes[j], errors, [compositionPath]);
           }
         } else {
           this.__makeComponentJS(child, compositionPath, errors);
@@ -621,6 +696,120 @@ define(function(require, exports, module) {
         }
       }
     };
+
+    this.__guid = 0;
+    this.__readFile = function(filepath) {
+      var data, newdata;
+      try {
+        data = fs.readFileSync(filepath);
+        if (data) data = data.toString();
+      } catch(e) {}
+      return data;
+    }
+
+    this.__makeFileEditable = function(filepath) {
+      var data, newdata;
+      data = this.__readFile(filepath)
+
+      if (data.indexOf(&#39;lzeditor_&#39;) &gt; 0) {
+        // already editable, don&#39;t do anything
+        newdata = data
+      } else {
+        var htmlParser = new HTMLParser(),
+        jsobj = htmlParser.parse(data);
+        this.__walkChildren(jsobj)
+        newdata = HTMLParser.reserialize(jsobj, &#39; &#39;)
+        this.__writeFileIfChanged(filepath, newdata)
+      }
+
+      return newdata
+    }
+    this.__editableRE = /[,\s]*editable/;
+    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter/;
+    this.__walkChildren = function(jsobj, stripeditor, insidescreen) {
+      var setplacement = false, setwith = false;
+      if (jsobj.tag !== &#39;screen&#39;) {
+        setwith = true;
+      } else {
+        // track if we&#39;re inside the screen tag
+        insidescreen = true;
+      }
+
+      var children = jsobj.child;
+      if (! children.length) return;
+
+      // strip out editor include
+      for (var i = 0; i &lt; children.length; i++) {
+        var child = children[i]
+        if (child.tag === &#39;include&#39; &amp;&amp; child.attr.href === &#39;./editor/editor_include.dre&#39;) {
+          children.splice(i, 1);
+          break;
+        }
+      }
+      if (jsobj.tag === &#39;view&#39; &amp;&amp; insidescreen) {
+        // only set placement=&#39;editor&#39; for tags in the top-level view immediately inside the screen tag
+        insidescreen = false;
+        setplacement = true;
+        if (! stripeditor) {
+          // add top-level editor include
+          jsobj.child.unshift({
+            tag: &#39;include&#39;,
+            attr: {
+              href: &#39;./editor/editor_include.dre&#39;
+            }
+          });
+        }
+      }
+
+      for (var i = 0; i &lt; children.length; i++) {
+        var child = children[i]
+
+        if (! child.tag.match(this.__skiptagsRE)) {
+          if (! child.attr) {
+            child.attr = {};
+          }
+          var attr = child.attr;
+          if (stripeditor) {
+            if ((typeof attr.id === &#39;string&#39;) &amp;&amp; (attr.id.indexOf(&#39;lzeditor_&#39;) &gt; -1)) {
+              delete attr.id;
+            }
+            if ((typeof attr.with === &#39;string&#39;) &amp;&amp; attr.with.match(this.__editableRE)) {
+              attr.with = attr.with.replace(this.__editableRE, &#39;&#39;);
+              if (! attr.with) delete attr.with;
+            }
+            if (attr.placement === &#39;editor&#39;) {
+              delete attr.placement;
+            }
+          } else {
+            if (! attr.id) {
+              attr.id = &#39;lzeditor_&#39; + this.__guid++;
+            }
+            if (setwith) {
+              if (! attr.with) {
+                attr.with = &#39;editable&#39;;
+              } else if (! attr.with.match(this.__editableRE)){
+                attr.with += &#39;,editable&#39;;
+              }
+              if (setplacement) {
+                attr.placement = &#39;editor&#39;;
+              }
+            }
+          }
+        }
+
+        // console.log(stripeditor, JSON.stringify(child));
+        if (child.child) {
+          this.__walkChildren(child, stripeditor, insidescreen);
+        }
+      }
+    };
+    this.__saveEditableFile = function(filepath, data, stripeditor) {
+      var jsobj = JSON.parse(data);
+      this.__walkChildren(jsobj, stripeditor);
+      var newdata = HTMLParser.reserialize(jsobj, &#39; &#39;);
+      this.__writeFileIfChanged(filepath, newdata);
+      // console.log(&#39;saved&#39;, filepath, stripeditor);
+    }
   };
 })</pre>
 </body>

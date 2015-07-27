@@ -113,6 +113,17 @@ define(function(require, exports, module) {
                     observables.length = 0;
                 }
             }
+        },
+        
+<span id='global-method-invokePlatformObserverCallback'>        /** @private
+</span>            Provides a hook for subclasses to override how the callback
+            function gets executed. */
+        invokePlatformObserverCallback: function(methodName, eventType, returnEvent) {
+            if (typeof methodName === &#39;function&#39;) {
+                return methodName.call(this, returnEvent);
+            } else {
+                return this[methodName](returnEvent);
+            }
         }
     });
 });

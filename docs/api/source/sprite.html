@@ -182,7 +182,9 @@
         }(),
         
         preventDefault: function(platformEvent) {
-            platformEvent.preventDefault();
+            if (typeof platformEvent.preventDefault === &#39;function&#39;) {
+                platformEvent.preventDefault();
+            }
         },
         
         // Focus Management

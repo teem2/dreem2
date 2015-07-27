@@ -70,6 +70,11 @@
         * The name of the font family to use, e.g. "Helvetica"  Include multiple fonts on a line, separated by commas.
         */
 /**
+        * @attribute {Number} [textalign=""]
+        * Align text within its bounds. Supported values are 
+        * 'left', 'right', 'center' and 'inherit'.
+        */
+/**
         * @attribute {Boolean} [bold=false]
         * Use bold text.
         */

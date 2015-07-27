@@ -264,11 +264,21 @@ define(function(require, exports, module) {
             }
         },
         
-<span id='global-method-getAttribute'>        /** A generic getter function that can be called to get a value from this
+<span id='global-method-getAttribute'>        /** Gets the config value of the attribute. For example, a view might
+</span>            have a config value of &#39;center&#39; for the x attribute but the actual
+            value would be something like 75.
+            @param attrName:string The name of the attribute to get the config
+                value for.
+            @returns the attribute config value. */
+        getAttribute: function(attrName) {
+            return this[dr.AccessorSupport.generateConfigAttrName(attrName)];
+        },
+        
+<span id='global-method-getActualAttribute'>        /** A generic getter function that can be called to get a value from this
 </span>            object. Will defer to a defined getter if it exists.
             @param attrName:string The name of the attribute to get.
             @returns the attribute value. */
-        getAttribute: function(attrName) {
+        getActualAttribute: function(attrName) {
             var getterName = dr.AccessorSupport.generateGetterName(attrName);
             return this[getterName] ? this[getterName]() : this[attrName];
         },
@@ -291,6 +301,9 @@ define(function(require, exports, module) {
                 
                 // Bind New Constraint if necessary and then set actual value
                 if (!this.setupConstraint(attrName, value)) this.setActualAttribute(attrName, value);
+                
+                // Fire a config value event if possible
+                if (this.sendEvent) this.sendEvent(&#39;on&#39; + cfgAttrName, value);
             }
             return this;
         },
@@ -433,6 +446,11 @@ define(function(require, exports, module) {
             }
         },
         
+<span id='global-method-getConstraintTemplate'>        /** @private */
+</span>        getConstraintTemplate: function(attrName, expression) {
+            return &#39;this.setActualAttribute(&quot;&#39; + attrName + &#39;&quot;,&#39; + expression + &#39;)&#39;;
+        },
+        
 <span id='global-method-bindConstraint'>        /** @private */
 </span>        bindConstraint: function(attrName, expression, isAsync) {
             // Unbind again in case multiple constraints got registered for the
@@ -453,7 +471,7 @@ define(function(require, exports, module) {
             }
             
             // Create function to be called for the constraint.
-            var fn = (new Function(&#39;event&#39;,&#39;dr&#39;,&#39;this.setActualAttribute(&quot;&#39; + attrName + &#39;&quot;,&#39; + expression+ &#39;)&#39;)).bind(this); // TAG:Global Scope
+            var fn = (new Function(&#39;event&#39;,&#39;dr&#39;,this.getConstraintTemplate(attrName, expression))).bind(this); // TAG:Global Scope
             
             // Resolve binding paths and start listening to binding targets
             if (fn) {

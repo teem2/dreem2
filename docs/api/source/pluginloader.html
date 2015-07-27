@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+ */
+<span id='PluginLoader'>/**
+</span> * @class PluginLoader {Internal}
+ * Holder of the dreem &lt;plugin&gt; for the server
+ * Manages all iOT objects and the BusServer for each Plugin
+ */
+define(function(require, exports, module) {
+    module.exports = PluginLoader;
+
+    var path = require(&#39;path&#39;),
+        fs = require(&#39;fs&#39;),
+
+        HTMLParser = require(&#39;./htmlparser&#39;),
+        DreemError = require(&#39;./dreemerror&#39;);
+
+    function PluginLoader(args, teemserver) {
+        this.teemServer = teemserver;
+        this.args = args;
+        this.plugins = {};
+
+        this.__findPlugins();
+    }
+
+    body.call(PluginLoader.prototype);
+
+    function body() {
+
+        this.__findPlugins = function() {
+            var pluginDirs = this.args[&#39;-plugin&#39;];
+            if (!Array.isArray(pluginDirs)) {
+                pluginDirs = [pluginDirs]
+            }
+
+            var errors = [];
+            for (var i=0;i&lt;pluginDirs.length;i++) {
+                var dir = path.resolve(pluginDirs[i]);
+                if (fs.existsSync(dir + &#39;/index.dre&#39;)) {
+                    if (!define[&#39;PLUGIN&#39;]) {
+                        define[&#39;PLUGIN&#39;] = [];
+                    }
+                    define[&#39;PLUGIN&#39;].push(dir + &#39;/node_modules/&#39;);
+                    this.__loadPlugin(dir, errors);
+                }
+            }
+
+            this.extractedObjects = this.__extractObjects(this.plugins);
+        };
+
+        this.inject = function (composition) {
+            var objects = composition.child;
+            if (objects) {
+                for (var i=this.extractedObjects.length - 1;i &gt;=0;i--) {
+                    var obj = this.extractedObjects[i];
+
+                    var matchingTag = undefined;
+                    for (var j=0;j&lt;objects.length;j++) {
+                        if (objects[j].tag == obj.tag) {
+                            matchingTag = objects[j];
+                            break;
+                        }
+                    }
+
+                    if (matchingTag) {
+                        var children = matchingTag.child;
+                        if (!children) {
+                            children = matchingTag.child = [];
+                        }
+                        var toCopy = obj.child;
+                        for (j=0;j&lt;toCopy.length;j++) {
+                            children.unshift(toCopy[j]);
+                        }
+                    } else {
+                        objects.unshift(obj);
+                    }
+                }
+            }
+        };
+
+        this.__extractObjects = function (plugins) {
+
+            var objects = [];
+            for (var n in plugins) {
+                var plugin = plugins[n];
+                var root = plugin.child;
+                if (root &amp;&amp; root.length &gt; 0) {
+                    var children = root[0].child;
+                    for (var j=0;j&lt;children.length;j++) {
+                        objects.push(children[j])
+                    }
+                }
+            }
+            return objects;
+        };
+
+        this.__originate = function (obj, name) {
+            if (obj.tag) {
+                obj[&#39;origin&#39;] = name;
+            }
+            if (obj.child) {
+                for (var i = 0;i&lt;obj.child.length;i++) {
+                    var child = obj.child[i];
+                    this.__originate(child, name);
+                }
+            }
+        };
+
+        this.__loadPlugin = function (dir, errors) {
+            console.log(&#39;Found plugin in dir:&#39;, dir);
+
+            try {
+                var drefile = dir + &#39;/index.dre&#39;;
+                var data = fs.readFileSync(drefile);
+
+                var htmlParser = new HTMLParser();
+                var source = data.toString();
+                var plugin = htmlParser.parse(source);
+                plugin.rootDir = dir;
+
+                // forward the parser errors
+                if (htmlParser.errors.length) {
+                    htmlParser.errors.map(function(e) {
+                        errors.push(new DreemError(&quot;HTML Parser Error: &quot; + e.message, e.where));
+                    });
+                }
+
+                plugin.source = source;
+
+                if (fs.existsSync(dir + &#39;/package.json&#39;)) {
+                    plugin.pkg = require(dir + &#39;/package.json&#39;);
+                }
+                if (!plugin.pkg) {
+                    plugin.pkg = {}
+                }
+                if (!plugin.pkg.name) {
+                    //if no package grab the last directory and use it as the plugin name
+                    var match = /([^\/])+\/?$/.exec(dir);
+                    if (match.length) {
+                        plugin.pkg.name = match[0];
+                    }
+                }
+
+                this.__originate(plugin, plugin.pkg.name);
+
+                this.plugins[plugin.pkg.name] = plugin;
+
+            } catch(e) {
+                errors.push(new DreemError(&quot;Error during readFileSync in __loadPlugin: &quot; + e.toString()));
+            }
+
+        };
+
+    }
+
+});</pre>
+</body>
+</html>

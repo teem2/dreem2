@@ -3,7 +3,7 @@
    * @extends dr.buttonbase
    * Button class consisting of text centered in a view. The onclick event
    * is generated when the button is clicked. The visual state of the
-   * button changes during onmousedown/onmouseup.
+   * button changes during onismousedown.
    *
    *     @example
    *     <spacedlayout axis="y"></spacedlayout>

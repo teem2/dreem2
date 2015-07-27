@@ -103,6 +103,7 @@
             view.listenToPlatform(view, &#39;onkeydown&#39;, &#39;__handleKeyDown&#39;);
             view.listenToPlatform(view, &#39;onkeypress&#39;, &#39;__handleKeyPress&#39;);
             view.listenToPlatform(view, &#39;onkeyup&#39;, &#39;__handleKeyUp&#39;);
+            this.__listeningToDocuemnt = true;
         },
         
 <span id='global-method-__unlistenToDocument'>        /** @private */
@@ -111,6 +112,7 @@
             view.stopListeningToPlatform(view, &#39;onkeydown&#39;, &#39;__handleKeyDown&#39;);
             view.stopListeningToPlatform(view, &#39;onkeypress&#39;, &#39;__handleKeyPress&#39;);
             view.stopListeningToPlatform(view, &#39;onkeyup&#39;, &#39;__handleKeyUp&#39;);
+            this.__listeningToDocuemnt = false;
         },
         
 <span id='global-method-__handleKeyDown'>        /** @private */
@@ -122,18 +124,19 @@
             // event immediately. Not an issue for other meta keys: shift, ctrl 
             // and option.
             if (this.isCommandKeyDown() &amp;&amp; keyCode !== 16 &amp;&amp; keyCode !== 17 &amp;&amp; keyCode !== 18) {
-                this.view.sendEvent(&#39;onkeydown&#39;, keyCode);
-                this.view.sendEvent(&#39;onkeyup&#39;, keyCode);
+                this.__sendEvent(&#39;down&#39;, platformEvent, keyCode);
+                this.__sendEvent(&#39;up&#39;, platformEvent, keyCode);
                 
                 // Assume command key goes back up since it is common for the page
                 // to lose focus after the command key is used. Do this for every 
                 // key other than &#39;z&#39; since repeated undo/redo is 
                 // nice to have and doesn&#39;t typically result in loss of focus 
                 // to the page.
-                if (keyCode !== 90) {
-                    this.view.sendEvent(&#39;onkeyup&#39;, this.KEYCODE_COMMAND);
+                // Also don&#39;t do it for F(70) since find will rip focus away.
+                /*if (keyCode !== 90 &amp;&amp; keyCode !== 70) {
+                    this.__sendEvent(&#39;up&#39;, platformEvent, this.KEYCODE_COMMAND);
                     this.__keysDown[this.KEYCODE_COMMAND] = false;
-                }
+                }*/
             } else {
                 this.__keysDown[keyCode] = true;
                 
@@ -147,14 +150,14 @@
                     }
                 }
                 
-                this.view.sendEvent(&#39;onkeydown&#39;, keyCode);
+                this.__sendEvent(&#39;down&#39;, platformEvent, keyCode);
             }
         },
         
 <span id='global-method-__handleKeyPress'>        /** @private */
 </span>        __handleKeyPress: function(platformEvent) {
             var keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-            this.view.sendEvent(&#39;onkeypress&#39;, keyCode);
+            this.__sendEvent(&#39;press&#39;, platformEvent, keyCode);
         },
         
 <span id='global-method-__handleKeyUp'>        /** @private */
@@ -162,7 +165,7 @@
             var keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
             if (this.__shouldPreventDefault(keyCode, platformEvent.target)) sprite.preventDefault(platformEvent);
             this.__keysDown[keyCode] = false;
-            this.view.sendEvent(&#39;onkeyup&#39;, keyCode);
+            this.__sendEvent(&#39;up&#39;, platformEvent, keyCode);
         },
         
 <span id='global-method-__shouldPreventDefault'>        /** @private */
@@ -184,6 +187,12 @@
                     return true;
             }
             return false;
+        },
+        
+<span id='global-method-__sendEvent'>        /** @private */
+</span>        __sendEvent: function(eventType, platformEvent, keyCode) {
+            this.view.sendEvent(&#39;onkeycode&#39; + eventType, keyCode);
+            if (!this.__listeningToDocuemnt) this.view.sendEvent(&#39;onkey&#39; + eventType, platformEvent);
         }
     });
 });

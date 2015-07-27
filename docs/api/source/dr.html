@@ -40,6 +40,9 @@ define(function(require, exports, module) {
     require(&#39;$LIB/dr/shim/language.js&#39;);
     var globalScope = require(&#39;$SPRITE/global.js&#39;);
     
+    // PhantomJS doesn&#39;t support Promises so polyfill
+    if (!globalScope.Promise) globalScope.Promise = require(&#39;$CORE/promisepolyfill.js&#39;);
+    
     module.exports = {
         // Expose JSClass
         JS:require(&#39;$LIB/jsclass.js&#39;),
@@ -162,6 +165,33 @@ define(function(require, exports, module) {
             @returns void */
         dumpStack: function(err, type) {
             this.global.error.notify(type || &#39;error&#39;, err, err, typeof err === &#39;string&#39; ? null : err);
+        },
+        
+        // Text Templating
+<span id='global-method-fillTextTemplate'>        /** Populates a text &quot;template&quot; with 1 or more arguments. The
+</span>            template consists of a string with text interspersed with 
+            curly-braced indices. The arguments are replaced in order one at
+            a time into the template. For example:
+            
+                dr.fillTextTemplate(&quot;{0}/{2}/{1} hey {0}&quot;, 1, 2, 3) 
+                will return &quot;1/3/2 hey 1&quot;.
+            
+            @param (first arg):string The template to use.
+            @param (remaining args):(coerced to string) The parameters for the
+                template.
+            @returns A populated string. */
+        fillTextTemplate: function() {
+            var params = Array.prototype.slice.call(arguments),
+                template = params.shift();
+            
+            if (template == null) return &#39;&#39;;
+            
+            var param, i = 0, len = params.length;
+            for (; len &gt; i; ++i) {
+                param = params[i];
+                template = template.split(&quot;{&quot; + i + &quot;}&quot;).join(param == null ? &#39;&#39; : param);
+            }
+            return template;
         },
         
         // Misc

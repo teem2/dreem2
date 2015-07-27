@@ -59,7 +59,7 @@ define(function(require, exports, module) {
                 attrName = eventType.startsWith(&#39;on&#39;) ? eventType.substring(2) : eventType;
             }
             try {
-                var event = observable.getAttribute(attrName);
+                var event = observable.getActualAttribute(attrName);
                 if (typeof methodName === &#39;function&#39;) {
                     methodName.call(this, event, dr); // TAG:Global Scope
                 } else {

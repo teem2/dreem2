@@ -393,6 +393,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n239" name="n239">239</a>
 <strong><a href="#n240" name="n240">240</a></strong>
 <a href="#n241" name="n241">241</a>
+<a href="#n242" name="n242">242</a>
 </pre></td>
   <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
      Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
@@ -438,7 +439,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
       *             view.setAttribute('x', count % 2 === 0 ? 5 : 10);
       *             return value + view.height + 1;
       *         &lt;/method&gt;
-      *         &lt;method name=&quot;updateParent&quot; args=&quot;attribute, value&quot;&gt;
+      *         &lt;method name=&quot;updateParent&quot; args=&quot;attribute, value, count&quot;&gt;
       *             this.parent.setAttribute('height', value + 10);
       *         &lt;/method&gt;
       *     &lt;/variablelayout&gt;
@@ -461,7 +462,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
       *             view.setAttribute('x', count % 2 === 0 ? 5 : 10);
       *             return value + view.height + 1;
       *         &lt;/method&gt;
-      *         &lt;method name=&quot;updateParent&quot; args=&quot;attribute, value&quot;&gt;
+      *         &lt;method name=&quot;updateParent&quot; args=&quot;attribute, value, count&quot;&gt;
       *             this.parent.setAttribute('height', value + 10);
       *         &lt;/method&gt;
       *         &lt;method name=&quot;startMonitoringSubview&quot; args=&quot;view&quot;&gt;
@@ -596,9 +597,10 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     * implement this if they want to modify the parent view.
     * @param {String} attribute The name of the attribute to update.
     * @param {*} value The value to set on the parent.
+    * @param {Number} count The number of views that were layed out.
     * @return {void}
     */--&gt;</span>
-  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">updateParent</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attribute, value</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">updateParent</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attribute, value, count</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     # Subclasses to implement as needed.
   <span class="tag">&lt;/method&gt;</span>
 
@@ -630,7 +632,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 
       @doAfterUpdate(value)
 
-      if @updateparent then @updateParent(attribute, value)
+      if @updateparent then @updateParent(attribute, value, count)
 
       @locked = false
   <span class="tag">&lt;/method&gt;</span>
