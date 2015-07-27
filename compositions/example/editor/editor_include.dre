@@ -907,7 +907,6 @@ SOFTWARE. -->
           
           this.repl.setAttribute('data', attrs);
         </handler>
-        <colorpicker id="colorpick" ignorelayout="true"></colorpicker>
         <replicator name="repl" classname="attributeeditor"/>
       </view>
       
@@ -974,38 +973,6 @@ SOFTWARE. -->
     </method>
   </view>
 
-  <view id="softfocus">
-    <method name="setFocus" args="view">
-      if (this.scope && this.scope !== view) {
-        this.stopListening(dr.mouse, 'onmouseup', this.processEvent)
-      }
-      this.scope = view;
-      // console.log('setFocus', this.scope, view)
-      this.listenTo(dr.mouse, 'onmouseup', this.processEvent.bind(this))
-    </method>
-    <method name="processEvent" args="event">
-      if (! this.scope) return;
-      // Check to see if the mouse went up outside us
-      var view = event.view;
-      while (view) {
-        // console.log('processEvent', view.platformObject, this.scope.id, view === this.scope)
-        if (view === this.scope) {
-          // don't prevent bubbling for mouseup events
-          return true;
-        }
-        view = view.parent;
-      }
-
-      // console.log('canceling', this.scope.id)
-      this.stopListening(dr.mouse, 'onmouseup', this.processEvent)
-      this.scope.sendEvent('onblur')
-      this.scope = null;
-
-      // don't prevent bubbling for mouseup events
-      return true;
-    </method>
-  </view>
-        
   <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>
 </view>

@@ -84,25 +84,41 @@ SOFTWARE. -->
   </handler>
 </class>
 
-<class name="coloreditor" border="1" bordercolor="#eeeeee" width="100" height="20">
-  <handler event="onclick">
-    colorpick.show();
-    colorpick.setAttribute('color', this.target[this.targetattr]);
-    this.oldvalue = colorpick.color;
-    this.setAttribute('value', '${colorpick.color}')
-  </handler>
+<class name="coloreditor" with="floatingpanelanchor, button"
+  floatingalign="insideright" floatingvalign="outsidebottom"
+  border="1" bordercolor="#eeeeee" width="100" height="20"
+  floatingpanelid="colorpicker"
+>
+  <method name="destroy">
+    this.hideFloatingPanel();
+    this.super();
+  </method>
+  
+  <method name="doActivated">
+    var fp = this.getFloatingPanel();
+    if (!fp) fp = this.createFloatingPanel(this.floatingpanelid, dr.colorpicker);
+    this.toggleFloatingPanel();
+    fp.setAttribute('color', this.target[this.targetattr]);
+    this.oldvalue = fp.color;
+  </method>
+
   <handler event="onvalue" args="value">
-    // console.log('onvalue', value)
     this.setAttribute('bgcolor', value);
     if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value);
   </handler>
-  <handler event="onblur" reference="colorpick">
-    if (this.oldvalue !== this.value)   {
+
+  <method name="notifyPanelHidden" args="panel">
+    if (this.oldvalue !== this.value) {
       undo.do(new dr.editor.attrundoable({
         target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
       }));
     }
-  </handler>
+  </method>
+  
+  <method name="getNextFocusAfterPanel" args="panelId">
+    var nsv = this.parent.getNextSiblingView();
+    return nsv && nsv.field ? nsv.field : this;
+  </method>
 </class>
 
 <class name="attributeeditor" height="auto" width="100%">

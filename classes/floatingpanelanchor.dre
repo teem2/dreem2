@@ -1,0 +1,261 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.floatingpanelanchor {UI Behavior}
+   * Enables a view to act as the anchor point for a floatingpanel.
+   */-->
+<mixin name="floatingpanelanchor" requires="floatingpanel">
+  <!--// Class Attributes ///////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Object} classesbypanelid
+    * A map of floatingpanel classes by panel ID.
+    */-->
+  <attribute name="classesbypanelid" type="expression" value="{}" allocation="class"/>
+
+  <!--/**
+    * @attribute {Object} panelsbypanelid
+    * A map of FloatingPanel instances by panel ID.
+    */-->
+  <attribute name="panelsbypanelid" type="expression" value="{}" allocation="class"/>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {String} floatingpanelid
+    * If defined this is the panel ID that will be used by default in the 
+    * various methods that require a panel ID.
+    */-->
+  <attribute name="floatingpanelid" type="string" value=""/>
+
+  <!--/**
+    * @attribute {String} floatingalign
+    * The horizontal alignment for panels shown by this anchor. If the value 
+    * is a string it is an alignment identifier relative to this anchor. If 
+    * the value is a number it is an absolute position in pixels. Allowed 
+    * values: 'outsideleft', 'insideleft', 'insideright', 'outsideright' or 
+    * a number.
+    */-->
+  <attribute name="floatingalign" type="string" value="insideleft"/>
+  <setter name="floatingalign" args="v">
+    var numValue = Number(v);
+    this.setSimpleActual('floatingalign', isNaN(numValue) ? v : numValue, true);
+  </setter>
+
+  <!--/**
+    * @attribute {String} floatingvalign
+    * The vertical alignment for panels shown by this anchor. If the value is 
+    * a string it is an alignment identifier relative to this anchor. If the 
+    * value is a number it is an absolute position in pixels. Allowed values: 
+    * 'outsidetop', 'insidetop', 'insidebottom', 'outsidebottom' or a number.
+    */-->
+  <attribute name="floatingvalign" type="string" value="outsidebottom"/>
+  <setter name="floatingvalign" args="v">
+    var numValue = Number(v);
+    this.setSimpleActual('floatingvalign', isNaN(numValue) ? v : numValue, true);
+  </setter>
+
+  <!--/**
+    * @attribute {Number} floatingalignoffset
+    * The number of pixels to offset the panel position by horizontally.
+    */-->
+  <attribute name="floatingalignoffset" type="number" value="0"/>
+
+  <!--/**
+    * @attribute {Number} floatingvalignoffset
+    * The number of pixels to offset the panel position by vertically.
+    */-->
+  <attribute name="floatingvalignoffset" type="number" value="0"/>
+
+  <!--/**
+    * @attribute {dr.floatingpanel} lastfloatingpanelshown
+    * A reference to the last floating panel shown by this anchor.
+    */-->
+  <attribute name="lastfloatingpanelshown" type="expression" value="null"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method createFloatingPanel
+    * Creats a floatingpanel for this anchor.
+    * @returns {dr.floatingpanel} 
+    */-->
+  <method name="createFloatingPanel" args="panelId, panelClass, panelInitAttrs">
+    panelId = panelId || this.floatingpaneiId;
+    
+    var FPA = dr.floatingpanelanchor;
+    panelClass = panelClass || FPA.classesbypanelid[panelId];
+    if (!panelClass) {
+      dr.sprite.console.warn("No panel class found for panelId:", panelId);
+      return null;
+    }
+    
+    panelInitAttrs = panelInitAttrs || {};
+    panelInitAttrs.panelid = panelId;
+    return FPA.panelsbypanelid[panelId] = new panelClass(null, panelInitAttrs);
+  </method>
+
+  <!--/**
+    * @method getFloatingPanel
+    * Gets a floatingpanel for the provided panelId if it exists.
+    * @param {String} panelId (optional) If provided, the panel id to get a
+    * panel for, otherwise the floatingpanelid of this anchor is used.
+    * @returns {dr.floatingpanel} 
+    */-->
+  <method name="getFloatingPanel" args="panelId">
+    return dr.floatingpanelanchor.panelsbypanelid[panelId || this.floatingpanelid];
+  </method>
+
+  <!--/**
+    * @method toggleFloatingPanel
+    * Shows/Hides the floatingpanel for the provided panelId.
+    * @param {String} panelId (optional) If provided, the panel id to toggle,
+    * otherwise the floatingpanelid of this anchor is used.
+    * @returns {dr.floatingpanel} 
+    */-->
+  <method name="toggleFloatingPanel" args="panelId">
+    var fp = this.getFloatingPanel(panelId = panelId || this.floatingpanelid);
+    if (fp && fp.isShown()) {
+      this.hideFloatingPanel(panelId);
+    } else {
+      this.showFloatingPanel(panelId);
+    }
+  </method>
+
+  <!--/**
+    * @method showFloatingPanel
+    * Shows the floatingpanel for the provided panelId.
+    * @param {String} panelId (optional) If provided, the panel id to show,
+    * otherwise the floatingpanelid of this anchor is used.
+    * @returns {dr.floatingpanel} 
+    */-->
+  <method name="showFloatingPanel" args="panelId">
+    var fp = this.getFloatingPanel(panelId || this.floatingpanelid);
+    if (fp) {
+      fp.show(this);
+      this.setAttribute('lastfloatingpanelshown', fp);
+    }
+  </method>
+
+  <!--/**
+    * @method hideFloatingPanel
+    * Hides the floatingpanel for the provided panelId.
+    * @param {String} panelId (optional) If provided, the panel id to hide,
+    * otherwise the floatingpanelid of this anchor is used.
+    * @returns {dr.floatingpanel} 
+    */-->
+  <method name="hideFloatingPanel" args="panelId">
+    var fp = this.getFloatingPanel(panelId || this.floatingpanelid);
+    if (fp) {
+      fp.hide();
+      this.setAttribute('lastfloatingpanelshown', null);
+    }
+  </method>
+
+  <!--/**
+    * @method notifyPanelShown
+    * @abstract
+    * Called when a floating panel has been shown for this anchor.
+    * @param {dr.floatingpanel} panel The panel that is now shown.
+    * @returns {void} 
+    */-->
+  <method name="notifyPanelShown" args="panel">
+    // Subclasses to implement as needed.
+  </method>
+
+  <!--/**
+    * @method notifyPanelHidden
+    * @abstract
+    * Called when a floating panel has been hidden for this anchor.
+    * @param {dr.floatingpanel} panel The panel that is now hidden.
+    * @returns {void} 
+    */-->
+  <method name="notifyPanelHidden" args="panel">
+    // Subclasses to implement as needed.
+  </method>
+
+  <!--/**
+    * @method getFloatingAlignForPanelId
+    * Called by the floatingpanel to determine where to position itself
+    * horizontally. By default this returns the floatingalign attribute. 
+    * Subclasses and instances should override this if panel specific 
+    * behavior is needed.
+    * @param {String} panelId The ID of the panel being positioned.
+    * @returns {void} 
+    */-->
+  <method name="getFloatingAlignForPanelId" args="panelId">
+    return this.floatingalign;
+  </method>
+
+  <!--/**
+    * @method getFloatingValignForPanelId
+    * Called by the floatingpanel to determine where to position itself
+    * vertically. By default this returns the floatingvalign attribute. 
+    * Subclasses and instances should override this if panel specific 
+    * behavior is needed.
+    * @param {String} panelId The ID of the panel being positioned.
+    * @returns {void} 
+    */-->
+  <method name="getFloatingValignForPanelId" args="panelId">
+    return this.floatingvalign;
+  </method>
+  
+  <!--/**
+    * @method getFloatingAlignOffsetForPanelId
+    * Called by the floatingpanel to determine where to position itself
+    * horizontally. By default this returns the floatingalignoffet attribute. 
+    * Subclasses and instances should override this if panel specific 
+    * behavior is needed.
+    * @param {String} panelId The ID of the panel being positioned.
+    * @returns {void} 
+    */-->
+  <method name="getFloatingAlignOffsetForPanelId" args="panelId">
+    return this.floatingalignoffset;
+  </method>
+  
+  <!--/**
+    * @method getFloatingValignOffsetForPanelId
+    * Called by the floatingpanel to determine where to position itself
+    * vertically. By default this returns the floatingvalignoffet attribute. 
+    * Subclasses and instances should override this if panel specific 
+    * behavior is needed.
+    * @param {String} panelId The ID of the panel being positioned.
+    * @returns {void} 
+    */-->
+  <method name="getFloatingValignOffsetForPanelId" args="panelId">
+    return this.floatingvalignoffset;
+  </method>
+  
+  <!--/**
+    * @method getNextFocus
+    * @overrides dr.view
+    * Returns the last floating panel shown if it exists and can be shown.
+    * Otherwise it returns the default.
+    */-->
+  <method name="getNextFocus">
+    var last = this.lastfloatingpanelshown;
+    if (last && last.isShown()) return last;
+    return this.super ? this.super() : null;
+  </method>
+  
+  <!--/**
+    * @method getNextFocusAfterPanel
+    * Called by the floatingpanel owned by this anchor to determine where
+    * to go to next after leaving the panel in the forward direction.
+    * @param {String} panelId The ID of the panel doing the focus change.
+    * @returns {dr.view}
+    */-->
+  <method name="getNextFocusAfterPanel" args="panelId">
+    return this;
+  </method>
+  
+  <!--/**
+    * @method getPrevFocusAfterPanel
+    * Called by the floatingpanel owned by this anchor to determine where
+    * to go to next after leaving the panel in the backward direction.
+    * @param {String} panelId The ID of the panel doing the focus change.
+    * @returns {dr.view}
+    */-->
+  <method name="getPrevFocusAfterPanel" args="panelId">
+    return this;
+  </method>
+</mixin>
