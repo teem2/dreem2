@@ -1,0 +1,26 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.listviewitemmixin {UI Component}
+   * Defines the interface list view items must support.
+   */-->
+<mixin name="listviewitemmixin">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {dr.listview} listview
+    * The list view this item is managed by.
+    */-->
+  <attribute name="listview" type="expression" value="null"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method getMinimumWidth
+    * @abstract
+    * Subclasses and/or implementations must implement this method. Should
+    * return the minimum width the list item needs to display itself.
+    */-->
+  <method name="getMinimumWidth">
+    return 0;
+  </method>
+</mixin>
