@@ -26,9 +26,9 @@ SOFTWARE. -->
   cornerradius="4" focusembellishment="false"
 >
   <attribute name="action" type="string" value=""/>
-  <handler event="onactivated">
+  <method name="doActivated">
     if (!this.disabled) actions[this.action]();
-  </handler>
+  </method>
   <method name="drawDisabledState">
     this.setAttribute('boxshadow', null);
     this.setAttribute('bgcolor', '#aaaaaa');
@@ -48,5 +48,55 @@ SOFTWARE. -->
   <method name="drawReadyState">
     this.setAttribute('boxshadow', null);
     this.setAttribute('bgcolor', '#eeeeee');
+  </method>
+</class>
+
+<class name="floatingpanelbutton" extends="toolbarbutton" with="floatingpanelanchor"
+  floatingalign="insideright" floatingvalign="outsidebottom"
+>
+  <attribute name="selected" type="boolean" value="false"/>
+  <handler event="onselected">
+    this.updateUI();
+  </handler>
+  
+  <method name="doActivated">
+    if (!this.disabled) {
+      var fp = this.getFloatingPanel();
+      if (fp) this.toggleFloatingPanel();
+    }
+  </method>
+  
+  <method name="notifyPanelHidden" args="panel">
+    this.setAttribute('selected', false);
+  </method>
+  
+  <method name="notifyPanelShown" args="panel">
+    this.setAttribute('selected', true);
+  </method>
+  
+  <method name="drawDisabledState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', this.selected ? '#333333' : '#aaaaaa');
+    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
+  </method>
+  <method name="drawFocusedState">
+    this.setAttribute('boxshadow', config.boxshadow_normal);
+    this.setAttribute('bgcolor', this.selected ? '#888888' : '#ffffff');
+    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
+  </method>
+  <method name="drawHoverState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', this.selected ? '#888888' : '#ffffff');
+    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
+  </method>
+  <method name="drawActiveState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', this.selected ? '#444444' : '#dddddd');
+    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
+  </method>
+  <method name="drawReadyState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', this.selected ? '#666666' : '#eeeeee');
+    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
   </method>
 </class>
