@@ -58,6 +58,15 @@ SOFTWARE. -->
           }
         </method>
       </class>
+      <class name="navlink" extends="text" with="button"
+             border="0" fontsize="12" toppadding="25" 
+             focusembellishment="false" color="#aaa"
+        >
+        <attribute name="url" type="string" value=""></attribute>
+        <handler event="onactivated">
+          window.location = this.url + define.DREEM_EXTENSION;
+        </handler>
+      </class>
       
       <class name="block" width="auto" rightpadding="8" bottompadding="8" width="230">
         <spacedlayout axis="y" spacing="2" updateparent="true"></spacedlayout>
@@ -68,7 +77,10 @@ SOFTWARE. -->
       <view name="header" width="100%" leftpadding="8" height="39"
         gradient="[180, '#888888 40%', '#666666']"
       >
+        <spacedlayout spacing="10"></spacedlayout>
         <text color="#dddddd" bold="true" y="9" fontsize="32">SMOKE TESTS</text>
+        <navlink url="./manualtestlinks">Manual Tests</navlink>
+        <navlink url="./examplelinks">Examples</navlink>
       </view>
       
       <view x="4" y="${this.parent.header.height}" width="${this.parent.innerwidth - 2*this.x}" height="${this.parent.height - this.y - this.x}" 
@@ -83,7 +95,7 @@ SOFTWARE. -->
           <subhead>Foundation</subhead>
           <link url="./smoke/class_system">Class System</link>
           <link url="./smoke/resolve_name">Resolve Name</link>
-          <link url="./smoke/promises" status="fail">Promises</link><!-- Fails in the browser only. Looks like it's setup to fail. -->
+          <link url="./smoke/promises">Promises</link>
           <link url="./smoke/promises_simple">Simple Promises</link>
         </block>
         

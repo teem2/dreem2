@@ -42,6 +42,15 @@ SOFTWARE. -->
           this.setAttribute('gradient', ['right', '#f8f8f8', '#999999']);
         </method>
       </class>
+      <class name="navlink" extends="text" with="button"
+             border="0" fontsize="12" toppadding="25"
+             focusembellishment="false" color="#aaa"
+        >
+        <attribute name="url" type="string" value=""></attribute>
+        <handler event="onactivated">
+          window.location = this.url + define.DREEM_EXTENSION;
+        </handler>
+      </class>
       
       <class name="block" width="auto" rightpadding="8" bottompadding="8" width="230">
         <spacedlayout axis="y" spacing="2" updateparent="true"></spacedlayout>
@@ -52,7 +61,10 @@ SOFTWARE. -->
       <view name="header" width="100%" leftpadding="8" height="39"
         gradient="[180, '#888888 40%', '#666666']"
       >
+        <spacedlayout spacing="10"></spacedlayout>
         <text color="#dddddd" bold="true" y="9" fontsize="32">EXAMPLES</text>
+        <navlink url="./smokelinks">Smoke Tests</navlink>
+        <navlink url="./manualtestlinks">Manual Tests</navlink>
       </view>
       
       <view x="4" y="${this.parent.header.height}" width="${this.parent.innerwidth - 2*this.x}" height="${this.parent.height - this.y - this.x}" 
@@ -64,9 +76,6 @@ SOFTWARE. -->
         <resizelayout axis="x" spacing="1" outset="8"></resizelayout>
         
         <block>
-          <subhead toppadding="0">Core</subhead>
-          <link url="./example/eventtest">Event Test</link>
-          
           <subhead>View System</subhead>
           <link url="./example/borderpadding">Borders and Padding</link>
           <link url="./example/bounds">Bounds</link>
