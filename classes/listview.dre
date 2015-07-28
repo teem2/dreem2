@@ -173,5 +173,5 @@
 
 
   <!--// Views //////////////////////////////////////////////////////////////-->
-  <spacedlayout axis="y" spacing="1" updateparent="true"/>
+  <spacedlayout axis="y" updateparent="true"/>
 </class>

@@ -34,18 +34,23 @@
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="drawDisabledState">
     this.setAttribute('bgcolor', '#aaaaaa');
+    this.setAttribute('color', '#666666');
   </method>
   <method name="drawFocusedState">
     this.setAttribute('bgcolor', '#ffffff');
+    this.setAttribute('color', '#000000');
   </method>
   <method name="drawHoverState">
     this.setAttribute('bgcolor', '#ffffff');
+    this.setAttribute('color', '#000000');
   </method>
   <method name="drawActiveState">
     this.setAttribute('bgcolor', '#dddddd');
+    this.setAttribute('color', '#000000');
   </method>
   <method name="drawReadyState">
     this.setAttribute('bgcolor', '#eeeeee');
+    this.setAttribute('color', '#000000');
   </method>
 
   <method name="doActivated">

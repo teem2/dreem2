@@ -149,42 +149,50 @@ SOFTWARE. -->
     </method>
     
     <method name="undo">
-      undo.undo(this._undoRedoCallback);
+      if (editor.paused) undo.undo(this._undoRedoCallback);
     </method>
     
     <method name="redo">
-      undo.redo(this._undoRedoCallback);
+      if (editor.paused) undo.redo(this._undoRedoCallback);
     </method>
     
     <method name="bringToFront">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var newprevsibling = selected.getLastSiblingView();
-        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          var newprevsibling = selected.getLastSiblingView();
+          if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+        }
       }
     </method>
     
     <method name="bringForward">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var newprevsibling = selected.getNextSiblingView();
-        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          var newprevsibling = selected.getNextSiblingView();
+          if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+        }
       }
     </method>
     
     <method name="sendToBack">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var oldprevsibling = selected.getPrevSiblingView();
-        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          var oldprevsibling = selected.getPrevSiblingView();
+          if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
+        }
       }
     </method>
     
     <method name="sendBackward">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var oldprevsibling = selected.getPrevSiblingView();
-        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          var oldprevsibling = selected.getPrevSiblingView();
+          if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
+        }
       }
     </method>
     
@@ -215,32 +223,36 @@ SOFTWARE. -->
     </method>
     
     <method name="createView">
-      var id = 'lzeditor_client_' + dr.generateGuid();
-      while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
-      
-      var attrs = {
-        class:'view', with:'editable', id:id,
-        width:50, height:50, x:'center', y:'middle', bgcolor:'#999999'
-      };
-      var parent = selectionmanager.selected;
-      if (!parent) {
-        attrs.placement = 'editor';
-        parent = this.getRoot();
+      if (editor.paused) {
+        var id = 'lzeditor_client_' + dr.generateGuid();
+        while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
+        
+        var attrs = {
+          class:'view', with:'editable', id:id,
+          width:50, height:50, x:'center', y:'middle', bgcolor:'#999999'
+        };
+        var parent = selectionmanager.selected;
+        if (!parent) {
+          attrs.placement = 'editor';
+          parent = this.getRoot();
+        }
+        var instance = parent.createChild(attrs);
+        
+        // Mark an instance as "new" so we know it needs serialization.
+        instance.__NEW = true;
+        
+        undo.do(new dr.editor.createundoable({target:instance}));
+        selectionmanager.select(instance);
       }
-      var instance = parent.createChild(attrs);
-      
-      // Mark an instance as "new" so we know it needs serialization.
-      instance.__NEW = true;
-      
-      undo.do(new dr.editor.createundoable({target:instance}));
-      selectionmanager.select(instance);
     </method>
     
     <method name="deleteSelected">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        undo.do(new dr.editor.deleteundoable({target:selected}));
-        selectionmanager.clear();
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          undo.do(new dr.editor.deleteundoable({target:selected}));
+          selectionmanager.clear();
+        }
       }
     </method>
   </node>
@@ -403,14 +415,14 @@ SOFTWARE. -->
       switch (keyCode) {
         case 66: // B: Reorder backward
           platformEvent.preventDefault(); // Prevent browser show bookmarks bar functionality
-          (isShiftKeyDown ? sendBackwardButton : sendToBackButton).doActivated();
+          actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
           break;
         case 70: // F: Reorder forward
           platformEvent.preventDefault(); // Prevent browser find functionality
-          (isShiftKeyDown ? bringForwardButton : bringToFrontButton).doActivated();
+          actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
           break;
         case 73: // I: Insert New View
-          createButton.doActivated();
+          actions.createView();
           break;
         case 83: // S: Save document
           platformEvent.preventDefault(); // Prevent browser save functionality
@@ -418,14 +430,14 @@ SOFTWARE. -->
           break;
         case 90: // Z: Undo/Redo
           platformEvent.preventDefault(); // Prevent browser undo/redo functionality
-          (isShiftKeyDown ? redoButton : undoButton).doActivated();
+          actions[(isShiftKeyDown ? 'redo' : 'undo')]();
           break;
       }
     } else {
       var GK = dr.sprite.GlobalKeys;
       switch (keyCode) {
         case GK.KEYCODE_BACKSPACE: // Delete selected view
-          deleteButton.doActivated();
+          actions.deleteSelected();
           break;
         case GK.KEYCODE_ESC: // Clear selection
           if (!reticle.isStarted) selectionmanager.clear();
@@ -798,17 +810,34 @@ SOFTWARE. -->
       <spacedlayout spacing="4" inset="2"></spacedlayout>
       <constantlayout attribute="y" value="'middle'"></constantlayout>
       
-      <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable || !editor.paused}">Undo</toolbarbutton>
-      <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable|| !editor.paused}">Redo</toolbarbutton>
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbarbutton id="bringToFrontButton" action="bringToFront" disabled="${!selectionmanager.selected}">Bring To Front</toolbarbutton>
-      <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
-      <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
-      <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbarbutton id="deleteButton" action="deleteSelected" disabled="${!selectionmanager.selected}">Delete</toolbarbutton>
-      <toolbarbutton id="createButton" action="createView" disabled="${!editor.paused}">Create</toolbarbutton>
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" text="Actions"
+        listviewattrs="{maxheight:300}"
+      >
+        <method name="doActivated">
+          var editorPlaying = !editor.paused;
+          var noSelection = !selectionmanager.selected;
+          var cfg = [
+            {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
+            {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
+            {klass:dr.listviewseparator},
+            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noSelection}},
+            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noSelection}},
+            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noSelection}},
+            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noSelection}},
+            {klass:dr.listviewseparator},
+            {attrs:{name:'deleteSelected', text:'Delete', disabled:noSelection}},
+            {attrs:{name:'createView', text:'Create', disabled:editorPlaying}},
+          ];
+          this.setAttribute('itemconfig', cfg);
+          
+          this.toggleFloatingPanel();
+        </method>
+        
+        <method name="doItemActivated" args="itemview">
+          actions[itemview.name]();
+          this.super();
+        </method>
+      </listviewbutton>
       <floatingpanelbutton id="settingsButton" floatingpanelid="settings" floatingvalignoffset="2">Settings</floatingpanelbutton>
     </view>
     

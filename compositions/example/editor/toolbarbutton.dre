@@ -51,7 +51,7 @@ SOFTWARE. -->
   </method>
 </class>
 
-<class name="floatingpanelbutton" extends="toolbarbutton" with="floatingpanelanchor"
+<class name="basefloatingpanelbutton" extends="toolbarbutton"
   floatingalign="insideright" floatingvalign="outsidebottom"
 >
   <attribute name="selected" type="boolean" value="false"/>
@@ -100,3 +100,6 @@ SOFTWARE. -->
     this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
   </method>
 </class>
+
+<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor"/>
+<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor"/>
