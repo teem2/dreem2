@@ -119,13 +119,8 @@
          pathsofar += S[i] + '/';
          if (fs.existsSync(pathsofar) == false)
           {
-          // create something
             fs.mkdir(pathsofar);
           }
-        else
-        {
-          console.color('~~' + pathsofar + " is fine");
-        }
       }
   }
   function localExpand(path) {
@@ -175,7 +170,6 @@
      if (save_path.indexOf("/dalicache") > -1) {
 
       CreateNeededFoldersForFilePath(save_path);
-      console.log(save_path);
       fs.writeFileSync(save_path, this.data);
     }
 
