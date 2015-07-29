@@ -33,8 +33,8 @@
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="drawDisabledState">
-    this.setAttribute('bgcolor', '#aaaaaa');
-    this.setAttribute('color', '#666666');
+    this.setAttribute('bgcolor', '#cccccc');
+    this.setAttribute('color', '#888888');
   </method>
   <method name="drawFocusedState">
     this.setAttribute('bgcolor', '#ffffff');

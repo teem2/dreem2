@@ -876,7 +876,7 @@ SOFTWARE. -->
   </view>
 
 
-  <!--// Main Panels //-->
+  <!--// Top Panel //-->
   <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     width="100%" height="${config.topbar_height}"
   >
@@ -931,12 +931,16 @@ SOFTWARE. -->
     </view>
   </view>
 
+
+  <!--// Left Panel //-->
   <view name="leftbar" ignoreplacement="true" bgcolor="white"
     y="${config.topbar_height}"
     width="${this.parent.divider_left.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
   />
-  
+
+
+  <!--// Content Panels //-->
   <view name="content_bg" ignoreplacement="true" bgcolor="${config.content_color}"
     x="${this.parent.ruler_horizontal.x}"
     y="${this.parent.ruler_vertical.y}"
@@ -944,13 +948,128 @@ SOFTWARE. -->
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    
+    <view x="70" y="35" color="#999999">
+      <spacedlayout spacing="8"/>
+      <constantlayout attribute="y" value="'middle'"/>
+      
+      <view with="button, listviewanchor" id="screenSizeButton"
+        width="auto" height="auto"
+        floatingpanelid="screensizes" floatingvalignoffset="2"
+        focusembellishment="false"
+        listviewattrs="{maxheight:300}"
+        floatingalign="insideleft" floatingvalign="outsidebottom"
+      >
+        <method name="initNode" args="parent, attrs">
+          this.cfg = [
+            {attrs:{name:'iphonetall', text:'iphone (Portrait)',              w:320, h:480}},
+            {attrs:{name:'iphonewide', text:'iphone (Landscape)',             w:480, h:320}},
+            
+            {attrs:{name:'iphone4tall', text:'iphone 4 (Portrait)',           w:Math.round(640  * 163/326), h:Math.round(960  * 163/326)}},
+            {attrs:{name:'iphone4wide', text:'iphone 4 (Landscape)',          w:Math.round(960  * 163/326), h:Math.round(640  * 163/326)}},
+            
+            {attrs:{name:'iphone5tall', text:'iphone 5 (Portrait)',           w:Math.round(640  * 163/326), h:Math.round(1135 * 163/326)}},
+            {attrs:{name:'iphone5wide', text:'iphone 5 (Landscape)',          w:Math.round(1135 * 163/326), h:Math.round(640  * 163/326)}},
+            
+            {attrs:{name:'iphone6tall', text:'iphone 6 (Portrait)',           w:Math.round(750  * 163/326), h:Math.round(1334 * 163/326)}},
+            {attrs:{name:'iphone6wide', text:'iphone 6 (Landscape)',          w:Math.round(1334 * 163/326), h:Math.round(750  * 163/326)}},
+            
+            {attrs:{name:'iphone6plustall', text:'iphone 6 Plus (Portrait)',  w:Math.round(1080 * 163/401), h:Math.round(1920 * 163/401)}},
+            {attrs:{name:'iphone6pluswide', text:'iphone 6 Plus (Landscape)', w:Math.round(1920 * 163/401), h:Math.round(1080 * 163/401)}},
+            
+            {klass:dr.listviewseparator},
+            {attrs:{name:'custom', text:'custom'}}
+          ];
+          
+          this.super();
+        </method>
+        
+        <attribute name="isopen" type="boolean" value="false"/>
+        <handler event="onisopen" args="isopen">
+          this.updateUI();
+          this.arrow.setAttribute('text', (isopen ? '▼' : '▶'));
+        </handler>
+        
+        <attribute name="selecteditem" type="expression" value="this.cfg[4].attrs"/>
+        <handler event="onselecteditem" args="selecteditem">
+          this.label.setAttribute('text', selecteditem.text);
+          
+          var isCustom = selecteditem.name === 'custom';
+          this.parent.custom.setAttribute('visible', isCustom);
+          if (!isCustom) {
+            screensizew.setAttribute('value', selecteditem.w);
+            screensizeh.setAttribute('value', selecteditem.h);
+          }
+        </handler>
+        
+        <method name="doActivated">
+          if (!this.disabled) {
+            var fp = this.getFloatingPanel();
+            if (fp) this.toggleFloatingPanel();
+          }
+        </method>
+        
+        <method name="notifyPanelHidden" args="panel">
+          this.setAttribute('isopen', false);
+        </method>
+        
+        <method name="notifyPanelShown" args="panel">
+          this.setAttribute('isopen', true);
+        </method>
+        
+        <method name="drawDisabledState">
+          this.setAttribute('color', this.selected ? '#000000' : '#cccccc');
+        </method>
+        <method name="drawFocusedState">
+          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+        </method>
+        <method name="drawHoverState">
+          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+        </method>
+        <method name="drawActiveState">
+          this.setAttribute('color', this.selected ? '#000000' : '#888888');
+        </method>
+        <method name="drawReadyState">
+          this.setAttribute('color', this.selected ? '#000000' : '#999999');
+        </method>
+        <method name="doActivated">
+          var cfg = this.cfg;
+          
+          var i = cfg.length, attrs, selecteditemname = this.selecteditem.name;
+          while (i) {
+            attrs = cfg[--i].attrs;
+            if (attrs) attrs.disabled = attrs.name === selecteditemname;
+          }
+          
+          this.setAttribute('itemconfig', cfg);
+          
+          this.toggleFloatingPanel();
+        </method>
+        
+        <method name="doItemActivated" args="itemview">
+          this.setAttribute('selecteditem', itemview);
+          this.super();
+        </method>
+        
+        <text name="arrow" fontsize="10" y="3"/>
+        <text name="label" x="11" y="1" fontsize="12"/>
+      </view>
+      
+      <view name="custom" height="auto" visible="false">
+        <spacedlayout spacing="4" updateparent="true"></spacedlayout>
+        <editor_text text="w:" y="2" fontsize="12"/>
+        <editor_inputtext id="screensizew" width="32" allowedchars="0123456789" maxlength="4" fontsize="12"/>
+        <editor_text text="h:" y="2" fontsize="12"/>
+        <editor_inputtext id="screensizeh" width="32" allowedchars="0123456789" maxlength="4" fontsize="12"/>
+      </view>
+    </view>
   </view>
 
   <view name="content" ignoreplacement="true"
     x="${this.parent.ruler_horizontal.x + config.content_inset}"
     y="${this.parent.ruler_vertical.y + config.content_inset}"
-    width="${this.parent.divider_right.x - this.x - config.content_inset}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height - config.content_inset}"
+    width="${screensizew.value}"
+    height="${screensizeh.value}"
     boxshadow="[0,0,16,4,'#cccccc']"
   >
     <!-- Use an additional inner view so that scrollbars show up inside the
@@ -969,6 +1088,8 @@ SOFTWARE. -->
     clickable="true" bgcolor="#999999"
   />
 
+
+  <!--// Right Panel //-->
   <view name="rightbar" ignoreplacement="true" bgcolor="#fcfcfc"
     x="right" y="${config.topbar_height}"
     width="${this.parent.innerwidth - this.parent.divider_right.x}"
@@ -1053,6 +1174,8 @@ SOFTWARE. -->
     </view>
   </view>
 
+
+  <!--// Bottom Panel //-->
   <view name="bottombar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     y="bottom" width="100%" height="${config.bottombar_height}"
   />
@@ -1095,6 +1218,7 @@ SOFTWARE. -->
       if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
     </method>
   </view>
+
 
   <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>

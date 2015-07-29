@@ -133,6 +133,17 @@ SOFTWARE. -->
     
     # Allow filtering of input
     @listenToPlatform(@, 'onkeypress', @__filterInputPress)
+    
+    # Make sure mouse interaction is handled here
+    @listenToPlatform(@, 'onmousedown', @__captureMouse)
+    @listenToPlatform(@, 'onmouseup', @__captureMouse)
+    @listenToPlatform(@, 'onclick', @__captureMouse)
+    @listenToPlatform(@, 'ondblclick', @__captureMouse)
+    @listenToPlatform(@, 'onmousemove', @__captureMouse)
+  </method>
+
+  <method name="__captureMouse" args="platformEvent">
+    # Do nothing
   </method>
 
   <method name="__filterInputPress" args="platformEvent">

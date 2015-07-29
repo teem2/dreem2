@@ -105,6 +105,7 @@ SOFTWARE. -->
     this.setAttribute('selected', true);
   </method>
 </class>
+
 <class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor">
   <method name="notifyPanelHidden" args="panel">
     this.setAttribute('selected', false);
