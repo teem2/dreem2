@@ -55,8 +55,11 @@ SOFTWARE. -->
   floatingalign="insideright" floatingvalign="outsidebottom"
 >
   <attribute name="selected" type="boolean" value="false"/>
-  <handler event="onselected">
+  <attribute name="label" type="string" value=""/>
+  <handler event="onselected" args="selected">
     this.updateUI();
+    
+    this.setAttribute('text', (selected ? '▼' : '▶') + this.label);
   </handler>
   
   <method name="doActivated">
@@ -64,14 +67,6 @@ SOFTWARE. -->
       var fp = this.getFloatingPanel();
       if (fp) this.toggleFloatingPanel();
     }
-  </method>
-  
-  <method name="notifyPanelHidden" args="panel">
-    this.setAttribute('selected', false);
-  </method>
-  
-  <method name="notifyPanelShown" args="panel">
-    this.setAttribute('selected', true);
   </method>
   
   <method name="drawDisabledState">
@@ -101,5 +96,21 @@ SOFTWARE. -->
   </method>
 </class>
 
-<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor"/>
-<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor"/>
+<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor">
+  <method name="notifyPanelHidden" args="panel">
+    this.setAttribute('selected', false);
+  </method>
+  
+  <method name="notifyPanelShown" args="panel">
+    this.setAttribute('selected', true);
+  </method>
+</class>
+<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor">
+  <method name="notifyPanelHidden" args="panel">
+    this.setAttribute('selected', false);
+  </method>
+  
+  <method name="notifyPanelShown" args="panel">
+    this.setAttribute('selected', true);
+  </method>
+</class>

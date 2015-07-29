@@ -123,7 +123,7 @@ define(function(require, exports, module) {
               }
             });
           } catch(e) {
-            res.writeHead(500, {"Content-Type":"text/html"});
+            res.writeHead(500, {"Content-Type":"text/html;charset=utf-8"});
             res.write('FAIL');
             res.end();
           }
@@ -135,7 +135,7 @@ define(function(require, exports, module) {
           // for an example that uses this.
           res.writeHead(200, {
             "Cache-control":"max-age=0",
-            "Content-Type":"text/html"
+            "Content-Type":"text/html;charset=utf-8"
           });
           var modules = this.modules,
             i = 0, len = modules.length,
@@ -153,12 +153,12 @@ define(function(require, exports, module) {
             var name = this.name;
             if (screenName === 'dali') {
               var stream = fs.createReadStream(define.expandVariables(this.__buildScreenPath('dali.dali')));
-              res.writeHead(200, {"Content-Type":"text/html"});
+              res.writeHead(200, {"Content-Type":"text/html;charset=utf-8"});
               stream.pipe(res);
             } else {
               res.writeHead(200, {
                 "Cache-control":"max-age=0",
-                "Content-Type":"text/html"
+                "Content-Type":"text/html;charset=utf-8"
               });
               res.write(this.__renderHTMLTemplate(
                 screen.attr && screen.attr.title || name, 
@@ -167,7 +167,7 @@ define(function(require, exports, module) {
               res.end();
             }
           } else {
-            res.writeHead(404, {"Content-Type":"text/html"});
+            res.writeHead(404, {"Content-Type":"text/html;charset=utf-8"});
             res.write('NO SCREENS FOUND');
             res.end();
           }

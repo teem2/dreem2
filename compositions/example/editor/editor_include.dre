@@ -880,11 +880,12 @@ SOFTWARE. -->
   <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     width="100%" height="${config.topbar_height}"
   >
-    <view name="left" padding="2" width="auto" height="${config.topbar_height}">
-      <spacedlayout spacing="4" inset="2"></spacedlayout>
-      <constantlayout attribute="y" value="'middle'"></constantlayout>
+    <view name="left" padding="2" height="${config.topbar_height}">
+      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
+      <constantlayout attribute="y" value="'middle'"/>
       
-      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" text="Actions"
+      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" label="Actions"
+        width="75" textalign="center"
         listviewattrs="{maxheight:300}"
       >
         <method name="doActivated">
@@ -912,14 +913,16 @@ SOFTWARE. -->
           this.super();
         </method>
       </listviewbutton>
-      <floatingpanelbutton id="settingsButton" floatingpanelid="settings" floatingvalignoffset="2">Settings</floatingpanelbutton>
+      <floatingpanelbutton id="settingsButton" floatingpanelid="settings" floatingvalignoffset="2" label="Settings"
+        width="80" textalign="center"
+      />
     </view>
     
     <view name="center" padding="2" x="${this.parent.left.width}" width="${this.parent.right.x - this.x}" height="${config.topbar_height}"/>
     
-    <view name="right" padding="2" x="right" width="auto" height="${config.topbar_height}">
-      <spacedlayout spacing="4" inset="2"></spacedlayout>
-      <constantlayout attribute="y" value="'middle'"></constantlayout>
+    <view name="right" padding="2" x="right" height="${config.topbar_height}">
+      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
+      <constantlayout attribute="y" value="'middle'"/>
       
       <toolbarbutton id="editPreviewButton" action="editPreview" width="64" textalign="center">Preview</toolbarbutton>
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
