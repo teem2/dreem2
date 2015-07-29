@@ -22,7 +22,7 @@ SOFTWARE. -->
 <class name="toolbarbutton" extends="text" with="button"
   border="1" bordercolor="#666666"
   toppadding="3" bottompadding="3" leftpadding="6" rightpadding="6"
-  fontsize="12"
+  fontsize="14"
   cornerradius="4" focusembellishment="false"
 >
   <attribute name="action" type="string" value=""/>
