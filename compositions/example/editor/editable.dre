@@ -23,30 +23,17 @@ SOFTWARE. -->
   <method name="initNode" args="parent, attrs">
     this.super();
     
+    // Set up mousedown/up handlers which send simulated events to the
+    // reticle. This allows the reticle to behave as the draggable object
+    // while still having clickability based on the view structure.
+    this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
+    this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
+    this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
+    this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
     this._origClickable = this.getAttribute('clickable');
-    this.handleEditorPaused(editor.paused);
+    this.setAttribute('clickable', true, true);
+    this.setAttribute('focusable', false, true);
   </method>
-
-
-  <!-- Sets up mousedown/up handlers which send simulated events to the
-       reticle. This allows the reticle to behave as the draggable object
-       while still having clickability based on the view structure. -->
-  <handler name="handleEditorPaused" event="onpaused" args="paused" reference="editor">
-    if (paused) {
-      this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
-      this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
-      this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
-      this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
-      this._origClickable = this.getAttribute('clickable');
-      this.setAttribute('clickable', true, true);
-    } else {
-      this.stopListening(this, 'onmousedown', '__editable_handleMouseDown');
-      this.stopListening(this, 'onmouseup', '__editable_handleMouseUp');
-      this.stopListening(this, 'onmouseover', '__editable_handleMouseOver');
-      this.stopListening(this, 'onmouseout', '__editable_handleMouseOut');
-      this.setAttribute('clickable', this._origClickable, true);
-    }
-  </handler>
   
   <method name="__editable_handleMouseDown" args="event">
     selectionmanager.select(this);
@@ -105,8 +92,8 @@ SOFTWARE. -->
     var retval = this.super(name, value);
     
     if (editor.paused && !noModelUpdate) {
-        var parent = this.parent;
-        if (parent && parent.inited) editormodel.updateAttr(this.id, name, this.getAttribute(name));
+      var parent = this.parent;
+      if (parent && parent.inited) editormodel.updateAttr(this.id, name, this.getAttribute(name));
     }
     
     return retval;

@@ -85,6 +85,8 @@ define(function(require, exports, module) {
           req.on('end', function() {
             var comppath = define.expandVariables(this.__getCompositionPath())
             this.__saveEditableFile(comppath, buf, query.stripeditor === '1');
+            res.writeHead(200, {"Content-Type":"text/json"});
+            res.end();
           }.bind(this));
           return;
         } else {

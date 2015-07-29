@@ -59,7 +59,7 @@ SOFTWARE. -->
     this.super();
     dr.floatingpanelanchor.panelsbypanelid[this.panelid] = this;
   </method>
-</floatingpanel>
+</class>
 
 <class name="editor_text" extends="text" fontsize="14"/>
 <class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee">
@@ -209,17 +209,27 @@ SOFTWARE. -->
       editormodel.stop();
     </method>
     
-    <method name="pausePlay">
+    <method name="editPreview">
       editor.setAttribute('paused', !editor.paused);
       if (editor.paused) {
         selectionmanager.restore();
-        pausePlayButton.setAttribute('text', 'Play');
+        editPreviewButton.setAttribute('text', 'Preview');
+        preview.setAttribute('visible', false);
+        preview.setAttribute('src', '/iframe_stub.html');
       } else {
         selectionmanager.clear(true);
-        pausePlayButton.setAttribute('text', 'Pause');
-        // FIXME: Need to revert UI state to model state.
+        editPreviewButton.setAttribute('text', 'Edit');
+        preview.setAttribute('visible', true);
+        preview.setAttribute('src', '/compositions/example/editor/preview.dre');
       }
-      
+    </method>
+    
+    <method name="start">
+    </method>
+    
+    <method name="stop">
+      this.setAttribute('visible', false);
+      this.setAttribute('src', '/iframe_stub.html');
     </method>
     
     <method name="createView">
@@ -364,6 +374,57 @@ SOFTWARE. -->
       dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model) );
     </method>
     
+    <method name="getPkg">
+      var compositionNode = this._findChildByTag('composition', this.model);
+      
+      // Copy it
+      compositionNode = JSON.parse(JSON.stringify(compositionNode));
+      
+      // Clean composition node
+      var depth = 0;
+      function cleanComposition(jsobj) {
+        depth++;
+        
+        var children = jsobj.child;
+        if (children) {
+          var child, i = children.length, attrs;
+          while (i) {
+            child = children[--i];
+            
+            attrs = child.attr;
+            if (attrs) {
+              if (depth === 4 && attrs.placement === 'editor') delete attrs.placement;
+              
+              var mixins = attrs.with;
+              if (mixins) {
+                var newMixins = [];
+                mixins.split(define.SEPARATOR_REGEX).forEach(
+                  function(mixinName) {
+                    if (mixinName !== 'editable') newMixins.push(mixinName);
+                  }
+                );
+                attrs.with = newMixins.join(',');
+              }
+            }
+            
+            if (child.tag === 'include') {
+              children.splice(i, 1);
+            } else {
+              cleanComposition(child);
+            }
+          }
+        }
+        
+        depth--;
+      };
+      cleanComposition(compositionNode);
+      
+      return {
+        composition:compositionNode,
+        classmap:dr.classmap
+      };
+    </method>
+    
     <method name="_findChildIndex" args="parent, child">
       var children = parent.child;
       if (children) {
@@ -388,6 +449,19 @@ SOFTWARE. -->
           return child;
         } else if (child.child) {
           var newchild = this._findChild(id, child);
+          if (newchild) return newchild;
+        }
+      }
+    </method>
+    
+    <method name="_findChildByTag" args="tagname, jsobj">
+      var children = jsobj.child, child;
+      for (var i = 0; children.length > i; i++) {
+        child = children[i]
+        if (child.tag === tagname) {
+          return child;
+        } else if (child.child) {
+          var newchild = this._findChildByTag(tagname, child);
           if (newchild) return newchild;
         }
       }
@@ -847,7 +921,7 @@ SOFTWARE. -->
       <spacedlayout spacing="4" inset="2"></spacedlayout>
       <constantlayout attribute="y" value="'middle'"></constantlayout>
       
-      <toolbarbutton id="pausePlayButton" action="pausePlay" width="54" textalign="center">Play</toolbarbutton>
+      <toolbarbutton id="editPreviewButton" action="editPreview" width="64" textalign="center">Preview</toolbarbutton>
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
       <toolbarbutton id="stopButton" action="stop" width="54" textalign="center">Exit</toolbarbutton>
@@ -885,12 +959,18 @@ SOFTWARE. -->
     </view>
   </view>
 
+  <webpage name="preview" id="preview" ignoreplacement="true" visible="false"
+    x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
+    width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
+    border="2" bordercolor="#66ee00"
+    clickable="true" bgcolor="#999999"
+  />
+
   <view name="rightbar" ignoreplacement="true" bgcolor="#fcfcfc"
     x="right" y="${config.topbar_height}"
     width="${this.parent.innerwidth - this.parent.divider_right.x}"
     height="${this.parent.leftbar.height}"
   >
-    
     <view name="component_list_panel" width="100%" height="195" bgcolor="white" scrollable="true">
       <view width="100%">
         <wrappinglayout axis="x" spacing="5" inset="5" outset="5" linespacing="5" lineinset="5" lineoutset="5" updateparent="true"/>
