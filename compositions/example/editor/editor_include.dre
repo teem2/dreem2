@@ -68,7 +68,10 @@ SOFTWARE. -->
   </handler>
 </class>
 
-<view name="editor" id="editor" width="100%" height="100%" defaultplacement="content.inner" clip="true" bgcolor="white">
+<view name="editor" id="editor" width="100%" height="100%"
+  bgcolor="white" clip="true"
+  defaultplacement="content_bg.content.inner"
+>
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="paused" type="boolean" value="true"/>
 
@@ -114,7 +117,7 @@ SOFTWARE. -->
     <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
     <attribute name="boxshadow_floater" type="object" value="[0,3,6,0,'#999999']"/>
     
-    <attribute name="ruler_marks" type="object" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
+    <attribute name="ruler_marks" type="object" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000]"/>
   </node>
   
   <node id="selectionmanager">
@@ -520,21 +523,33 @@ SOFTWARE. -->
     }
   </handler>
 
-  <handler event="onmousemove" reference="dr.mouse" args="event">
+  <handler name="updateLocationMarkers" event="onmousemove" reference="dr.mouse" args="event">
+    if (event) {
+      this._lastMouseEvent = event;
+    } else {
+      event = this._lastMouseEvent;
+    }
+    
     var x = event.x, 
       y = event.y,
       xLoc = this.xLocation,
-      yLoc = this.yLocation;
+      yLoc = this.yLocation,
+      content_bg = this.content_bg,
+      content = content_bg.content,
+      inner = content.inner;
     
     xLoc.setAttribute('visible', this.showlocationmarkers);
     xLoc.setAttribute('x', x - 1);
-    xLoc.label.setAttribute('text', x - this.content.x + this.content.inner.scrollx);
+    xLoc.label.setAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
     
     yLoc.setAttribute('visible', this.showlocationmarkers);
     yLoc.setAttribute('y', y - 1);
-    yLoc.label.setAttribute('text', y - this.content.y + this.content.inner.scrolly);
+    yLoc.label.setAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
     
     return true;
+  </handler>
+  <handler event="onscrollx, onscrolly" reference="this.content_bg">
+    this.updateLocationMarkers();
   </handler>
 
   <!-- Eat attempts to open the context menu since this typically messes up
@@ -550,12 +565,12 @@ SOFTWARE. -->
     y="${config.topbar_height}"
     width="${this.parent.divider_right.x - this.x}"
     height="${config.ruler_thickness}"
-    scrollx="${this.parent.content.inner.scrollx + 100 - config.content_inset}"
+    scrollx="${this.parent.content_bg.scrollx + this.parent.content_bg.content.inner.scrollx + 100 - config.content_inset}"
   >
     <spacedlayout axis="x" spacing="100" inset="102"/>
     <replicator name="repl" classname="horizontal_rulertext" data="${config.ruler_marks}"/>
     
-    <bitmap width="6000" ignorelayout="true"
+    <bitmap width="5200" ignorelayout="true"
       height="${config.ruler_thickness}"
       src="/classes/editor/img/ruler_horizontal.png" stretches="contain" repeat="repeat-x"
     >
@@ -568,12 +583,12 @@ SOFTWARE. -->
     y="${this.parent.ruler_corner.y + this.parent.ruler_corner.height}"
     width="${config.ruler_thickness}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-    scrolly="${this.parent.content.inner.scrolly + 100 - config.content_inset}"
+    scrolly="${this.parent.content_bg.scrolly + this.parent.content_bg.content.inner.scrolly + 100 - config.content_inset}"
   >
     <spacedlayout axis="y" spacing="100" inset="97"/>
     <replicator name="repl" classname="vertical_rulertext" data="${config.ruler_marks}"/>
     
-    <bitmap height="6000" ignorelayout="true"
+    <bitmap height="5200" ignorelayout="true"
       width="${config.ruler_thickness}"
       src="/classes/editor/img/ruler_vertical.png" stretches="contain" repeat="repeat-y"
     >
@@ -946,6 +961,7 @@ SOFTWARE. -->
     y="${this.parent.ruler_vertical.y}"
     width="${this.parent.divider_right.x - this.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    scrollable="true"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     
@@ -1033,15 +1049,14 @@ SOFTWARE. -->
           this.setAttribute('color', this.selected ? '#000000' : '#999999');
         </method>
         <method name="doActivated">
-          var cfg = this.cfg;
-          
-          var i = cfg.length, attrs, selecteditemname = this.selecteditem.name;
+          var cfg = this.cfg, 
+            i = cfg.length, attrs, selecteditemname = this.selecteditem.name;
           while (i) {
             attrs = cfg[--i].attrs;
             if (attrs) attrs.disabled = attrs.name === selecteditemname;
           }
           
-          this.setAttribute('itemconfig', cfg);
+          this.setAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
           
           this.toggleFloatingPanel();
         </method>
@@ -1058,35 +1073,50 @@ SOFTWARE. -->
       <view name="custom" height="auto" visible="false">
         <spacedlayout spacing="4" updateparent="true"></spacedlayout>
         <editor_text text="w:" y="2" fontsize="12"/>
-        <editor_inputtext id="screensizew" width="32" allowedchars="0123456789" maxlength="4" fontsize="12"/>
+        <editor_inputtext id="screensizew" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+          <setter name="value" args="v">
+            if (v > 5000) v = 5000;
+            return v;
+          </setter>
+        </editor_inputtext>
         <editor_text text="h:" y="2" fontsize="12"/>
-        <editor_inputtext id="screensizeh" width="32" allowedchars="0123456789" maxlength="4" fontsize="12"/>
+        <editor_inputtext id="screensizeh" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+          <setter name="value" args="v">
+            if (v > 5000) v = 5000;
+            return v;
+          </setter>
+        </editor_inputtext>
       </view>
     </view>
-  </view>
-
-  <view name="content" ignoreplacement="true"
-    x="${this.parent.ruler_horizontal.x + config.content_inset}"
-    y="${this.parent.ruler_vertical.y + config.content_inset}"
-    width="${screensizew.value}"
-    height="${screensizeh.value}"
-    boxshadow="[0,0,16,4,'#cccccc']"
-  >
-    <!-- Use an additional inner view so that scrollbars show up inside the
-         "page" rather than over the boxshadow. -->
-    <view name="inner" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
-      maskfocus="${editor.paused}" focuscage="true"
+    
+    <view name="content"
+      x="${config.content_inset}"
+      y="${config.content_inset}"
+      width="${screensizew.value}"
+      height="${screensizeh.value}"
+      boxshadow="[0,0,16,4,'#cccccc']"
     >
-      <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+      <!-- Use an additional inner view so that scrollbars show up inside the
+           "page" rather than over the boxshadow. -->
+      <view name="inner" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
+        maskfocus="${editor.paused}" focuscage="true"
+      >
+        <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+      </view>
     </view>
+    
+    <view name="extra"
+      x="${this.parent.content.x + this.parent.content.width}" width="${config.content_inset}"
+      y="${this.parent.content.y + this.parent.content.height}" height="${config.content_inset}"
+    />
+    
+    <webpage name="preview" id="preview" visible="false"
+      x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
+      width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
+      border="2" bordercolor="#66ee00"
+      clickable="true" bgcolor="#999999"
+    />
   </view>
-
-  <webpage name="preview" id="preview" ignoreplacement="true" visible="false"
-    x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
-    width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
-    border="2" bordercolor="#66ee00"
-    clickable="true" bgcolor="#999999"
-  />
 
 
   <!--// Right Panel //-->
