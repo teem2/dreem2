@@ -885,7 +885,7 @@ SOFTWARE. -->
       <constantlayout attribute="y" value="'middle'"/>
       
       <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" label="Actions"
-        width="75" textalign="center"
+        width="73" textalign="right"
         listviewattrs="{maxheight:300}"
       >
         <method name="doActivated">
@@ -914,7 +914,7 @@ SOFTWARE. -->
         </method>
       </listviewbutton>
       <floatingpanelbutton id="settingsButton" floatingpanelid="settings" floatingvalignoffset="2" label="Settings"
-        width="80" textalign="center"
+        width="78" textalign="right"
       />
     </view>
     
