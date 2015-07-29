@@ -253,8 +253,8 @@
        var window= {
             x:800,
              y:500,
-           width:880,
-           height: 1020,
+           width:1280,
+           height: 1268,
            transparent: false,
            name:'Dreem Dali Runtime: ' + composition
      };
