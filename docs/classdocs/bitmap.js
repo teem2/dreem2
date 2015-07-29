@@ -38,6 +38,11 @@
       * bitmap data in pixels.
       */
 /**
+      * @attribute {String} [repeat='no-repeat']
+      * Determines if the image will be repeated within the bounds.
+      * Supported values are 'no-repeat', 'repeat', 'repeat-x' and 'repeat-y'.
+      */
+/**
     * @attribute {String} [window='']
     * A window (section) of the image is displayed by specifying four,
     * comma-separated values:

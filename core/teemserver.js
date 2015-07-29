@@ -19,19 +19,20 @@ define(function(require, exports, module) {
     ExternalApps = require('$CORE/externalapps'),
     BusServer = require('$CORE/busserver'),
     CompositionServer = require('$CORE/compositionserver'),
+    PluginLoader = require('./pluginloader'),
     NodeWebSocket = require('$CORE/nodewebsocket'),
     SauceRunner = require('$CORE/saucerunner');
 
   // Create a function to determine a mime type for a file.
   var mimeFromFile = (function() {
     var mimeTypes = {
-      htm:"text/html",
-      html:"text/html",
-      js:"application/javascript",
+      htm:"text/html;charset=utf-8",
+      html:"text/html;charset=utf-8",
+      js:"application/javascript;charset=utf-8",
+      txt:"text/plain;charset=utf-8",
+      css:"text/css;charset=utf-8",
       jpg:"image/jpeg",
       jpeg:"image/jpeg",
-      txt:"text/plain",
-      css:"text/css",
       ico:"image/x-icon",
       png:"image/png",
       gif:"image/gif"
@@ -103,6 +104,8 @@ define(function(require, exports, module) {
     if (this.args['-web']) this.__getComposition(this.args['-web']);
     
     this.saucerunner = new SauceRunner();
+
+    this.pluginLoader = new PluginLoader(this.args, this.name, this);
   }
 
   body.call(TeemServer.prototype)
@@ -129,7 +132,7 @@ define(function(require, exports, module) {
       // Strip Query
       var queryIndex = url.indexOf('?');
       if (queryIndex !== -1) url = url.substring(0, queryIndex);
-      
+
       if (url.endsWith(define.DREEM_EXTENSION)) {
         url = url.substring(0, url.length - define.DREEM_EXTENSION.length);
         
@@ -149,7 +152,7 @@ define(function(require, exports, module) {
       }
     };
 
-    /** 
+    /**
       * Handle protocol upgrade to WebSocket
       * @param {Request} req 
       * @param {Socket} sock
@@ -200,7 +203,7 @@ define(function(require, exports, module) {
               res.end();
             } else {
               res.writeHead(404);
-              res.write('NOT FOUND');
+              res.write('FILE NOT FOUND');
               res.end();
               console.color('~br~Error~y~ ' + filePath + '~~ In teemserver.js request handling. File not found, returning 404\n');
             }
@@ -232,4 +235,4 @@ define(function(require, exports, module) {
       }
     };
   }
-})
+});

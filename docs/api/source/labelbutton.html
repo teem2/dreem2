@@ -277,7 +277,7 @@ SOFTWARE. --&gt;</span>
    * @extends dr.buttonbase
    * Button class consisting of text centered in a view. The onclick event
    * is generated when the button is clicked. The visual state of the
-   * button changes during onmousedown/onmouseup.
+   * button changes during onismousedown.
    *
    *     @example
    *     &lt;spacedlayout axis=&quot;y&quot;&gt;&lt;/spacedlayout&gt;
@@ -297,8 +297,8 @@ SOFTWARE. --&gt;</span>
     @setActualAttribute('text', v)
   <span class="tag">&lt;/setter&gt;</span>
 
-  <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">onmousedown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">mousedown</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    if mousedown
+  <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">onismousedown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ismousedown</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if ismousedown
       @visual.setAttribute('bgcolor', @selectcolor)
       @label.setAttribute('color', @defaultcolor)
       @indicator.setAttribute('fill', @defaultcolor)

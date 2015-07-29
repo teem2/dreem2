@@ -146,10 +146,6 @@
         * If true, reuse views when replicating.
         */
 /**
-        * @attribute {Boolean} [async=true]
-        * If true, create views asynchronously
-        */
-/**
         * @attribute {Array} [data=[]]
         * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
         */
@@ -160,10 +156,6 @@
 /**
         * @attribute {String} classname (required)
         * The name of the class to be replicated.
-        */
-/**
-        * @method refresh
-        * Refreshes the dataset manually
         */
 /**
         * @event onreplicated

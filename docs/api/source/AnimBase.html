@@ -322,7 +322,7 @@ define(function(require, exports, module) {
         
 <span id='global-method-reset'>        /** @private */
 </span>        reset: function() {
-            this.__loopCount = this.getAttribute(&#39;reverse&#39;) &amp;&amp; this.repeat &gt; 0 ? this.repeat - 1 : 0;
+            this.__loopCount = this.getActualAttribute(&#39;reverse&#39;) &amp;&amp; this.repeat &gt; 0 ? this.repeat - 1 : 0;
             this.__resetProgress();
         },
         
@@ -334,7 +334,7 @@ define(function(require, exports, module) {
 <span id='global-method-__isFlipped'>        /** @private */
 </span>        __isFlipped: function() {
             if (this.bounce) {
-                if (this.getAttribute(&#39;reverse&#39;)) {
+                if (this.getActualAttribute(&#39;reverse&#39;)) {
                     if (this.repeat % 2 === 0) {
                         return this.__loopCount % 2 !== 0;
                     } else {
@@ -344,7 +344,7 @@ define(function(require, exports, module) {
                     return this.__loopCount % 2 !== 0;
                 }
             } else {
-                return this.getAttribute(&#39;reverse&#39;);
+                return this.getActualAttribute(&#39;reverse&#39;);
             }
         },
         
@@ -357,7 +357,7 @@ define(function(require, exports, module) {
 <span id='global-method-__advance'>        /** @private */
 </span>        __advance: function(timeDiff) {
             if (this.running &amp;&amp; !this.paused) {
-                var reverse = this.getAttribute(&#39;reverse&#39;), 
+                var reverse = this.getActualAttribute(&#39;reverse&#39;), 
                     duration = this.duration,
                     loopTime = this.__loopTime,
                     delay = this.delay,
@@ -365,7 +365,7 @@ define(function(require, exports, module) {
                     remainderTime,
                     flip = this.__isFlipped(),
                     oldProgress = this.__progress,
-                    target = this.getAttribute(&#39;target&#39;);
+                    target = this.getActualAttribute(&#39;target&#39;);
                 
                 // An animation in reverse is like time going backward.
                 this.__progress += flip ? -timeDiff : timeDiff;

@@ -46,16 +46,19 @@ define(function(require, exports, module) {
     JS = require(&#39;$LIB/jsclass.js&#39;),
     sprite = require(&#39;$SPRITE/sprite.js&#39;),
     acorn = require(&#39;$LIB/acorn&#39;),
-    coffee = require(&#39;$LIB/coffee-script&#39;);
+    coffee = require(&#39;$LIB/coffee-script&#39;),
+    htmlparser = require(&#39;$CORE/htmlparser.js&#39;);
 
   require(&#39;$LIB/dr/globals/GlobalError.js&#39;);
   require(&#39;$LIB/dr/globals/GlobalRequestor.js&#39;);
+  require(&#39;$LIB/dr/globals/GlobalKeys.js&#39;);
+  require(&#39;$LIB/dr/globals/GlobalMouse.js&#39;);
+  require(&#39;$LIB/dr/globals/GlobalIdle.js&#39;);
+  require(&#39;$LIB/dr/globals/GlobalDragManager.js&#39;);
   require(&#39;$LIB/dr/Eventable.js&#39;);
   require(&#39;$LIB/dr/view/SizeToViewport.js&#39;);
   require(&#39;$LIB/dr/animation/Animator.js&#39;);
   require(&#39;$LIB/dr/animation/AnimGroup.js&#39;);
-  require(&#39;$LIB/dr/behavior/Button.js&#39;);
-  require(&#39;$LIB/dr/behavior/Draggable.js&#39;);
 
   require(&#39;$SPRITE/Text.js&#39;);
   require(&#39;$SPRITE/InputText.js&#39;);
@@ -136,7 +139,16 @@ define(function(require, exports, module) {
       }
     };
     
-    proto.execute = function(rootdre, classmap, teem) {
+<span id='Compiler-method-execute'>    /** Starts the client side parsing process.
+</span>        @param {Object} rootdre The json representation of a dre file.
+        @param {Object} classmap A map of classpaths by classname.
+        @param {dr.teem} teem A reference to the teem component.
+        @param {dr.Node} parentInstance (Optional) The parent to attach new
+          instances to.
+        @param {Boolean} allowNestedScreens (Optional) Prevents warnings when
+          trying to load one screen into another.
+        @returns A Compiler object. */
+    proto.execute = function(rootdre, classmap, teem, parentInstance, allowNestedScreens) {
       var errors = [],
         methods = [],
         classes = {};
@@ -207,7 +219,7 @@ define(function(require, exports, module) {
             
             node.method_id = methods.length;
             methods.push({
-              name:funcName,
+              name:funcName.split(&#39;-&#39;).join(&#39;_&#39;),
               origin:node.pos,
               language:language,
               argStr:attr.args || &#39;&#39;,
@@ -274,12 +286,11 @@ define(function(require, exports, module) {
             compiledClasses:{
               animator:dr.Animator,
               animgroup:dr.AnimGroup,
-              button:dr.Button,
-              draggable:dr.Draggable,
               eventable:dr.Eventable,
               layout:dr.Layout,
               node:dr.Node,
-              view:dr.View
+              view:dr.View,
+              sizetoviewport:dr.SizeToViewport
             },
             
             // The code block split up into individual compiled functions
@@ -298,9 +309,15 @@ define(function(require, exports, module) {
           dr.maker = maker;
           dr.pkg = pkg;
           dr.teem = teem;
+          dr.htmlparser = htmlparser;
+          
+          dr.ready = false;
           
           // Start processing from the root downward
-          maker.__walkDreemJSXML(rootdre, null, pkg);
+          // parentInstance and allowNestedScreens are both typically undefined
+          // here. The only time they would be provided is when trying to
+          // load one screen into a subview of another.
+          maker.__walkDreemJSXML(rootdre, pkg, parentInstance, allowNestedScreens);
           
           dr.notifyReady();
         }
@@ -316,12 +333,11 @@ define(function(require, exports, module) {
     // Specific Classes and Mixins from the core
     animator:true,
     animgroup:true,
-    button:true,
-    draggable:true,
     eventable:true,
     layout:true,
     node:true,
     view:true,
+    sizetoviewport:true,
     
     // Class and Mixin Definition
     class:true,
@@ -341,11 +357,11 @@ define(function(require, exports, module) {
   // from dr.makeChildren
   maker.walkForInstance = function(targetObj, json, isClassroot, pkg) {
     if (isClassroot) this.__classroots.unshift(targetObj);
-    for (var i = 0, len = json.length; len &gt; i;) this.__walkDreemJSXML(json[i++], targetObj, pkg);
+    for (var i = 0, len = json.length; len &gt; i;) this.__walkDreemJSXML(json[i++], pkg, targetObj, false);
     if (isClassroot) this.__classroots.shift();
   };
 
-  maker.__walkDreemJSXML = function(node, parentInstance, pkg) {
+  maker.__walkDreemJSXML = function(node, pkg, parentInstance, allowNestedScreens) {
     var tagName = node.tag;
     
     if (tagName.startsWith(&#39;$&#39;)) {
@@ -369,7 +385,7 @@ define(function(require, exports, module) {
     }
     
     var isScreen = tagName === &#39;screen&#39;;
-    if (isScreen &amp;&amp; parentInstance) {
+    if (isScreen &amp;&amp; parentInstance &amp;&amp; !allowNestedScreens) {
       dr.global.error.logWarn(&#39;No nesting of screen tags. Skipping instance.&#39;);
       return;
     }
@@ -418,7 +434,7 @@ define(function(require, exports, module) {
       
       // Build default attributes
       var combinedAttrs = {};
-      this.__doMixinExtension(combinedAttrs, mixins);
+      // Note: Mixin attrs are combined in the initialization method of Node/Eventable.
       if (instanceAttrValues) dr.extend(combinedAttrs, instanceAttrValues);
       dr.extend(combinedAttrs, attrs);
       
@@ -431,24 +447,29 @@ define(function(require, exports, module) {
       mixins.push(instanceMixin);
       
       // Root Nodes need a mixin that indicates this
-      if (!parentInstance) {
-          if (klass.isDescendantOf(dr.Node)) {
-              if (klass.isDescendantOf(dr.View)) {
-                  mixins.push(dr.SizeToViewport);
-              } else {
-                  mixins.push(dr.RootNode);
-              }
-          }
+      var isDescendantOfNode = klass.isDescendantOf(dr.Node);
+      if (!parentInstance &amp;&amp; isDescendantOfNode) {
+        if (klass.isDescendantOf(dr.View)) {
+          mixins.push(dr.SizeToViewport);
+        } else {
+          mixins.push(dr.RootNode);
+        }
       }
       
       combinedAttrs.classroot = this.__classroots[0] || null;
       
-      // Calls the initialize method of dr.Node
-      new klass(parentInstance, combinedAttrs, mixins);
+      // Create instance. Calls the initialize method on the instance.
+      if (isDescendantOfNode) {
+        // Create using the args for a Node.
+        new klass(parentInstance, combinedAttrs, mixins);
+      } else {
+        // Create using the args for an Eventable.
+        new klass(combinedAttrs, mixins);
+      }
       
       if (isScreen &amp;&amp; instanceChildrenJson) {
         for (i = 0, len = instanceChildrenJson.length; len &gt; i;) {
-          this.__walkDreemJSXML(instanceChildrenJson[i++], null, pkg);
+          this.__walkDreemJSXML(instanceChildrenJson[i++], pkg, parentInstance, allowNestedScreens);
         }
       }
     }
@@ -493,7 +514,7 @@ define(function(require, exports, module) {
       staticBody = klassBody.extend = {},
       klassChildrenJson,
       klassHandlers = [],
-      klassDeclaredAttrs, klassDeclaredAttrValues,
+      klassDeclaredAttrs, klassDeclaredAttrValues, klassDeclaredAttrMeta,
       i, len, childNode;
     if (children) {
       for (i = 0, len = children.length; len &gt; i;) {
@@ -512,7 +533,9 @@ define(function(require, exports, module) {
             if (!klassDeclaredAttrs) {
               klassDeclaredAttrs = {};
               klassDeclaredAttrValues = {};
+              klassDeclaredAttrMeta = {};
             }
+            klassDeclaredAttrMeta[childNode.attr.name] = childNode.attr;
             this.__processAttribute(childNode, klassDeclaredAttrs, klassDeclaredAttrValues, staticBody);
             break;
           default:
@@ -543,14 +566,14 @@ define(function(require, exports, module) {
     // Build default class attributes used for inheritance
     var combinedAttrs = {};
     if (baseclass &amp;&amp; baseclass.defaultAttrValues) dr.extend(combinedAttrs, baseclass.defaultAttrValues);
-    this.__doMixinExtension(combinedAttrs, mixins);
+    this.doMixinExtension(combinedAttrs, mixins);
     combinedAttrs.$tagname = tagName;
     dr.extend(combinedAttrs, klassAttrs);
     if (klassDeclaredAttrValues) dr.extend(combinedAttrs, klassDeclaredAttrValues);
     delete combinedAttrs.name; // Instances only
     delete combinedAttrs.id; // Instances only
     Klass.defaultAttrValues = combinedAttrs;
-    
+    Klass.attributes = klassDeclaredAttrMeta;
     // Store and return class
     return classTable[tagName] = Klass;
   };
@@ -607,11 +630,11 @@ define(function(require, exports, module) {
     }
   };
 
-  maker.__doMixinExtension = function(attrs, mixins) {
+  maker.doMixinExtension = function(attrs, mixins) {
     if (mixins) {
       len = mixins.length;
       if (len &gt; 0) {
-        i = 0;
+        var i = 0;
         for (; len &gt; i;) {
           dr.extend(attrs, mixins[i++].defaultAttrValues);
         }

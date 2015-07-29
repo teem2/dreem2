@@ -295,6 +295,8 @@ define(function(require, exports, module){
 		 *
 		 */
 		this.parse = function(source){
+                        // Windows \r messes up parsing
+                        source = source.replace(/\r/g,'')
 			// lets create some state
 			var root = this.node = this.createNode('$root',0)
 

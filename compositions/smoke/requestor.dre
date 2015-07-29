@@ -97,10 +97,10 @@ SOFTWARE. -->
           assert.isUndefined(req1.success_data, 'Request did not succeed so the success method should not be called.');
           
           assert.equal(req1.error_status, 404, 'Request to bad url should fail as a 404.');
-          assert.equal(req1.error_data, "NOT FOUND", 'Server response will be "NOT FOUND".');
+          assert.equal(req1.error_data, "FILE NOT FOUND", 'Server response will be "NOT FOUND".');
           
           assert.equal(req1.always_status, 404, 'Request to bad url should trigger always method as a 404.');
-          assert.equal(req1.always_data, "NOT FOUND", 'Server response for always method will be "NOT FOUND".');
+          assert.equal(req1.always_data, "FILE NOT FOUND", 'Server response for always method will be "NOT FOUND".');
           
           
           // Success with json (Removing \r is needed for Windows)

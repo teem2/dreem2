@@ -436,35 +436,6 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n282" name="n282">282</a>
 <a href="#n283" name="n283">283</a>
 <a href="#n284" name="n284">284</a>
-<a href="#n285" name="n285">285</a>
-<a href="#n286" name="n286">286</a>
-<a href="#n287" name="n287">287</a>
-<a href="#n288" name="n288">288</a>
-<a href="#n289" name="n289">289</a>
-<strong><a href="#n290" name="n290">290</a></strong>
-<a href="#n291" name="n291">291</a>
-<a href="#n292" name="n292">292</a>
-<a href="#n293" name="n293">293</a>
-<a href="#n294" name="n294">294</a>
-<a href="#n295" name="n295">295</a>
-<a href="#n296" name="n296">296</a>
-<a href="#n297" name="n297">297</a>
-<a href="#n298" name="n298">298</a>
-<a href="#n299" name="n299">299</a>
-<strong><a href="#n300" name="n300">300</a></strong>
-<a href="#n301" name="n301">301</a>
-<a href="#n302" name="n302">302</a>
-<a href="#n303" name="n303">303</a>
-<a href="#n304" name="n304">304</a>
-<a href="#n305" name="n305">305</a>
-<a href="#n306" name="n306">306</a>
-<a href="#n307" name="n307">307</a>
-<a href="#n308" name="n308">308</a>
-<a href="#n309" name="n309">309</a>
-<strong><a href="#n310" name="n310">310</a></strong>
-<a href="#n311" name="n311">311</a>
-<a href="#n312" name="n312">312</a>
-<a href="#n313" name="n313">313</a>
 </pre></td>
   <td class="code"><pre><span class="comment">&lt;!-- The MIT License (MIT)
 
@@ -639,12 +610,6 @@ SOFTWARE. --&gt;</span>
       <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">pooling</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
 
       <span class="comment">&lt;!--/**
-        * @attribute {Boolean} [async=true]
-        * If true, create views asynchronously
-        */--&gt;</span>
-      <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">async</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
-
-      <span class="comment">&lt;!--/**
         * @attribute {Array} [data=[]]
         * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
         */--&gt;</span>
@@ -659,8 +624,8 @@ SOFTWARE. --&gt;</span>
           unless @_datapath?
             @_datapath = new dr.datapath(@parent)
             @listenTo(@_datapath, 'onresult', (data) =<span class="error">&gt;</span>
-              @setAttribute('data', data)
-              #console.log('data callback', data, @)
+              @setAttribute('data', data) #unless data == dr.datapath._arrayidentity
+              # console.log('data callback', data, @)
             )
             # console.log('new datapath', @_datapath)
           @_datapath.setAttribute('path', datapath)
@@ -672,8 +637,6 @@ SOFTWARE. --&gt;</span>
         */--&gt;</span>
       <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">classname</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
 
-      <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">onclassname,ondata,oninit</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">method</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">applyData</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/handler&gt;</span>
-
       <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ondestroy</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">method</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">clear</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/handler&gt;</span>
 
       <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">updateData</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
@@ -682,15 +645,8 @@ SOFTWARE. --&gt;</span>
         @dataset.updateData(@datapath.replace(re, ''), data);
       <span class="tag">&lt;/method&gt;</span>
 
-      <span class="comment">&lt;!--/**
-        * @method refresh
-        * Refreshes the dataset manually
-        */--&gt;</span>
-      <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">refresh</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-        this.applyData()
-      <span class="tag">&lt;/method&gt;</span>
-
       <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">clear</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+        @_lockLayouts(true)
         # @parent.setAttribute('display', 'none')
         if @children
           for child in @children
@@ -698,25 +654,13 @@ SOFTWARE. --&gt;</span>
             child.destroy()
         @children = []
         # @parent.setAttribute('display', null)
+        @_lockLayouts(false)
       <span class="tag">&lt;/method&gt;</span>
 
-      <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">applyData</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-        return unless @inited and @parent
-        unless @classname
-          console.warn 'missing classname for replicator', @
-          return
-        # console.log('applyData', @data, @classname, @parent, @children, @, @inited)
-
-        unless dr.lookupClass(@classname)
-          console.warn 'missing class for replicator', @classname, 'skipping replication'
-          return
-
-        if @data.length <span class="error">&gt;</span> @lazycount
-          setTimeout(() =<span class="error">&gt;</span>
-            @doReplication()
-          , 0);
-        else
-          @doReplication()
+      <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">_lockLayouts</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">locked</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+        if @parent.layouts
+          for layout in @parent.layouts
+            layout.setAttribute('locked', locked)
       <span class="tag">&lt;/method&gt;</span>
 
       <span class="comment">&lt;!--/**
@@ -724,7 +668,17 @@ SOFTWARE. --&gt;</span>
         * Fired when the replicator is done
         * @param {dr.replicator} replicator The dr.replicator that fired the event
         */--&gt;</span>
-      <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">doReplication</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+      <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">onclassname,ondata,oninit</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+        return unless @inited and @parent
+        unless @classname
+          console.warn 'missing classname for replicator', @
+          return
+        # console.log('_applyData', @data, @classname, @parent, @children, @, @inited)
+
+        unless dr.lookupClass(@classname)
+          console.warn 'missing class for replicator', @classname, 'skipping replication'
+          return
+
         return if @locked
         return unless @data and @data != dr.replicator._arrayidentity
 
@@ -736,9 +690,7 @@ SOFTWARE. --&gt;</span>
           @locked = locked
           return
 
-        if @parent.layouts
-          for layout in @parent.layouts
-            layout.setAttribute('locked', true)
+        @_lockLayouts(true)
 
         #console.log @data.length
         @children ?= []
@@ -764,20 +716,10 @@ SOFTWARE. --&gt;</span>
             @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
             # console.log 'replicator created', @classname, @children[@children.length - 1]
 
-        finalize = () =<span class="error">&gt;</span>
-          # init constraints for all children created
-          # dr.initConstraints()
-          if @parent.layouts
-            for layout in @parent.layouts
-              layout.setAttribute('locked', false) # Updates automatically since the layout was already locked.
-          @locked = locked
-          @sendEvent('onreplicated', @)
-
-        if @async
-          dr.idle.callOnIdle(finalize)
-        else
-          finalize()
-      <span class="tag">&lt;/method&gt;</span>
+        @_lockLayouts(false)
+        @locked = locked
+        @sendEvent('onreplicated', @)
+      <span class="tag">&lt;/handler&gt;</span>
     <span class="tag">&lt;/class&gt;</span></pre></td>
 </tr></table>
 

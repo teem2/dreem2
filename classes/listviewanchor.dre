@@ -1,0 +1,113 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.listviewanchor {UI Component}
+   * The anchor for a dr.listview
+   */-->
+<mixin name="listviewanchor" with="floatingpanelanchor" requires="listview"
+  activationkeys="[13,27,32,37,38,39,40]"
+>
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Class} listviewclass
+    * The class of list view to create.
+    */-->
+  <attribute name="listviewclass" type="expression" value="dr.listview"/>
+
+  <!--/**
+    * @attribute {Object} listviewattrs
+    * The initialization attributes for the listviewclass.
+    */-->
+  <attribute name="listviewattrs" type="expression" value="{}"/>
+
+ <!--/**
+    * @attribute {Array} itemconfig
+    * An array of configuration parameters for the items in the list.
+    */-->
+  <attribute name="itemconfig" type="expression" value="[]"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method doItemActivated
+    * Called by the list view when an item is activated. By default it hides 
+    * the list view.
+    * @param {dr.view} itemView
+    */-->
+  <method name="doItemActivated" args="itemView">
+    this.hideFloatingPanel();
+  </method>
+
+  <!--/** @overrides */-->
+  <method name="getFloatingPanel" args="panelid">
+    return this.super(panelid) || this.createFloatingPanel(panelid, this.listviewclass, this.listviewattrs);
+  </method>
+
+  <!--/** @overrides */-->
+  <method name="showFloatingPanel" args="panelid">
+    var fp = this.getFloatingPanel(panelid);
+    if (fp) {
+      fp.setAttribute('itemconfig', this.itemconfig);
+      this.super();
+    }
+  </method>
+
+  <!--/** @overrides */-->
+  <method name="doActivationKeyDown" args="key, isRepeat">
+    // Close for escape key.
+    if (key === dr.sprite.GlobalKeys.KEYCODE_ESC) {
+      this.hideFloatingPanel();
+      return;
+    }
+    
+    // Select first/last if the list view is already open
+    switch (key) {
+      case 37: // Left
+      case 38: // Up
+        this.selectLastItem();
+        break;
+      case 39: // Right
+      case 40: // Down
+        this.selectFirstItem();
+        break;
+    }
+    
+    this.super();
+  </method>
+
+  <!--/** @overrides */-->
+  <method name="doActivationKeyUp" args="key">
+    // Abort for escape key.
+    if (key === dr.sprite.GlobalKeys.KEYCODE_ESC) return;
+    
+    this.super();
+    
+    // Select first/last after list view is open.
+    switch (key) {
+      case 37: // Left
+      case 38: // Up
+        this.selectLastItem();
+        break;
+      case 39: // Right
+      case 40: // Down
+        this.selectFirstItem();
+        break;
+    }
+  </method>
+  
+  <method name="selectLastItem">
+    var fp = this.getFloatingPanel();
+    if (fp && fp.isShown()) {
+      var item = fp.getLastFocusableItem();
+      if (item) item.focus();
+    }
+  </method>
+  
+  <method name="selectFirstItem">
+    var fp = this.getFloatingPanel();
+    if (fp && fp.isShown()) {
+      var item = fp.getFirstFocusableItem();
+      if (item) item.focus();
+    }
+  </method>
+</mixin>

@@ -30,7 +30,7 @@ define(function(require, exports, module) {
     this.teemserver = teemserver;
     this.args = args;
     this.name = name;
-    
+
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
@@ -85,6 +85,8 @@ define(function(require, exports, module) {
           req.on('end', function() {
             var comppath = define.expandVariables(this.__getCompositionPath())
             this.__saveEditableFile(comppath, buf, query.stripeditor === '1');
+            res.writeHead(200, {"Content-Type":"text/json"});
+            res.end();
           }.bind(this));
           return;
         } else {
@@ -121,7 +123,7 @@ define(function(require, exports, module) {
               }
             });
           } catch(e) {
-            res.writeHead(500, {"Content-Type":"text/html"});
+            res.writeHead(500, {"Content-Type":"text/html;charset=utf-8"});
             res.write('FAIL');
             res.end();
           }
@@ -133,7 +135,7 @@ define(function(require, exports, module) {
           // for an example that uses this.
           res.writeHead(200, {
             "Cache-control":"max-age=0",
-            "Content-Type":"text/html"
+            "Content-Type":"text/html;charset=utf-8"
           });
           var modules = this.modules,
             i = 0, len = modules.length,
@@ -151,12 +153,12 @@ define(function(require, exports, module) {
             var name = this.name;
             if (screenName === 'dali') {
               var stream = fs.createReadStream(define.expandVariables(this.__buildScreenPath('dali.dali')));
-              res.writeHead(200, {"Content-Type":"text/html"});
+              res.writeHead(200, {"Content-Type":"text/html;charset=utf-8"});
               stream.pipe(res);
             } else {
               res.writeHead(200, {
                 "Cache-control":"max-age=0",
-                "Content-Type":"text/html"
+                "Content-Type":"text/html;charset=utf-8"
               });
               res.write(this.__renderHTMLTemplate(
                 screen.attr && screen.attr.title || name, 
@@ -165,8 +167,8 @@ define(function(require, exports, module) {
               res.end();
             }
           } else {
-            res.writeHead(404, {"Content-Type":"text/html"});
-            res.write('NOT FOUND');
+            res.writeHead(404, {"Content-Type":"text/html;charset=utf-8"});
+            res.write('NO SCREENS FOUND');
             res.end();
           }
         }
@@ -233,7 +235,19 @@ define(function(require, exports, module) {
       var htmlParser = new HTMLParser(),
         source = data.toString(),
         jsobj = htmlParser.parse(source);
-      
+
+      if (jsobj.tag == '$root' && jsobj.child) {
+
+        var children = jsobj.child;
+        var composition;
+        for (var i=0;i<children.length;i++) {
+          var child = children[i];
+          if (child.tag == 'composition') {
+            this.teemserver.pluginLoader.inject(child);
+          }
+        }
+      }
+
       // forward the parser errors 
       if (htmlParser.errors.length) {
         htmlParser.errors.map(function(e) {
@@ -326,6 +340,7 @@ define(function(require, exports, module) {
               if (root) {
                 jsfile = '$BUILD/' + thePath.replace(/\$/g,'').toLowerCase() + '.js';
                 this.compile_once[drefile] = jsfile;
+
                 this.__compileAndWriteDreToJS(root, jsfile, null, local_err, [drefile]);
                 ignore_watch = true;
               }
@@ -373,8 +388,19 @@ define(function(require, exports, module) {
     
     /** @private */
     this.__getCompositionPath = function() {
-      var compositionName = this.name,
-        filepath = '$ROOT/' + compositionName + define.DREEM_EXTENSION;
+      var compositionName = this.name;
+      var filepath = '$ROOT/' + compositionName + define.DREEM_EXTENSION;
+
+      var match = /^plugins\/([^\/]+)\/examples\/([^\/]+)$/.exec(compositionName)
+      if (match) {
+        var pluginName = match[1];
+        var compName = match[2];
+        var plugin = this.teemserver.pluginLoader.plugins[pluginName];
+        if (plugin.rootDir) {
+          filepath = plugin.rootDir + '/examples/' + compName + define.DREEM_EXTENSION
+        }
+      }
+
       if (define.EXTLIB) {
         var extpath = define.expandVariables(define.EXTLIB);
         if (fs.existsSync(extpath)) {
@@ -385,6 +411,7 @@ define(function(require, exports, module) {
           }
         }
       }
+
       return filepath;
     };
     
@@ -760,7 +787,7 @@ define(function(require, exports, module) {
           this.__walkChildren(child, stripeditor, insidescreen);
         }
       }
-    }
+    };
     this.__saveEditableFile = function(filepath, data, stripeditor) {
       var jsobj = JSON.parse(data);
       this.__walkChildren(jsobj, stripeditor);

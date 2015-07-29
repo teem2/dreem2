@@ -50,8 +50,23 @@ SOFTWARE. -->
   fontsize="14"
 />
 
+<class name="basefloatingpanel" extends="floatingpanel"
+  bgcolor="${config.content_color}"
+  border="1" bordercolor="${config.secondary_panel_color}"
+  boxshadow="${config.boxshadow_floater}"
+>
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    dr.floatingpanelanchor.panelsbypanelid[this.panelid] = this;
+  </method>
+</class>
+
 <class name="editor_text" extends="text" fontsize="14"/>
-<class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee"/>
+<class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee">
+  <handler event="onfocus">
+    this.selectAll();
+  </handler>
+</class>
 
 <view name="editor" id="editor" width="100%" height="100%" defaultplacement="content.inner" clip="true" bgcolor="white">
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
@@ -89,6 +104,7 @@ SOFTWARE. -->
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
+    <attribute name="content_color" type="color" value="#f8f8f8"/>
     <attribute name="label_text_color" type="color" value="#666666"/>
     <attribute name="selection_color" type="color" value="blue"/>
     <attribute name="relselection_color" type="color" value="green"/>
@@ -96,6 +112,7 @@ SOFTWARE. -->
     
     <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
     <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
+    <attribute name="boxshadow_floater" type="object" value="[0,3,6,0,'#999999']"/>
     
     <attribute name="ruler_marks" type="object" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
   </node>
@@ -132,42 +149,50 @@ SOFTWARE. -->
     </method>
     
     <method name="undo">
-      undo.undo(this._undoRedoCallback);
+      if (editor.paused) undo.undo(this._undoRedoCallback);
     </method>
     
     <method name="redo">
-      undo.redo(this._undoRedoCallback);
+      if (editor.paused) undo.redo(this._undoRedoCallback);
     </method>
     
     <method name="bringToFront">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var newprevsibling = selected.getLastSiblingView();
-        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          var newprevsibling = selected.getLastSiblingView();
+          if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+        }
       }
     </method>
     
     <method name="bringForward">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var newprevsibling = selected.getNextSiblingView();
-        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          var newprevsibling = selected.getNextSiblingView();
+          if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+        }
       }
     </method>
     
     <method name="sendToBack">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var oldprevsibling = selected.getPrevSiblingView();
-        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          var oldprevsibling = selected.getPrevSiblingView();
+          if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
+        }
       }
     </method>
     
     <method name="sendBackward">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var oldprevsibling = selected.getPrevSiblingView();
-        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          var oldprevsibling = selected.getPrevSiblingView();
+          if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
+        }
       }
     </method>
     
@@ -184,45 +209,60 @@ SOFTWARE. -->
       editormodel.stop();
     </method>
     
-    <method name="pausePlay">
+    <method name="editPreview">
       editor.setAttribute('paused', !editor.paused);
       if (editor.paused) {
         selectionmanager.restore();
-        pausePlayButton.setAttribute('text', 'Play');
+        editPreviewButton.setAttribute('text', 'Preview');
+        preview.setAttribute('visible', false);
+        preview.setAttribute('src', '/iframe_stub.html');
       } else {
         selectionmanager.clear(true);
-        pausePlayButton.setAttribute('text', 'Pause');
-        // FIXME: Need to revert UI state to model state.
+        editPreviewButton.setAttribute('text', 'Edit');
+        preview.setAttribute('visible', true);
+        preview.setAttribute('src', '/compositions/example/editor/preview.dre');
       }
-      
+    </method>
+    
+    <method name="start">
+    </method>
+    
+    <method name="stop">
+      this.setAttribute('visible', false);
+      this.setAttribute('src', '/iframe_stub.html');
     </method>
     
     <method name="createView">
-      var attrs = {
-        class:'view', with:'editable',
-        id:'lzeditor_client_' + dr.generateGuid(),
-        width:50, height:50, x:'center', y:'middle', 
-        bgcolor:'#999999'
-      };
-      var parent = selectionmanager.selected;
-      if (!parent) {
-        attrs.placement = 'editor';
-        parent = this.getRoot();
+      if (editor.paused) {
+        var id = 'lzeditor_client_' + dr.generateGuid();
+        while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
+        
+        var attrs = {
+          class:'view', with:'editable', id:id,
+          width:50, height:50, x:'center', y:'middle', bgcolor:'#999999'
+        };
+        var parent = selectionmanager.selected;
+        if (!parent) {
+          attrs.placement = 'editor';
+          parent = this.getRoot();
+        }
+        var instance = parent.createChild(attrs);
+        
+        // Mark an instance as "new" so we know it needs serialization.
+        instance.__NEW = true;
+        
+        undo.do(new dr.editor.createundoable({target:instance}));
+        selectionmanager.select(instance);
       }
-      var instance = parent.createChild(attrs);
-      
-      // Mark an instance as "new" so we know it needs serialization.
-      instance.__NEW = true;
-      
-      undo.do(new dr.editor.createundoable({target:instance}));
-      selectionmanager.select(instance);
     </method>
     
     <method name="deleteSelected">
-      var selected = selectionmanager.selected;
-      if (selected) {
-        undo.do(new dr.editor.deleteundoable({target:selected}));
-        selectionmanager.clear();
+      if (editor.paused) {
+        var selected = selectionmanager.selected;
+        if (selected) {
+          undo.do(new dr.editor.deleteundoable({target:selected}));
+          selectionmanager.clear();
+        }
       }
     </method>
   </node>
@@ -334,6 +374,57 @@ SOFTWARE. -->
       dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model) );
     </method>
     
+    <method name="getPkg">
+      var compositionNode = this._findChildByTag('composition', this.model);
+      
+      // Copy it
+      compositionNode = JSON.parse(JSON.stringify(compositionNode));
+      
+      // Clean composition node
+      var depth = 0;
+      function cleanComposition(jsobj) {
+        depth++;
+        
+        var children = jsobj.child;
+        if (children) {
+          var child, i = children.length, attrs;
+          while (i) {
+            child = children[--i];
+            
+            attrs = child.attr;
+            if (attrs) {
+              if (depth === 4 && attrs.placement === 'editor') delete attrs.placement;
+              
+              var mixins = attrs.with;
+              if (mixins) {
+                var newMixins = [];
+                mixins.split(define.SEPARATOR_REGEX).forEach(
+                  function(mixinName) {
+                    if (mixinName !== 'editable') newMixins.push(mixinName);
+                  }
+                );
+                attrs.with = newMixins.join(',');
+              }
+            }
+            
+            if (child.tag === 'include') {
+              children.splice(i, 1);
+            } else {
+              cleanComposition(child);
+            }
+          }
+        }
+        
+        depth--;
+      };
+      cleanComposition(compositionNode);
+      
+      return {
+        composition:compositionNode,
+        classmap:dr.classmap
+      };
+    </method>
+    
     <method name="_findChildIndex" args="parent, child">
       var children = parent.child;
       if (children) {
@@ -362,6 +453,19 @@ SOFTWARE. -->
         }
       }
     </method>
+    
+    <method name="_findChildByTag" args="tagname, jsobj">
+      var children = jsobj.child, child;
+      for (var i = 0; children.length > i; i++) {
+        child = children[i]
+        if (child.tag === tagname) {
+          return child;
+        } else if (child.child) {
+          var newchild = this._findChildByTag(tagname, child);
+          if (newchild) return newchild;
+        }
+      }
+    </method>
   </node>
 
 
@@ -385,14 +489,14 @@ SOFTWARE. -->
       switch (keyCode) {
         case 66: // B: Reorder backward
           platformEvent.preventDefault(); // Prevent browser show bookmarks bar functionality
-          (isShiftKeyDown ? sendBackwardButton : sendToBackButton).doActivated();
+          actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
           break;
         case 70: // F: Reorder forward
           platformEvent.preventDefault(); // Prevent browser find functionality
-          (isShiftKeyDown ? bringForwardButton : bringToFrontButton).doActivated();
+          actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
           break;
         case 73: // I: Insert New View
-          createButton.doActivated();
+          actions.createView();
           break;
         case 83: // S: Save document
           platformEvent.preventDefault(); // Prevent browser save functionality
@@ -400,14 +504,14 @@ SOFTWARE. -->
           break;
         case 90: // Z: Undo/Redo
           platformEvent.preventDefault(); // Prevent browser undo/redo functionality
-          (isShiftKeyDown ? redoButton : undoButton).doActivated();
+          actions[(isShiftKeyDown ? 'redo' : 'undo')]();
           break;
       }
     } else {
       var GK = dr.sprite.GlobalKeys;
       switch (keyCode) {
         case GK.KEYCODE_BACKSPACE: // Delete selected view
-          deleteButton.doActivated();
+          actions.deleteSelected();
           break;
         case GK.KEYCODE_ESC: // Clear selection
           if (!reticle.isStarted) selectionmanager.clear();
@@ -776,38 +880,51 @@ SOFTWARE. -->
   <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     width="100%" height="${config.topbar_height}"
   >
-    <view name="left" padding="2" width="auto" height="${config.topbar_height}">
-      <spacedlayout spacing="4" inset="2"></spacedlayout>
-      <constantlayout attribute="y" value="'middle'"></constantlayout>
+    <view name="left" padding="2" height="${config.topbar_height}">
+      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
+      <constantlayout attribute="y" value="'middle'"/>
       
-      <toolbarbutton id="undoButton" action="undo" disabled="${!undo.isundoable || !editor.paused}">Undo</toolbarbutton>
-      <toolbarbutton id="redoButton" action="redo" disabled="${!undo.isredoable|| !editor.paused}">Redo</toolbarbutton>
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbarbutton id="bringToFrontButton" action="bringToFront" disabled="${!selectionmanager.selected}">Bring To Front</toolbarbutton>
-      <toolbarbutton id="bringForwardButton" action="bringForward" disabled="${!selectionmanager.selected}">Bring Forward</toolbarbutton>
-      <toolbarbutton id="sendToBackButton" action="sendToBack" disabled="${!selectionmanager.selected}">Send to Back</toolbarbutton>
-      <toolbarbutton id="sendBackwardButton" action="sendBackward" disabled="${!selectionmanager.selected}">Send Backward</toolbarbutton>
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbarbutton id="deleteButton" action="deleteSelected" disabled="${!selectionmanager.selected}">Delete</toolbarbutton>
-      <toolbarbutton id="createButton" action="createView" disabled="${!editor.paused}">Create</toolbarbutton>
+      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" label="Actions"
+        width="73" textalign="right"
+        listviewattrs="{maxheight:300}"
+      >
+        <method name="doActivated">
+          var editorPlaying = !editor.paused;
+          var noSelection = !selectionmanager.selected;
+          var cfg = [
+            {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
+            {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
+            {klass:dr.listviewseparator},
+            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noSelection}},
+            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noSelection}},
+            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noSelection}},
+            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noSelection}},
+            {klass:dr.listviewseparator},
+            {attrs:{name:'deleteSelected', text:'Delete', disabled:noSelection}},
+            {attrs:{name:'createView', text:'Create', disabled:editorPlaying}},
+          ];
+          this.setAttribute('itemconfig', cfg);
+          
+          this.toggleFloatingPanel();
+        </method>
+        
+        <method name="doItemActivated" args="itemview">
+          actions[itemview.name]();
+          this.super();
+        </method>
+      </listviewbutton>
+      <floatingpanelbutton id="settingsButton" floatingpanelid="settings" floatingvalignoffset="2" label="Settings"
+        width="78" textalign="right"
+      />
     </view>
     
-    <view name="center" padding="2" x="${this.parent.left.width}" width="${this.parent.right.x - this.x}" height="${config.topbar_height}">
-      <view x="center" y="middle">
-        <spacedlayout spacing="4" inset="2" updateparent="true"></spacedlayout>
-        <constantlayout attribute="y" value="'middle'"></constantlayout>
-        <editor_text text="grid x:"/>
-        <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
-        <editor_text text="y:"/>
-        <editor_inputtext id="gridsizey" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
-      </view>
-    </view>
+    <view name="center" padding="2" x="${this.parent.left.width}" width="${this.parent.right.x - this.x}" height="${config.topbar_height}"/>
     
-    <view name="right" padding="2" x="right" width="auto" height="${config.topbar_height}">
-      <spacedlayout spacing="4" inset="2"></spacedlayout>
-      <constantlayout attribute="y" value="'middle'"></constantlayout>
+    <view name="right" padding="2" x="right" height="${config.topbar_height}">
+      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
+      <constantlayout attribute="y" value="'middle'"/>
       
-      <toolbarbutton id="pausePlayButton" action="pausePlay" width="54" textalign="center">Play</toolbarbutton>
+      <toolbarbutton id="editPreviewButton" action="editPreview" width="64" textalign="center">Preview</toolbarbutton>
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
       <toolbarbutton id="stopButton" action="stop" width="54" textalign="center">Exit</toolbarbutton>
@@ -820,7 +937,7 @@ SOFTWARE. -->
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
   />
   
-  <view name="content_bg" ignoreplacement="true" bgcolor="#f8f8f8"
+  <view name="content_bg" ignoreplacement="true" bgcolor="${config.content_color}"
     x="${this.parent.ruler_horizontal.x}"
     y="${this.parent.ruler_vertical.y}"
     width="${this.parent.divider_right.x - this.x}"
@@ -845,12 +962,18 @@ SOFTWARE. -->
     </view>
   </view>
 
+  <webpage name="preview" id="preview" ignoreplacement="true" visible="false"
+    x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
+    width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
+    border="2" bordercolor="#66ee00"
+    clickable="true" bgcolor="#999999"
+  />
+
   <view name="rightbar" ignoreplacement="true" bgcolor="#fcfcfc"
     x="right" y="${config.topbar_height}"
     width="${this.parent.innerwidth - this.parent.divider_right.x}"
     height="${this.parent.leftbar.height}"
   >
-    
     <view name="component_list_panel" width="100%" height="195" bgcolor="white" scrollable="true">
       <view width="100%">
         <wrappinglayout axis="x" spacing="5" inset="5" outset="5" linespacing="5" lineinset="5" lineoutset="5" updateparent="true"/>
@@ -976,3 +1099,19 @@ SOFTWARE. -->
   <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>
 </view>
+
+<basefloatingpanel panelid="settings" width="auto" height="auto" padding="4">
+  <method name="getFirstFocusableDescendant">
+    return gridsizex;
+  </method>
+  
+  <view height="auto">
+    <spacedlayout spacing="4" updateparent="true"></spacedlayout>
+    <editor_text text="grid x:" y="2"/>
+    <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+    <editor_text text="y:" y="2"/>
+    <editor_inputtext id="gridsizey" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+  </view>
+</basefloatingpanel>
+
+<colorpicker panelid="colorpicker"/>

@@ -89,7 +89,30 @@
         /\$([^\/$]*)/g,
         function(all, lut) {
           if (lut in define) {
-            return define.expandVariables(define[lut]);
+            if (lut == 'PLUGIN') {
+
+              //FIXME: there is probably a better way to do this but by this point
+              // there's no information as to where the str came from, so we can't
+              // tell which plugin is asking for it's library.  So just iterate
+              // through all the plugin directories and use the first match.
+              // This will cause problems someday.
+
+              if (!define.__FS) {
+                define.__FS = require('fs');
+              }
+              var lib = /\$PLUGIN(.*)/.exec(str)[1];
+              var paths = define[lut];
+              for (var i=0;i<paths.length;i++) {
+                var path = paths[0];
+                if (define.__FS.existsSync(path + '/' + lib)) {
+                  return define.expandVariables(path);
+                }
+              }
+
+              throw new Error("Cannot find $PLUGIN lib " + lib + " used in require");
+            } else {
+              return define.expandVariables(define[lut]);
+            }
           } else {
             throw new Error("Cannot find $" + lut + " used in require");
           }
@@ -137,7 +160,6 @@
       
       if (factory === null) return null; // its not an AMD module, but accept that
       if (!factory) throw new Error("Cannot find factory for module:" + abs_path);
-      
       // call the factory
       var ret = factory.call(module.exports, define.localRequire(define.filePath(abs_path)), module.exports, module);
       if (ret !== undefined) module.exports = ret;
@@ -355,7 +377,7 @@
         
         function localRequire(name) {
           if (arguments.length != 1) throw new Error("Unsupported require style");
-          
+
           name = define.expandVariables(name);
 		  //console.log("*** name: " , name);
 			//console.log("*** module: ",		  module);

@@ -85,9 +85,12 @@ define(function(require, exports, module) {
                 automatically generated.
             @private */
         notify: function(consoleFuncName, eventType, msg, err) {
-            var stacktrace = sprite.generateStacktrace(eventType, msg, err);
+            var stacktrace = sprite.generateStacktrace(eventType, msg, err),
+                event = {msg:msg, stacktrace:stacktrace};
             
-            this.sendEvent(&#39;on&#39; + (eventType || &#39;error&#39;), {msg:msg, stacktrace:stacktrace});
+            if (eventType) this.sendEvent(&#39;on&#39; + eventType, event);
+            this.sendEvent(&#39;onall&#39;, event);
+            
             if (this.consoleLogging &amp;&amp; consoleFuncName) sprite.console[consoleFuncName](stacktrace || msg);
         },
         

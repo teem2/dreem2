@@ -1,0 +1,85 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.listviewitem {UI Component}
+   * An item in a dr.listview.
+   */-->
+<class name="listviewitem" with="button, listviewitemmixin"
+  activationkeys="[13,27,32,37,38,39,40]" height="auto"
+  toppadding="4" bottompadding="4"
+  focusembellishment="false"
+>
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {String} text
+    */-->
+  <attribute name="text" type="string" value=""/>
+
+  <!--/**
+    * @attribute {Number} fontsize
+    */-->
+  <attribute name="fontsize" type="number" value="14"/>
+
+  <!--/**
+    * @attribute {Number} inset
+    */-->
+  <attribute name="inset" type="number" value="8"/>
+
+  <!--/**
+    * @attribute {Number} outset
+    */-->
+  <attribute name="outset" type="number" value="8"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="drawDisabledState">
+    this.setAttribute('bgcolor', '#aaaaaa');
+    this.setAttribute('color', '#666666');
+  </method>
+  <method name="drawFocusedState">
+    this.setAttribute('bgcolor', '#ffffff');
+    this.setAttribute('color', '#000000');
+  </method>
+  <method name="drawHoverState">
+    this.setAttribute('bgcolor', '#ffffff');
+    this.setAttribute('color', '#000000');
+  </method>
+  <method name="drawActiveState">
+    this.setAttribute('bgcolor', '#dddddd');
+    this.setAttribute('color', '#000000');
+  </method>
+  <method name="drawReadyState">
+    this.setAttribute('bgcolor', '#eeeeee');
+    this.setAttribute('color', '#000000');
+  </method>
+
+  <method name="doActivated">
+    this.listview.doItemActivated(this);
+  </method>
+
+  <method name="doActivationKeyDown" args="key, isRepeat">
+    switch (key) {
+      case 27: // Escape
+        this.listview.owner.hideFloatingPanel();
+        return;
+      case 37: // Left
+      case 38: // Up
+        dr.global.focus.prev();
+        break;
+      case 39: // Right
+      case 40: // Down
+        dr.global.focus.next();
+        break;
+    }
+    
+    this.super(key, isRepeat);
+  </method>
+  
+  <method name="getMinimumWidth">
+    return this.inset + this.label.width + this.outset;
+  </method>
+  
+  
+  <!--// Views //////////////////////////////////////////////////////////////-->
+  <text name="label" x="${this.parent.inset}" text="${this.parent.text}" fontsize="${this.parent.fontsize}"/>
+</class>

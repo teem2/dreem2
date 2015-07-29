@@ -74,11 +74,10 @@ define(function(require, exports, module) {
                 if (++this.__xOrYAttachedObserverCount === 1) {
                     if (this.__handler_xOrY == null) {
                         this.__handler_xOrY = (function(event) {
-                            var pos = sprite.MouseObservable.getMouseFromEvent(event);
-                            this.x = pos.x;
-                            this.y = pos.y;
-                            this.sendEvent(&#39;onx&#39;, pos.x);
-                            this.sendEvent(&#39;ony&#39;, pos.y);
+                            this.x = event.x;
+                            this.y = event.y;
+                            this.sendEvent(&#39;onx&#39;, event.x);
+                            this.sendEvent(&#39;ony&#39;, event.y);
                             return true;
                         }).bind(this);
                     }

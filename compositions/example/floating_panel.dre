@@ -173,7 +173,58 @@ SOFTWARE. -->
         </method>
         
         <method name="getNextFocusAfterPanel">
-          return this.parent.btn1;
+          return this.parent.btn10;
+        </method>
+      </mybtn>
+      
+      <mybtn with="listviewanchor" name="btn10" text="button 10"
+        floatingpanelid="listviewTest"
+        listviewattrs="{maxheight:300}"
+      >
+        <method name="doActivated">
+          var cfg = [
+            {attrs:{text:'foo'}},
+            {attrs:{text:'This should be the longest item.'}},
+            {attrs:{text:'baz'}},
+            {attrs:{text:'a'}},
+            {attrs:{text:'b'}},
+            {attrs:{text:'c', disabled:true}},
+            {attrs:{text:'d', visible:false}},
+            {attrs:{text:'e'}},
+            {attrs:{text:'f'}},
+            {attrs:{text:'g'}},
+            {klass:dr.listviewseparator},
+            {attrs:{text:'h'}},
+            {attrs:{text:'i'}},
+            {attrs:{text:'j'}},
+            {attrs:{text:'k'}},
+            {klass:dr.listviewseparator},
+            {attrs:{text:'l'}},
+            {attrs:{text:'m'}},
+            {attrs:{text:'n'}},
+            {klass:dr.listviewseparator},
+            {attrs:{text:'o'}},
+            {attrs:{text:'p'}},
+            {attrs:{text:'q'}},
+            {attrs:{text:'r'}},
+            {attrs:{text:'s'}},
+            {attrs:{text:'t'}},
+            {attrs:{text:'u'}},
+            {attrs:{text:'v'}},
+            {attrs:{text:'w'}},
+            {attrs:{text:'x'}},
+            {attrs:{text:'y'}},
+            {attrs:{text:'z'}}
+          ];
+          cfg.length = dr.getRandomInt(5, cfg.length);
+          this.setAttribute('itemconfig', cfg);
+          
+          this.toggleFloatingPanel();
+        </method>
+        
+        <method name="doItemActivated" args="itemview">
+          console.log(itemview.text);
+          this.super();
         </method>
       </mybtn>
       

@@ -30,6 +30,19 @@
         ],
         
         
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+            KEYCODE_BACKSPACE:8,
+            KEYCODE_TAB:9,
+            KEYCODE_SHIFT:16,
+            KEYCODE_CONTROL:17,
+            KEYCODE_ALT:18,
+            KEYCODE_ESC:27,
+            KEYCODE_COMMAND:sprite.platform.browser === &#39;Firefox&#39; ? 224 : 91,
+            KEYCODE_RIGHT_COMMAND:sprite.platform.browser === &#39;Firefox&#39; ? 224 : 93
+        },
+        
+        
         // Constructor /////////////////////////////////////////////////////////////
 <span id='global-method-initialize'>        /** The standard JSClass initializer function. Subclasses should not
 </span>            override this function.
@@ -38,14 +51,6 @@
         initialize: function(view, attrs) {
             this.view = view;
             this.platformObject = globalScope.document;
-            
-            // Constants
-            this.KEYCODE_SHIFT = 16;
-            this.KEYCODE_CONTROL = 17;
-            this.KEYCODE_ALT = 18;
-            var isFirefox = sprite.platform.browser === &#39;Firefox&#39;;
-            this.KEYCODE_COMMAND = isFirefox ? 224 : 91;
-            this.KEYCODE_RIGHT_COMMAND = isFirefox ? 224 : 93;
             
             this.__keysDown = {};
         },
@@ -58,17 +63,17 @@
         isKeyDown: function(keyCode) {return !!this.__keysDown[keyCode];},
         
 <span id='global-method-isShiftKeyDown'>        /** Tests if the &#39;shift&#39; key is down. */
-</span>        isShiftKeyDown: function() {return this.isKeyDown(this.KEYCODE_SHIFT);},
+</span>        isShiftKeyDown: function() {return this.isKeyDown(sprite.GlobalKeys.KEYCODE_SHIFT);},
         
 <span id='global-method-isControlKeyDown'>        /** Tests if the &#39;control&#39; key is down. */
-</span>        isControlKeyDown: function() {return this.isKeyDown(this.KEYCODE_CONTROL);},
+</span>        isControlKeyDown: function() {return this.isKeyDown(sprite.GlobalKeys.KEYCODE_CONTROL);},
         
 <span id='global-method-isAltKeyDown'>        /** Tests if the &#39;alt&#39; key is down. */
-</span>        isAltKeyDown: function() {return this.isKeyDown(this.KEYCODE_ALT);},
+</span>        isAltKeyDown: function() {return this.isKeyDown(sprite.GlobalKeys.KEYCODE_ALT);},
         
 <span id='global-method-isCommandKeyDown'>        /** Tests if the &#39;command&#39; key is down. */
 </span>        isCommandKeyDown: function() {
-            return this.isKeyDown(this.KEYCODE_COMMAND) || this.isKeyDown(this.KEYCODE_RIGHT_COMMAND);
+            return this.isKeyDown(sprite.GlobalKeys.KEYCODE_COMMAND) || this.isKeyDown(sprite.GlobalKeys.KEYCODE_RIGHT_COMMAND);
         },
         
 <span id='global-method-isAcceleratorKeyDown'>        /** Tests if the platform specific &quot;accelerator&quot; key is down. */
@@ -103,6 +108,7 @@
             view.listenToPlatform(view, &#39;onkeydown&#39;, &#39;__handleKeyDown&#39;);
             view.listenToPlatform(view, &#39;onkeypress&#39;, &#39;__handleKeyPress&#39;);
             view.listenToPlatform(view, &#39;onkeyup&#39;, &#39;__handleKeyUp&#39;);
+            this.__listeningToDocuemnt = true;
         },
         
 <span id='global-method-__unlistenToDocument'>        /** @private */
@@ -111,6 +117,7 @@
             view.stopListeningToPlatform(view, &#39;onkeydown&#39;, &#39;__handleKeyDown&#39;);
             view.stopListeningToPlatform(view, &#39;onkeypress&#39;, &#39;__handleKeyPress&#39;);
             view.stopListeningToPlatform(view, &#39;onkeyup&#39;, &#39;__handleKeyUp&#39;);
+            this.__listeningToDocuemnt = false;
         },
         
 <span id='global-method-__handleKeyDown'>        /** @private */
@@ -121,24 +128,15 @@
             // Keyup events do not fire when command key is down so fire a keyup
             // event immediately. Not an issue for other meta keys: shift, ctrl 
             // and option.
-            if (this.isCommandKeyDown() &amp;&amp; keyCode !== 16 &amp;&amp; keyCode !== 17 &amp;&amp; keyCode !== 18) {
-                this.view.sendEvent(&#39;onkeydown&#39;, keyCode);
-                this.view.sendEvent(&#39;onkeyup&#39;, keyCode);
-                
-                // Assume command key goes back up since it is common for the page
-                // to lose focus after the command key is used. Do this for every 
-                // key other than &#39;z&#39; since repeated undo/redo is 
-                // nice to have and doesn&#39;t typically result in loss of focus 
-                // to the page.
-                if (keyCode !== 90) {
-                    this.view.sendEvent(&#39;onkeyup&#39;, this.KEYCODE_COMMAND);
-                    this.__keysDown[this.KEYCODE_COMMAND] = false;
-                }
+            var GK = sprite.GlobalKeys;
+            if (this.isCommandKeyDown() &amp;&amp; keyCode !== GK.KEYCODE_SHIFT &amp;&amp; keyCode !== GK.KEYCODE_CONTROL &amp;&amp; keyCode !== GK.KEYCODE_ALT) {
+                this.__sendEvent(&#39;down&#39;, platformEvent, keyCode);
+                this.__sendEvent(&#39;up&#39;, platformEvent, keyCode);
             } else {
                 this.__keysDown[keyCode] = true;
                 
                 // Check for &#39;tab&#39; key and do focus traversal.
-                if (keyCode === 9) {
+                if (keyCode === GK.KEYCODE_TAB) {
                     var ift = this.view.ignoreFocusTrap(), gf = globalRegistry.focus;
                     if (this.isShiftKeyDown()) {
                         gf.prev(ift);
@@ -147,14 +145,14 @@
                     }
                 }
                 
-                this.view.sendEvent(&#39;onkeydown&#39;, keyCode);
+                this.__sendEvent(&#39;down&#39;, platformEvent, keyCode);
             }
         },
         
 <span id='global-method-__handleKeyPress'>        /** @private */
 </span>        __handleKeyPress: function(platformEvent) {
             var keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-            this.view.sendEvent(&#39;onkeypress&#39;, keyCode);
+            this.__sendEvent(&#39;press&#39;, platformEvent, keyCode);
         },
         
 <span id='global-method-__handleKeyUp'>        /** @private */
@@ -162,13 +160,13 @@
             var keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
             if (this.__shouldPreventDefault(keyCode, platformEvent.target)) sprite.preventDefault(platformEvent);
             this.__keysDown[keyCode] = false;
-            this.view.sendEvent(&#39;onkeyup&#39;, keyCode);
+            this.__sendEvent(&#39;up&#39;, platformEvent, keyCode);
         },
         
 <span id='global-method-__shouldPreventDefault'>        /** @private */
 </span>        __shouldPreventDefault: function(keyCode, targetElem) {
             switch (keyCode) {
-                case 8: // Backspace
+                case sprite.GlobalKeys.KEYCODE_BACKSPACE: // Backspace
                     // Catch backspace since it navigates the history. Allow it to
                     // go through for text input elements though.
                     var nodeName = targetElem.nodeName;
@@ -184,6 +182,12 @@
                     return true;
             }
             return false;
+        },
+        
+<span id='global-method-__sendEvent'>        /** @private */
+</span>        __sendEvent: function(eventType, platformEvent, keyCode) {
+            this.view.sendEvent(&#39;onkeycode&#39; + eventType, keyCode);
+            if (!this.__listeningToDocuemnt) this.view.sendEvent(&#39;onkey&#39; + eventType, platformEvent);
         }
     });
 });

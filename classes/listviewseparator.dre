@@ -1,0 +1,9 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.listviewseparator {UI Component}
+   * A separator in a dr.listview.
+   */-->
+<class name="listviewseparator" with="listviewitemmixin"
+  height="1" bgcolor="#666666"
+/>

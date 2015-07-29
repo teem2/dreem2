@@ -97,9 +97,9 @@ var runTest = function(file, callback) {
     });
   };
   
-  page.onResourceError = function(resourceError) {
-    console.log('RESOURCE ERROR: ' + resourceError.errorString + ', URL: ' + resourceError.url + ', File: ' + file);
-  };
+//  page.onResourceError = function(resourceError) {
+//    console.log('RESOURCE ERROR: ' + resourceError.errorString + ', URL: ' + resourceError.url + ', File: ' + file);
+//  };
   
   page.onConsoleMessage = function(msg, lineNum, sourceId) {
     if (msg === '~~DONE~~') {

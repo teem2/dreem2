@@ -44,6 +44,8 @@ define(function(require, exports, module) {
         
         // Constructor /////////////////////////////////////////////////////////////
         initialize: function() {
+            this.lastTraversalWasForward = true;
+            
             GlobalRegistry.register(&#39;focus&#39;, this);
         },
         

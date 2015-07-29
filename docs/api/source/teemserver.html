@@ -36,7 +36,9 @@ define(function(require, exports, module) {
     ExternalApps = require(&#39;$CORE/externalapps&#39;),
     BusServer = require(&#39;$CORE/busserver&#39;),
     CompositionServer = require(&#39;$CORE/compositionserver&#39;),
-    NodeWebSocket = require(&#39;$CORE/nodewebsocket&#39;);
+    PluginLoader = require(&#39;./pluginloader&#39;),
+    NodeWebSocket = require(&#39;$CORE/nodewebsocket&#39;),
+    SauceRunner = require(&#39;$CORE/saucerunner&#39;);
 
   // Create a function to determine a mime type for a file.
   var mimeFromFile = (function() {
@@ -117,6 +119,10 @@ define(function(require, exports, module) {
     }.bind(this))
     
     if (this.args[&#39;-web&#39;]) this.__getComposition(this.args[&#39;-web&#39;]);
+    
+    this.saucerunner = new SauceRunner();
+
+    this.pluginLoader = new PluginLoader(this.args, this.name, this);
   }
 
   body.call(TeemServer.prototype)
@@ -143,7 +149,7 @@ define(function(require, exports, module) {
       // Strip Query
       var queryIndex = url.indexOf(&#39;?&#39;);
       if (queryIndex !== -1) url = url.substring(0, queryIndex);
-      
+
       if (url.endsWith(define.DREEM_EXTENSION)) {
         url = url.substring(0, url.length - define.DREEM_EXTENSION.length);
         
@@ -163,7 +169,7 @@ define(function(require, exports, module) {
       }
     };
 
-<span id='TeemServer-method-__upgrade'>    /** 
+<span id='TeemServer-method-__upgrade'>    /**
 </span>      * Handle protocol upgrade to WebSocket
       * @param {Request} req 
       * @param {Socket} sock
@@ -214,6 +220,7 @@ define(function(require, exports, module) {
               res.end();
             } else {
               res.writeHead(404);
+              res.write(&#39;FILE NOT FOUND&#39;);
               res.end();
               console.color(&#39;~br~Error~y~ &#39; + filePath + &#39;~~ In teemserver.js request handling. File not found, returning 404\n&#39;);
             }
@@ -224,21 +231,28 @@ define(function(require, exports, module) {
               &quot;ETag&quot;: stat.mtime.getTime() + &#39;_&#39; + stat.ctime.getTime() + &#39;_&#39; + stat.size
             };
             
-            this.watcher.watch(filePath);
-            
-            if (req.headers[&#39;if-none-match&#39;] == header.ETag) {
-              res.writeHead(304, header);
-              res.end();
-            } else {
-              var stream = fs.createReadStream(filePath);
+            if (filePath.indexOf(&#39;saucerunner&#39;) !== -1) {
+              var sauceRunnerHTML = this.saucerunner.getHTML(filePath);
               res.writeHead(200, header);
-              stream.pipe(res);
+              res.end(sauceRunnerHTML);
+            } else {
+              this.watcher.watch(filePath);
+
+              if (req.headers[&#39;if-none-match&#39;] == header.ETag) {
+                res.writeHead(304, header);
+                res.end();
+              } else {
+                var stream = fs.createReadStream(filePath);
+                res.writeHead(200, header);
+                stream.pipe(res);
+              }
             }
           }
         }.bind(this));
       }
     };
   }
-})</pre>
+});
+</pre>
 </body>
 </html>

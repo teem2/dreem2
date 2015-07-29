@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+ The MIT License (see LICENSE)
+ Copyright (C) 2014-2015 Teem2 LLC
+ */
+<span id='BusServer'>/**
+</span> * @class BusServer {}
+ * Holds a set of server side sockets for broadcast
+ */
+define(function(require, exports, module) {
+  module.exports = SauceRunner;
+
+  var fs = require(&#39;fs&#39;),
+    path = require(&#39;path&#39;);
+
+  function SauceRunner() {
+  };
+
+  body.call(SauceRunner.prototype);
+
+  function body() {
+
+<span id='BusServer-method-getHTML'>    /**
+</span>     * @method getHTML
+     * generates the sauce runner HTML with all of the smoke tests
+     */
+    this.getHTML = function(htmlTemplatePath) {
+      console.log(&#39;saucerunner getHTML&#39;);
+//      var filePath = path.join(define.expandVariables(define.ROOT), &#39;/saucerunner.html&#39;);
+//      var filename = dreemroot + &#39;/saucerunner.html&#39;;
+      var html = fs.readFileSync(htmlTemplatePath, &quot;utf8&quot;);
+
+      var smokePath = path.join(define.expandVariables(define.ROOT), &#39;/compositions/smoke&#39;);
+      var files = fs.readdirSync(smokePath);
+      var str = &#39;&#39;;
+      for (var i=0, l=files.length; i&lt;l; i++) {
+        var fileName = files[i];
+        if(fileName.match(/\.dre/i)){
+          if(str) str += &quot;,&quot;
+          str += &#39;&quot;http://localhost:8080/compositions/smoke/&#39;+fileName+&#39;?test&quot;&#39;
+        }
+      }
+      var out = html.replace(/DYNAMIC_FILES = null/,&#39;DYNAMIC_FILES = [&#39; + str + &#39;]&#39;)
+      return out;
+    }
+  }
+})
+</pre>
+</body>
+</html>

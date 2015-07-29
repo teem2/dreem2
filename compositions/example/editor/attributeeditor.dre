@@ -85,7 +85,7 @@ SOFTWARE. -->
 </class>
 
 <class name="coloreditor" with="floatingpanelanchor, button"
-  floatingalign="insideright" floatingvalign="outsidebottom"
+  floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
   border="1" bordercolor="#eeeeee" width="100" height="20"
   floatingpanelid="colorpicker"
 >
@@ -96,10 +96,11 @@ SOFTWARE. -->
   
   <method name="doActivated">
     var fp = this.getFloatingPanel();
-    if (!fp) fp = this.createFloatingPanel(this.floatingpanelid, dr.colorpicker);
-    this.toggleFloatingPanel();
-    fp.setAttribute('color', this.target[this.targetattr]);
-    this.oldvalue = fp.color;
+    if (fp) {
+      this.toggleFloatingPanel();
+      fp.setAttribute('color', this.target[this.targetattr]);
+      this.oldvalue = fp.color;
+    }
   </method>
 
   <handler event="onvalue" args="value">
