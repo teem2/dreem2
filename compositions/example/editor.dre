@@ -22,10 +22,10 @@ SOFTWARE. -->
 <composition>
  <screens>
   <screen type='browser' name='default' title='Editor'>
-   <view width='100%' height='100%' bgcolor='#ff99cc' id='lzeditor_23' scrollable='true'>
+   <view width='100%' height='100%' bgcolor='#ff99cc' scrollable='true' id='lzeditor_121'>
     <include href='./editor/editor_include.dre'/>
-    <view with='button,editable' x='0' y='0' bgcolor='purple' width='187' height='105' opacity='1' visible='true' id='lzeditor_26' placement='editor'>
-     <view id='lzeditor_client_3' x='${this.parent.innerwidth - this.boundswidth + this.boundsxdiff}' y='${this.parent.innerheight - this.boundsheight + this.boundsydiff}' width='50' height='50' bgcolor='#999999' opacity='1' visible='true' with='editable'/>
+    <view with='button,editable' x='0' y='0' bgcolor='purple' width='187' height='105' opacity='1' visible='true' id='lzeditor_122' placement='editor'>
+     <view x='${this.parent.innerwidth - this.boundswidth + this.boundsxdiff}' y='${this.parent.innerheight - this.boundsheight + this.boundsydiff}' width='50' height='50' bgcolor='#999999' opacity='1' visible='true' id='lzeditor_123' with='editable'/>
      <handler event='onmousedown' args='event'>
         console.log('playing mousedown');
      </handler>
@@ -48,9 +48,9 @@ SOFTWARE. -->
         this.setAttribute('bgcolor', 'purple');
      </method>
     </view>
-    <view with='button,editable' x='23' y='119' scrollable='true' bgcolor='red' width='130' height='110' opacity='1' visible='true' id='lzeditor_34' placement='editor'>
-     <text text='hello world.' id='lzeditor_35' with='editable' height='auto' opacity='1' visible='true' width='auto' x='0' y='0'/>
-     <view id='lzeditor_client_2' x='60' y='60' width='106' height='129' bgcolor='#0082ff' opacity='1' visible='true' with='editable' placement='editor'/>
+    <view with='button,editable' x='23' y='119' scrollable='true' bgcolor='red' width='130' height='110' opacity='1' visible='true' id='lzeditor_131' placement='editor'>
+     <text text='hello world.' height='auto' opacity='1' visible='true' width='auto' x='0' y='0' id='lzeditor_132' with='editable'/>
+     <view x='60' y='60' width='106' height='129' bgcolor='#0082ff' opacity='1' visible='true' id='lzeditor_133' with='editable'/>
      <handler event='onmousedown' args='event'>
         console.log('playing mousedown');
      </handler>
@@ -73,9 +73,9 @@ SOFTWARE. -->
         this.setAttribute('bgcolor', 'red');
      </method>
     </view>
-    <view x='200' y='86' bgcolor='green' width='103' height='135' opacity='1' visible='true' id='lzeditor_24' with='editable' placement='editor'/>
-    <view with='draggable,editable' x='96' y='270' bgcolor='orange' width='184' height='147' opacity='1' visible='true' id='lzeditor_25' placement='editor'>
-     <view id='lzeditor_client_1' x='${((this.parent.innerwidth - this.boundswidth) / 2) + this.boundsxdiff}' y='${((this.parent.innerheight - this.boundsheight) / 2) + this.boundsydiff}' width='93' height='93' bgcolor='#fff700' opacity='1' visible='true' with='editable'/>
+    <view x='200' y='86' bgcolor='green' width='103' height='135' opacity='1' visible='true' id='lzeditor_141' with='editable' placement='editor'/>
+    <view with='draggable,editable' x='96' y='270' bgcolor='orange' width='184' height='147' opacity='1' visible='true' id='lzeditor_142' placement='editor'>
+     <view x='${((this.parent.innerwidth - this.boundswidth) / 2) + this.boundsxdiff}' y='${((this.parent.innerheight - this.boundsheight) / 2) + this.boundsydiff}' width='93' height='93' bgcolor='#fff700' opacity='1' visible='true' id='lzeditor_143' with='editable'/>
     </view>
    </view>
   </screen>

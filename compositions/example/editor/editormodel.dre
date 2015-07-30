@@ -145,11 +145,11 @@ SOFTWARE. -->
   </method>
   
   <method name="save">
-    dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model) );
+    dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model));
   </method>
 
   <method name="stop">
-    dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model) );
+    dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model));
   </method>
   
   <method name="getPkg">

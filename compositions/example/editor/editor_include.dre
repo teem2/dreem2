@@ -185,14 +185,6 @@ SOFTWARE. -->
       }
     </method>
     
-    <method name="start">
-    </method>
-    
-    <method name="stop">
-      this.setAttribute('visible', false);
-      this.setAttribute('src', '/iframe_stub.html');
-    </method>
-    
     <method name="createView">
       if (editor.paused) {
         var id = 'lzeditor_client_' + dr.generateGuid();
@@ -724,7 +716,7 @@ SOFTWARE. -->
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     
-    <view x="70" y="35" color="#999999">
+    <view x="69" y="35" color="#999999">
       <spacedlayout spacing="8"/>
       <constantlayout attribute="y" value="'middle'"/>
       
@@ -737,6 +729,9 @@ SOFTWARE. -->
       >
         <method name="initNode" args="parent, attrs">
           this.cfg = [
+            {attrs:{name:'custom', text:'custom'}},
+            {klass:dr.listviewseparator},
+            
             {attrs:{name:'iphonetall', text:'iphone (Portrait)',              w:320, h:480}},
             {attrs:{name:'iphonewide', text:'iphone (Landscape)',             w:480, h:320}},
             
@@ -750,10 +745,7 @@ SOFTWARE. -->
             {attrs:{name:'iphone6wide', text:'iphone 6 (Landscape)',          w:Math.round(1334 * 163/326), h:Math.round(750  * 163/326)}},
             
             {attrs:{name:'iphone6plustall', text:'iphone 6 Plus (Portrait)',  w:Math.round(1080 * 163/401), h:Math.round(1920 * 163/401)}},
-            {attrs:{name:'iphone6pluswide', text:'iphone 6 Plus (Landscape)', w:Math.round(1920 * 163/401), h:Math.round(1080 * 163/401)}},
-            
-            {klass:dr.listviewseparator},
-            {attrs:{name:'custom', text:'custom'}}
+            {attrs:{name:'iphone6pluswide', text:'iphone 6 Plus (Landscape)', w:Math.round(1920 * 163/401), h:Math.round(1080 * 163/401)}}
           ];
           
           this.super();
