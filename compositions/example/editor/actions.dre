@@ -1,0 +1,143 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<node id="actions">
+  <method name="_undoRedoCallback" args="undoable">
+    if (!undoable.isA(dr.editor.compoundundoable)) {
+      var target = undoable.target;
+      if (target && target.parent) {
+        selectionmanager.select(target);
+      } else {
+        selectionmanager.clear();
+      }
+    }
+  </method>
+  
+  <method name="undo">
+    if (editor.paused) undo.undo(this._undoRedoCallback);
+  </method>
+  
+  <method name="redo">
+    if (editor.paused) undo.redo(this._undoRedoCallback);
+  </method>
+  
+  <method name="bringToFront">
+    if (editor.paused) {
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var newprevsibling = selected.getLastSiblingView();
+        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      }
+    }
+  </method>
+  
+  <method name="bringForward">
+    if (editor.paused) {
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var newprevsibling = selected.getNextSiblingView();
+        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      }
+    }
+  </method>
+  
+  <method name="sendToBack">
+    if (editor.paused) {
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var oldprevsibling = selected.getPrevSiblingView();
+        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
+      }
+    }
+  </method>
+  
+  <method name="sendBackward">
+    if (editor.paused) {
+      var selected = selectionmanager.selected;
+      if (selected) {
+        var oldprevsibling = selected.getPrevSiblingView();
+        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
+      }
+    }
+  </method>
+  
+  <method name="_updateOrder" args="target, oldprevsib, newprevsib">
+    undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsib, newprevsibling:newprevsib}));
+  </method>
+  
+  <method name="save">
+    editormodel.save();
+    undo.reset();
+  </method>
+
+  <method name="stop">
+    editormodel.stop();
+  </method>
+  
+  <method name="editPreview">
+    editor.setAttribute('paused', !editor.paused);
+    if (editor.paused) {
+      selectionmanager.restore();
+      editPreviewButton.setAttribute('text', 'Preview');
+      preview.setAttribute('visible', false);
+      preview.setAttribute('src', '/iframe_stub.html');
+    } else {
+      selectionmanager.clear(true);
+      editPreviewButton.setAttribute('text', 'Edit');
+      preview.setAttribute('visible', true);
+      preview.setAttribute('src', '/compositions/example/editor/preview.dre');
+    }
+  </method>
+  
+  <method name="createView">
+    if (editor.paused) {
+      var id = 'lzeditor_client_' + dr.generateGuid();
+      while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
+      
+      var attrs = {
+        class:'view', with:'editable', id:id,
+        width:50, height:50, x:'center', y:'middle', bgcolor:'#999999'
+      };
+      var parent = selectionmanager.selected;
+      if (!parent) {
+        attrs.placement = 'editor';
+        parent = this.getRoot();
+      }
+      var instance = parent.createChild(attrs);
+      
+      // Mark an instance as "new" so we know it needs serialization.
+      instance.__NEW = true;
+      
+      undo.do(new dr.editor.createundoable({target:instance}));
+      selectionmanager.select(instance);
+    }
+  </method>
+  
+  <method name="deleteSelected">
+    if (editor.paused) {
+      var selected = selectionmanager.selected;
+      if (selected) {
+        undo.do(new dr.editor.deleteundoable({target:selected}));
+        selectionmanager.clear();
+      }
+    }
+  </method>
+</node>

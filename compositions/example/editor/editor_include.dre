@@ -73,7 +73,7 @@ SOFTWARE. -->
     
     <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
     <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
-    <attribute name="boxshadow_floater" type="object" value="[0,3,6,0,'#999999']"/>
+    <attribute name="boxshadow_floater" type="object" value="[0,2,6,0,'#999999']"/>
     
     <attribute name="ruler_marks" type="object" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000]"/>
   </node>
@@ -97,131 +97,8 @@ SOFTWARE. -->
   
   <editor-undostack id="undo"></editor-undostack>
   
-  <node id="actions">
-    <method name="_undoRedoCallback" args="undoable">
-      if (!undoable.isA(dr.editor.compoundundoable)) {
-        var target = undoable.target;
-        if (target && target.parent) {
-          selectionmanager.select(target);
-        } else {
-          selectionmanager.clear();
-        }
-      }
-    </method>
-    
-    <method name="undo">
-      if (editor.paused) undo.undo(this._undoRedoCallback);
-    </method>
-    
-    <method name="redo">
-      if (editor.paused) undo.redo(this._undoRedoCallback);
-    </method>
-    
-    <method name="bringToFront">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          var newprevsibling = selected.getLastSiblingView();
-          if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
-        }
-      }
-    </method>
-    
-    <method name="bringForward">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          var newprevsibling = selected.getNextSiblingView();
-          if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
-        }
-      }
-    </method>
-    
-    <method name="sendToBack">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          var oldprevsibling = selected.getPrevSiblingView();
-          if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
-        }
-      }
-    </method>
-    
-    <method name="sendBackward">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          var oldprevsibling = selected.getPrevSiblingView();
-          if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
-        }
-      }
-    </method>
-    
-    <method name="_updateOrder" args="target, oldprevsib, newprevsib">
-      undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsib, newprevsibling:newprevsib}));
-    </method>
-    
-    <method name="save">
-      editormodel.save();
-      undo.reset();
-    </method>
-
-    <method name="stop">
-      editormodel.stop();
-    </method>
-    
-    <method name="editPreview">
-      editor.setAttribute('paused', !editor.paused);
-      if (editor.paused) {
-        selectionmanager.restore();
-        editPreviewButton.setAttribute('text', 'Preview');
-        preview.setAttribute('visible', false);
-        preview.setAttribute('src', '/iframe_stub.html');
-      } else {
-        selectionmanager.clear(true);
-        editPreviewButton.setAttribute('text', 'Edit');
-        preview.setAttribute('visible', true);
-        preview.setAttribute('src', '/compositions/example/editor/preview.dre');
-      }
-    </method>
-    
-    <method name="createView">
-      if (editor.paused) {
-        var id = 'lzeditor_client_' + dr.generateGuid();
-        while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
-        
-        var attrs = {
-          class:'view', with:'editable', id:id,
-          width:50, height:50, x:'center', y:'middle', bgcolor:'#999999'
-        };
-        var parent = selectionmanager.selected;
-        if (!parent) {
-          attrs.placement = 'editor';
-          parent = this.getRoot();
-        }
-        var instance = parent.createChild(attrs);
-        
-        // Mark an instance as "new" so we know it needs serialization.
-        instance.__NEW = true;
-        
-        undo.do(new dr.editor.createundoable({target:instance}));
-        selectionmanager.select(instance);
-      }
-    </method>
-    
-    <method name="deleteSelected">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          undo.do(new dr.editor.deleteundoable({target:selected}));
-          selectionmanager.clear();
-        }
-      }
-    </method>
-  </node>
-
+  <include href='./actions.dre'/>
   <include href='./editormodel.dre'/>
-
 
 
   <!--// HANDLERS ///////////////////////////////////////////////////////////-->
