@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="reticle" with="keyboarddraggable, button" visible="false"
   distancebeforedrag="5" cursor="move" clickable="false"
+  draggroups="{editable:true}"
 >
   <attribute name="draglockthresh" type="number" value="20"/>
 
@@ -152,19 +153,42 @@ SOFTWARE. -->
       this.super(x, y);
     }
   </method>
+  
+  <method name="willPermitDrop" args="droptarget">
+    return true;
+  </method>
 
   <method name="startDrag" args="event">
     this._start();
     this.super();
+    
+    // Make half opacity during drag
+    var target = this.target;
+    this._origOpacity = target.getActualAttribute('opacity');
+    target.setActualAttribute('opacity', this._origOpacity / 2);
+  </method>
+  
+  <method name="notifyDrop" args="droptarget, isAbort">
+    this.super();
+    
+    if (this.droptarget) {
+      this._stop(droptarget);
+    }
+  </method>
+
+  <method name="notifyDropFailed">
+    this._abort();
+  </method>
+
+  <method name="notifyDropAborted">
+    this._abort();
   </method>
 
   <method name="stopDrag" args="event, isAbort">
-    if (isAbort) {
-      this._abort();
-    } else {
-      this._stop();
-    }
     this.super();
+    
+    // Restore opacity after drag
+    this.target.setActualAttribute('opacity', this._origOpacity);
   </method>
 
   <method name="_start">
@@ -181,12 +205,14 @@ SOFTWARE. -->
     this._undoableh = new attrundoable({target:target, attribute:'height', oldvalue:target.getAttribute('height')});
     this._undoablex = new attrundoable({target:target, attribute:'x', oldvalue:target.getAttribute('x')});
     this._undoabley = new attrundoable({target:target, attribute:'y', oldvalue:target.getAttribute('y')});
+    this._undoableparent = new attrundoable({target:target, attribute:'parent'});
+    this._undoableparent.setAttribute('oldvalue', target.parent);
     
     this.listenTo(dr.keyboard, 'onkeydown', this._handleKeyChange);
     this.listenTo(dr.keyboard, 'onkeyup', this._handleKeyChange);
   </method>
 
-  <method name="_stop">
+  <method name="_stop" args="droptarget">
     // Target can be null if you undo/redo a create/delete while dragging
     // the node that is created/deleted so make sure it exists first.
     var target = this.target;
@@ -199,12 +225,24 @@ SOFTWARE. -->
       this._undoabley.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
       compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
       
+      var isNewParent = droptarget && (droptarget !== this._undoableparent.oldvalue);
+      if (isNewParent) {
+        this._undoableparent.newvalue = droptarget;
+        compound.add(this._undoableparent);
+        
+        var targetPos = target.getAbsolutePosition(),
+          newParentPos = droptarget.getAbsolutePosition();
+        this._undoablex.newvalue = '' + (targetPos.x - newParentPos.x + droptarget.sprite.getScrollX());
+        this._undoabley.newvalue = '' + (targetPos.y - newParentPos.y + droptarget.sprite.getScrollY());
+      }
+      
       // Only do it if something changed.
       if (
         this._undoablew.newvalue !== this._undoablew.oldvalue ||
         this._undoableh.newvalue !== this._undoableh.oldvalue ||
         this._undoablex.newvalue !== this._undoablex.oldvalue ||
-        this._undoabley.newvalue !== this._undoabley.oldvalue
+        this._undoabley.newvalue !== this._undoabley.oldvalue ||
+        isNewParent
       ) {
         undo.do(compound);
       }
@@ -245,6 +283,8 @@ SOFTWARE. -->
     }
   </method>
 
+
+  <!--// Views //////////////////////////////////////////////////////////////-->
   <view name="fill" width="100%" height="100%" clip="true">
     <view name="inner" width="100%" height="100%" border="1" bordercolor="${config.selection_color}"></view>
   </view>

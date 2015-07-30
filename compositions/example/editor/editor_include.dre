@@ -27,47 +27,6 @@ SOFTWARE. -->
 <include href='./attributeeditor.dre'/>
 <include href='./colorpicker.dre'/>
 
-<class name="verticaltext" extends="text" xanchor="0" yanchor="0" rotation="-90"/>
-
-<mixin name="rulertext" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0"/>
-<class name="horizontal_rulertext" extends="text" with="rulertext" y="2"/>
-<class name="vertical_rulertext" extends="verticaltext" with="rulertext" x="2"/>
-
-<mixin name="selecttext" fontsize="14" color="${config.selection_color}"/>
-<mixin name="relselecttext" fontsize="14" color="${config.relselection_color}"/>
-
-<class name="horizontal_ruler_selecttext" extends="text" with="selecttext" y="17"/>
-<class name="vertical_ruler_selecttext" extends="verticaltext" with="selecttext" x="17"/>
-
-<class name="horizontal_ruler_relselecttext" extends="text" with="relselecttext" y="2"/>
-<class name="vertical_ruler_relselecttext" extends="verticaltext" with="relselecttext" x="2"/>
-
-<mixin name="locationtext" fontsize="10" color="${config.location_color}"/>
-
-<class name="subhead" extends="text" leftpadding="10" toppadding="4" bottompadding="4"
-  topborder="1" bottomborder="1" bordercolor="${config.secondary_panel_color}"
-  bgcolor="${config.primary_panel_color}" color="${config.label_text_color}"
-  fontsize="14"
-/>
-
-<class name="basefloatingpanel" extends="floatingpanel"
-  bgcolor="${config.content_color}"
-  border="1" bordercolor="${config.secondary_panel_color}"
-  boxshadow="${config.boxshadow_floater}"
->
-  <method name="initNode" args="parent, attrs">
-    this.super();
-    dr.floatingpanelanchor.panelsbypanelid[this.panelid] = this;
-  </method>
-</class>
-
-<class name="editor_text" extends="text" fontsize="14"/>
-<class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee">
-  <handler event="onfocus">
-    this.selectAll();
-  </handler>
-</class>
-
 <view name="editor" id="editor" width="100%" height="100%"
   bgcolor="white" clip="true"
   defaultplacement="content_bg.content.inner"
@@ -86,7 +45,6 @@ SOFTWARE. -->
   <setter name="height" args="height">
     return this.super(Math.max(height, 500));
   </setter>
-
 
 
   <!--// SERVICE NODES //////////////////////////////////////////////////////-->
@@ -269,207 +227,8 @@ SOFTWARE. -->
       }
     </method>
   </node>
-  
-  <node id="editormodel">
-    <handler event="oninit">
-      var _this = this;
-      // rewrite the file to be editable, which will reload this page automatically
-      dr.global.requestor.fetch(window.location.toString() + '?raw=1').success(
-        function(data, status) {
-          var parser = new dr.htmlparser();
-          var jsobj = parser.parse(data)
-          _this.setAttribute('model', jsobj);
-          //console.log('loaded model', jsobj)
-        }
-      );
-    </handler>
-    
-    <method name="updateAttr" args="id, name, value">
-      //console.log('updateAttr', id, name, value);
-      var model = this.model;
-      if (model) {
-        var child = this._findChild(id, model);
-        if (child) child.attr[name] = value;
-      }
-    </method>
-    
-    <method name="deleteNode" args="id, oldParentId">
-      //console.log('delete', id, oldParentId);
-      var model = this.model;
-      if (model) {
-        var child = this._findChild(id, model),
-          parent = this._findChild(oldParentId, model);
-        if (child && parent) {
-         var idx = this._findChildIndex(parent, child);
-         if (idx >= 0) parent.child.splice(idx, 1);
-        }
-      }
-    </method>
-    
-    <method name="createNode" args="child, newParentId">
-      //console.log('create', newParentId, child);
-      var model = this.model;
-      if (model) {
-        var parent = this._findChild(newParentId, model);
-        if (child && parent) {
-          var prevSiblingView = child.getPrevSiblingView(),
-            prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
-            idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
-          
-          if (!parent.child) parent.child = [];
-         
-          // Convert child (and tree) to object structure and insert
-          parent.child.splice(idx + 1, 0, child.objectify({}));
-        }
-      }
-    </method>
-    
-    <method name="moveInFrontOf" args="id, siblingId, parentId">
-      //console.log('moveInFrontOf', id, siblingId, parentId);
-      var model = this.model;
-      if (model) {
-        var child = this._findChild(id, model),
-          sibling = this._findChild(siblingId, model),
-          parent = this._findChild(parentId, model);
-        if (child && sibling && parent) {
-          // Remove child
-          var idx = this._findChildIndex(parent, child);
-          if (idx >= 0) parent.child.splice(idx, 1);
-          
-          // Insert child
-          idx = this._findChildIndex(parent, sibling);
-          if (idx >= 0) parent.child.splice(idx + 1, 0, child);
-        }
-      }
-    </method>
-    
-    <method name="moveToBack" args="id, parentId">
-      //console.log('moveToBack', id, parentId);
-      var model = this.model;
-      if (model) {
-        var child = this._findChild(id, model),
-          parent = this._findChild(parentId, model);
-        if (child && parent) {
-          var idx = this._findChildIndex(parent, child);
-          if (idx > 0) {
-            parent.child.splice(idx, 1);
-            
-            // HACK: if the parent is the root then the first child must continue
-            // to be the editor include tag.
-            var searchChild;
-            for (var i = 0, len = parent.child.length; len > i; i++) {
-              searchChild = parent.child[i];
-              if (searchChild.tag !== 'include') {
-                parent.child.splice(i, 0, child);
-                break;
-              }
-            }
-          }
-        }
-      }
-    </method>
-    
-    <method name="save">
-      dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model) );
-    </method>
 
-    <method name="stop">
-      dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model) );
-    </method>
-    
-    <method name="getPkg">
-      var compositionNode = this._findChildByTag('composition', this.model);
-      
-      // Copy it
-      compositionNode = JSON.parse(JSON.stringify(compositionNode));
-      
-      // Clean composition node
-      var depth = 0;
-      function cleanComposition(jsobj) {
-        depth++;
-        
-        var children = jsobj.child;
-        if (children) {
-          var child, i = children.length, attrs;
-          while (i) {
-            child = children[--i];
-            
-            attrs = child.attr;
-            if (attrs) {
-              if (depth === 4 && attrs.placement === 'editor') delete attrs.placement;
-              
-              var mixins = attrs.with;
-              if (mixins) {
-                var newMixins = [];
-                mixins.split(define.SEPARATOR_REGEX).forEach(
-                  function(mixinName) {
-                    if (mixinName !== 'editable') newMixins.push(mixinName);
-                  }
-                );
-                attrs.with = newMixins.join(',');
-              }
-            }
-            
-            if (child.tag === 'include') {
-              children.splice(i, 1);
-            } else {
-              cleanComposition(child);
-            }
-          }
-        }
-        
-        depth--;
-      };
-      cleanComposition(compositionNode);
-      
-      return {
-        composition:compositionNode,
-        classmap:dr.classmap
-      };
-    </method>
-    
-    <method name="_findChildIndex" args="parent, child">
-      var children = parent.child;
-      if (children) {
-        var i = children.length, child,
-          searchId = child.attr.id;
-        while (i) {
-          child = children[--i];
-          if (child.attr.id === searchId) return i;
-        }
-      } else {
-        return -1;
-      }
-    </method>
-    
-    <method name="_findChild" args="id, jsobj">
-      if (!id) return null;
-      
-      var children = jsobj.child, child;
-      for (var i = 0; children.length > i; i++) {
-        child = children[i]
-        if (child.attr && child.attr.id === id) {
-          return child;
-        } else if (child.child) {
-          var newchild = this._findChild(id, child);
-          if (newchild) return newchild;
-        }
-      }
-    </method>
-    
-    <method name="_findChildByTag" args="tagname, jsobj">
-      var children = jsobj.child, child;
-      for (var i = 0; children.length > i; i++) {
-        child = children[i]
-        if (child.tag === tagname) {
-          return child;
-        } else if (child.child) {
-          var newchild = this._findChildByTag(tagname, child);
-          if (newchild) return newchild;
-        }
-      }
-    </method>
-  </node>
+  <include href='./editormodel.dre'/>
 
 
 
@@ -1098,10 +857,20 @@ SOFTWARE. -->
     >
       <!-- Use an additional inner view so that scrollbars show up inside the
            "page" rather than over the boxshadow. -->
-      <view name="inner" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
+      <view name="inner" with="droptarget" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
         maskfocus="${editor.paused}" focuscage="true"
+        draggroups="{editable:true}"
       >
         <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+        
+        <method name="notifyDragEnter" args="dropable">
+          this.__origBoxShadow = this.getActualAttribute('boxshadow');
+          this.setActualAttribute('boxshadow', [0, 0, 12, 1, '#00ff00']);
+        </method>
+        
+        <method name="notifyDragLeave" args="dropable">
+          this.setActualAttribute('boxshadow', this.__origBoxShadow);
+        </method>
       </view>
     </view>
     

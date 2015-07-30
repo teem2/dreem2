@@ -19,7 +19,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<mixin name="editable">
+<mixin name="editable" with="droptarget"
+  draggroups="{editable:true}"
+>
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
     this.super();
     
@@ -34,7 +37,26 @@ SOFTWARE. -->
     this.setAttribute('clickable', true, true);
     this.setAttribute('focusable', false, true);
   </method>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
   
+  <!--// Drag and Drop //-->
+  <method name="notifyDragEnter" args="dropable">
+    this.__origBoxShadow = this.getActualAttribute('boxshadow');
+    this.setActualAttribute('boxshadow', [0, 0, 12, 1, '#00ff00']);
+  </method>
+  
+  <method name="notifyDragLeave" args="dropable">
+    this.setActualAttribute('boxshadow', this.__origBoxShadow);
+  </method>
+  
+  <method name="willAcceptDrop" args="dropable">
+    if (this.isDescendantOf(dropable.target)) return false;
+    return this.super();
+  </method>
+
+  <!--// Event Handling //-->
   <method name="__editable_handleMouseDown" args="event">
     selectionmanager.select(this);
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
@@ -78,8 +100,14 @@ SOFTWARE. -->
     var retval = this.super(parent);
     
     if (editor.paused && !this.isBeingDestroyed) {
-      if (existingParent && this.inited) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
-      if (this.parent && this.parent.inited) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
+      var hasOld = existingParent && this.inited,
+        hasNew = this.parent && this.parent.inited;
+      if (hasOld && hasNew) {
+        editormodel.moveNode(this, existingParent.id || existingParent.getRoot().id, this.parent.id || this.parent.getRoot().id);
+      } else {
+        if (hasOld) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
+        if (hasNew) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
+      }
     }
     
     return retval;
@@ -91,7 +119,7 @@ SOFTWARE. -->
     
     var retval = this.super(name, value);
     
-    if (editor.paused && !noModelUpdate) {
+    if (editor.paused && !noModelUpdate && name !== 'parent') {
       var parent = this.parent;
       if (parent && parent.inited) editormodel.updateAttr(this.id, name, this.getAttribute(name));
     }
