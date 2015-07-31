@@ -900,9 +900,16 @@ SOFTWARE. -->
           attrs = []
           
           compare = (a, b) ->
-            if (b.name > a.name)
+            aimport = a.importance or 1
+            bimport = b.importance or 1
+            if bimport == aimport
+              if (b.name > a.name)
+                return -1
+              else if (a.name > b.name)
+                return 1
+            else if (bimport > aimport)
               return -1
-            else if (a.name > b.name)
+            else if (aimport > bimport)
               return 1
             else
               0
