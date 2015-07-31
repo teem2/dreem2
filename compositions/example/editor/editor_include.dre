@@ -155,6 +155,8 @@ SOFTWARE. -->
     <attribute name="content_inset" type="number" value="69"/>
     <attribute name="selection_marker_offset" type="number" value="6"/>
     
+    <attribute name="attribute_label_width" type="number" value="70"/>
+    
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
     <attribute name="content_color" type="color" value="#f8f8f8"/>
@@ -868,7 +870,7 @@ SOFTWARE. -->
         />
         <componentsource label="Vertical Line" iconname="verticalline"
           dropclass="view"
-          dropclassattrs="{width:1, height:'100%', bgcolor:'#000000', instanceattrs:{class:'view', width:1, height:'100%', y:'top', bgcolor:'#000000'}}"
+          dropclassattrs="{width:1, height:'50', bgcolor:'#000000', instanceattrs:{class:'view', width:1, height:'100%', y:'top', bgcolor:'#000000'}}"
         />
         <componentsource label="Horizontal Line" iconname="horizontalline"
           dropclass="view"
