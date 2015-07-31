@@ -107,30 +107,6 @@ SOFTWARE. -->
     }
   </method>
   
-  <method name="createView">
-    if (editor.paused) {
-      var id = 'lzeditor_client_' + dr.generateGuid();
-      while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
-      
-      var attrs = {
-        class:'view', with:'editable', id:id,
-        width:50, height:50, x:'center', y:'middle', bgcolor:'#999999'
-      };
-      var parent = selectionmanager.selected;
-      if (!parent) {
-        attrs.placement = 'editor';
-        parent = this.getRoot();
-      }
-      var instance = parent.createChild(attrs);
-      
-      // Mark an instance as "new" so we know it needs serialization.
-      instance.__NEW = true;
-      
-      undo.do(new dr.editor.createundoable({target:instance}));
-      selectionmanager.select(instance);
-    }
-  </method>
-  
   <method name="deleteSelected">
     if (editor.paused) {
       var selected = selectionmanager.selected;

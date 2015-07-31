@@ -27,6 +27,96 @@ SOFTWARE. -->
 <include href='./attributeeditor.dre'/>
 <include href='./colorpicker.dre'/>
 
+<mixin name="componentdropable" with="button, dropable"
+  focusable="false" allowabort="true"
+>
+  <attribute name="instanceattrs" type="expression" value="null"/>
+  
+  <method name="notifyDropAborted">
+    this.notifyDropFailed();
+  </method>
+  
+  <method name="notifyDropFailed">
+    var self = this;
+    this.setAttribute('disabled', true);
+    this.animate({attribute:'opacity', to:0, from:this.opacity, duration:500}).next(
+      function(success) {self.destroy();}
+    );
+  </method>
+  
+  <method name="notifyDrop" args="droptarget, isAbort">
+    this.super();
+    
+    if (!this.dropfailed) {
+      var id = 'lzeditor_client_' + dr.generateGuid();
+      while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
+      
+      var attrs = dr.extend({}, this.instanceattrs);
+      attrs.id = id;
+      attrs.with = 'editable';
+      
+      var targetPos = this.getAbsolutePosition(),
+        newParentPos = droptarget.getAbsolutePosition();
+      if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
+      if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
+      
+      var instance = droptarget.createChild(attrs);
+      
+      // Mark an instance as "new" so we know it needs serialization.
+      instance.__NEW = true;
+      
+      undo.do(new dr.editor.createundoable({target:instance}));
+      selectionmanager.select(instance);
+      
+      this.destroy();
+    }
+  </method>
+</mixin>
+
+<class name="componentsource" with="button, dropsource"
+  width="80" height="85" cornerradius="8" focusembellishment="false"
+  disabled="${!editor.paused}"
+>
+  <attribute name="label" type="string" value=""/>
+  <attribute name="iconname" type="string" value=""/>
+  
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    var dropclassattrs = this.dropclassattrs;
+    dropclassattrs.with = 'componentdropable';
+    dropclassattrs.centeronmouse = true;
+    dropclassattrs.draggroups = {editable:true};
+    dropclassattrs.opacity = 0.5;
+    
+    this.icon.setAttribute('src', config.img_root + this.iconname + '.png');
+  </method>
+  
+  <method name="drawDisabledState">
+    this.setAttribute('opacity', 0.5);
+    this.setAttribute('bgcolor', '#f8f8f8');
+  </method>
+  <method name="drawFocusedState">
+    this.setAttribute('opacity', 1);
+    this.setAttribute('bgcolor', '#eeeeee');
+  </method>
+  <method name="drawHoverState">
+    this.setAttribute('opacity', 1);
+    this.setAttribute('bgcolor', '#f8f8f8');
+  </method>
+  <method name="drawActiveState">
+    this.setAttribute('opacity', 1);
+    this.setAttribute('bgcolor', '#e8e8e8');
+  </method>
+  <method name="drawReadyState">
+    this.setAttribute('opacity', 1);
+    this.setAttribute('bgcolor', 'transparent');
+  </method>
+  
+  <bitmap name="icon" width="60" height="55" x="10" y="10"/>
+  <text width="80" y="68" text="${this.parent.label}" textalign="center" fontsize="10"/>
+</class>
+
 <view name="editor" id="editor" width="100%" height="100%"
   bgcolor="white" clip="true"
   defaultplacement="content_bg.content.inner"
@@ -49,13 +139,15 @@ SOFTWARE. -->
 
   <!--// SERVICE NODES //////////////////////////////////////////////////////-->
   <node id="config">
+    <attribute name="img_root" type="string" value="/compositions/example/editor/img/"/>
+    
     <attribute name="topbar_height" type="number" value="75"/>
     
     <attribute name="leftbar_minwidth" type="number" value="50"/>
     <attribute name="leftbar_maxwidth" type="number" value="300"/>
     
-    <attribute name="rightbar_minwidth" type="number" value="290"/>
-    <attribute name="rightbar_minx" type="number" value="700"/>
+    <attribute name="rightbar_minwidth" type="number" value="260"/>
+    <attribute name="rightbar_minx" type="number" value="600"/>
     <attribute name="bottombar_height" type="number" value="0"/>
     
     <attribute name="divider_width" type="number" value="5"/>
@@ -125,9 +217,6 @@ SOFTWARE. -->
         case 70: // F: Reorder forward
           platformEvent.preventDefault(); // Prevent browser find functionality
           actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
-          break;
-        case 73: // I: Insert New View
-          actions.createView();
           break;
         case 83: // S: Save document
           platformEvent.preventDefault(); // Prevent browser save functionality
@@ -543,8 +632,7 @@ SOFTWARE. -->
             {attrs:{name:'sendToBack', text:'Send to Back', disabled:noSelection}},
             {attrs:{name:'sendBackward', text:'Send Backward', disabled:noSelection}},
             {klass:dr.listviewseparator},
-            {attrs:{name:'deleteSelected', text:'Delete', disabled:noSelection}},
-            {attrs:{name:'createView', text:'Create', disabled:editorPlaying}},
+            {attrs:{name:'deleteSelected', text:'Delete', disabled:noSelection}}
           ];
           this.setAttribute('itemconfig', cfg);
           
@@ -763,22 +851,37 @@ SOFTWARE. -->
     width="${this.parent.innerwidth - this.parent.divider_right.x}"
     height="${this.parent.leftbar.height}"
   >
-    <view name="component_list_panel" width="100%" height="195" bgcolor="white" scrollable="true">
+    <view name="component_list_panel" width="100%" height="${this.parent.divider_top.y}" bgcolor="white" scrollable="true">
       <view width="100%">
         <wrappinglayout axis="x" spacing="5" inset="5" outset="5" linespacing="5" lineinset="5" lineoutset="5" updateparent="true"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
+        <componentsource label="Image" iconname="bitmap"
+          dropclass="view"
+          dropclassattrs="{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'bitmap', width:50, height:50}}"
+        />
+        <componentsource label="Text" iconname="text"
+          dropclass="text"
+          dropclassattrs="{text:'text', instanceattrs:{class:'text', text:'text'}}"
+        />
+        <componentsource label="Rectangle" iconname="view" layouthint='{"break":true}'
+          dropclass="view"
+          dropclassattrs="{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#cccccc'}}"
+        />
+        <componentsource label="Vertical Line" iconname="verticalline"
+          dropclass="view"
+          dropclassattrs="{width:1, height:'100%', bgcolor:'#000000', instanceattrs:{class:'view', width:1, height:'100%', y:'top', bgcolor:'#000000'}}"
+        />
+        <componentsource label="Horizontal Line" iconname="horizontalline"
+          dropclass="view"
+          dropclassattrs="{width:'50', height:1, bgcolor:'#000000', instanceattrs:{class:'view', width:'100%', x:'left', height:1, bgcolor:'#000000'}}"
+        />
+        <componentsource label="Button" iconname="view" layouthint='{"break":true}'
+          dropclass="view"
+          dropclassattrs="{width:50, height:50, bgcolor:'#ff0000', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#ff0000'}}"
+        />
       </view>
     </view>
     
-    <view y="195" width="100%" height="${this.parent.innerheight - this.y}" scrollable="true">
+    <view y="${this.parent.divider_top.y}" width="100%" height="${this.parent.innerheight - this.y}" scrollable="true">
       <spacedlayout axis="y"/>
       
       <subhead width="100%" text="Attributes"/>
@@ -839,6 +942,20 @@ SOFTWARE. -->
           // FIXME: implement layouts
         </handler>
       </view>
+    </view>
+    
+    <view ignoreplacement="true"
+      width="100%" y="${this.parent.divider_top.y}" height="1"
+      bgcolor="${config.secondary_panel_color}"
+    />
+    
+    <view name="divider_top" with="keyboarddraggable" cursor="row-resize"
+      x="0" y="185"
+      width="100%" height="${config.divider_width}"
+    >
+      <method name="updatePosition" args="x, y">
+        if (!this.disabled) this.setAttribute('y', Math.max(95, Math.min(455, y)));
+      </method>
     </view>
   </view>
 

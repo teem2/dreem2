@@ -34,7 +34,7 @@
     * @attribute {Object} dropclassattrs
     * The attrs to use when making the dropClass instance.
     */-->
-  <attribute name="dropclassattrs" type="object" value="null"/>
+  <attribute name="dropclassattrs" type="expression" value="null"/>
 
   <!--/**
     * @attribute {Object} dropable
@@ -61,6 +61,8 @@
       
       dropable.doMouseDown(event); // Execute MouseDownMixin
       dropable.__doMouseDown(event); // Execute Draggable
+      
+      this.doMouseUp(event); // Keep mouse from getting stuck "up" on the dropsource.
       
       // Restore distance
       dropable.distancebeforedrag = origDistance;
@@ -101,10 +103,12 @@
       }
       
       var pos = this.getAbsolutePosition(dropParent),
-        attrs = this.dropclassattrs || {};
+        attrs = dr.extend({}, this.dropclassattrs);
       attrs.x = pos.x || 0;
       attrs.y = pos.y || 0;
-      return new dropClass(dropParent, attrs);
+      attrs['class'] = dropClass;
+      
+      return dropParent.createChild(attrs);
     }
   </method>
 </mixin>

@@ -49,6 +49,9 @@ SOFTWARE. -->
       isdragging = this.isdragging,
       event = {x:this.x, y:this.y};
     this._isArrowAdj = true;
+    
+    this.setActualAttribute('draginitx', 0);
+    this.setActualAttribute('draginity', 0);
     if (!isdragging) this.startDrag(event);
     event[isX ? 'x' : 'y'] += (increase ? 1 : -1) * amount * gridAmt;
     this.updatePosition(event.x, event.y);

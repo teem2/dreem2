@@ -33,6 +33,7 @@ SOFTWARE. -->
     this.target = selected;
     if (selected) {
       this.setAttribute('visible', true);
+      this.focus();
       this._syncPosition();
       if (!oldTarget) this.listenTo(dr.idle, 'onidle', this._syncPosition);
     } else {
@@ -171,9 +172,7 @@ SOFTWARE. -->
   <method name="notifyDrop" args="droptarget, isAbort">
     this.super();
     
-    if (this.droptarget) {
-      this._stop(droptarget);
-    }
+    if (this.droptarget) this._stop(droptarget);
   </method>
 
   <method name="notifyDropFailed">
@@ -225,15 +224,18 @@ SOFTWARE. -->
       this._undoabley.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
       compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
       
-      var isNewParent = droptarget && (droptarget !== this._undoableparent.oldvalue);
-      if (isNewParent) {
-        this._undoableparent.newvalue = droptarget;
-        compound.add(this._undoableparent);
-        
-        var targetPos = target.getAbsolutePosition(),
-          newParentPos = droptarget.getAbsolutePosition();
-        this._undoablex.newvalue = '' + (targetPos.x - newParentPos.x + droptarget.sprite.getScrollX());
-        this._undoabley.newvalue = '' + (targetPos.y - newParentPos.y + droptarget.sprite.getScrollY());
+      var isNewParent = false;
+      if (!this._isArrowAdj) {
+        isNewParent = droptarget && (droptarget !== this._undoableparent.oldvalue);
+        if (isNewParent) {
+          this._undoableparent.newvalue = droptarget;
+          compound.add(this._undoableparent);
+          
+          var targetPos = target.getAbsolutePosition(),
+            newParentPos = droptarget.getAbsolutePosition();
+          this._undoablex.newvalue = '' + (targetPos.x - newParentPos.x + droptarget.sprite.getScrollX());
+          this._undoabley.newvalue = '' + (targetPos.y - newParentPos.y + droptarget.sprite.getScrollY());
+        }
       }
       
       // Only do it if something changed.

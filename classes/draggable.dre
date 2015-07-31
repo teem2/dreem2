@@ -40,27 +40,36 @@
     */-->
   <attribute name="isdraggable" type="boolean" value="true"/>
   <setter name="isdraggable" args="v">
-    if (this.setActual('isdraggable', v, 'boolean', true)) {
-      var func;
-      if (this.isdraggable) {
-        func = this.listenToPlatform.bind(this);
-      } else if (this.initing === false) {
-        func = this.stopListeningToPlatform.bind(this);
-      }
+    if (this.setActual('isdraggable', v, 'boolean', true)) this.__updateDraggability();
+  </setter>
+
+  <handler event="ondisabled" method="__updateDraggability"/>
+
+  <!--/**
+    * @method __updateDraggability
+    * @private
+    * Configures the view to be draggable or not.
+    */-->
+  <method name="__updateDraggability">
+    var func;
+    if (this.isdraggable && !this.disabled) {
+      func = this.listenToPlatform.bind(this);
+    } else if (this.initing === false) {
+      func = this.stopListeningToPlatform.bind(this);
+    }
+    
+    if (func) {
+      var dvs = this.getDragViews();
+      if (!Array.isArray(dvs)) dvs = [dvs];
       
-      if (func) {
-        var dvs = this.getDragViews();
-        if (!Array.isArray(dvs)) dvs = [dvs];
-        
-        var dragview, i = dvs.length;
-        while (i) {
-          dragview = dvs[--i];
-          func(dragview, 'onmousedown', '__doMouseDown');
-          func(dragview, 'oncontextmenu', '__doContextMenu');
-        }
+      var dragview, i = dvs.length;
+      while (i) {
+        dragview = dvs[--i];
+        func(dragview, 'onmousedown', '__doMouseDown');
+        func(dragview, 'oncontextmenu', '__doContextMenu');
       }
     }
-  </setter>
+  </method>
 
   <!--/**
     * @attribute {Boolean} isdragging
