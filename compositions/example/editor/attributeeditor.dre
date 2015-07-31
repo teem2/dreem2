@@ -20,9 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="texteditor" extends="editor_inputtext">
-  <handler event="onfocus">
-    this.oldvalue = this.text;
-  </handler>
   <setter name="value" args="v">
     // Clean up some common constraint patterns
     switch (this.targetattr) {
@@ -68,14 +65,14 @@ SOFTWARE. -->
       if (!isNaN(value)) return value * 100;
     }
   </method>
-  <handler event="ontext" args="text">
-    this.setAttribute('value', text);
+  <handler event="onfocus">
+    this.oldvalue = this.text;
   </handler>
-  <attribute name="value" type="string" value=""></attribute>
-  <handler event="onvalue" args="value">
-    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value);
+  <handler event="onkeydown" args="platformEvent">
+    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+    if (keyCode === 13) this._applyChange();
   </handler>
-  <handler event="onblur">
+  <handler name="_applyChange" event="onblur">
     if (this.oldvalue !== this.value) {
       undo.do(new dr.editor.attrundoable({
         target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value

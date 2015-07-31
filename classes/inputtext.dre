@@ -116,7 +116,7 @@ SOFTWARE. -->
   </handler>
 
   <handler event="oninput" args="event">
-    @setAttribute('value', @sprite.get_value())
+    @setActualAttribute('value', @sprite.get_value());
   </handler>
 
   <!--// Methods //-->
