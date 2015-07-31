@@ -136,7 +136,7 @@ SOFTWARE. -->
     var child = this.createChild({
       class:classname,
       name:'field',
-      x:64, 
+      x:66, 
       target:selectionmanager.selected, 
       targetattr:name
     });
@@ -170,6 +170,6 @@ SOFTWARE. -->
     this.actual.setAttribute('visible', cfg !== actual);
   </method>
 
-  <editor_text name="label" x="${60 - this.width}" y="2"/>
+  <editor_text name="label" x="${62 - this.width}" y="2"/>
   <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" width="60"/>
 </class>
