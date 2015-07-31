@@ -176,7 +176,12 @@ SOFTWARE. -->
   </method>
 
   <method name="notifyDropFailed">
-    this._abort();
+    if (this._isArrowAdj) {
+      // Arrow adjustments should always succeed.
+      this._stop(this.target.parent);
+    } else {
+      this._abort();
+    }
   </method>
 
   <method name="notifyDropAborted">
