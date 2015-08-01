@@ -185,14 +185,17 @@ SOFTWARE. -->
   
   <method name="getAttrsToSave">
     // FIXME: implement a better way to know what to save
+    
+    // Make sure all properties are strings since the server side markup
+    // generator seems to work better when they are.
     return {
-      id:this.id,
+      id:'' + this.id,
       
-      x:this.__cfg_x,
+      x:'' + this.__cfg_x,
       y:this.__cfg_y,
-      width:this.__cfg_width,
-      height:this.__cfg_height,
-      bgcolor:this.__cfg_bgcolor
+      width:'' + this.__cfg_width,
+      height:'' + this.__cfg_height,
+      bgcolor:'' + this.__cfg_bgcolor
     };
   </method>
 

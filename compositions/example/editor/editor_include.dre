@@ -256,7 +256,7 @@ SOFTWARE. -->
     <view name="lower" width="1" height="100%" bgcolor="${config.selection_color}"/>
     <view name="upper" width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
     
-    <view with="button, keyboarddraggable" width="10" x="-5" height="100%" cursor="col-resize"
+    <view with="button, keyboarddraggable" width="10" x="-5" height="100%" cursor="w-resize"
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
@@ -306,7 +306,7 @@ SOFTWARE. -->
       </method>
     </view>
     
-    <view with="button, keyboarddraggable" width="10" x="${this.parent.width - 5}" height="100%" cursor="col-resize"
+    <view with="button, keyboarddraggable" width="10" x="${this.parent.width - 5}" height="100%" cursor="e-resize"
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
@@ -405,7 +405,7 @@ SOFTWARE. -->
     <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     
-    <view with="button, keyboarddraggable" height="10" y="-5" width="100%" cursor="row-resize"
+    <view with="button, keyboarddraggable" height="10" y="-5" width="100%" cursor="n-resize"
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
@@ -455,7 +455,7 @@ SOFTWARE. -->
       </method>
     </view>
     
-    <view with="button, keyboarddraggable" height="10" y="${this.parent.height - 5}" width="100%" cursor="row-resize"
+    <view with="button, keyboarddraggable" height="10" y="${this.parent.height - 5}" width="100%" cursor="s-resize"
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
@@ -746,10 +746,16 @@ SOFTWARE. -->
     >
       <!-- Use an additional inner view so that scrollbars show up inside the
            "page" rather than over the boxshadow. -->
-      <view name="inner" with="editable" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
+      <view name="inner" with="editable" width="100%" height="100%" scrollable="true"
         maskfocus="${editor.paused}" focuscage="true"
         cursor="pointer"
       >
+        <method name="initNode" args="parent, attrs">
+          this.super();
+          
+          this.setAttribute('bgcolor', editor.parent.bgcolor);
+        </method>
+        
         <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
         
         <method name="notifyDragEnter" args="dropable">
