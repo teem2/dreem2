@@ -152,8 +152,55 @@ SOFTWARE. -->
       if (gx > 0) x = (gx * Math.round((x + this.dx) / gx)) - this.dx;
       if (gy > 0) y = (gy * Math.round((y + this.dy) / gy)) - this.dy;
       
-      this.super(x, y);
+      var pos = this.updateGuides(x, y);
+      guides.setAttribute('visible', true);
+
+      this.super(pos.x, pos.y);
     }
+  </method>
+
+  <method name="updateGuides" args="x, y">
+    // console.log('updateGuides', x, y)
+    for (var i = 0, l = guides.subviews.length; i < l; i++) {
+      var guide = guides.subviews[i];
+      if (guide) guide.destroy();
+    }
+    var sub = this.target.parent.subviews;
+    for (var i = 0, l = sub.length; i < l; i++) {
+      var sibling = sub[i];
+      if (sibling === this.target) continue;
+      var abs = sibling.getAbsolutePosition();
+      var newpos = {x: x, y: y};
+      var sx = abs.x,
+          scenter = (sibling.width * .5) + sx,
+          sw = sibling.width + sx,
+          sy = abs.y,
+          smiddle = (sibling.height * .5) + sy,
+          sh = sibling.height + sy;
+      if (Math.abs(sx - x) < 5) {
+        guides.createChild({class: 'view', x: sx, y: 0, width: 1, height: 1000, bgcolor: 'cyan'});
+        newpos.x = sx;
+      } else if (Math.abs(scenter - x) < 5) {
+        guides.createChild({class: 'view', x: scenter, y: 0, width: 1, height: 1000, bgcolor: 'cyan'});
+        newpos.x = scenter;
+      } else if (Math.abs(sw - x) < 5) {
+        guides.createChild({class: 'view', x: sw, y: 0, width: 1, height: 1000, bgcolor: 'cyan'});
+        newpos.x = sw;
+      }
+
+      if (Math.abs(sy - y) < 5) {
+        guides.createChild({class: 'view', x: 0, y: sy, width: 1000, height: 1, bgcolor: 'cyan'});
+        newpos.y = sy;
+      } else if (Math.abs(smiddle - y) < 5) {
+        guides.createChild({class: 'view', x: 0, y: smiddle, width: 1000, height: 1, bgcolor: 'cyan'});
+        newpos.y = smiddle;
+      } else if (Math.abs(sh - y) < 5) {
+        guides.createChild({class: 'view', x: 0, y: sh, width: 1000, height: 1, bgcolor: 'cyan'});
+        newpos.y = sh;
+      }
+    }
+    return newpos;
+    // console.log('found guides', guides.subviews.length)
   </method>
   
   <method name="willPermitDrop" args="droptarget">
@@ -194,6 +241,7 @@ SOFTWARE. -->
     
     // Restore opacity after drag
     this.target.setActualAttribute('opacity', this._origOpacity);
+    guides.setAttribute('visible', false);
   </method>
 
   <method name="_start">

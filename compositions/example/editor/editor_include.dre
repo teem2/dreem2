@@ -919,6 +919,7 @@ SOFTWARE. -->
     </method>
   </view>
 
+  <view id="guides" ignorelayout="true" ignoreplacement="true"></view>
 
   <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>
