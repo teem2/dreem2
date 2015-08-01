@@ -26,98 +26,11 @@ SOFTWARE. -->
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
 <include href='./colorpicker.dre'/>
-
-<mixin name="componentdropable" with="button, dropable"
-  focusable="false" allowabort="true"
->
-  <attribute name="instanceattrs" type="expression" value="null"/>
-  
-  <method name="notifyDropAborted">
-    this.notifyDropFailed();
-  </method>
-  
-  <method name="notifyDropFailed">
-    var self = this;
-    this.setAttribute('disabled', true);
-    this.animate({attribute:'opacity', to:0, from:this.opacity, duration:500}).next(
-      function(success) {self.destroy();}
-    );
-  </method>
-  
-  <method name="notifyDrop" args="droptarget, isAbort">
-    this.super();
-    
-    if (!this.dropfailed) {
-      var id = 'lzeditor_client_' + dr.generateGuid();
-      while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
-      
-      var attrs = dr.extend({}, this.instanceattrs);
-      attrs.id = id;
-      attrs.with = 'editable';
-      
-      var targetPos = this.getAbsolutePosition(),
-        newParentPos = droptarget.getAbsolutePosition();
-      if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
-      if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
-      
-      var instance = droptarget.createChild(attrs);
-      
-      // Mark an instance as "new" so we know it needs serialization.
-      instance.__NEW = true;
-      
-      undo.do(new dr.editor.createundoable({target:instance}));
-      selectionmanager.select(instance);
-      
-      this.destroy();
-    }
-  </method>
-</mixin>
-
-<class name="componentsource" with="button, dropsource"
-  width="80" height="85" cornerradius="8" focusembellishment="false"
-  disabled="${!editor.paused}"
->
-  <attribute name="label" type="string" value=""/>
-  <attribute name="iconname" type="string" value=""/>
-  
-  <method name="initNode" args="parent, attrs">
-    this.super();
-    
-    var dropclassattrs = this.dropclassattrs;
-    dropclassattrs.with = 'componentdropable';
-    dropclassattrs.centeronmouse = true;
-    dropclassattrs.draggroups = {editable:true};
-    dropclassattrs.opacity = 0.5;
-    
-    this.icon.setAttribute('src', config.img_root + this.iconname + '.png');
-  </method>
-  
-  <method name="drawDisabledState">
-    this.setAttribute('opacity', 0.5);
-    this.setAttribute('bgcolor', '#f8f8f8');
-  </method>
-  <method name="drawFocusedState">
-    this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#eeeeee');
-  </method>
-  <method name="drawHoverState">
-    this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#f8f8f8');
-  </method>
-  <method name="drawActiveState">
-    this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#e8e8e8');
-  </method>
-  <method name="drawReadyState">
-    this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', 'transparent');
-  </method>
-  
-  <bitmap name="icon" width="60" height="55" x="10" y="10"/>
-  <text width="80" y="68" text="${this.parent.label}" textalign="center" fontsize="10"/>
-</class>
+<include href='./componentdropable.dre'/>
+<include href='./componentsource.dre'/>
 
 <view name="editor" id="editor" width="100%" height="100%"
+  ignoreplacement="true" ignorelayout="true"
   bgcolor="white" clip="true"
   defaultplacement="content_bg.content.inner"
 >
@@ -155,7 +68,7 @@ SOFTWARE. -->
     <attribute name="content_inset" type="number" value="69"/>
     <attribute name="selection_marker_offset" type="number" value="6"/>
     
-    <attribute name="attribute_label_width" type="number" value="70"/>
+    <attribute name="attribute_label_width" type="number" value="80"/>
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
@@ -165,15 +78,20 @@ SOFTWARE. -->
     <attribute name="relselection_color" type="color" value="green"/>
     <attribute name="location_color" type="color" value="black"/>
     
-    <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
-    <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
-    <attribute name="boxshadow_floater" type="object" value="[0,2,6,0,'#999999']"/>
+    <attribute name="boxshadow_normal" type="expression" value="[0,0,4,0,'#000000']"/>
+    <attribute name="boxshadow_large" type="expression" value="[0,0,12,0,'#000000']"/>
+    <attribute name="boxshadow_floater" type="expression" value="[0,2,6,0,'#999999']"/>
     
-    <attribute name="ruler_marks" type="object" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000]"/>
+    <attribute name="ruler_marks" type="expression" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000]"/>
   </node>
   
   <node id="selectionmanager">
     <attribute name="selected" type="expression" value="null"/>
+    <setter name="selected" args="v">
+      if (editor.inited) this.setAttribute('isrootselection', v === editor.content_bg.content.inner);
+      return v;
+    </setter>
+    <attribute name="isrootselection" type="boolean" value="false"/>
     
     <method name="clear" args="restoreable">
       if (restoreable) this._oldSelection = this.selected;
@@ -327,7 +245,9 @@ SOFTWARE. -->
     <verticaltext with="locationtext" name="label" x="2" y="-2"/>
   </view>
   
-  <view id="horizontal_selection" with="keyboarddraggable, button" ignoreplacement="true"
+  <view id="horizontal_selection" with="button, keyboarddraggable" ignoreplacement="true"
+    disabled="${selectionmanager.isrootselection}"
+    cursor="col-resize"
     visible="${reticle.visible}" opacity="0.75"
     x="${reticle.x}" y="${this.parent.ruler_horizontal.y}"
     width="${Math.max(1, reticle.width)}" height="${config.ruler_thickness}"
@@ -336,7 +256,9 @@ SOFTWARE. -->
     <view name="lower" width="1" height="100%" bgcolor="${config.selection_color}"/>
     <view name="upper" width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
     
-    <view with="keyboarddraggable, button" width="10" x="-5" height="100%" cursor="col-resize">
+    <view with="button, keyboarddraggable" width="10" x="-5" height="100%" cursor="col-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
       <method name="startDrag" args="event">
         reticle._start();
         this._origTargetX = reticle.target.x;
@@ -384,7 +306,9 @@ SOFTWARE. -->
       </method>
     </view>
     
-    <view with="keyboarddraggable, button" width="10" x="${this.parent.width - 5}" height="100%" cursor="col-resize">
+    <view with="button, keyboarddraggable" width="10" x="${this.parent.width - 5}" height="100%" cursor="col-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
       <method name="startDrag" args="event">
         reticle._start();
         this.super();
@@ -464,10 +388,12 @@ SOFTWARE. -->
     </method>
   </view>
   
-  <view id="vertical_selection" with="keyboarddraggable, button" ignoreplacement="true"
+  <view id="vertical_selection" with="button, keyboarddraggable" ignoreplacement="true"
+    disabled="${selectionmanager.isrootselection}"
     visible="${reticle.visible}" opacity="0.75"
     x="${this.parent.ruler_vertical.x}" y="${reticle.y}"
     width="${config.ruler_thickness}" height="${Math.max(1, reticle.height)}"
+    cursor="row-resize"
   >
     <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
     <view name="lower" height="1" width="100%" bgcolor="${config.selection_color}"/>
@@ -479,7 +405,9 @@ SOFTWARE. -->
     <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     
-    <view with="keyboarddraggable, button" height="10" y="-5" width="100%" cursor="row-resize">
+    <view with="button, keyboarddraggable" height="10" y="-5" width="100%" cursor="row-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
       <method name="startDrag" args="event">
         reticle._start();
         this._origTargetY = reticle.target.y;
@@ -527,7 +455,9 @@ SOFTWARE. -->
       </method>
     </view>
     
-    <view with="keyboarddraggable, button" height="10" y="${this.parent.height - 5}" width="100%" cursor="row-resize">
+    <view with="button, keyboarddraggable" height="10" y="${this.parent.height - 5}" width="100%" cursor="row-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
       <method name="startDrag" args="event">
         reticle._start();
         this.super();
@@ -624,17 +554,17 @@ SOFTWARE. -->
       >
         <method name="doActivated">
           var editorPlaying = !editor.paused;
-          var noSelection = !selectionmanager.selected;
+          var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
           var cfg = [
             {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
             {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
             {klass:dr.listviewseparator},
-            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noSelection}},
-            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noSelection}},
-            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noSelection}},
-            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noSelection}},
+            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
+            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
+            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
+            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
             {klass:dr.listviewseparator},
-            {attrs:{name:'deleteSelected', text:'Delete', disabled:noSelection}}
+            {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
           ];
           this.setAttribute('itemconfig', cfg);
           
@@ -816,9 +746,9 @@ SOFTWARE. -->
     >
       <!-- Use an additional inner view so that scrollbars show up inside the
            "page" rather than over the boxshadow. -->
-      <view name="inner" with="droptarget" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
+      <view name="inner" with="editable" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
         maskfocus="${editor.paused}" focuscage="true"
-        draggroups="{editable:true}"
+        cursor="pointer"
       >
         <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
         
@@ -891,47 +821,17 @@ SOFTWARE. -->
       <view name="attrs_panel" width="100%" clip="true">
         <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
           <method name="__positionView" args="view, attrName, value">
-            // Only animate the parent updates
+            // Only animate the parent updates so that the panel appears to
+            // slide open/closed
             var isParent = view === this.parent;
             if (isParent) this.speed = 500;
             this.super();
             if (isParent) this.speed = 0;
           </method>
         </spacedlayout>
-        <handler event="onselected" args="selected" reference="selectionmanager" type="coffee">
-          attrs = []
-          
-          compare = (a, b) ->
-            aimport = a.importance or 1
-            bimport = b.importance or 1
-            if bimport == aimport
-              if (b.name > a.name)
-                return -1
-              else if (a.name > b.name)
-                return 1
-            else if (bimport > aimport)
-              return -1
-            else if (aimport > bimport)
-              return 1
-            else
-              0
-          
-          if selected
-            ancestors = this.klass.ancestors()
-            # pull attributes from ancestor, since we don't want the editor mixin itself
-            myattributes = ancestors[ancestors.length - 1].attributes
-            
-            # build list of attributes for the replicator
-            for key, value of myattributes
-              value.name = key
-              attrs.push(value)
-              # console.log('attribute', key, value)
-            
-            attrs.sort(compare)
-          
-          this.repl.setAttribute('data', attrs);
-        </handler>
-        <replicator name="repl" classname="attributeeditor"/>
+        <replicator classname="attributeeditor"
+          data="${selectionmanager.selected ? selectionmanager.selected.getAttrsListForDetails() : []}"
+        />
       </view>
       
       <subhead width="100%" text="Layouts"/>
@@ -959,8 +859,7 @@ SOFTWARE. -->
     />
     
     <view name="divider_top" with="keyboarddraggable" cursor="row-resize"
-      x="0" y="185"
-      width="100%" height="${config.divider_width}"
+      x="0" y="185" width="100%" height="${config.divider_width}"
     >
       <method name="updatePosition" args="x, y">
         if (!this.disabled) this.setAttribute('y', Math.max(95, Math.min(455, y)));

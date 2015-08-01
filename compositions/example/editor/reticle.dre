@@ -19,9 +19,10 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="reticle" with="keyboarddraggable, button" visible="false"
+<class name="reticle" with="button, keyboarddraggable" visible="false"
   distancebeforedrag="5" clickable="false"
   draggroups="{editable:true}"
+  isdraggable="${!selectionmanager.isrootselection}"
 >
   <attribute name="draglockthresh" type="number" value="20"/>
 
@@ -137,7 +138,7 @@ SOFTWARE. -->
   </handler>
   
   <method name="updatePosition" args="x, y">
-    if (!this.disabled) {
+    if (!this.disabled && this.isdraggable) {
       if (!this._isArrowAdj) {
         if (dr.keyboard.isShiftKeyDown()) {
           var origLoc = this.getOriginalLocation();
@@ -296,7 +297,7 @@ SOFTWARE. -->
     <view name="inner" width="100%" height="100%" border="1" bordercolor="${config.selection_color}"></view>
   </view>
 
-  <controlhandle name="resizer">
+  <controlhandle name="resizer" visible="${!selectionmanager.isrootselection}">
     <handler event="onx" args="x">
       this.parent.setAttribute('width', x + 5);
     </handler>

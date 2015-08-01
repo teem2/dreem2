@@ -21,7 +21,7 @@
     * The view to make the dr.dropable instances in. Defaults to the 
     * dr.RootView that contains this drop source.
     */-->
-  <attribute name="dropparent" type="object" value="undefined"/>
+  <attribute name="dropparent" type="expression" value="undefined"/>
 
   <!--/**
     * @attribute {Object} dropclass
@@ -42,7 +42,7 @@
     * The dropable that was most recently created. Once the dropable has been 
     * dropped this will be set to null.
     */-->
-  <attribute name="dropable" type="object" value="null"/>
+  <attribute name="dropable" type="expression" value="null"/>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->

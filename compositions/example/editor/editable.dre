@@ -39,8 +39,27 @@ SOFTWARE. -->
   </method>
 
 
+  <!--// Class Methods //////////////////////////////////////////////////////-->
+  <method name="comparator" args="a, b" allocation="class">
+    var aimport = a.importance || 1,
+      bimport = b.importance || 1;
+    if (bimport === aimport) {
+      if (b.name > a.name) {
+        return -1;
+      } else if (a.name > b.name) {
+        return 1;
+      }
+    } else if (bimport > aimport) {
+      return -1;
+    } else if (aimport > bimport) {
+      return 1;
+    } else {
+      return 0;
+    }
+  </method>
+
+
   <!--// Methods ////////////////////////////////////////////////////////////-->
-  
   <!--// Drag and Drop //-->
   <method name="notifyDragEnter" args="dropable">
     this.__origBoxShadow = this.getActualAttribute('boxshadow');
@@ -121,7 +140,7 @@ SOFTWARE. -->
     
     if (editor.paused && !noModelUpdate && name !== 'parent') {
       var parent = this.parent;
-      if (parent && parent.inited) editormodel.updateAttr(this.id, name, this.getAttribute(name));
+      if (parent && parent.inited) editormodel.updateAttr(this.id || this.getRoot().id, name, this.getAttribute(name));
     }
     
     return retval;
@@ -175,5 +194,43 @@ SOFTWARE. -->
       height:this.__cfg_height,
       bgcolor:this.__cfg_bgcolor
     };
+  </method>
+
+  <!--// Details Panel Support //-->
+  <method name="getAttrsListForDetails">
+    // pull attributes from ancestor, since we don't want the editor mixin itself
+    var ancestors = this.klass.ancestors();
+    
+    var myattributes = {};
+    
+    for (var i = 5, len = ancestors.length; len > i; i++) {
+      myattributes = dr.extend(myattributes, ancestors[i].attributes);
+    }
+    
+    // build list of attributes for the replicator
+    var key, value, attrs = [];
+    for (key in myattributes) {
+      value = myattributes[key];
+      value.name = key
+      attrs.push(value)
+    }
+    
+    // Root editable only supports a few attributes
+    if (selectionmanager.isrootselection) this._filterAttrsForRootBox(attrs);
+    
+    attrs.sort(dr.editable.comparator);
+    
+    return attrs;
+  </method>
+  <method name="_filterAttrsForRootBox" args="attrs">
+    var i = attrs.length;
+    while (i) {
+      switch(attrs[--i].name) {
+        case 'bgcolor':
+          break;
+        default:
+          attrs.splice(i, 1);
+      }
+    }
   </method>
 </mixin>

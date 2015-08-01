@@ -40,42 +40,34 @@ SOFTWARE. -->
   </method>
   
   <method name="bringToFront">
-    if (editor.paused) {
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var newprevsibling = selected.getLastSiblingView();
-        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
-      }
+    if (this._isEditableSelection()) {
+      var selected = selectionmanager.selected,
+        newprevsibling = selected.getLastSiblingView();
+      if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
     }
   </method>
   
   <method name="bringForward">
-    if (editor.paused) {
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var newprevsibling = selected.getNextSiblingView();
-        if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
-      }
+    if (this._isEditableSelection()) {
+      var selected = selectionmanager.selected,
+        newprevsibling = selected.getNextSiblingView();
+      if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
     }
   </method>
   
   <method name="sendToBack">
-    if (editor.paused) {
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var oldprevsibling = selected.getPrevSiblingView();
-        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
-      }
+    if (this._isEditableSelection()) {
+      var selected = selectionmanager.selected,
+        oldprevsibling = selected.getPrevSiblingView();
+      if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
     }
   </method>
   
   <method name="sendBackward">
-    if (editor.paused) {
-      var selected = selectionmanager.selected;
-      if (selected) {
-        var oldprevsibling = selected.getPrevSiblingView();
-        if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
-      }
+    if (this._isEditableSelection()) {
+      var selected = selectionmanager.selected,
+        oldprevsibling = selected.getPrevSiblingView();
+      if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
     }
   </method>
   
@@ -108,12 +100,14 @@ SOFTWARE. -->
   </method>
   
   <method name="deleteSelected">
-    if (editor.paused) {
-      var selected = selectionmanager.selected;
-      if (selected) {
-        undo.do(new dr.editor.deleteundoable({target:selected}));
-        selectionmanager.clear();
-      }
+    if (this._isEditableSelection()) {
+      undo.do(new dr.editor.deleteundoable({target:selectionmanager.selected}));
+      selectionmanager.clear();
     }
+  </method>
+  
+  <method name="_isEditableSelection">
+    var selected = selectionmanager.selected;
+    return editor.paused && selected && !selectionmanager.isrootselection;
   </method>
 </node>
