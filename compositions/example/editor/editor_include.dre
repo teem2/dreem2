@@ -25,6 +25,7 @@ SOFTWARE. -->
 <include href='./reticle.dre'/>
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
+<include href='./layouteditor.dre'/>
 <include href='./colorpicker.dre'/>
 <include href='./componentdropable.dre'/>
 <include href='./componentsource.dre'/>
@@ -853,9 +854,9 @@ SOFTWARE. -->
           </method>
         </spacedlayout>
         
-        <handler event="onselected" args="selected" reference="selectionmanager">
-          // FIXME: implement layouts
-        </handler>
+        <replicator classname="layouteditor"
+          data="${selectionmanager.selected ? selectionmanager.selected.getLayouts() : []}"
+        />
       </view>
     </view>
     
