@@ -122,28 +122,28 @@ SOFTWARE. -->
 <class name="attributeeditor" height="auto" width="100%">
   <method name="initNode" args="parent, attrs">
     this.super();
-
-    var classname = 'texteditor';
-    if (this.data.type === 'color') {
-      classname = 'coloreditor';
-    }
     
-    var self = this;
-    var name = this.data.name;
+    var self = this,
+      data = this.data,
+      name = data.name,
+      target = data.target,
+      classname = 'texteditor';
+    if (data.type === 'color') classname = 'coloreditor';
+    
     var child = this.createChild({
       class:classname,
       name:'field',
       x:config.attribute_label_width + 4, // 4 pixel spacing
-      target:selectionmanager.selected, 
+      target:target, 
       targetattr:name
     });
     
     // Text may look like a constraint so call setActualAttribute rather than
     // setAttribute to work around constraint binding.
-    child.setActualAttribute('value', selectionmanager.selected.getAttribute(name));
+    child.setActualAttribute('value', target.getAttribute(name));
     
     // update when selected item's value changes
-    child.listenTo(selectionmanager.selected, 'on__cfg_' + name, function(val) {
+    child.listenTo(target, 'on__cfg_' + name, function(val) {
       this._isSync = true;
       this.setActualAttribute('value', val);
       self._checkActualIsDifferent();
@@ -153,7 +153,7 @@ SOFTWARE. -->
       this.setAttribute('width', w - this.x - self.actual.width - 8); // 8 is 4 pixel spacing before and after
     });
     
-    this.actual.syncTo(selectionmanager.selected, 'on' + name, function(val) {
+    this.actual.syncTo(target, 'on' + name, function(val) {
       this.setActualAttribute('text', val);
       self._checkActualIsDifferent();
     });
@@ -162,9 +162,8 @@ SOFTWARE. -->
   </method>
   
   <method name="_checkActualIsDifferent">
-    var actual = this.actual.text;
-    var cfg = this.field.value;
-    this.actual.setAttribute('visible', cfg !== actual);
+    var actual = this.actual;
+    actual.setAttribute('visible', this.field.value !== actual.text);
   </method>
 
   <editor_text name="label" x="${config.attribute_label_width - this.width}" y="2"/>

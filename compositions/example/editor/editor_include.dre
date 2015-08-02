@@ -69,7 +69,7 @@ SOFTWARE. -->
     <attribute name="content_inset" type="number" value="69"/>
     <attribute name="selection_marker_offset" type="number" value="6"/>
     
-    <attribute name="attribute_label_width" type="number" value="80"/>
+    <attribute name="attribute_label_width" type="number" value="100"/>
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
@@ -104,7 +104,16 @@ SOFTWARE. -->
     </method>
     
     <method name="select" args="view">
-      this.setAttribute('selected', view);
+      if (view) {
+        if (view.isView) {
+          this.setAttribute('selected', view);
+        } else {
+          // Layouts and other nodes should select have their parent selected.
+          this.setAttribute('selected', view.parent);
+        }
+      } else {
+        this.setAttribute('selected', null);
+      }
     </method>
   </node>
   
@@ -844,7 +853,7 @@ SOFTWARE. -->
       <subhead width="100%" text="Layouts"/>
       
       <view name="layouts_panel" width="100%" clip="true">
-        <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
+        <spacedlayout axis="y" spacing="5" updateparent="true">
           <method name="__positionView" args="view, attrName, value">
             // Only animate the parent updates
             var isParent = view === this.parent;

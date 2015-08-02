@@ -26,16 +26,20 @@ SOFTWARE. -->
   <method name="initNode" args="parent, attrs">
     this.super();
     
-    // Set up mousedown/up handlers which send simulated events to the
-    // reticle. This allows the reticle to behave as the draggable object
-    // while still having clickability based on the view structure.
-    this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
-    this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
-    this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
-    this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
-    this._origClickable = this.getAttribute('clickable');
-    this.setAttribute('clickable', true, true);
-    this.setAttribute('focusable', false, true);
+    var isView = this.isView = this.isA(dr.View);
+    
+    if (isView) {
+      // Set up mousedown/up handlers which send simulated events to the
+      // reticle. This allows the reticle to behave as the draggable object
+      // while still having clickability based on the view structure.
+      this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
+      this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
+      this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
+      this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
+      this._origClickable = this.getAttribute('clickable');
+      this.setAttribute('clickable', true, true);
+      this.setAttribute('focusable', false, true);
+    }
   </method>
 
 
@@ -71,6 +75,9 @@ SOFTWARE. -->
   </method>
   
   <method name="willAcceptDrop" args="dropable">
+    // Non-views will never accept a drop.
+    if (!this.isView) return false;
+    
     if (this.isDescendantOf(dropable.target)) return false;
     return this.super();
   </method>
@@ -170,7 +177,7 @@ SOFTWARE. -->
   
   <method name="objectify" args="obj">
     obj.tag = this.$tagname;
-    obj.attr = this.getAttrsToSave();
+    obj.attr = this._getAttrsToSave();
     
     if (!obj.child) obj.child = [];
     
@@ -183,7 +190,7 @@ SOFTWARE. -->
     return obj;
   </method>
   
-  <method name="getAttrsToSave">
+  <method name="_getAttrsToSave">
     // FIXME: implement a better way to know what to save
     
     // Make sure all properties are strings since the server side markup
@@ -214,7 +221,8 @@ SOFTWARE. -->
     var key, value, attrs = [];
     for (key in myattributes) {
       value = myattributes[key];
-      value.name = key
+      value.name = key;
+      value.target = this;
       attrs.push(value)
     }
     
