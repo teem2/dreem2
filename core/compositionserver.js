@@ -396,7 +396,7 @@ define(function(require, exports, module) {
         var pluginName = match[1];
         var compName = match[2];
         var plugin = this.teemserver.pluginLoader.plugins[pluginName];
-        if (plugin.rootDir) {
+        if (plugin && plugin.rootDir) {
           filepath = plugin.rootDir + '/examples/' + compName + define.DREEM_EXTENSION
         }
       }
@@ -475,6 +475,9 @@ define(function(require, exports, module) {
         } else if (tag === 'classes') {
           // generate local classes
           for (var j = 0, classes = child.child, clen = classes.length; j < clen; j++) {
+            if (classes[j].tag == '$comment') {
+              continue;
+            }
             this.__compileLocalClass(classes[j], errors, [compositionPath]);
           }
         } else {
