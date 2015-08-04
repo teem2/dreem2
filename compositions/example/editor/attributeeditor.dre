@@ -91,10 +91,11 @@ SOFTWARE. -->
     </handler>
     <handler event="onselected" args="selected">
       var parent = this.parent,
+        targetattr = parent.targetattr,
         target = parent.target;
-      if (target && !parent._isSync) {
+      if (!parent._isSync && target && target['__cfg_' + targetattr] !== ('' + selected)) {
         undo.do(new dr.editor.attrundoable({
-          target:target, attribute:parent.targetattr, oldvalue:!selected, newvalue:selected
+          target:target, attribute:targetattr, newvalue:selected
         }));
       }
     </handler>
