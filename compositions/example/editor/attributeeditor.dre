@@ -119,6 +119,18 @@ SOFTWARE. -->
   </method>
 </class>
 
+<class name="booleaneditor" with="checkbutton" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20">
+
+  <handler event="onvalue" args="value">
+    this.setAttribute('selected', value)
+  </handler>
+
+  <handler event="onselected" args="selected">
+    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, selected);
+  </handler>
+
+</class>
+
 <class name="attributeeditor" height="auto" width="100%">
   <method name="initNode" args="parent, attrs">
     this.super();
@@ -128,8 +140,15 @@ SOFTWARE. -->
       name = data.name,
       target = data.target,
       classname = 'texteditor';
+
+    var istextual = true;
+
     if (data.type === 'color') classname = 'coloreditor';
-    
+    if (data.type === 'boolean') {
+      istextual = false;
+      classname = 'booleaneditor';
+    }
+
     var child = this.createChild({
       class:classname,
       name:'field',
@@ -149,15 +168,18 @@ SOFTWARE. -->
       self._checkActualIsDifferent();
       this._isSync = false;
     });
-    child.syncTo(this, 'oninnerwidth', function(w) {
-      this.setAttribute('width', w - this.x - self.actual.width - 8); // 8 is 4 pixel spacing before and after
-    });
-    
-    this.actual.syncTo(target, 'on' + name, function(val) {
-      this.setActualAttribute('text', val);
-      self._checkActualIsDifferent();
-    });
-    
+
+    if (istextual) {
+      child.syncTo(this, 'oninnerwidth', function(w) {
+        this.setAttribute('width', w - this.x - self.actual.width - 8); // 8 is 4 pixel spacing before and after
+      });
+      
+      this.actual.syncTo(target, 'on' + name, function(val) {
+        this.setActualAttribute('text', val);
+        self._checkActualIsDifferent();
+      });
+    }
+
     this.label.setAttribute('text', name);
   </method>
   
