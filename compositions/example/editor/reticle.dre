@@ -152,10 +152,13 @@ SOFTWARE. -->
       if (gx > 0) x = (gx * Math.round((x + this.dx) / gx)) - this.dx;
       if (gy > 0) y = (gy * Math.round((y + this.dy) / gy)) - this.dy;
       
-      var pos = this.updateGuides(x, y);
-      guides.setAttribute('visible', true);
-
-      this.super(pos.x, pos.y);
+      if (!this._isArrowAdj) {
+        var pos = this.updateGuides(x, y);
+        x = pos.x;
+        y = pos.y;
+        guides.setAttribute('visible', true);
+      }
+      this.super(x, y);
     }
   </method>
 
