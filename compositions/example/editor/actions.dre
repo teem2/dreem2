@@ -24,7 +24,12 @@ SOFTWARE. -->
     if (!undoable.isA(dr.editor.compoundundoable)) {
       var target = undoable.target;
       if (target && target.parent) {
-        selectionmanager.select(target);
+        if (target.isA(dr.View)) {
+          selectionmanager.select(target);
+        } else {
+          selectionmanager.clear(); // Clear so that the replicators for layouts/behaviors will update.
+          selectionmanager.select(target.parent);
+        }
       } else {
         selectionmanager.clear();
       }

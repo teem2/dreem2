@@ -61,14 +61,18 @@ SOFTWARE. -->
     if (model) {
       var parent = this._findChild(newParentId, model);
       if (child && parent) {
-        var prevSiblingView = child.getPrevSiblingView(),
-          prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
-          idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
-        
         if (!parent.child) parent.child = [];
-       
-        // Convert child (and tree) to object structure and insert
-        parent.child.splice(idx + 1, 0, child.objectify({}));
+        
+        if (child.isA(dr.View)) {
+          var prevSiblingView = child.getPrevSiblingView(),
+            prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
+            idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
+          
+          // Convert child (and tree) to object structure and insert
+          parent.child.splice(idx + 1, 0, child.objectify({}));
+        } else {
+          parent.child.push(child.objectify({}));
+        }
       }
     }
   </method>

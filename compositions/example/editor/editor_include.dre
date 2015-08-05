@@ -822,9 +822,22 @@ SOFTWARE. -->
           dropclass="view"
           dropclassattrs="{width:'50', height:1, bgcolor:'#000000', instanceattrs:{class:'view', width:'100%', x:'left', height:1, bgcolor:'#000000'}}"
         />
-        <componentsource label="Button" iconname="view" layouthint='{"break":true}'
-          dropclass="view"
-          dropclassattrs="{width:50, height:50, bgcolor:'#ff0000', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#ff0000'}}"
+        <!--// Layouts //-->
+        <componentsource label="X-Axis Layout" iconname="spacedlayout_x" layouthint='{"break":true}'
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_x.png', instanceattrs:{class:'spacedlayout', axis:'x'}}"
+        />
+        <componentsource label="Y-Axis Layout" iconname="spacedlayout_y"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_y.png', instanceattrs:{class:'spacedlayout', axis:'y'}}"
+        />
+        <componentsource label="Variable Layout" iconname="variablelayout"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'variablelayout.png', instanceattrs:{class:'variablelayout'}}"
+        />
+        <componentsource label="Constant Layout" iconname="constantlayout"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'constantlayout.png', instanceattrs:{class:'constantlayout'}}"
         />
       </view>
     </view>

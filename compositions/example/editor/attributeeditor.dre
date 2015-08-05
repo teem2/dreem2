@@ -73,13 +73,15 @@ SOFTWARE. -->
     if (keyCode === 13) this._applyChange();
   </handler>
   <handler name="_applyChange" event="onblur">
-    var oldvalue = this.oldvalue, 
-      newvalue = this.value;
-    if (oldvalue !== newvalue) {
-      undo.do(new dr.editor.attrundoable({
-        target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
-      }));
-      this.oldvalue = newvalue;
+    if (!this.isBeingDestroyed) {
+      var oldvalue = this.oldvalue, 
+        newvalue = this.value;
+      if (!oldvalue !== newvalue) {
+        undo.do(new dr.editor.attrundoable({
+          target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
+        }));
+        this.oldvalue = newvalue;
+      }
     }
   </handler>
 </class>
