@@ -729,7 +729,7 @@ define(function(require, exports, module) {
       // strip out editor include
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
-        if (child.tag === 'include' && child.attr.href === './editor/editor_include.dre') {
+        if (child.tag === 'include' && child.attr.href === '/compositions/example/editor/editor_include.dre') {
           children.splice(i, 1);
           break;
         }
@@ -743,7 +743,7 @@ define(function(require, exports, module) {
           jsobj.child.unshift({
             tag: 'include',
             attr: {
-              href: './editor/editor_include.dre'
+              href: '/compositions/example/editor/editor_include.dre'
             }
           });
         }
