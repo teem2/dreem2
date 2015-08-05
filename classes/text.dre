@@ -204,6 +204,16 @@
   </method>
 
   <!--/**
+        * @method isLeaf
+        * @overrides
+        * Text views do not support subviews.
+        */-->
+  <method name="isLeaf" args="subnode">
+    if subnode and subnode.isA(dr.View) then return true
+    @super()
+  </method>
+
+  <!--/**
         * @method format
         * Format the text to be displayed. The default behavior is to
         * return the text intact. Override to change formatting. This method

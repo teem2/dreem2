@@ -78,6 +78,8 @@ SOFTWARE. -->
     // Non-views will never accept a drop.
     if (!this.isView) return false;
     
+    if (this.isLeaf(dropable)) return false;
+    
     if (this.isDescendantOf(dropable.target)) return false;
     return this.super();
   </method>
