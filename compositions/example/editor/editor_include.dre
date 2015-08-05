@@ -864,7 +864,7 @@ SOFTWARE. -->
         </spacedlayout>
         
         <replicator classname="layouteditor"
-          data="${selectionmanager.selected ? selectionmanager.selected.getLayouts() : []}"
+          data="${selectionmanager.selected ? selectionmanager.selected.getLayouts(true) : []}"
         />
       </view>
     </view>
