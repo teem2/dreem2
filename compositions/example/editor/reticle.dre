@@ -116,7 +116,7 @@ SOFTWARE. -->
   </method>
 
   <method name="_updateTarget" args="attr, value">
-    if (this.target && !this._isSync) this.target.setAttribute(attr, value);
+    if (this.target && !this._isSync) this.target.setAttribute(attr, value, true); // 3rd arg enables model update
   </method>
   
   <handler event="onx" args="x">
@@ -319,10 +319,10 @@ SOFTWARE. -->
   <method name="_abort">
     var target = this.target;
     if (target) {
-      target.setAttribute('x', this._undoablex.oldvalue);
-      target.setAttribute('y', this._undoabley.oldvalue);
-      target.setAttribute('width', this._undoablew.oldvalue);
-      target.setAttribute('height', this._undoableh.oldvalue);
+      target.setAttribute('x', this._undoablex.oldvalue, true); // 3rd arg enables model update
+      target.setAttribute('y', this._undoabley.oldvalue, true); // 3rd arg enables model update
+      target.setAttribute('width', this._undoablew.oldvalue, true); // 3rd arg enables model update
+      target.setAttribute('height', this._undoableh.oldvalue, true); // 3rd arg enables model update
     }
     
     this.stopListening(dr.keyboard, 'onkeydown', this._handleKeyChange);

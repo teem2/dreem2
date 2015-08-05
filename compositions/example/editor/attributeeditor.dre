@@ -73,10 +73,13 @@ SOFTWARE. -->
     if (keyCode === 13) this._applyChange();
   </handler>
   <handler name="_applyChange" event="onblur">
-    if (this.oldvalue !== this.value) {
+    var oldvalue = this.oldvalue, 
+      newvalue = this.value;
+    if (oldvalue !== newvalue) {
       undo.do(new dr.editor.attrundoable({
-        target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
+        target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
       }));
+      this.oldvalue = newvalue;
     }
   </handler>
 </class>
@@ -93,7 +96,7 @@ SOFTWARE. -->
       var parent = this.parent,
         targetattr = parent.targetattr,
         target = parent.target;
-      if (!parent._isSync && target && target['__cfg_' + targetattr] !== ('' + selected)) {
+      if (!parent._isSync && target && ('' + target['__cfg_' + targetattr]) !== ('' + selected)) {
         undo.do(new dr.editor.attrundoable({
           target:target, attribute:targetattr, newvalue:selected
         }));
@@ -123,7 +126,7 @@ SOFTWARE. -->
 
   <handler event="onvalue" args="value">
     this.setAttribute('bgcolor', value);
-    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value);
+    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value); // No need to update model since notifyPanelHidden does that
   </handler>
 
   <method name="notifyPanelHidden" args="panel">
@@ -196,7 +199,7 @@ SOFTWARE. -->
   
   <method name="_checkActualIsDifferent">
     var actual = this.actual;
-    actual.setAttribute('visible', this.field.value !== actual.text);
+    actual.setAttribute('visible', '' + this.field.value !== actual.text);
   </method>
 
   <editor_text name="label" x="${config.attribute_label_width - this.width}" y="2"/>

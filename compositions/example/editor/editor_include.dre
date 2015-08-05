@@ -293,8 +293,8 @@ SOFTWARE. -->
           if (gx > 0) x = gx * Math.round(x / gx);
           diff = x - this._origTargetX;
           
-          target.setAttribute('x', this._origTargetX + diff);
-          target.setAttribute('width', this._origTargetW - diff);
+          target.setAttribute('x', this._origTargetX + diff, true); // 3rd arg enables model update
+          target.setAttribute('width', this._origTargetW - diff, true); // 3rd arg enables model update
         }
       </method>
       
@@ -337,7 +337,7 @@ SOFTWARE. -->
           x = Math.max(0, x + 5);
           var gx = Number(gridsizex.value);
           if (gx > 0) x = gx * Math.round(x / gx);
-          target.setAttribute('width', x);
+          target.setAttribute('width', x, true); // 3rd arg enables model update
         }
       </method>
       
@@ -383,7 +383,7 @@ SOFTWARE. -->
         x = x - target.getAbsolutePosition().x + target.x;
         var gx = Number(gridsizex.value);
         if (gx > 0) x = gx * Math.round(x / gx);
-        target.setAttribute('x', x);
+        target.setAttribute('x', x, true); // 3rd arg enables model update
       }
     </method>
     
@@ -442,8 +442,8 @@ SOFTWARE. -->
           if (gy > 0) y = gy * Math.round(y / gy);
           diff = y - this._origTargetY;
           
-          target.setAttribute('y', this._origTargetY + diff);
-          target.setAttribute('height', this._origTargetH - diff);
+          target.setAttribute('y', this._origTargetY + diff, true); // 3rd arg enables model update
+          target.setAttribute('height', this._origTargetH - diff, true); // 3rd arg enables model update
         }
       </method>
       
@@ -486,7 +486,7 @@ SOFTWARE. -->
           y = Math.max(0, y + 5);
           var gy = Number(gridsizey.value);
           if (gy > 0) y = gy * Math.round(y / gy);
-          target.setAttribute('height', y);
+          target.setAttribute('height', y, true); // 3rd arg enables model update
         }
       </method>
       
@@ -526,7 +526,7 @@ SOFTWARE. -->
         y = y - target.getAbsolutePosition().y + target.y;
         var gy = Number(gridsizey.value);
         if (gy > 0) y = gy * Math.round(y / gy);
-        target.setAttribute('y', y);
+        target.setAttribute('y', y, true); // 3rd arg enables model update
       }
     </method>
     

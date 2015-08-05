@@ -100,7 +100,7 @@
     */-->
   <method name="undo" args="callback">
     if (this.done) {
-      this.target.setAttribute(this.attribute, this.oldvalue);
+      this.target.setAttribute(this.attribute, this.oldvalue, true); // 3rd arg enables model update
     } else {
       dr.global.error.notifyWarn('invalidUndo', "Invalid undo in attrundoable.");
     }
@@ -124,7 +124,7 @@
         this.__storedOldValue = true;
       }
       
-      this.target.setAttribute(this.attribute, this.newvalue);
+      this.target.setAttribute(this.attribute, this.newvalue, true); // 3rd arg enables model update
     }
     return this.super();
   </method>
