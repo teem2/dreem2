@@ -152,7 +152,7 @@ SOFTWARE. -->
       if (gx > 0) x = (gx * Math.round((x + this.dx) / gx)) - this.dx;
       if (gy > 0) y = (gy * Math.round((y + this.dy) / gy)) - this.dy;
       
-      if (!this._isArrowAdj) {
+      if (!this._isArrowAdj && snaptoguides.selected) {
         var pos = this.updateGuides(x, y);
         x = pos.x;
         y = pos.y;

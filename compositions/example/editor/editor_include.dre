@@ -939,12 +939,22 @@ SOFTWARE. -->
     return gridsizex;
   </method>
   
+  <spacedlayout axis="y" spacing="4" updateparent="true"/>
+  
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"></spacedlayout>
     <editor_text text="grid x:" y="2"/>
     <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
     <editor_text text="y:" y="2"/>
     <editor_inputtext id="gridsizey" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+  </view>
+  
+  <view height="auto">
+    <spacedlayout spacing="4" updateparent="true"></spacedlayout>
+    <editor_text text="snap to guides:" y="2"/>
+    <view with="checkbutton" id="snaptoguides" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20"
+      selected="true"
+    />
   </view>
 </basefloatingpanel>
 
