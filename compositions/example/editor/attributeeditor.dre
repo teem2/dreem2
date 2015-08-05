@@ -151,27 +151,32 @@ SOFTWARE. -->
       data = this.data,
       name = data.name,
       target = data.target,
-      classname;
+      readonly = data.readonly,
+      attrs = {
+        name:'field',
+        x:config.attribute_label_width + 4, // 4 pixel spacing
+        target:target, 
+        targetattr:name,
+        disabled:readonly
+      };
     
     switch (data.type) {
       case 'color':
-        classname = 'coloreditor'
+        attrs.class = 'coloreditor'
         break;
       case 'boolean':
-        classname = 'booleaneditor';
+        attrs.class = 'booleaneditor';
         break;
       default:
-        classname = 'texteditor';
+        attrs.class = 'texteditor';
+        if (readonly) {
+          attrs.bgcolor = 'transparent';
+          attrs.bordercolor = 'transparent';
+        }
         break;
     }
-
-    var child = this.createChild({
-      class:classname,
-      name:'field',
-      x:config.attribute_label_width + 4, // 4 pixel spacing
-      target:target, 
-      targetattr:name
-    });
+    
+    var child = this.createChild(attrs);
     
     // Text may look like a constraint so call setActualAttribute rather than
     // setAttribute to work around constraint binding.

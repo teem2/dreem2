@@ -231,6 +231,8 @@ SOFTWARE. -->
     // Root editable only supports a few attributes
     if (selectionmanager.isrootselection) this._filterAttrsForRootBox(attrs);
     
+    this._filterAttrsForClass(attrs);
+    
     attrs.sort(dr.editable.comparator);
     
     return attrs;
@@ -243,6 +245,37 @@ SOFTWARE. -->
           break;
         default:
           attrs.splice(i, 1);
+      }
+    }
+  </method>
+  <method name="_filterAttrsForClass" args="attrs">
+    var klass = this.klass,
+      hiddenattrs = klass.hiddenattrs,
+      readonlyattrs = klass.readonlyattrs,
+      attrimportance = klass.attrimportance,
+      i, attr;
+    
+    if (hiddenattrs) {
+      i = attrs.length;
+      while (i) {
+        attr = attrs[--i];
+        if (hiddenattrs[attr.name]) attrs.splice(i, 1);
+      }
+    }
+    
+    if (readonlyattrs) {
+      i = attrs.length;
+      while (i) {
+        attr = attrs[--i];
+        if (readonlyattrs[attr.name]) attr.readonly = true;
+      }
+    }
+    
+    if (attrimportance) {
+      i = attrs.length;
+      while (i) {
+        attr = attrs[--i];
+        if (attrimportance[attr.name] != null) attr.importance = attrimportance[attr.name];
       }
     }
   </method>
