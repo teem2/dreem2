@@ -99,14 +99,23 @@
     // the main dependency download queue counter
     var downloads = 0;
     var script_tags = {};
-
+    var loaded = false;
     function startMain() {
+      Unload();
       define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
       define.BUILD = "$ROOT/dalicache";
       define.MAIN =  "$BUILD/compositions/" + composition + ".dre.screens." + screen + ".js";
 
       var F = require(define.MAIN)();
       define.startMain();
+      loaded = true;
+    }
+
+    function Unload()
+    {
+      if(loaded == false) return;
+      console.color("~~** ~rb~Unloading!~~");
+
     }
 
 
@@ -232,10 +241,11 @@
           LoadAll();
         }
       }.bind(this);
-      sock.onConnect = function(){
-    	  
+      
+      sock.onConnect = function(){   	  
           console.color('~~** ~bg~Connected to server~~.');
       }
+      
       sock.onClose = function() {
         setTimeout(function() {
           reconnect();
@@ -270,8 +280,9 @@
 
       console.log("** loading Dali")
       global.dali = require('./dalinode/dali')( options );
-      console.color("~~** Dali loaded")
+      console.color("~~** Dali loaded");
       global.dalihost =  require('./lib/dr/sprite_daliruntime/dalihost.js');
+      
       global.dalihost.init();
 
 
