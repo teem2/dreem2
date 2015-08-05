@@ -76,7 +76,7 @@ SOFTWARE. -->
     if (!this.isBeingDestroyed) {
       var oldvalue = this.oldvalue, 
         newvalue = this.value;
-      if (!oldvalue !== newvalue) {
+      if (oldvalue !== newvalue) {
         undo.do(new dr.editor.attrundoable({
           target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
         }));
