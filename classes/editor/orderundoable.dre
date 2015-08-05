@@ -20,13 +20,13 @@
     * @attribute {expression} [oldprevsibling]
     * The view the target view begins in front of.
     */-->
-  <attribute name="oldprevsibling" type="object" value="undefined"></attribute>
+  <attribute name="oldprevsibling" type="expression" value="undefined"></attribute>
 
   <!--/**
     * @attribute {expression} [newprevsibling]
     * The view the target view ends up in front of.
     */-->
-  <attribute name="newprevsibling" type="object" value="undefined"></attribute>
+  <attribute name="newprevsibling" type="expression" value="undefined"></attribute>
 
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->

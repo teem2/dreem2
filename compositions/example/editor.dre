@@ -22,13 +22,9 @@ SOFTWARE. -->
 <composition>
  <screens>
   <screen type='browser' name='default' title='Editor'>
-   <view width='100%' height='100%' bgcolor='#ff99cc' id='lzeditor_23' scrollable='true'>
-    <include href='./editor/editor_include.dre'/>
-    <view x='235' y='187' bgcolor='green' width='103' height='135' opacity='1' visible='true' id='lzeditor_24' with='editable' placement='editor'/>
-    <view with='draggable,editable' x='299' y='213' bgcolor='orange' width='184' height='147' opacity='1' visible='true' id='lzeditor_25' placement='editor'>
-     <view id='lzeditor_client_1' x='${((this.parent.innerwidth - this.boundswidth) / 2) + this.boundsxdiff}' y='${((this.parent.innerheight - this.boundsheight) / 2) + this.boundsydiff}' width='93' height='93' bgcolor='#fff700' opacity='1' visible='true' with='editable'/>
-    </view>
-    <view with='button,editable' x='0' y='0' bgcolor='purple' width='100' height='100' opacity='1' visible='true' id='lzeditor_26' placement='editor'>
+   <view width='100%' height='100%' bgcolor='#f4b8ee' scrollable='true'>
+    <view with='button' x='0' y='0' bgcolor='purple' width='${this.parent.blue.x}' height='105' opacity='1' visible='true'>
+     <view x='${this.parent.innerwidth - this.boundswidth + this.boundsxdiff}' y='${this.parent.innerheight - this.boundsheight + this.boundsydiff}' width='50' height='50' bgcolor='#999999' opacity='1' visible='true'/>
      <handler event='onmousedown' args='event'>
         console.log('playing mousedown');
      </handler>
@@ -51,9 +47,9 @@ SOFTWARE. -->
         this.setAttribute('bgcolor', 'purple');
      </method>
     </view>
-    <view with='button,editable' x='175' y='122' scrollable='true' bgcolor='red' width='100' height='100' opacity='1' visible='true' id='lzeditor_34' placement='editor'>
-     <text text='hello world.' id='lzeditor_35' with='editable' height='auto' opacity='1' visible='true' width='auto' x='0' y='0'/>
-     <view x='75' y='75' width='50' height='50' bgcolor='#999999' opacity='1' visible='true' id='lzeditor_36' with='editable'/>
+    <view with='button' x='23' y='119' scrollable='true' bgcolor='red' width='${this.parent.blue.x - this.x - 5}' height='89' opacity='1' visible='true'>
+     <text text='hello world.' height='auto' opacity='1' visible='true' width='auto' x='0' y='0'/>
+     <view x='60' y='60' width='106' height='129' bgcolor='#0082ff' opacity='1' visible='true'/>
      <handler event='onmousedown' args='event'>
         console.log('playing mousedown');
      </handler>
@@ -75,6 +71,17 @@ SOFTWARE. -->
      <method name='drawReadyState'>
         this.setAttribute('bgcolor', 'red');
      </method>
+    </view>
+    <view x='168' y='46' bgcolor='#1600ff' width='120' height='144' opacity='1' visible='true' name='blue'>
+     <view x='89' y='${this.boundsydiff}' width='1' height='${this.parent.innerheight * 1}' bgcolor='#000000'/>
+     <view x='${this.boundsxdiff}' y='55' width='${this.parent.innerwidth * 1}' height='1' bgcolor='#000000'/>
+    </view>
+    <view with='draggable' x='96' y='270' bgcolor='orange' width='211' height='147' opacity='1' visible='true'>
+     <view x='2' y='16' width='46' height='50' bgcolor='#fff700' opacity='1' visible='true' scrollable='true'/>
+     <bitmap x='49' y='16' width='56' height='57' bgcolor='transparent' visible='true' src='/img/shoarma.jpg' naturalsize='false'/>
+     <view x='106' y='13' width='50' height='50' bgcolor='#cccccc' visible='true'/>
+     <view x='157' y='16' width='50' height='50' bgcolor='#cccccc' visible='true'/>
+     <spacedlayout axis='x' spacing='1' inset='2' outset='4' updateparent='true'/>
     </view>
    </view>
   </screen>

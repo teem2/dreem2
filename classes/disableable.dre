@@ -9,14 +9,6 @@
    * using dr.View's giveAwayFocus method.
    */-->
 <mixin name="disableable" requires="updateableui">
-  <!--// Life Cycle /////////////////////////////////////////////////////////-->
-  <method name="initNode" args="parent, attrs">
-    if (attrs.disabled === undefined) attrs.disabled = false;
-    
-    this.super();
-  </method>
-
-
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <!--/**
     * @attribute {Boolean} disabled

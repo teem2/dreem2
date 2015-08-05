@@ -19,22 +19,72 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<mixin name="editable">
+<mixin name="editable" with="droptarget"
+  draggroups="{editable:true}" cursor="move"
+>
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
     this.super();
     
-    // Set up mousedown/up handlers which send simulated events to the
-    // reticle. This allows the reticle to behave as the draggable object
-    // while still having clickability based on the view structure.
-    this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
-    this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
-    this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
-    this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
-    this._origClickable = this.getAttribute('clickable');
-    this.setAttribute('clickable', true, true);
-    this.setAttribute('focusable', false, true);
+    var isView = this.isView = this.isA(dr.View);
+    
+    if (isView) {
+      // Set up mousedown/up handlers which send simulated events to the
+      // reticle. This allows the reticle to behave as the draggable object
+      // while still having clickability based on the view structure.
+      this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
+      this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
+      this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
+      this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
+      this._origClickable = this.getAttribute('clickable');
+      this.setAttribute('clickable', true); // No model update
+      this.setAttribute('focusable', false); // No model update
+    }
+  </method>
+
+
+  <!--// Class Methods //////////////////////////////////////////////////////-->
+  <method name="comparator" args="a, b" allocation="class">
+    var aimport = a.importance || 1,
+      bimport = b.importance || 1;
+    if (bimport === aimport) {
+      if (b.name > a.name) {
+        return -1;
+      } else if (a.name > b.name) {
+        return 1;
+      }
+    } else if (bimport > aimport) {
+      return -1;
+    } else if (aimport > bimport) {
+      return 1;
+    } else {
+      return 0;
+    }
+  </method>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--// Drag and Drop //-->
+  <method name="notifyDragEnter" args="dropable">
+    this.__origBoxShadow = this.getActualAttribute('boxshadow');
+    this.setActualAttribute('boxshadow', [0, 0, 12, 1, '#00ff00']);
   </method>
   
+  <method name="notifyDragLeave" args="dropable">
+    this.setActualAttribute('boxshadow', this.__origBoxShadow);
+  </method>
+  
+  <method name="willAcceptDrop" args="dropable">
+    // Non-views will never accept a drop.
+    if (!this.isView) return false;
+    
+    if (this.isLeaf(dropable)) return false;
+    
+    if (this.isDescendantOf(dropable.target)) return false;
+    return this.super();
+  </method>
+
+  <!--// Event Handling //-->
   <method name="__editable_handleMouseDown" args="event">
     selectionmanager.select(this);
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
@@ -78,25 +128,31 @@ SOFTWARE. -->
     var retval = this.super(parent);
     
     if (editor.paused && !this.isBeingDestroyed) {
-      if (existingParent && this.inited) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
-      if (this.parent && this.parent.inited) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
+      var hasOld = existingParent && this.inited,
+        hasNew = this.parent && this.parent.inited;
+      if (hasOld && hasNew) {
+        editormodel.moveNode(this, existingParent.id || existingParent.getRoot().id, this.parent.id || this.parent.getRoot().id);
+      } else {
+        if (hasOld) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
+        if (hasNew) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
+      }
     }
     
     return retval;
   </setter>
 
-  <method name="setAttribute" args="name, value, noModelUpdate">
+  <method name="setAttribute" args="name, value, isModelUpdate">
     // Optional attribute, noModelUpdate, is used to prevent updated to the
     // model that are unnecessary or possibly incorrect.
     
-    var retval = this.super(name, value);
-    
-    if (editor.paused && !noModelUpdate) {
+    if (isModelUpdate && editor.paused && name !== 'parent') {
+      var retval = this.super(name, value);
       var parent = this.parent;
-      if (parent && parent.inited) editormodel.updateAttr(this.id, name, this.getAttribute(name));
+      if (parent && parent.inited) editormodel.updateAttr(this.id || this.getRoot().id, name, this.getAttribute(name));
+      return retval;
+    } else {
+      return this.super(name, value);
     }
-    
-    return retval;
   </method>
 
   <method name="pauseConstraints">
@@ -120,10 +176,11 @@ SOFTWARE. -->
     if (editor.paused) editormodel.moveToBack(this.id, this.parent.id || this.getRoot().id);
     return this.super();
   </method>
-  
+
+  <!--// Model Creation //-->
   <method name="objectify" args="obj">
     obj.tag = this.$tagname;
-    obj.attr = this.getAttrsToSave();
+    obj.attr = this._getAttrsToSave();
     
     if (!obj.child) obj.child = [];
     
@@ -135,17 +192,58 @@ SOFTWARE. -->
     
     return obj;
   </method>
-  
-  <method name="getAttrsToSave">
+  <method name="_getAttrsToSave">
     // FIXME: implement a better way to know what to save
+    
+    // Make sure all properties are strings since the server side markup
+    // generator seems to work better when they are.
     return {
-      id:this.id,
+      id:'' + this.id,
       
-      x:this.__cfg_x,
+      x:'' + this.__cfg_x,
       y:this.__cfg_y,
-      width:this.__cfg_width,
-      height:this.__cfg_height,
-      bgcolor:this.__cfg_bgcolor
+      width:'' + this.__cfg_width,
+      height:'' + this.__cfg_height,
+      bgcolor:'' + this.__cfg_bgcolor
     };
+  </method>
+
+  <!--// Details Panel Support //-->
+  <method name="getAttrsListForDetails">
+    // pull attributes from ancestor, since we don't want the editor mixin itself
+    var ancestors = this.klass.ancestors();
+    
+    var myattributes = {};
+    
+    for (var i = 5, len = ancestors.length; len > i; i++) {
+      myattributes = dr.extend(myattributes, ancestors[i].attributes);
+    }
+    
+    // build list of attributes for the replicator
+    var key, value, attrs = [];
+    for (key in myattributes) {
+      value = myattributes[key];
+      value.name = key;
+      value.target = this;
+      attrs.push(value)
+    }
+    
+    // Root editable only supports a few attributes
+    if (selectionmanager.isrootselection) this._filterAttrsForRootBox(attrs);
+    
+    attrs.sort(dr.editable.comparator);
+    
+    return attrs;
+  </method>
+  <method name="_filterAttrsForRootBox" args="attrs">
+    var i = attrs.length;
+    while (i) {
+      switch(attrs[--i].name) {
+        case 'bgcolor':
+          break;
+        default:
+          attrs.splice(i, 1);
+      }
+    }
   </method>
 </mixin>

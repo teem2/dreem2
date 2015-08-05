@@ -20,9 +20,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="texteditor" extends="editor_inputtext">
-  <handler event="onfocus">
-    this.oldvalue = this.text;
-  </handler>
   <setter name="value" args="v">
     // Clean up some common constraint patterns
     switch (this.targetattr) {
@@ -68,20 +65,44 @@ SOFTWARE. -->
       if (!isNaN(value)) return value * 100;
     }
   </method>
-  <handler event="ontext" args="text">
-    this.setAttribute('value', text);
+  <handler event="onfocus">
+    this.oldvalue = this.text;
   </handler>
-  <attribute name="value" type="string" value=""></attribute>
-  <handler event="onvalue" args="value">
-    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value);
+  <handler event="onkeydown" args="platformEvent">
+    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+    if (keyCode === 13) this._applyChange();
   </handler>
-  <handler event="onblur">
-    if (this.oldvalue !== this.value) {
+  <handler name="_applyChange" event="onblur">
+    var oldvalue = this.oldvalue, 
+      newvalue = this.value;
+    if (oldvalue !== newvalue) {
       undo.do(new dr.editor.attrundoable({
-        target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
+        target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
       }));
+      this.oldvalue = newvalue;
     }
   </handler>
+</class>
+
+<class name="booleaneditor" height="20">
+  <handler event="onvalue" args="value">
+    this.field.setAttribute('value', value);
+  </handler>
+  <view name="field" with="checkbutton" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20">
+    <handler event="onvalue" args="value">
+      this.setAttribute('selected', value);
+    </handler>
+    <handler event="onselected" args="selected">
+      var parent = this.parent,
+        targetattr = parent.targetattr,
+        target = parent.target;
+      if (!parent._isSync && target && ('' + target['__cfg_' + targetattr]) !== ('' + selected)) {
+        undo.do(new dr.editor.attrundoable({
+          target:target, attribute:targetattr, newvalue:selected
+        }));
+      }
+    </handler>
+  </view>
 </class>
 
 <class name="coloreditor" with="floatingpanelanchor, button"
@@ -105,7 +126,7 @@ SOFTWARE. -->
 
   <handler event="onvalue" args="value">
     this.setAttribute('bgcolor', value);
-    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value);
+    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value); // No need to update model since notifyPanelHidden does that
   </handler>
 
   <method name="notifyPanelHidden" args="panel">
@@ -125,38 +146,50 @@ SOFTWARE. -->
 <class name="attributeeditor" height="auto" width="100%">
   <method name="initNode" args="parent, attrs">
     this.super();
-
-    var classname = 'texteditor';
-    if (this.data.type === 'color') {
-      classname = 'coloreditor';
-    }
     
-    var self = this;
-    var name = this.data.name;
+    var self = this,
+      data = this.data,
+      name = data.name,
+      target = data.target,
+      classname;
+    
+    switch (data.type) {
+      case 'color':
+        classname = 'coloreditor'
+        break;
+      case 'boolean':
+        classname = 'booleaneditor';
+        break;
+      default:
+        classname = 'texteditor';
+        break;
+    }
+
     var child = this.createChild({
       class:classname,
       name:'field',
-      x:64, 
-      target:selectionmanager.selected, 
+      x:config.attribute_label_width + 4, // 4 pixel spacing
+      target:target, 
       targetattr:name
     });
     
     // Text may look like a constraint so call setActualAttribute rather than
     // setAttribute to work around constraint binding.
-    child.setActualAttribute('value', selectionmanager.selected.getAttribute(name));
+    child.setActualAttribute('value', target.getAttribute(name));
     
     // update when selected item's value changes
-    child.listenTo(selectionmanager.selected, 'on__cfg_' + name, function(val) {
+    child.listenTo(target, 'on__cfg_' + name, function(val) {
       this._isSync = true;
       this.setActualAttribute('value', val);
       self._checkActualIsDifferent();
       this._isSync = false;
     });
+    
     child.syncTo(this, 'oninnerwidth', function(w) {
-      this.setAttribute('width', w - this.x - 68);
+      this.setAttribute('width', w - this.x - self.actual.width - 8); // 8 is 4 pixel spacing before and after
     });
     
-    this.actual.syncTo(selectionmanager.selected, 'on' + name, function(val) {
+    this.actual.syncTo(target, 'on' + name, function(val) {
       this.setActualAttribute('text', val);
       self._checkActualIsDifferent();
     });
@@ -165,11 +198,10 @@ SOFTWARE. -->
   </method>
   
   <method name="_checkActualIsDifferent">
-    var actual = this.actual.text;
-    var cfg = this.field.value;
-    this.actual.setAttribute('visible', cfg !== actual);
+    var actual = this.actual;
+    actual.setAttribute('visible', '' + this.field.value !== actual.text);
   </method>
 
-  <editor_text name="label" x="${60 - this.width}" y="2"/>
-  <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" width="60"/>
+  <editor_text name="label" x="${config.attribute_label_width - this.width}" y="2"/>
+  <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" width="60"/><!-- 4 pixel spacing -->
 </class>

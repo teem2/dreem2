@@ -1,0 +1,29 @@
+echo ""
+
+if [[ "$2" == "" ]]; then
+  echo "Please supply a version number and release candidate number."
+  echo "Input in this format: ./bin/tagrelease <version> <rc>"
+  echo "For example: ./bin/tagrc 0.1.0 1"
+  echo ""
+  exit 2
+fi
+
+echo "....CREATING NEW OFFICIAL Release: v${1} from v${1}-rc.${2}"
+echo "....Is this correct? [Y|N]"
+echo ""
+
+read answer
+
+if [ "$answer" == "N" -o "$answer" == "n" ]; then
+  echo "Ok, try again. Input in this format: ./bin/tagrc <version> <rc>"
+  echo "For example: ./bin/tagrc 0.1.0 1"
+fi
+
+if [ "$answer" != "Y" -a "$answer" != "y" ]; then
+  exit 2
+fi
+
+git fetch origin
+git co v${1}-rc.${2}
+git tag v${1}
+git push --tags

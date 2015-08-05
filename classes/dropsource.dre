@@ -21,7 +21,7 @@
     * The view to make the dr.dropable instances in. Defaults to the 
     * dr.RootView that contains this drop source.
     */-->
-  <attribute name="dropparent" type="object" value="undefined"/>
+  <attribute name="dropparent" type="expression" value="undefined"/>
 
   <!--/**
     * @attribute {Object} dropclass
@@ -34,7 +34,7 @@
     * @attribute {Object} dropclassattrs
     * The attrs to use when making the dropClass instance.
     */-->
-  <attribute name="dropclassattrs" type="object" value="null"/>
+  <attribute name="dropclassattrs" type="expression" value="null"/>
 
   <!--/**
     * @attribute {Object} dropable
@@ -42,7 +42,7 @@
     * The dropable that was most recently created. Once the dropable has been 
     * dropped this will be set to null.
     */-->
-  <attribute name="dropable" type="object" value="null"/>
+  <attribute name="dropable" type="expression" value="null"/>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
@@ -61,6 +61,8 @@
       
       dropable.doMouseDown(event); // Execute MouseDownMixin
       dropable.__doMouseDown(event); // Execute Draggable
+      
+      this.doMouseUp(event); // Keep mouse from getting stuck "up" on the dropsource.
       
       // Restore distance
       dropable.distancebeforedrag = origDistance;
@@ -101,10 +103,12 @@
       }
       
       var pos = this.getAbsolutePosition(dropParent),
-        attrs = this.dropclassattrs || {};
+        attrs = dr.extend({}, this.dropclassattrs);
       attrs.x = pos.x || 0;
       attrs.y = pos.y || 0;
-      return new dropClass(dropParent, attrs);
+      attrs['class'] = dropClass;
+      
+      return dropParent.createChild(attrs);
     }
   </method>
 </mixin>

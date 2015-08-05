@@ -25,50 +25,16 @@ SOFTWARE. -->
 <include href='./reticle.dre'/>
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
+<include href='./layouteditor.dre'/>
 <include href='./colorpicker.dre'/>
+<include href='./componentdropable.dre'/>
+<include href='./componentsource.dre'/>
 
-<class name="verticaltext" extends="text" xanchor="0" yanchor="0" rotation="-90"/>
-
-<mixin name="rulertext" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0"/>
-<class name="horizontal_rulertext" extends="text" with="rulertext" y="2"/>
-<class name="vertical_rulertext" extends="verticaltext" with="rulertext" x="2"/>
-
-<mixin name="selecttext" fontsize="14" color="${config.selection_color}"/>
-<mixin name="relselecttext" fontsize="14" color="${config.relselection_color}"/>
-
-<class name="horizontal_ruler_selecttext" extends="text" with="selecttext" y="17"/>
-<class name="vertical_ruler_selecttext" extends="verticaltext" with="selecttext" x="17"/>
-
-<class name="horizontal_ruler_relselecttext" extends="text" with="relselecttext" y="2"/>
-<class name="vertical_ruler_relselecttext" extends="verticaltext" with="relselecttext" x="2"/>
-
-<mixin name="locationtext" fontsize="10" color="${config.location_color}"/>
-
-<class name="subhead" extends="text" leftpadding="10" toppadding="4" bottompadding="4"
-  topborder="1" bottomborder="1" bordercolor="${config.secondary_panel_color}"
-  bgcolor="${config.primary_panel_color}" color="${config.label_text_color}"
-  fontsize="14"
-/>
-
-<class name="basefloatingpanel" extends="floatingpanel"
-  bgcolor="${config.content_color}"
-  border="1" bordercolor="${config.secondary_panel_color}"
-  boxshadow="${config.boxshadow_floater}"
+<view name="editor" id="editor" width="100%" height="100%"
+  ignoreplacement="true" ignorelayout="true"
+  bgcolor="white" clip="true"
+  defaultplacement="content_bg.content.inner"
 >
-  <method name="initNode" args="parent, attrs">
-    this.super();
-    dr.floatingpanelanchor.panelsbypanelid[this.panelid] = this;
-  </method>
-</class>
-
-<class name="editor_text" extends="text" fontsize="14"/>
-<class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee">
-  <handler event="onfocus">
-    this.selectAll();
-  </handler>
-</class>
-
-<view name="editor" id="editor" width="100%" height="100%" defaultplacement="content.inner" clip="true" bgcolor="white">
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="paused" type="boolean" value="true"/>
 
@@ -85,22 +51,25 @@ SOFTWARE. -->
   </setter>
 
 
-
   <!--// SERVICE NODES //////////////////////////////////////////////////////-->
   <node id="config">
+    <attribute name="img_root" type="string" value="/compositions/example/editor/img/"/>
+    
     <attribute name="topbar_height" type="number" value="75"/>
     
     <attribute name="leftbar_minwidth" type="number" value="50"/>
     <attribute name="leftbar_maxwidth" type="number" value="300"/>
     
-    <attribute name="rightbar_minwidth" type="number" value="290"/>
-    <attribute name="rightbar_minx" type="number" value="700"/>
+    <attribute name="rightbar_minwidth" type="number" value="260"/>
+    <attribute name="rightbar_minx" type="number" value="600"/>
     <attribute name="bottombar_height" type="number" value="0"/>
     
     <attribute name="divider_width" type="number" value="5"/>
     <attribute name="ruler_thickness" type="number" value="35"/>
     <attribute name="content_inset" type="number" value="69"/>
     <attribute name="selection_marker_offset" type="number" value="6"/>
+    
+    <attribute name="attribute_label_width" type="number" value="100"/>
     
     <attribute name="primary_panel_color" type="color" value="#dddddd"/>
     <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
@@ -110,15 +79,20 @@ SOFTWARE. -->
     <attribute name="relselection_color" type="color" value="green"/>
     <attribute name="location_color" type="color" value="black"/>
     
-    <attribute name="boxshadow_normal" type="object" value="[0,0,4,0,'#000000']"/>
-    <attribute name="boxshadow_large" type="object" value="[0,0,12,0,'#000000']"/>
-    <attribute name="boxshadow_floater" type="object" value="[0,3,6,0,'#999999']"/>
+    <attribute name="boxshadow_normal" type="expression" value="[0,0,4,0,'#000000']"/>
+    <attribute name="boxshadow_large" type="expression" value="[0,0,12,0,'#000000']"/>
+    <attribute name="boxshadow_floater" type="expression" value="[0,2,6,0,'#999999']"/>
     
-    <attribute name="ruler_marks" type="object" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000,5100,5200,5300,5400,5500,5600,5700,5800,5900]"/>
+    <attribute name="ruler_marks" type="expression" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000]"/>
   </node>
   
   <node id="selectionmanager">
     <attribute name="selected" type="expression" value="null"/>
+    <setter name="selected" args="v">
+      if (editor.inited) this.setAttribute('isrootselection', v === editor.content_bg.content.inner);
+      return v;
+    </setter>
+    <attribute name="isrootselection" type="boolean" value="false"/>
     
     <method name="clear" args="restoreable">
       if (restoreable) this._oldSelection = this.selected;
@@ -130,344 +104,23 @@ SOFTWARE. -->
     </method>
     
     <method name="select" args="view">
-      this.setAttribute('selected', view);
+      if (view) {
+        if (view.isView) {
+          this.setAttribute('selected', view);
+        } else {
+          // Layouts and other nodes should select have their parent selected.
+          this.setAttribute('selected', view.parent);
+        }
+      } else {
+        this.setAttribute('selected', null);
+      }
     </method>
   </node>
   
   <editor-undostack id="undo"></editor-undostack>
   
-  <node id="actions">
-    <method name="_undoRedoCallback" args="undoable">
-      if (!undoable.isA(dr.editor.compoundundoable)) {
-        var target = undoable.target;
-        if (target && target.parent) {
-          selectionmanager.select(target);
-        } else {
-          selectionmanager.clear();
-        }
-      }
-    </method>
-    
-    <method name="undo">
-      if (editor.paused) undo.undo(this._undoRedoCallback);
-    </method>
-    
-    <method name="redo">
-      if (editor.paused) undo.redo(this._undoRedoCallback);
-    </method>
-    
-    <method name="bringToFront">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          var newprevsibling = selected.getLastSiblingView();
-          if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
-        }
-      }
-    </method>
-    
-    <method name="bringForward">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          var newprevsibling = selected.getNextSiblingView();
-          if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
-        }
-      }
-    </method>
-    
-    <method name="sendToBack">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          var oldprevsibling = selected.getPrevSiblingView();
-          if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
-        }
-      }
-    </method>
-    
-    <method name="sendBackward">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          var oldprevsibling = selected.getPrevSiblingView();
-          if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
-        }
-      }
-    </method>
-    
-    <method name="_updateOrder" args="target, oldprevsib, newprevsib">
-      undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsib, newprevsibling:newprevsib}));
-    </method>
-    
-    <method name="save">
-      editormodel.save();
-      undo.reset();
-    </method>
-
-    <method name="stop">
-      editormodel.stop();
-    </method>
-    
-    <method name="editPreview">
-      editor.setAttribute('paused', !editor.paused);
-      if (editor.paused) {
-        selectionmanager.restore();
-        editPreviewButton.setAttribute('text', 'Preview');
-        preview.setAttribute('visible', false);
-        preview.setAttribute('src', '/iframe_stub.html');
-      } else {
-        selectionmanager.clear(true);
-        editPreviewButton.setAttribute('text', 'Edit');
-        preview.setAttribute('visible', true);
-        preview.setAttribute('src', '/compositions/example/editor/preview.dre');
-      }
-    </method>
-    
-    <method name="start">
-    </method>
-    
-    <method name="stop">
-      this.setAttribute('visible', false);
-      this.setAttribute('src', '/iframe_stub.html');
-    </method>
-    
-    <method name="createView">
-      if (editor.paused) {
-        var id = 'lzeditor_client_' + dr.generateGuid();
-        while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
-        
-        var attrs = {
-          class:'view', with:'editable', id:id,
-          width:50, height:50, x:'center', y:'middle', bgcolor:'#999999'
-        };
-        var parent = selectionmanager.selected;
-        if (!parent) {
-          attrs.placement = 'editor';
-          parent = this.getRoot();
-        }
-        var instance = parent.createChild(attrs);
-        
-        // Mark an instance as "new" so we know it needs serialization.
-        instance.__NEW = true;
-        
-        undo.do(new dr.editor.createundoable({target:instance}));
-        selectionmanager.select(instance);
-      }
-    </method>
-    
-    <method name="deleteSelected">
-      if (editor.paused) {
-        var selected = selectionmanager.selected;
-        if (selected) {
-          undo.do(new dr.editor.deleteundoable({target:selected}));
-          selectionmanager.clear();
-        }
-      }
-    </method>
-  </node>
-  
-  <node id="editormodel">
-    <handler event="oninit">
-      var _this = this;
-      // rewrite the file to be editable, which will reload this page automatically
-      dr.global.requestor.fetch(window.location.toString() + '?raw=1').success(
-        function(data, status) {
-          var parser = new dr.htmlparser();
-          var jsobj = parser.parse(data)
-          _this.setAttribute('model', jsobj);
-          //console.log('loaded model', jsobj)
-        }
-      );
-    </handler>
-    
-    <method name="updateAttr" args="id, name, value">
-      //console.log('updateAttr', id, name, value);
-      var model = this.model;
-      if (model) {
-        var child = this._findChild(id, model);
-        if (child) child.attr[name] = value;
-      }
-    </method>
-    
-    <method name="deleteNode" args="id, oldParentId">
-      //console.log('delete', id, oldParentId);
-      var model = this.model;
-      if (model) {
-        var child = this._findChild(id, model),
-          parent = this._findChild(oldParentId, model);
-        if (child && parent) {
-         var idx = this._findChildIndex(parent, child);
-         if (idx >= 0) parent.child.splice(idx, 1);
-        }
-      }
-    </method>
-    
-    <method name="createNode" args="child, newParentId">
-      //console.log('create', newParentId, child);
-      var model = this.model;
-      if (model) {
-        var parent = this._findChild(newParentId, model);
-        if (child && parent) {
-          var prevSiblingView = child.getPrevSiblingView(),
-            prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
-            idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
-          
-          if (!parent.child) parent.child = [];
-         
-          // Convert child (and tree) to object structure and insert
-          parent.child.splice(idx + 1, 0, child.objectify({}));
-        }
-      }
-    </method>
-    
-    <method name="moveInFrontOf" args="id, siblingId, parentId">
-      //console.log('moveInFrontOf', id, siblingId, parentId);
-      var model = this.model;
-      if (model) {
-        var child = this._findChild(id, model),
-          sibling = this._findChild(siblingId, model),
-          parent = this._findChild(parentId, model);
-        if (child && sibling && parent) {
-          // Remove child
-          var idx = this._findChildIndex(parent, child);
-          if (idx >= 0) parent.child.splice(idx, 1);
-          
-          // Insert child
-          idx = this._findChildIndex(parent, sibling);
-          if (idx >= 0) parent.child.splice(idx + 1, 0, child);
-        }
-      }
-    </method>
-    
-    <method name="moveToBack" args="id, parentId">
-      //console.log('moveToBack', id, parentId);
-      var model = this.model;
-      if (model) {
-        var child = this._findChild(id, model),
-          parent = this._findChild(parentId, model);
-        if (child && parent) {
-          var idx = this._findChildIndex(parent, child);
-          if (idx > 0) {
-            parent.child.splice(idx, 1);
-            
-            // HACK: if the parent is the root then the first child must continue
-            // to be the editor include tag.
-            var searchChild;
-            for (var i = 0, len = parent.child.length; len > i; i++) {
-              searchChild = parent.child[i];
-              if (searchChild.tag !== 'include') {
-                parent.child.splice(i, 0, child);
-                break;
-              }
-            }
-          }
-        }
-      }
-    </method>
-    
-    <method name="save">
-      dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model) );
-    </method>
-
-    <method name="stop">
-      dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model) );
-    </method>
-    
-    <method name="getPkg">
-      var compositionNode = this._findChildByTag('composition', this.model);
-      
-      // Copy it
-      compositionNode = JSON.parse(JSON.stringify(compositionNode));
-      
-      // Clean composition node
-      var depth = 0;
-      function cleanComposition(jsobj) {
-        depth++;
-        
-        var children = jsobj.child;
-        if (children) {
-          var child, i = children.length, attrs;
-          while (i) {
-            child = children[--i];
-            
-            attrs = child.attr;
-            if (attrs) {
-              if (depth === 4 && attrs.placement === 'editor') delete attrs.placement;
-              
-              var mixins = attrs.with;
-              if (mixins) {
-                var newMixins = [];
-                mixins.split(define.SEPARATOR_REGEX).forEach(
-                  function(mixinName) {
-                    if (mixinName !== 'editable') newMixins.push(mixinName);
-                  }
-                );
-                attrs.with = newMixins.join(',');
-              }
-            }
-            
-            if (child.tag === 'include') {
-              children.splice(i, 1);
-            } else {
-              cleanComposition(child);
-            }
-          }
-        }
-        
-        depth--;
-      };
-      cleanComposition(compositionNode);
-      
-      return {
-        composition:compositionNode,
-        classmap:dr.classmap
-      };
-    </method>
-    
-    <method name="_findChildIndex" args="parent, child">
-      var children = parent.child;
-      if (children) {
-        var i = children.length, child,
-          searchId = child.attr.id;
-        while (i) {
-          child = children[--i];
-          if (child.attr.id === searchId) return i;
-        }
-      } else {
-        return -1;
-      }
-    </method>
-    
-    <method name="_findChild" args="id, jsobj">
-      if (!id) return null;
-      
-      var children = jsobj.child, child;
-      for (var i = 0; children.length > i; i++) {
-        child = children[i]
-        if (child.attr && child.attr.id === id) {
-          return child;
-        } else if (child.child) {
-          var newchild = this._findChild(id, child);
-          if (newchild) return newchild;
-        }
-      }
-    </method>
-    
-    <method name="_findChildByTag" args="tagname, jsobj">
-      var children = jsobj.child, child;
-      for (var i = 0; children.length > i; i++) {
-        child = children[i]
-        if (child.tag === tagname) {
-          return child;
-        } else if (child.child) {
-          var newchild = this._findChildByTag(tagname, child);
-          if (newchild) return newchild;
-        }
-      }
-    </method>
-  </node>
-
+  <include href='./actions.dre'/>
+  <include href='./editormodel.dre'/>
 
 
   <!--// HANDLERS ///////////////////////////////////////////////////////////-->
@@ -495,9 +148,6 @@ SOFTWARE. -->
           platformEvent.preventDefault(); // Prevent browser find functionality
           actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
           break;
-        case 73: // I: Insert New View
-          actions.createView();
-          break;
         case 83: // S: Save document
           platformEvent.preventDefault(); // Prevent browser save functionality
           saveButton.doActivated();
@@ -520,21 +170,33 @@ SOFTWARE. -->
     }
   </handler>
 
-  <handler event="onmousemove" reference="dr.mouse" args="event">
+  <handler name="updateLocationMarkers" event="onmousemove" reference="dr.mouse" args="event">
+    if (event) {
+      this._lastMouseEvent = event;
+    } else {
+      event = this._lastMouseEvent;
+    }
+    
     var x = event.x, 
       y = event.y,
       xLoc = this.xLocation,
-      yLoc = this.yLocation;
+      yLoc = this.yLocation,
+      content_bg = this.content_bg,
+      content = content_bg.content,
+      inner = content.inner;
     
     xLoc.setAttribute('visible', this.showlocationmarkers);
     xLoc.setAttribute('x', x - 1);
-    xLoc.label.setAttribute('text', x - this.content.x + this.content.inner.scrollx);
+    xLoc.label.setAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
     
     yLoc.setAttribute('visible', this.showlocationmarkers);
     yLoc.setAttribute('y', y - 1);
-    yLoc.label.setAttribute('text', y - this.content.y + this.content.inner.scrolly);
+    yLoc.label.setAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
     
     return true;
+  </handler>
+  <handler event="onscrollx, onscrolly" reference="this.content_bg">
+    this.updateLocationMarkers();
   </handler>
 
   <!-- Eat attempts to open the context menu since this typically messes up
@@ -550,12 +212,12 @@ SOFTWARE. -->
     y="${config.topbar_height}"
     width="${this.parent.divider_right.x - this.x}"
     height="${config.ruler_thickness}"
-    scrollx="${this.parent.content.inner.scrollx + 100 - config.content_inset}"
+    scrollx="${this.parent.content_bg.scrollx + this.parent.content_bg.content.inner.scrollx + 100 - config.content_inset}"
   >
     <spacedlayout axis="x" spacing="100" inset="102"/>
     <replicator name="repl" classname="horizontal_rulertext" data="${config.ruler_marks}"/>
     
-    <bitmap width="6000" ignorelayout="true"
+    <bitmap width="5200" ignorelayout="true"
       height="${config.ruler_thickness}"
       src="/classes/editor/img/ruler_horizontal.png" stretches="contain" repeat="repeat-x"
     >
@@ -568,12 +230,12 @@ SOFTWARE. -->
     y="${this.parent.ruler_corner.y + this.parent.ruler_corner.height}"
     width="${config.ruler_thickness}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-    scrolly="${this.parent.content.inner.scrolly + 100 - config.content_inset}"
+    scrolly="${this.parent.content_bg.scrolly + this.parent.content_bg.content.inner.scrolly + 100 - config.content_inset}"
   >
     <spacedlayout axis="y" spacing="100" inset="97"/>
     <replicator name="repl" classname="vertical_rulertext" data="${config.ruler_marks}"/>
     
-    <bitmap height="6000" ignorelayout="true"
+    <bitmap height="5200" ignorelayout="true"
       width="${config.ruler_thickness}"
       src="/classes/editor/img/ruler_vertical.png" stretches="contain" repeat="repeat-y"
     >
@@ -593,7 +255,9 @@ SOFTWARE. -->
     <verticaltext with="locationtext" name="label" x="2" y="-2"/>
   </view>
   
-  <view id="horizontal_selection" with="keyboarddraggable, button" ignoreplacement="true"
+  <view id="horizontal_selection" with="button, keyboarddraggable" ignoreplacement="true"
+    disabled="${selectionmanager.isrootselection}"
+    cursor="col-resize"
     visible="${reticle.visible}" opacity="0.75"
     x="${reticle.x}" y="${this.parent.ruler_horizontal.y}"
     width="${Math.max(1, reticle.width)}" height="${config.ruler_thickness}"
@@ -602,7 +266,9 @@ SOFTWARE. -->
     <view name="lower" width="1" height="100%" bgcolor="${config.selection_color}"/>
     <view name="upper" width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
     
-    <view with="keyboarddraggable, button" width="10" x="-5" height="100%" cursor="col-resize">
+    <view with="button, keyboarddraggable" width="10" x="-5" height="100%" cursor="w-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
       <method name="startDrag" args="event">
         reticle._start();
         this._origTargetX = reticle.target.x;
@@ -627,8 +293,8 @@ SOFTWARE. -->
           if (gx > 0) x = gx * Math.round(x / gx);
           diff = x - this._origTargetX;
           
-          target.setAttribute('x', this._origTargetX + diff);
-          target.setAttribute('width', this._origTargetW - diff);
+          target.setAttribute('x', this._origTargetX + diff, true); // 3rd arg enables model update
+          target.setAttribute('width', this._origTargetW - diff, true); // 3rd arg enables model update
         }
       </method>
       
@@ -650,7 +316,9 @@ SOFTWARE. -->
       </method>
     </view>
     
-    <view with="keyboarddraggable, button" width="10" x="${this.parent.width - 5}" height="100%" cursor="col-resize">
+    <view with="button, keyboarddraggable" width="10" x="${this.parent.width - 5}" height="100%" cursor="e-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
       <method name="startDrag" args="event">
         reticle._start();
         this.super();
@@ -669,7 +337,7 @@ SOFTWARE. -->
           x = Math.max(0, x + 5);
           var gx = Number(gridsizex.value);
           if (gx > 0) x = gx * Math.round(x / gx);
-          target.setAttribute('width', x);
+          target.setAttribute('width', x, true); // 3rd arg enables model update
         }
       </method>
       
@@ -715,7 +383,7 @@ SOFTWARE. -->
         x = x - target.getAbsolutePosition().x + target.x;
         var gx = Number(gridsizex.value);
         if (gx > 0) x = gx * Math.round(x / gx);
-        target.setAttribute('x', x);
+        target.setAttribute('x', x, true); // 3rd arg enables model update
       }
     </method>
     
@@ -730,10 +398,12 @@ SOFTWARE. -->
     </method>
   </view>
   
-  <view id="vertical_selection" with="keyboarddraggable, button" ignoreplacement="true"
+  <view id="vertical_selection" with="button, keyboarddraggable" ignoreplacement="true"
+    disabled="${selectionmanager.isrootselection}"
     visible="${reticle.visible}" opacity="0.75"
     x="${this.parent.ruler_vertical.x}" y="${reticle.y}"
     width="${config.ruler_thickness}" height="${Math.max(1, reticle.height)}"
+    cursor="row-resize"
   >
     <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
     <view name="lower" height="1" width="100%" bgcolor="${config.selection_color}"/>
@@ -745,7 +415,9 @@ SOFTWARE. -->
     <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     
-    <view with="keyboarddraggable, button" height="10" y="-5" width="100%" cursor="row-resize">
+    <view with="button, keyboarddraggable" height="10" y="-5" width="100%" cursor="n-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
       <method name="startDrag" args="event">
         reticle._start();
         this._origTargetY = reticle.target.y;
@@ -770,8 +442,8 @@ SOFTWARE. -->
           if (gy > 0) y = gy * Math.round(y / gy);
           diff = y - this._origTargetY;
           
-          target.setAttribute('y', this._origTargetY + diff);
-          target.setAttribute('height', this._origTargetH - diff);
+          target.setAttribute('y', this._origTargetY + diff, true); // 3rd arg enables model update
+          target.setAttribute('height', this._origTargetH - diff, true); // 3rd arg enables model update
         }
       </method>
       
@@ -793,7 +465,9 @@ SOFTWARE. -->
       </method>
     </view>
     
-    <view with="keyboarddraggable, button" height="10" y="${this.parent.height - 5}" width="100%" cursor="row-resize">
+    <view with="button, keyboarddraggable" height="10" y="${this.parent.height - 5}" width="100%" cursor="s-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
       <method name="startDrag" args="event">
         reticle._start();
         this.super();
@@ -812,7 +486,7 @@ SOFTWARE. -->
           y = Math.max(0, y + 5);
           var gy = Number(gridsizey.value);
           if (gy > 0) y = gy * Math.round(y / gy);
-          target.setAttribute('height', y);
+          target.setAttribute('height', y, true); // 3rd arg enables model update
         }
       </method>
       
@@ -852,7 +526,7 @@ SOFTWARE. -->
         y = y - target.getAbsolutePosition().y + target.y;
         var gy = Number(gridsizey.value);
         if (gy > 0) y = gy * Math.round(y / gy);
-        target.setAttribute('y', y);
+        target.setAttribute('y', y, true); // 3rd arg enables model update
       }
     </method>
     
@@ -876,7 +550,7 @@ SOFTWARE. -->
   </view>
 
 
-  <!--// Main Panels //-->
+  <!--// Top Panel //-->
   <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     width="100%" height="${config.topbar_height}"
   >
@@ -890,18 +564,17 @@ SOFTWARE. -->
       >
         <method name="doActivated">
           var editorPlaying = !editor.paused;
-          var noSelection = !selectionmanager.selected;
+          var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
           var cfg = [
             {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
             {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
             {klass:dr.listviewseparator},
-            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noSelection}},
-            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noSelection}},
-            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noSelection}},
-            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noSelection}},
+            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
+            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
+            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
+            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
             {klass:dr.listviewseparator},
-            {attrs:{name:'deleteSelected', text:'Delete', disabled:noSelection}},
-            {attrs:{name:'createView', text:'Create', disabled:editorPlaying}},
+            {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
           ];
           this.setAttribute('itemconfig', cfg);
           
@@ -931,65 +604,232 @@ SOFTWARE. -->
     </view>
   </view>
 
+
+  <!--// Left Panel //-->
   <view name="leftbar" ignoreplacement="true" bgcolor="white"
     y="${config.topbar_height}"
     width="${this.parent.divider_left.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
   />
-  
+
+
+  <!--// Content Panels //-->
   <view name="content_bg" ignoreplacement="true" bgcolor="${config.content_color}"
     x="${this.parent.ruler_horizontal.x}"
     y="${this.parent.ruler_vertical.y}"
     width="${this.parent.divider_right.x - this.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    scrollable="true"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
-  </view>
-
-  <view name="content" ignoreplacement="true"
-    x="${this.parent.ruler_horizontal.x + config.content_inset}"
-    y="${this.parent.ruler_vertical.y + config.content_inset}"
-    width="${this.parent.divider_right.x - this.x - config.content_inset}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height - config.content_inset}"
-    boxshadow="[0,0,16,4,'#cccccc']"
-  >
-    <!-- Use an additional inner view so that scrollbars show up inside the
-         "page" rather than over the boxshadow. -->
-    <view name="inner" width="100%" height="100%" scrollable="true" bgcolor="${editor.parent.bgcolor}"
-      maskfocus="${editor.paused}" focuscage="true"
-    >
-      <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    
+    <view x="69" y="35" color="#999999">
+      <spacedlayout spacing="8"/>
+      <constantlayout attribute="y" value="'middle'"/>
+      
+      <view with="button, listviewanchor" id="screenSizeButton"
+        width="auto" height="auto"
+        floatingpanelid="screensizes" floatingvalignoffset="2"
+        focusembellishment="false"
+        listviewattrs="{maxheight:300}"
+        floatingalign="insideleft" floatingvalign="outsidebottom"
+      >
+        <method name="initNode" args="parent, attrs">
+          this.cfg = [
+            {attrs:{name:'custom', text:'custom'}},
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'iphonetall', text:'iphone (Portrait)',              w:320, h:480}},
+            {attrs:{name:'iphonewide', text:'iphone (Landscape)',             w:480, h:320}},
+            
+            {attrs:{name:'iphone4tall', text:'iphone 4 (Portrait)',           w:Math.round(640  * 163/326), h:Math.round(960  * 163/326)}},
+            {attrs:{name:'iphone4wide', text:'iphone 4 (Landscape)',          w:Math.round(960  * 163/326), h:Math.round(640  * 163/326)}},
+            
+            {attrs:{name:'iphone5tall', text:'iphone 5 (Portrait)',           w:Math.round(640  * 163/326), h:Math.round(1135 * 163/326)}},
+            {attrs:{name:'iphone5wide', text:'iphone 5 (Landscape)',          w:Math.round(1135 * 163/326), h:Math.round(640  * 163/326)}},
+            
+            {attrs:{name:'iphone6tall', text:'iphone 6 (Portrait)',           w:Math.round(750  * 163/326), h:Math.round(1334 * 163/326)}},
+            {attrs:{name:'iphone6wide', text:'iphone 6 (Landscape)',          w:Math.round(1334 * 163/326), h:Math.round(750  * 163/326)}},
+            
+            {attrs:{name:'iphone6plustall', text:'iphone 6 Plus (Portrait)',  w:Math.round(1080 * 163/401), h:Math.round(1920 * 163/401)}},
+            {attrs:{name:'iphone6pluswide', text:'iphone 6 Plus (Landscape)', w:Math.round(1920 * 163/401), h:Math.round(1080 * 163/401)}}
+          ];
+          
+          this.super();
+        </method>
+        
+        <attribute name="isopen" type="boolean" value="false"/>
+        <handler event="onisopen" args="isopen">
+          this.updateUI();
+          this.arrow.setAttribute('text', (isopen ? '▼' : '▶'));
+        </handler>
+        
+        <attribute name="selecteditem" type="expression" value="this.cfg[4].attrs"/>
+        <handler event="onselecteditem" args="selecteditem">
+          this.label.setAttribute('text', selecteditem.text);
+          
+          var isCustom = selecteditem.name === 'custom';
+          this.parent.custom.setAttribute('visible', isCustom);
+          if (!isCustom) {
+            screensizew.setAttribute('value', selecteditem.w);
+            screensizeh.setAttribute('value', selecteditem.h);
+          }
+        </handler>
+        
+        <method name="doActivated">
+          if (!this.disabled) {
+            var fp = this.getFloatingPanel();
+            if (fp) this.toggleFloatingPanel();
+          }
+        </method>
+        
+        <method name="notifyPanelHidden" args="panel">
+          this.setAttribute('isopen', false);
+        </method>
+        
+        <method name="notifyPanelShown" args="panel">
+          this.setAttribute('isopen', true);
+        </method>
+        
+        <method name="drawDisabledState">
+          this.setAttribute('color', this.selected ? '#000000' : '#cccccc');
+        </method>
+        <method name="drawFocusedState">
+          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+        </method>
+        <method name="drawHoverState">
+          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+        </method>
+        <method name="drawActiveState">
+          this.setAttribute('color', this.selected ? '#000000' : '#888888');
+        </method>
+        <method name="drawReadyState">
+          this.setAttribute('color', this.selected ? '#000000' : '#999999');
+        </method>
+        <method name="doActivated">
+          var cfg = this.cfg, 
+            i = cfg.length, attrs, selecteditemname = this.selecteditem.name;
+          while (i) {
+            attrs = cfg[--i].attrs;
+            if (attrs) attrs.disabled = attrs.name === selecteditemname;
+          }
+          
+          this.setAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
+          
+          this.toggleFloatingPanel();
+        </method>
+        
+        <method name="doItemActivated" args="itemview">
+          this.setAttribute('selecteditem', itemview);
+          this.super();
+        </method>
+        
+        <text name="arrow" fontsize="10" y="3"/>
+        <text name="label" x="11" y="1" fontsize="12"/>
+      </view>
+      
+      <view name="custom" height="auto" visible="false">
+        <spacedlayout spacing="4" updateparent="true"></spacedlayout>
+        <editor_text text="w:" y="2" fontsize="12"/>
+        <editor_inputtext id="screensizew" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+          <setter name="value" args="v">
+            if (v > 5000) v = 5000;
+            return v;
+          </setter>
+        </editor_inputtext>
+        <editor_text text="h:" y="2" fontsize="12"/>
+        <editor_inputtext id="screensizeh" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+          <setter name="value" args="v">
+            if (v > 5000) v = 5000;
+            return v;
+          </setter>
+        </editor_inputtext>
+      </view>
     </view>
+    
+    <view name="content"
+      x="${config.content_inset}"
+      y="${config.content_inset}"
+      width="${screensizew.value}"
+      height="${screensizeh.value}"
+      boxshadow="[0,0,16,4,'#cccccc']"
+    >
+      <!-- Use an additional inner view so that scrollbars show up inside the
+           "page" rather than over the boxshadow. -->
+      <view name="inner" with="editable" width="100%" height="100%" scrollable="true"
+        maskfocus="${editor.paused}" focuscage="true"
+        cursor="pointer"
+      >
+        <method name="initNode" args="parent, attrs">
+          this.super();
+          
+          this.setAttribute('bgcolor', editor.parent.bgcolor);
+        </method>
+        
+        <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+        
+        <method name="notifyDragEnter" args="dropable">
+          this.__origBoxShadow = this.getActualAttribute('boxshadow');
+          this.setActualAttribute('boxshadow', [0, 0, 12, 1, '#00ff00']);
+        </method>
+        
+        <method name="notifyDragLeave" args="dropable">
+          this.setActualAttribute('boxshadow', this.__origBoxShadow);
+        </method>
+      </view>
+    </view>
+    
+    <view name="extra"
+      x="${this.parent.content.x + this.parent.content.width}" width="${config.content_inset}"
+      y="${this.parent.content.y + this.parent.content.height}" height="${config.content_inset}"
+    />
+    
+    <webpage name="preview" id="preview" visible="false"
+      x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
+      width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
+      border="2" bordercolor="#66ee00"
+      clickable="true" bgcolor="#999999"
+    />
   </view>
 
-  <webpage name="preview" id="preview" ignoreplacement="true" visible="false"
-    x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
-    width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
-    border="2" bordercolor="#66ee00"
-    clickable="true" bgcolor="#999999"
-  />
 
+  <!--// Right Panel //-->
   <view name="rightbar" ignoreplacement="true" bgcolor="#fcfcfc"
     x="right" y="${config.topbar_height}"
     width="${this.parent.innerwidth - this.parent.divider_right.x}"
     height="${this.parent.leftbar.height}"
   >
-    <view name="component_list_panel" width="100%" height="195" bgcolor="white" scrollable="true">
+    <view name="component_list_panel" width="100%" height="${this.parent.divider_top.y}" bgcolor="white" scrollable="true">
       <view width="100%">
         <wrappinglayout axis="x" spacing="5" inset="5" outset="5" linespacing="5" lineinset="5" lineoutset="5" updateparent="true"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
-        <view width="90" height="90" bgcolor="#999999"/>
+        <componentsource label="Image" iconname="bitmap"
+          dropclass="view"
+          dropclassattrs="{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'bitmap', width:50, height:50}}"
+        />
+        <componentsource label="Text" iconname="text"
+          dropclass="text"
+          dropclassattrs="{text:'text', instanceattrs:{class:'text', text:'text'}}"
+        />
+        <componentsource label="Rectangle" iconname="view" layouthint='{"break":true}'
+          dropclass="view"
+          dropclassattrs="{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#cccccc'}}"
+        />
+        <componentsource label="Vertical Line" iconname="verticalline"
+          dropclass="view"
+          dropclassattrs="{width:1, height:'50', bgcolor:'#000000', instanceattrs:{class:'view', width:1, height:'100%', y:'top', bgcolor:'#000000'}}"
+        />
+        <componentsource label="Horizontal Line" iconname="horizontalline"
+          dropclass="view"
+          dropclassattrs="{width:'50', height:1, bgcolor:'#000000', instanceattrs:{class:'view', width:'100%', x:'left', height:1, bgcolor:'#000000'}}"
+        />
+        <componentsource label="Button" iconname="view" layouthint='{"break":true}'
+          dropclass="view"
+          dropclassattrs="{width:50, height:50, bgcolor:'#ff0000', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#ff0000'}}"
+        />
       </view>
     </view>
     
-    <view y="195" width="100%" height="${this.parent.innerheight - this.y}" scrollable="true">
+    <view y="${this.parent.divider_top.y}" width="100%" height="${this.parent.innerheight - this.y}" scrollable="true">
       <spacedlayout axis="y"/>
       
       <subhead width="100%" text="Attributes"/>
@@ -997,46 +837,23 @@ SOFTWARE. -->
       <view name="attrs_panel" width="100%" clip="true">
         <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
           <method name="__positionView" args="view, attrName, value">
-            // Only animate the parent updates
+            // Only animate the parent updates so that the panel appears to
+            // slide open/closed
             var isParent = view === this.parent;
             if (isParent) this.speed = 500;
             this.super();
             if (isParent) this.speed = 0;
           </method>
         </spacedlayout>
-        <handler event="onselected" args="selected" reference="selectionmanager" type="coffee">
-          attrs = []
-          
-          compare = (a, b) ->
-            if (b.name > a.name)
-              return -1
-            else if (a.name > b.name)
-              return 1
-            else
-              0
-          
-          if selected
-            ancestors = this.klass.ancestors()
-            # pull attributes from ancestor, since we don't want the editor mixin itself
-            myattributes = ancestors[ancestors.length - 1].attributes
-            
-            # build list of attributes for the replicator
-            for key, value of myattributes
-              value.name = key
-              attrs.push(value)
-              # console.log('attribute', key, value)
-            
-            attrs.sort(compare)
-          
-          this.repl.setAttribute('data', attrs);
-        </handler>
-        <replicator name="repl" classname="attributeeditor"/>
+        <replicator classname="attributeeditor"
+          data="${selectionmanager.selected ? selectionmanager.selected.getAttrsListForDetails() : []}"
+        />
       </view>
       
       <subhead width="100%" text="Layouts"/>
       
       <view name="layouts_panel" width="100%" clip="true">
-        <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
+        <spacedlayout axis="y" spacing="5" updateparent="true">
           <method name="__positionView" args="view, attrName, value">
             // Only animate the parent updates
             var isParent = view === this.parent;
@@ -1046,13 +863,28 @@ SOFTWARE. -->
           </method>
         </spacedlayout>
         
-        <handler event="onselected" args="selected" reference="selectionmanager">
-          // FIXME: implement layouts
-        </handler>
+        <replicator classname="layouteditor"
+          data="${selectionmanager.selected ? selectionmanager.selected.getLayouts() : []}"
+        />
       </view>
+    </view>
+    
+    <view ignoreplacement="true"
+      width="100%" y="${this.parent.divider_top.y}" height="1"
+      bgcolor="${config.secondary_panel_color}"
+    />
+    
+    <view name="divider_top" with="keyboarddraggable" cursor="row-resize"
+      x="0" y="185" width="100%" height="${config.divider_width}"
+    >
+      <method name="updatePosition" args="x, y">
+        if (!this.disabled) this.setAttribute('y', Math.max(95, Math.min(455, y)));
+      </method>
     </view>
   </view>
 
+
+  <!--// Bottom Panel //-->
   <view name="bottombar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     y="bottom" width="100%" height="${config.bottombar_height}"
   />
@@ -1096,6 +928,8 @@ SOFTWARE. -->
     </method>
   </view>
 
+  <view id="guides" ignorelayout="true" ignoreplacement="true"></view>
+
   <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>
 </view>
@@ -1105,12 +939,22 @@ SOFTWARE. -->
     return gridsizex;
   </method>
   
+  <spacedlayout axis="y" spacing="4" updateparent="true"/>
+  
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"></spacedlayout>
     <editor_text text="grid x:" y="2"/>
     <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
     <editor_text text="y:" y="2"/>
     <editor_inputtext id="gridsizey" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+  </view>
+  
+  <view height="auto">
+    <spacedlayout spacing="4" updateparent="true"></spacedlayout>
+    <editor_text text="snap to guides:" y="2"/>
+    <view with="checkbutton" id="snaptoguides" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20"
+      selected="true"
+    />
   </view>
 </basefloatingpanel>
 

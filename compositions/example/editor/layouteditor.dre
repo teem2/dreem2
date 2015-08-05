@@ -19,23 +19,30 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="controlhandle" with="button, keyboarddraggable" cursor="se-resize"
-  border="1" bordercolor="blue" width="9" height="9"
->
-  <method name="drawFocusedState">
-    this.setAttribute('bgcolor', '#ffffff');
-    this.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+<class name="layouteditor" height="auto" width="100%">
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    this.label.setAttribute('text', this.data.klass.__displayName);
   </method>
-  <method name="drawHoverState">
-    this.setAttribute('bgcolor', '#ffffff');
-    this.setAttribute('boxshadow', config.boxshadow_normal);
-  </method>
-  <method name="drawActiveState">
-    this.setAttribute('bgcolor', '#eeeeee');
-    this.setAttribute('boxshadow', null);
-  </method>
-  <method name="drawReadyState">
-    this.setAttribute('bgcolor', '#dddddd');
-    this.setAttribute('boxshadow', config.boxshadow_normal);
-  </method>
+
+  <spacedlayout axis="y" spacing="5" outset="5" updateparent="true">
+    <method name="__positionView" args="view, attrName, value">
+      // Only animate the parent updates so that the panel appears to
+      // slide open/closed
+      var isParent = view === this.parent;
+      if (isParent) this.speed = 500;
+      this.super();
+      if (isParent) this.speed = 0;
+    </method>
+  </spacedlayout>
+  
+  <text name="label" leftpadding="10" toppadding="4" bottompadding="4"
+    bottomborder="1" bordercolor="${config.secondary_panel_color}"
+    bgcolor="#f8f8f8" color="${config.label_text_color}"
+    fontsize="10" width="100%"
+  />
+  
+  <replicator name="repl" classname="attributeeditor"
+    data="${this.parent.data.getAttrsListForDetails()}"
+  />
 </class>

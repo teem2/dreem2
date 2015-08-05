@@ -51,8 +51,34 @@
     */-->
   <attribute name="hideonblur" type="boolean" value="true"/>
 
+  <!--/**
+    * @attribute {Boolean} hideonwheel
+    * If true this panel will be hidden when a wheel event occurs.
+    */-->
+  <attribute name="hideonwheel" type="boolean" value="true"/>
+
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/** @private */-->
+  <method name="__doWheel" args="event">
+    var x = event.x, y = event.y;
+    if (!this.containsPoint(x, y) && (this.ignoreownerforhideonmousedown ? !this.owner.containsPoint(x, y) : true)) {
+      this.doWheelOutside();
+    }
+    return true;
+  </method>
+
+  <!--/**
+    * @method doWheelOutside
+    * Called when a wheel occurs outside the floating panel. The default
+    * behavior is to hide the panel. This gives subclasses a chance to 
+    * provide different behavior.
+    * @returns {void}
+    */-->
+  <method name="doWheelOutside">
+    if (this.hideonwheel) this.hide();
+  </method>
+  
   <!--/** @private */-->
   <method name="__doMouseDown" args="event">
     var x = event.x, y = event.y;
@@ -155,6 +181,7 @@
       
       var g = dr.global;
       this.listenToPlatform(g.mouse, 'onmousedown', '__doMouseDown', true);
+      this.listenToPlatform(g.mouse, 'onwheel', '__doWheel', true);
       this.listenTo(g.focus, 'onfocused', '__doFocusChange');
     }
   </method>
@@ -171,6 +198,7 @@
     if (this.isShown()) {
       var g = dr.global;
       this.stopListeningToPlatform(g.mouse, 'onmousedown', '__doMouseDown', true);
+      this.stopListeningToPlatform(g.mouse, 'onwheel', '__doWheel', true);
       this.stopListening(g.focus, 'onfocused', '__doFocusChange');
       
       this.setAttribute('visible', false);

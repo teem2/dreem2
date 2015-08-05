@@ -103,13 +103,13 @@
               var lib = /\$PLUGIN(.*)/.exec(str)[1];
               var paths = define[lut];
               for (var i=0;i<paths.length;i++) {
-                var path = paths[0];
+                var path = paths[i];
                 if (define.__FS.existsSync(path + '/' + lib)) {
                   return define.expandVariables(path);
                 }
               }
 
-              throw new Error("Cannot find $PLUGIN lib " + lib + " used in require");
+              throw new Error("Cannot find $PLUGIN lib " + lib + " used in require paths: " + paths);
             } else {
               return define.expandVariables(define[lut]);
             }
