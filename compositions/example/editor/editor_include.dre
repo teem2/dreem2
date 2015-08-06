@@ -55,10 +55,10 @@ SOFTWARE. -->
 
 
   <!--// SERVICE NODES //////////////////////////////////////////////////////-->
-  <include href='./config.dre'/>
-  <include href='./selectionmanager.dre'/>
-  <include href='./actions.dre'/>
-  <include href='./editormodel.dre'/>
+  <include href='./service_nodes/config.dre'/>
+  <include href='./service_nodes/selectionmanager.dre'/>
+  <include href='./service_nodes/actions.dre'/>
+  <include href='./service_nodes/editormodel.dre'/>
 
   <editor-undostack id="undo"></editor-undostack>
 
