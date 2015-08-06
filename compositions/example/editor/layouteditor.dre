@@ -36,11 +36,17 @@ SOFTWARE. -->
     </method>
   </spacedlayout>
   
-  <text name="label" leftpadding="10" toppadding="4" bottompadding="4"
+  <text name="label" leftpadding="10" toppadding="6" bottompadding="6"
     bottomborder="1" bordercolor="${config.secondary_panel_color}"
     bgcolor="#f8f8f8" color="${config.label_text_color}"
     fontsize="10" width="100%"
   />
+  
+  <smallbutton x="${this.parent.innerwidth - this.width - 2}" y="2" ignorelayout="true" text="delete">
+    <method name="doActivated">
+      if (!this.disabled) undo.do(new dr.editor.deletelayoutundoable({target:this.classroot.data}));
+    </method>
+  </smallbutton>
   
   <replicator name="repl" classname="attributeeditor"
     data="${this.parent.data.getAttrsListForDetails()}"

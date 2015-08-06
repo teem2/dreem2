@@ -47,27 +47,26 @@ SOFTWARE. -->
       attrs.id = id;
       attrs.with = 'editable';
       
-      if (droptarget.islayout) {
-          var instance = droptarget.createChild(attrs);
-          
-          // Mark an instance as "new" so we know it needs serialization.
-          instance.__NEW = true;
-          
-          undo.do(new dr.editor.createundoable({target:instance}));
-          selectionmanager.select(instance.parent);
+      if (this.islayout) {
+        var instance = droptarget.createChild(attrs);
+        
+        // Mark an instance as "new" so we know it needs serialization.
+        instance.__NEW = true;
+        
+        undo.do(new dr.editor.createlayoutundoable({target:instance}));
       } else {
-          var targetPos = this.getAbsolutePosition(),
-            newParentPos = droptarget.getAbsolutePosition();
-          if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
-          if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
-          
-          var instance = droptarget.createChild(attrs);
-          
-          // Mark an instance as "new" so we know it needs serialization.
-          instance.__NEW = true;
-          
-          undo.do(new dr.editor.createundoable({target:instance}));
-          selectionmanager.select(instance);
+        var targetPos = this.getAbsolutePosition(),
+          newParentPos = droptarget.getAbsolutePosition();
+        if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
+        if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
+        
+        var instance = droptarget.createChild(attrs);
+        
+        // Mark an instance as "new" so we know it needs serialization.
+        instance.__NEW = true;
+        
+        undo.do(new dr.editor.createundoable({target:instance}));
+        selectionmanager.select(instance);
       }
       
       this.destroy();

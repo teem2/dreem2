@@ -30,6 +30,9 @@ SOFTWARE. -->
 <include href='./componentdropable.dre'/>
 <include href='./componentsource.dre'/>
 
+<include href='./undo/createlayoutundoable.dre'/>
+<include href='./undo/deletelayoutundoable.dre'/>
+
 <view name="editor" id="editor" width="100%" height="100%"
   ignoreplacement="true" ignorelayout="true"
   bgcolor="white" clip="true"
@@ -52,75 +55,12 @@ SOFTWARE. -->
 
 
   <!--// SERVICE NODES //////////////////////////////////////////////////////-->
-  <node id="config">
-    <attribute name="img_root" type="string" value="/compositions/example/editor/img/"/>
-    
-    <attribute name="topbar_height" type="number" value="75"/>
-    
-    <attribute name="leftbar_minwidth" type="number" value="50"/>
-    <attribute name="leftbar_maxwidth" type="number" value="300"/>
-    
-    <attribute name="rightbar_minwidth" type="number" value="260"/>
-    <attribute name="rightbar_minx" type="number" value="600"/>
-    <attribute name="bottombar_height" type="number" value="0"/>
-    
-    <attribute name="divider_width" type="number" value="5"/>
-    <attribute name="ruler_thickness" type="number" value="35"/>
-    <attribute name="content_inset" type="number" value="69"/>
-    <attribute name="selection_marker_offset" type="number" value="6"/>
-    
-    <attribute name="attribute_label_width" type="number" value="100"/>
-    
-    <attribute name="primary_panel_color" type="color" value="#dddddd"/>
-    <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
-    <attribute name="content_color" type="color" value="#f8f8f8"/>
-    <attribute name="label_text_color" type="color" value="#666666"/>
-    <attribute name="selection_color" type="color" value="blue"/>
-    <attribute name="relselection_color" type="color" value="green"/>
-    <attribute name="location_color" type="color" value="black"/>
-    
-    <attribute name="boxshadow_normal" type="expression" value="[0,0,4,0,'#000000']"/>
-    <attribute name="boxshadow_large" type="expression" value="[0,0,12,0,'#000000']"/>
-    <attribute name="boxshadow_floater" type="expression" value="[0,2,6,0,'#999999']"/>
-    
-    <attribute name="ruler_marks" type="expression" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000]"/>
-  </node>
-  
-  <node id="selectionmanager">
-    <attribute name="selected" type="expression" value="null"/>
-    <setter name="selected" args="v">
-      if (editor.inited) this.setAttribute('isrootselection', v === editor.content_bg.content.inner);
-      return v;
-    </setter>
-    <attribute name="isrootselection" type="boolean" value="false"/>
-    
-    <method name="clear" args="restoreable">
-      if (restoreable) this._oldSelection = this.selected;
-      this.select(null);
-    </method>
-    
-    <method name="restore">
-      if (this._oldSelection && this._oldSelection.parent) this.select(this._oldSelection);
-    </method>
-    
-    <method name="select" args="view">
-      if (view) {
-        if (view.isView) {
-          this.setAttribute('selected', view);
-        } else {
-          // Layouts and other nodes should select have their parent selected.
-          this.setAttribute('selected', view.parent);
-        }
-      } else {
-        this.setAttribute('selected', null);
-      }
-    </method>
-  </node>
-  
-  <editor-undostack id="undo"></editor-undostack>
-  
+  <include href='./config.dre'/>
+  <include href='./selectionmanager.dre'/>
   <include href='./actions.dre'/>
   <include href='./editormodel.dre'/>
+
+  <editor-undostack id="undo"></editor-undostack>
 
 
   <!--// HANDLERS ///////////////////////////////////////////////////////////-->
@@ -865,7 +805,7 @@ SOFTWARE. -->
       
       <subhead width="100%" text="Layouts"/>
       
-      <view name="layouts_panel" width="100%" clip="true">
+      <view name="layouts_panel" id="layouts_panel" width="100%" clip="true">
         <spacedlayout axis="y" spacing="5" updateparent="true">
           <method name="__positionView" args="view, attrName, value">
             // Only animate the parent updates
@@ -876,9 +816,11 @@ SOFTWARE. -->
           </method>
         </spacedlayout>
         
-        <replicator classname="layouteditor"
-          data="${selectionmanager.selected ? selectionmanager.selected.getLayouts(true) : []}"
-        />
+        <handler name="refresh" event="onselected" args="selected" reference="selectionmanager">
+          this.repl.setAttribute('data', selected ? selected.getLayouts(true) : []);
+        </method>
+        
+        <replicator name="repl" classname="layouteditor"/>
       </view>
     </view>
     

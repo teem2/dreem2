@@ -19,16 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="toolbarbutton" extends="text" with="button"
+<class name="baseeditorbutton" extends="text" with="button"
   border="1" bordercolor="#666666"
   toppadding="3" bottompadding="3" leftpadding="6" rightpadding="6"
   fontsize="14"
   cornerradius="4" focusembellishment="false"
 >
-  <attribute name="action" type="string" value=""/>
-  <method name="doActivated">
-    if (!this.disabled) actions[this.action]();
-  </method>
   <method name="drawDisabledState">
     this.setAttribute('boxshadow', null);
     this.setAttribute('bgcolor', '#aaaaaa');
@@ -51,7 +47,16 @@ SOFTWARE. -->
   </method>
 </class>
 
-<class name="basefloatingpanelbutton" extends="toolbarbutton"
+<class name="smallbutton" extends="baseeditorbutton" fontsize="10"/>
+
+<class name="toolbarbutton" extends="baseeditorbutton">
+  <attribute name="action" type="string" value=""/>
+  <method name="doActivated">
+    if (!this.disabled) actions[this.action]();
+  </method>
+</class>
+
+<class name="basefloatingpanelbutton" extends="baseeditorbutton"
   floatingalign="insideright" floatingvalign="outsidebottom"
 >
   <attribute name="selected" type="boolean" value="false"/>

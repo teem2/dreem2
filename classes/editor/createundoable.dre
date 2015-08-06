@@ -3,7 +3,7 @@
 <!--/**
   * @class dr.editor.createundoable {UI Components}
   * @extends dr.editor.undoable
-  * An undoable that Inserts a new node into a parent node.
+  * An undoable that inserts a new node into a parent node.
   */-->
 <class name="editor-createundoable" extends="editor-undoable"
   undodescription='Undo create.'
