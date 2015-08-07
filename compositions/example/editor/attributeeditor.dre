@@ -77,7 +77,7 @@ SOFTWARE. -->
       var oldvalue = this.oldvalue, 
         newvalue = this.value;
       if (oldvalue !== newvalue) {
-        undo.do(new dr.editor.attrundoable({
+        undo.do(new dr.editor.editorattrundoable({
           target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
         }));
         this.oldvalue = newvalue;
@@ -99,7 +99,7 @@ SOFTWARE. -->
         targetattr = parent.targetattr,
         target = parent.target;
       if (!parent._isSync && target && ('' + target['__cfg_' + targetattr]) !== ('' + selected)) {
-        undo.do(new dr.editor.attrundoable({
+        undo.do(new dr.editor.editorattrundoable({
           target:target, attribute:targetattr, newvalue:selected
         }));
       }
@@ -133,7 +133,7 @@ SOFTWARE. -->
 
   <method name="notifyPanelHidden" args="panel">
     if (this.oldvalue !== this.value) {
-      undo.do(new dr.editor.attrundoable({
+      undo.do(new dr.editor.editorattrundoable({
         target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
       }));
     }

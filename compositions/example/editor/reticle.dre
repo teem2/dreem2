@@ -260,12 +260,12 @@ SOFTWARE. -->
     this.dy = target.y - pos.y;
     
     // started dragging, create compound for target with current values
-    var attrundoable = dr.editor.attrundoable;
-    this._undoablew = new attrundoable({target:target, attribute:'width', oldvalue:target.getAttribute('width')});
-    this._undoableh = new attrundoable({target:target, attribute:'height', oldvalue:target.getAttribute('height')});
-    this._undoablex = new attrundoable({target:target, attribute:'x', oldvalue:target.getAttribute('x')});
-    this._undoabley = new attrundoable({target:target, attribute:'y', oldvalue:target.getAttribute('y')});
-    this._undoableparent = new attrundoable({target:target, attribute:'parent'});
+    var EAU = dr.editor.editorattrundoable;
+    this._undoablew = new EAU({target:target, attribute:'width', oldvalue:target.getAttribute('width')});
+    this._undoableh = new EAU({target:target, attribute:'height', oldvalue:target.getAttribute('height')});
+    this._undoablex = new EAU({target:target, attribute:'x', oldvalue:target.getAttribute('x')});
+    this._undoabley = new EAU({target:target, attribute:'y', oldvalue:target.getAttribute('y')});
+    this._undoableparent = new EAU({target:target, attribute:'parent'});
     this._undoableparent.setAttribute('oldvalue', target.parent);
     
     this.listenTo(dr.keyboard, 'onkeydown', this._handleKeyChange);

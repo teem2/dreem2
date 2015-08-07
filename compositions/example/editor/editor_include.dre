@@ -32,6 +32,7 @@ SOFTWARE. -->
 
 <include href='./undo/createlayoutundoable.dre'/>
 <include href='./undo/deletelayoutundoable.dre'/>
+<include href='./undo/editorattrundoable.dre'/>
 
 <view name="editor" id="editor" width="100%" height="100%"
   ignoreplacement="true" ignorelayout="true"

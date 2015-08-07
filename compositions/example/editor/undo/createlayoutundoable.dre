@@ -85,17 +85,7 @@
         }
       }
       
-      if (layout.updateparent) {
-        sv = parent;
-        restoreData.push({
-          sv:sv,
-          
-          x:sv.getAttribute('x'), 
-          y:sv.getAttribute('y'), 
-          width:sv.getAttribute('width'), 
-          height:sv.getAttribute('height')
-        });
-      }
+      if (layout.updateparent) this.storeManagedParentState(undoable);
       
       layout.__restoreData = restoreData;
     }
@@ -114,14 +104,45 @@
         
         sv = datum.sv;
         
-        sv.setAttribute('x', datum.x);
-        sv.setAttribute('y', datum.y);
-        sv.setAttribute('width', datum.width);
-        sv.setAttribute('height', datum.height);
+        sv.setAttribute('x', datum.x, true);
+        sv.setAttribute('y', datum.y, true);
+        sv.setAttribute('width', datum.width, true);
+        sv.setAttribute('height', datum.height, true);
         
         attr = datum.attr;
-        if (attr) sv.setAttribute(attr, datum.attrvalue);
+        if (attr) sv.setAttribute(attr, datum.attrvalue, true);
       }
+      
+      this.restoreManagedParentState(undoable);
+      
+      layout.setAttribute('locked', false);
+    }
+  </method>
+  
+  <method name="storeManagedParentState" args="undoable" allocation="class">
+    // Stored on the undoable since the updateparent attr can be toggled on/off multiple times
+    var layout = undoable.target;
+    
+    if (!undoable.__restoreParentData) {
+      var parent = layout.parent;
+      undoable.__restoreParentData = {
+        sv:parent,
+        width:parent.getAttribute('width'), 
+        height:parent.getAttribute('height')
+      };
+    }
+  </method>
+  
+  <method name="restoreManagedParentState" args="undoable" allocation="class">
+    var layout = undoable.target,
+      restoreParentData = undoable.__restoreParentData;
+    
+    if (restoreParentData) {
+      layout.setAttribute('locked', true);
+      
+      var parent = restoreParentData.sv;
+      parent.setAttribute('width', restoreParentData.width, true);
+      parent.setAttribute('height', restoreParentData.height, true);
       
       layout.setAttribute('locked', false);
     }
