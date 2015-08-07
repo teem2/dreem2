@@ -59,6 +59,11 @@ SOFTWARE. -->
       
       <handler event="oninit">
         // Initial position comparisons ////////////////////////////////////////
+        var svs = this.getSubviews();
+        assert.equal(svs[0], this.c1, 'Verify initial subview order.');
+        assert.equal(svs[1], this.c2, 'Verify initial subview order.');
+        assert.equal(svs[2], this.c3, 'Verify initial subview order.');
+        
         assert.isTrue(this.c1.isBehind(this.c2));
         assert.isTrue(this.c1.isBehind(this.c3));
         
@@ -146,6 +151,11 @@ SOFTWARE. -->
         assert.isTrue(this.c2.isInFrontOf(this.c3));
         assert.isTrue(this.c2.c2v1.isInFrontOf(this.c3.c3v3));
         
+        // Verify subviews also updated
+        assert.equal(svs[0], this.c1, 'Verify subviews also updated.');
+        assert.equal(svs[1], this.c3, 'Verify subviews also updated.');
+        assert.equal(svs[2], this.c2, 'Verify subviews also updated.');
+        
         // Reparenting /////////////////////////////////////////////////////////
         assert.isTrue(this.c1.c1v2.isBehind(this.c3.c3v1));
         assert.equal(this.c3.c1v2, undefined);
@@ -156,6 +166,25 @@ SOFTWARE. -->
         assert.isTrue(this.c3.c3v3.isBehind(this.c3.c1v2));
         assert.isTrue(this.c1.c1v1.isBehind(this.c3.c1v2));
         assert.isTrue(this.c1.c1v3.isBehind(this.c3.c1v2));
+        
+        // More Subview order testing //////////////////////////////////////////
+        this.c2.moveToBack();
+        
+        assert.equal(svs[0], this.c2, 'Verify subviews also updated moveToBack.');
+        assert.equal(svs[1], this.c1, 'Verify subviews also updated moveToBack.');
+        assert.equal(svs[2], this.c3, 'Verify subviews also updated moveToBack.');
+        
+        this.c2.moveInFrontOf(this.c1);
+        
+        assert.equal(svs[0], this.c1, 'Verify subviews also updated moveInFrontOf.');
+        assert.equal(svs[1], this.c2, 'Verify subviews also updated moveInFrontOf.');
+        assert.equal(svs[2], this.c3, 'Verify subviews also updated moveInFrontOf.');
+        
+        this.c3.moveBehind(this.c1);
+        
+        assert.equal(svs[0], this.c3, 'Verify subviews also updated moveBehind.');
+        assert.equal(svs[1], this.c1, 'Verify subviews also updated moveBehind.');
+        assert.equal(svs[2], this.c2, 'Verify subviews also updated moveBehind.');
       </handler>
     </view>
   </screen>
