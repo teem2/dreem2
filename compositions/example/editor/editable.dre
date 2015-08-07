@@ -193,19 +193,18 @@ SOFTWARE. -->
     return obj;
   </method>
   <method name="_getAttrsToSave">
-    // FIXME: implement a better way to know what to save
-    
-    // Make sure all properties are strings since the server side markup
-    // generator seems to work better when they are.
-    return {
-      id:'' + this.id,
+    var attrs = {},
+      objectifyAttrsList = this.__objectify_attrs_list, 
+      i = objectifyAttrsList.length, 
+      attrName;
+    while (i) {
+      attrName = objectifyAttrsList[--i];
       
-      x:'' + this.__cfg_x,
-      y:this.__cfg_y,
-      width:'' + this.__cfg_width,
-      height:'' + this.__cfg_height,
-      bgcolor:'' + this.__cfg_bgcolor
-    };
+      // Make sure all properties are strings since the server side markup
+      // generator seems to work better when they are.
+      attrs[attrName] = '' + this['__cfg_' + attrName];
+    }
+    return attrs;
   </method>
 
   <!--// Details Panel Support //-->

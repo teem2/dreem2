@@ -45,26 +45,29 @@ SOFTWARE. -->
       
       var attrs = dr.extend({}, this.instanceattrs);
       attrs.id = id;
-      attrs.with = 'editable';
       
-      if (this.islayout) {
-        var instance = droptarget.createChild(attrs);
-        
-        // Mark an instance as "new" so we know it needs serialization.
-        instance.__NEW = true;
-        
-        undo.do(new dr.editor.createlayoutundoable({target:instance}));
-      } else {
+      if (!this.islayout) {
         var targetPos = this.getAbsolutePosition(),
           newParentPos = droptarget.getAbsolutePosition();
         if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
         if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
-        
-        var instance = droptarget.createChild(attrs);
-        
-        // Mark an instance as "new" so we know it needs serialization.
-        instance.__NEW = true;
-        
+      }
+      
+      // Remember which attrs to objectify for the model
+      var objectifyAttrs = dr.extend({}, attrs);
+      delete objectifyAttrs.class;
+      if (this.islayout) delete objectifyAttrs.locked;
+      attrs.__objectify_attrs_list = Object.keys(objectifyAttrs);
+      
+      attrs.with = 'editable';
+      var instance = droptarget.createChild(attrs);
+      
+      // Mark an instance as "new" so we know it needs serialization.
+      instance.__NEW = true;
+      
+      if (this.islayout) {
+        undo.do(new dr.editor.createlayoutundoable({target:instance}));
+      } else {
         undo.do(new dr.editor.createundoable({target:instance}));
         selectionmanager.select(instance);
       }
