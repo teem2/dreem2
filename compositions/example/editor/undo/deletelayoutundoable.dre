@@ -18,8 +18,11 @@
   <method name="undo" args="callback">
     var retval = this.super();
     
-    // Only do this if creation succeeded
-    if (!this.done) this._refresh();
+    // Only do this if undeletion succeeded
+    if (!this.done) {
+      this._refresh();
+      this.target.update();
+    }
     
     return retval;
   </method>
@@ -32,8 +35,11 @@
   <method name="redo" args="callback">
     var retval = this.super();
     
-    // Only do this if creation succeeded
-    if (this.done) this._refresh();
+    // Only do this if undeletion succeeded
+    if (this.done) {
+      dr.editor.createlayoutundoable.restoreManagedViewState(this);
+      this._refresh();
+    }
     
     return retval;
   </method>

@@ -765,19 +765,19 @@ SOFTWARE. -->
         <!--// Layouts //-->
         <componentsource label="X-Axis Layout" iconname="spacedlayout_x" layouthint='{"break":true}'
           dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_x.png', instanceattrs:{class:'spacedlayout', axis:'x'}}"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_x.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'x'}}"
         />
         <componentsource label="Y-Axis Layout" iconname="spacedlayout_y"
           dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_y.png', instanceattrs:{class:'spacedlayout', axis:'y'}}"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_y.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'y'}}"
         />
         <componentsource label="Variable Layout" iconname="variablelayout"
           dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'variablelayout.png', instanceattrs:{class:'variablelayout'}}"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'variablelayout.png', instanceattrs:{class:'variablelayout', locked:true}}"
         />
         <componentsource label="Constant Layout" iconname="constantlayout"
           dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'constantlayout.png', instanceattrs:{class:'constantlayout'}}"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'constantlayout.png', instanceattrs:{class:'constantlayout', locked:true}}"
         />
       </view>
     </view>
@@ -818,7 +818,7 @@ SOFTWARE. -->
         
         <handler name="refresh" event="onselected" args="selected" reference="selectionmanager">
           this.repl.setAttribute('data', selected ? selected.getLayouts(true) : []);
-        </method>
+        </handler>
         
         <replicator name="repl" classname="layouteditor"/>
       </view>

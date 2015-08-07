@@ -19,7 +19,10 @@
     var retval = this.super();
     
     // Only do this if creation succeeded
-    if (!this.done) this._refresh();
+    if (!this.done) {
+      dr.editor.createlayoutundoable.restoreManagedViewState(this);
+      this._refresh();
+    }
     
     return retval;
   </method>
@@ -30,10 +33,19 @@
     * Inserts the target layout into the target parent.
     */-->
   <method name="redo" args="callback">
+    if (!this._notFirstTime) dr.editor.createlayoutundoable.storeManagedViewState(this);
+    
     var retval = this.super();
     
     // Only do this if creation succeeded
-    if (this.done) this._refresh();
+    if (this.done) {
+      this._refresh();
+      if (this._notFirstTime) {
+        this.target.update();
+      } else {
+        this.target.setAttribute('locked', false);
+      }
+    }
     
     return retval;
   </method>
@@ -44,6 +56,74 @@
       layouts_panel.refresh(targetParent);
     } else {
       selectionmanager.select(targetParent);
+    }
+  </method>
+  
+  <method name="storeManagedViewState" args="undoable" allocation="class">
+    var layout = undoable.target;
+    
+    if (!layout.__restoreData) {
+      var parent = layout.parent,
+        svs = layout.subviews,
+        i = svs.length, sv,
+        restoreData = [];
+      
+      while (i) {
+        sv = svs[--i];
+        
+        if (!layout.skipSubview(sv)) {
+          restoreData.push({
+            sv:sv,
+            attr:layout.attribute, 
+            attrvalue:sv.getAttribute(layout.attribute),
+            
+            x:sv.getAttribute('x'), 
+            y:sv.getAttribute('y'), 
+            width:sv.getAttribute('width'), 
+            height:sv.getAttribute('height')
+          });
+        }
+      }
+      
+      if (layout.updateparent) {
+        sv = parent;
+        restoreData.push({
+          sv:sv,
+          
+          x:sv.getAttribute('x'), 
+          y:sv.getAttribute('y'), 
+          width:sv.getAttribute('width'), 
+          height:sv.getAttribute('height')
+        });
+      }
+      
+      layout.__restoreData = restoreData;
+    }
+  </method>
+  
+  <method name="restoreManagedViewState" args="undoable" allocation="class">
+    var layout = undoable.target,
+      restoreData = layout.__restoreData;
+    
+    if (restoreData) {
+      layout.setAttribute('locked', true);
+      
+      var i = restoreData.length, datum, attr, sv;
+      while (i) {
+        datum = restoreData[--i];
+        
+        sv = datum.sv;
+        
+        sv.setAttribute('x', datum.x);
+        sv.setAttribute('y', datum.y);
+        sv.setAttribute('width', datum.width);
+        sv.setAttribute('height', datum.height);
+        
+        attr = datum.attr;
+        if (attr) sv.setAttribute(attr, datum.attrvalue);
+      }
+      
+      layout.setAttribute('locked', false);
     }
   </method>
 </class>
