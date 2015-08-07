@@ -68,6 +68,10 @@ SOFTWARE. -->
   <handler event="onfocus">
     this.oldvalue = this.text;
   </handler>
+  <handler event="onvalue" args="value">
+    // Reset the oldvalue whenever an external update occurs.
+    if (this._isSync) this.oldvalue = value;
+  </handler>
   <handler event="onkeydown" args="platformEvent">
     var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
     if (keyCode === 13) this._applyChange();
@@ -77,7 +81,7 @@ SOFTWARE. -->
       var oldvalue = this.oldvalue, 
         newvalue = this.value;
       if (oldvalue !== newvalue) {
-        undo.do(new dr.editor.editorattrundoable({
+        actions.do(new dr.editor.editorattrundoable({
           target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
         }));
         this.oldvalue = newvalue;
@@ -99,7 +103,7 @@ SOFTWARE. -->
         targetattr = parent.targetattr,
         target = parent.target;
       if (!parent._isSync && target && ('' + target['__cfg_' + targetattr]) !== ('' + selected)) {
-        undo.do(new dr.editor.editorattrundoable({
+        actions.do(new dr.editor.editorattrundoable({
           target:target, attribute:targetattr, newvalue:selected
         }));
       }
@@ -133,7 +137,7 @@ SOFTWARE. -->
 
   <method name="notifyPanelHidden" args="panel">
     if (this.oldvalue !== this.value) {
-      undo.do(new dr.editor.editorattrundoable({
+      actions.do(new dr.editor.editorattrundoable({
         target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
       }));
     }

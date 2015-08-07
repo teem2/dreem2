@@ -131,7 +131,9 @@
     * not.
     */-->
   <method name="do" args="undoable, callback, errorHandler">
-    if (!undoable || undoable.done) {
+    if (this.__executingUndoable) {
+      if (errorHandler && typeof errorHandler === 'function') errorHandler({msg:'Prevent undostack loops in do method.'});
+    } else if (!undoable || undoable.done) {
       if (errorHandler && typeof errorHandler === 'function') errorHandler({msg:'Undoable already done.'});
     } else {
       var error = this.__executeUndoable(undoable, callback, true);
@@ -140,7 +142,7 @@
         var undoError = this.__executeUndoable(undoable, callback, false);
         if (errorHandler && typeof errorHandler === 'function') {
           errorHandler(error);
-          if (undoError) errorHandler(err);
+          if (undoError) errorHandler(undoError);
         }
       } else {
         ++this.__stackLoc;
@@ -175,11 +177,13 @@
     * undone or not.
     */-->
   <method name="undo" args="callback, errorHandler">
-    if (this.canUndo()) {
+    if (this.__executingUndoable) {
+      if (errorHandler && typeof errorHandler === 'function') errorHandler({msg:'Prevent undostack loops in undo method.'});
+    } else if (this.canUndo()) {
       var error = this.__executeUndoable(this.__stack[this.__stackLoc--], callback, false);
       if (error) {
         ++this.__stackLoc;
-        if (errorHandler && typeof errorHandler === 'function') errorHandler(err);
+        if (errorHandler && typeof errorHandler === 'function') errorHandler(error);
       } else {
         this.__syncUndoabilityAttrs();
         return true;
@@ -207,11 +211,13 @@
     * @returns {Boolean} Indicates if the undoable was successfully done or not.
     */-->
   <method name="redo" args="callback, errorHandler">
-    if (this.canRedo()) {
+    if (this.__executingUndoable) {
+      if (errorHandler && typeof errorHandler === 'function') errorHandler({msg:'Prevent undostack loops in redo method.'});
+    } else if (this.canRedo()) {
       var error = this.__executeUndoable(this.__stack[++this.__stackLoc], callback, true);
       if (error) {
         --this.__stackLoc;
-        if (errorHandler && typeof errorHandler === 'function') errorHandler(err);
+        if (errorHandler && typeof errorHandler === 'function') errorHandler(error);
       } else {
         this.__syncUndoabilityAttrs();
         return true;
@@ -226,6 +232,9 @@
     * Executes the undoable and returns an error if one occured.
     */-->
   <method name="__executeUndoable" args="undoable, callback, isRedo">
+    // Prevent undo/redo from recursively modifying the undostack.
+    this.__executingUndoable = true;
+    
     // Listen for expected errors while doing the undoable.
     var error,
       expectedErrorHandler = new dr.Eventable(null, [{
@@ -246,6 +255,8 @@
     }
     
     expectedErrorHandler.destroy();
+    
+    this.__executingUndoable = false;
     
     return error;
   </method>

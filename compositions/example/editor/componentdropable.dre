@@ -47,8 +47,8 @@ SOFTWARE. -->
       attrs.id = id;
       
       if (!this.islayout) {
-        var targetPos = this.getAbsolutePosition(),
-          newParentPos = droptarget.getAbsolutePosition();
+        var targetPos = this.getAbsolutePosition(editor),
+          newParentPos = droptarget.getAbsolutePosition(editor);
         if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
         if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
       }
@@ -66,9 +66,9 @@ SOFTWARE. -->
       instance.__NEW = true;
       
       if (this.islayout) {
-        undo.do(new dr.editor.createlayoutundoable({target:instance}));
+        actions.do(new dr.editor.createlayoutundoable({target:instance}));
       } else {
-        undo.do(new dr.editor.createundoable({target:instance}));
+        actions.do(new dr.editor.createundoable({target:instance}));
         selectionmanager.select(instance);
       }
       

@@ -44,7 +44,7 @@ SOFTWARE. -->
   
   <smallbutton x="${this.parent.innerwidth - this.width - 2}" y="2" ignorelayout="true" text="delete">
     <method name="doActivated">
-      if (!this.disabled) undo.do(new dr.editor.deletelayoutundoable({target:this.classroot.data}));
+      if (!this.disabled) actions.do(new dr.editor.deletelayoutundoable({target:this.classroot.data}));
     </method>
   </smallbutton>
   

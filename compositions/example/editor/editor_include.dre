@@ -118,8 +118,9 @@ SOFTWARE. -->
       event = this._lastMouseEvent;
     }
     
-    var x = event.x, 
-      y = event.y,
+    var rootSprite = editor.parent.sprite,
+      x = event.x + rootSprite.getScrollX(), 
+      y = event.y + rootSprite.getScrollY(),
       xLoc = this.xLocation,
       yLoc = this.yLocation,
       content_bg = this.content_bg,
@@ -137,6 +138,9 @@ SOFTWARE. -->
     return true;
   </handler>
   <handler event="onscrollx, onscrolly" reference="this.content_bg">
+    this.updateLocationMarkers();
+  </handler>
+  <handler event="onscrollx, onscrolly" reference="editor.parent">
     this.updateLocationMarkers();
   </handler>
 
@@ -321,7 +325,7 @@ SOFTWARE. -->
     <method name="updatePosition" args="x, y">
       var target = reticle.target;
       if (!this.disabled && target) {
-        x = x - target.getAbsolutePosition().x + target.x;
+        x = x - target.getAbsolutePosition(editor).x + target.x;
         var gx = Number(gridsizex.value);
         if (gx > 0) x = gx * Math.round(x / gx);
         target.setAttribute('x', x, true); // 3rd arg enables model update
@@ -464,7 +468,7 @@ SOFTWARE. -->
     <method name="updatePosition" args="x, y">
       var target = reticle.target;
       if (!this.disabled && target) {
-        y = y - target.getAbsolutePosition().y + target.y;
+        y = y - target.getAbsolutePosition(editor).y + target.y;
         var gy = Number(gridsizey.value);
         if (gy > 0) y = gy * Math.round(y / gy);
         target.setAttribute('y', y, true); // 3rd arg enables model update

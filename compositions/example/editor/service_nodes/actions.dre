@@ -39,12 +39,25 @@ SOFTWARE. -->
     }
   </method>
   
+  <method name="_undoRedoErrorHandler" args="error">
+    console.error(error);
+  </method>
+  
+  <method name="do" args="undoable">
+    if (editor.paused) {
+      undo.do(undoable, null, function(error) {
+        console.error(error);
+        undoable.destroy();
+      });
+    }
+  </method>
+  
   <method name="undo">
-    if (editor.paused) undo.undo(this._undoRedoCallback);
+    if (editor.paused) undo.undo(this._undoRedoCallback, this._undoRedoErrorHandler);
   </method>
   
   <method name="redo">
-    if (editor.paused) undo.redo(this._undoRedoCallback);
+    if (editor.paused) undo.redo(this._undoRedoCallback, this._undoRedoErrorHandler);
   </method>
   
   <method name="bringToFront">
@@ -80,7 +93,7 @@ SOFTWARE. -->
   </method>
   
   <method name="_updateOrder" args="target, oldprevsib, newprevsib">
-    undo.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsib, newprevsibling:newprevsib}));
+    actions.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsib, newprevsibling:newprevsib}));
   </method>
   
   <method name="save">
@@ -109,7 +122,7 @@ SOFTWARE. -->
   
   <method name="deleteSelected">
     if (this._isEditableSelection()) {
-      undo.do(new dr.editor.deleteundoable({target:selectionmanager.selected}));
+      actions.do(new dr.editor.deleteundoable({target:selectionmanager.selected}));
       selectionmanager.clear();
     }
   </method>

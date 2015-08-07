@@ -53,7 +53,7 @@ SOFTWARE. -->
       return;
     }
     
-    var pos = target.getAbsolutePosition(),
+    var pos = target.getAbsolutePosition(editor),
       w = target.width,
       h = target.height;
     this._isSync = true;
@@ -175,7 +175,7 @@ SOFTWARE. -->
     for (var i = 0, l = sub.length; l > i; i++) {
       var sibling = sub[i];
       if (sibling !== this.target) {
-        var abs = sibling.getAbsolutePosition();
+        var abs = sibling.getAbsolutePosition(editor);
         
         var sx = abs.x,
             scenter = (sibling.width * .5) + sx,
@@ -255,7 +255,7 @@ SOFTWARE. -->
     this.isStarted = true;
     
     var target = this.target,
-      pos = target.getAbsolutePosition();
+      pos = target.getAbsolutePosition(editor);
     this.dx = target.x - pos.x;
     this.dy = target.y - pos.y;
     
@@ -292,8 +292,8 @@ SOFTWARE. -->
           this._undoableparent.newvalue = droptarget;
           compound.add(this._undoableparent);
           
-          var targetPos = target.getAbsolutePosition(),
-            newParentPos = droptarget.getAbsolutePosition();
+          var targetPos = target.getAbsolutePosition(editor),
+            newParentPos = droptarget.getAbsolutePosition(editor);
           this._undoablex.newvalue = '' + (targetPos.x - newParentPos.x + droptarget.sprite.getScrollX());
           this._undoabley.newvalue = '' + (targetPos.y - newParentPos.y + droptarget.sprite.getScrollY());
         }
@@ -307,7 +307,7 @@ SOFTWARE. -->
         this._undoabley.newvalue !== this._undoabley.oldvalue ||
         isNewParent
       ) {
-        undo.do(compound);
+        actions.do(compound);
       }
     }
     
