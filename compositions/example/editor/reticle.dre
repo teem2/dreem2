@@ -158,6 +158,12 @@ SOFTWARE. -->
         y = pos.y;
         guides.setAttribute('visible', true);
       }
+      
+      // If a layout in parent is managing x/y position then don't allow drag.
+      var target = this.target;
+      if (target.parent.__layoutDomainInUseForView('x', target)) x = this.getOriginalLocation().x;
+      if (target.parent.__layoutDomainInUseForView('y', target)) y = this.getOriginalLocation().y;
+      
       this.super(x, y);
     }
   </method>
