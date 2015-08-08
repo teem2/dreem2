@@ -42,15 +42,19 @@ SOFTWARE. -->
     }
   </method>
   
-  <method name="deleteNode" args="id, oldParentId">
+  <method name="deleteNode" args="child, oldParentId">
+    var id = child.id,
+      model = this.model;
     //console.log('delete', id, oldParentId);
-    var model = this.model;
     if (model) {
-      var child = this._findChild(id, model),
-        parent = this._findChild(oldParentId, model);
-      if (child && parent) {
-       var idx = this._findChildIndex(parent, child);
-       if (idx >= 0) parent.child.splice(idx, 1);
+      var childModel = this._findChild(id, model),
+        parentModel = this._findChild(oldParentId, model);
+      if (childModel && parentModel) {
+        var idx = this._findChildIndex(parentModel, childModel);
+        if (idx >= 0) {
+          child.__editorModel = parentModel.child[idx];
+          parentModel.child.splice(idx, 1);
+        }
       }
     }
   </method>
@@ -69,7 +73,8 @@ SOFTWARE. -->
             idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
           
           // Convert child (and tree) to object structure and insert
-          parent.child.splice(idx + 1, 0, child.objectify({}));
+          var childModel = child.__editorModel || child.objectify({});
+          parent.child.splice(idx + 1, 0, childModel);
         } else {
           parent.child.push(child.objectify({}));
         }

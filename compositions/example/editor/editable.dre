@@ -133,7 +133,7 @@ SOFTWARE. -->
       if (hasOld && hasNew) {
         editormodel.moveNode(this, existingParent.id || existingParent.getRoot().id, this.parent.id || this.parent.getRoot().id);
       } else {
-        if (hasOld) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
+        if (hasOld) editormodel.deleteNode(this, existingParent.id || existingParent.getRoot().id);
         if (hasNew) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
       }
     }
