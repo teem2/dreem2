@@ -62,6 +62,20 @@ SOFTWARE. -->
       attrs.with = 'editable';
       var instance = droptarget.createChild(attrs);
       
+      // Make sure layout domains do not conflict
+      if (this.islayout) {
+        var layouts = droptarget.getLayouts(), i = layouts.length, layout;
+        while (i) {
+          layout = layouts[--i];
+          if (layout !== instance && layout.__hasCommonLayoutDomain(instance)) {
+            instance.destroy();
+            this.destroy();
+            console.log('Layout domain conflict. Aborting drop.'); // FIXME: provide a warning dialog
+            return;
+          }
+        }
+      }
+      
       // Mark an instance as "new" so we know it needs serialization.
       instance.__NEW = true;
       
