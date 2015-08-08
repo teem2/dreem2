@@ -98,16 +98,24 @@
     if (restoreData) {
       layout.setAttribute('locked', true);
       
+      var domains = layout.__getLayoutDomains(),
+        isDomainX = domains.x,
+        isDomainY = domains.y;
+      
       var i = restoreData.length, datum, attr, sv;
       while (i) {
         datum = restoreData[--i];
         
         sv = datum.sv;
         
-        sv.setAttribute('x', datum.x, true);
-        sv.setAttribute('y', datum.y, true);
-        sv.setAttribute('width', datum.width, true);
-        sv.setAttribute('height', datum.height, true);
+        if (isDomainX) {
+          sv.setAttribute('x', datum.x, true);
+          sv.setAttribute('width', datum.width, true);
+        }
+        if (isDomainY) {
+          sv.setAttribute('y', datum.y, true);
+          sv.setAttribute('height', datum.height, true);
+        }
         
         attr = datum.attr;
         if (attr) sv.setAttribute(attr, datum.attrvalue, true);
@@ -140,9 +148,13 @@
     if (restoreParentData) {
       layout.setAttribute('locked', true);
       
+      var domains = layout.__getLayoutDomains(),
+        isDomainX = domains.x,
+        isDomainY = domains.y;
+      
       var parent = restoreParentData.sv;
-      parent.setAttribute('width', restoreParentData.width, true);
-      parent.setAttribute('height', restoreParentData.height, true);
+      if (isDomainX) parent.setAttribute('width', restoreParentData.width, true);
+      if (isDomainY) parent.setAttribute('height', restoreParentData.height, true);
       
       layout.setAttribute('locked', false);
     }
