@@ -189,6 +189,11 @@
     retval[@axis] = true
     return retval
   </method>
+  <method name="__getLayoutParentDomains">
+    retval = {}
+    retval[@__parentAttrName] = true
+    return retval
+  </method>
   
   <attribute name="hiddenattrs" type="expression" value="{attribute:true, value:true}" allocation="class"/>
   <attribute name="readonlyattrs" type="expression" value="{axis:true}" allocation="class"/>

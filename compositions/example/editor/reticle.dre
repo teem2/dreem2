@@ -161,8 +161,8 @@ SOFTWARE. -->
       
       // If a layout in parent is managing x/y position then don't allow drag.
       var target = this.target;
-      if (target.parent.__layoutDomainInUseForView('x', target)) x = this.getOriginalLocation().x;
-      if (target.parent.__layoutDomainInUseForView('y', target)) y = this.getOriginalLocation().y;
+      if (target.__layoutDomainInUseForView('x')) x = this.getOriginalLocation().x;
+      if (target.__layoutDomainInUseForView('y')) y = this.getOriginalLocation().y;
       
       this.super(x, y);
     }
@@ -400,6 +400,11 @@ SOFTWARE. -->
           gy = Number(gridsizey.value);
         if (gx > 0) x = (gx * Math.round((x + 5) / gx)) - 5;
         if (gy > 0) y = (gy * Math.round((y + 5) / gy)) - 5;
+        
+        // If a layout in parent is managing x/y position then don't allow drag.
+        var target = this.parent.target;
+        if (target.__layoutDomainInUseForView('width')) x = this.getOriginalLocation().x;
+        if (target.__layoutDomainInUseForView('height')) y = this.getOriginalLocation().y;
         
         this.setAttribute('x', Math.max(-5, x));
         this.setAttribute('y', Math.max(-5, y));

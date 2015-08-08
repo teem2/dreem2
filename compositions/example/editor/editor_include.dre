@@ -211,6 +211,7 @@ SOFTWARE. -->
     <view name="lower" width="1" height="100%" bgcolor="${config.selection_color}"/>
     <view name="upper" width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
     
+    <!-- Left Edge Resizer -->
     <view with="button, keyboarddraggable" width="10" x="-5" height="100%" cursor="w-resize"
       disabled="${selectionmanager.isrootselection}"
     >
@@ -238,8 +239,11 @@ SOFTWARE. -->
           if (gx > 0) x = gx * Math.round(x / gx);
           diff = x - this._origTargetX;
           
-          target.setAttribute('x', this._origTargetX + diff, true); // 3rd arg enables model update
-          target.setAttribute('width', this._origTargetW - diff, true); // 3rd arg enables model update
+          // If a layout in parent is managing x/y position then don't allow drag.
+          if (!target.__layoutDomainInUseForView('x') && !target.__layoutDomainInUseForView('width')) {
+            target.setAttribute('x', this._origTargetX + diff, true); // 3rd arg enables model update
+            target.setAttribute('width', this._origTargetW - diff, true); // 3rd arg enables model update
+          }
         }
       </method>
       
@@ -261,6 +265,7 @@ SOFTWARE. -->
       </method>
     </view>
     
+    <!-- Right Edge Resizer -->
     <view with="button, keyboarddraggable" width="10" x="${this.parent.width - 5}" height="100%" cursor="e-resize"
       disabled="${selectionmanager.isrootselection}"
     >
@@ -282,7 +287,11 @@ SOFTWARE. -->
           x = Math.max(0, x + 5);
           var gx = Number(gridsizex.value);
           if (gx > 0) x = gx * Math.round(x / gx);
-          target.setAttribute('width', x, true); // 3rd arg enables model update
+          
+          // If a layout in child is managing width/height then don't allow drag.
+          if (!target.__layoutDomainInUseForView('width')) {
+            target.setAttribute('width', x, true); // 3rd arg enables model update
+          }
         }
       </method>
       
@@ -328,7 +337,11 @@ SOFTWARE. -->
         x = x - target.getAbsolutePosition(editor).x + target.x;
         var gx = Number(gridsizex.value);
         if (gx > 0) x = gx * Math.round(x / gx);
-        target.setAttribute('x', x, true); // 3rd arg enables model update
+        
+        // If a layout in parent is managing x/y position then don't allow drag.
+        if (!target.__layoutDomainInUseForView('x')) {
+          target.setAttribute('x', x, true); // 3rd arg enables model update
+        }
       }
     </method>
     
@@ -360,6 +373,7 @@ SOFTWARE. -->
     <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     
+    <!-- Top Edge Resizer -->
     <view with="button, keyboarddraggable" height="10" y="-5" width="100%" cursor="n-resize"
       disabled="${selectionmanager.isrootselection}"
     >
@@ -387,8 +401,11 @@ SOFTWARE. -->
           if (gy > 0) y = gy * Math.round(y / gy);
           diff = y - this._origTargetY;
           
-          target.setAttribute('y', this._origTargetY + diff, true); // 3rd arg enables model update
-          target.setAttribute('height', this._origTargetH - diff, true); // 3rd arg enables model update
+          // If a layout in parent is managing x/y position then don't allow drag.
+          if (!target.__layoutDomainInUseForView('y') && !target.__layoutDomainInUseForView('height')) {
+            target.setAttribute('y', this._origTargetY + diff, true); // 3rd arg enables model update
+            target.setAttribute('height', this._origTargetH - diff, true); // 3rd arg enables model update
+          }
         }
       </method>
       
@@ -410,6 +427,7 @@ SOFTWARE. -->
       </method>
     </view>
     
+    <!-- Bottom Edge Resizer -->
     <view with="button, keyboarddraggable" height="10" y="${this.parent.height - 5}" width="100%" cursor="s-resize"
       disabled="${selectionmanager.isrootselection}"
     >
@@ -431,7 +449,11 @@ SOFTWARE. -->
           y = Math.max(0, y + 5);
           var gy = Number(gridsizey.value);
           if (gy > 0) y = gy * Math.round(y / gy);
-          target.setAttribute('height', y, true); // 3rd arg enables model update
+          
+          // If a layout in child is managing width/height then don't allow drag.
+          if (!target.__layoutDomainInUseForView('height')) {
+            target.setAttribute('height', y, true); // 3rd arg enables model update
+          }
         }
       </method>
       
@@ -471,7 +493,11 @@ SOFTWARE. -->
         y = y - target.getAbsolutePosition(editor).y + target.y;
         var gy = Number(gridsizey.value);
         if (gy > 0) y = gy * Math.round(y / gy);
-        target.setAttribute('y', y, true); // 3rd arg enables model update
+        
+        // If a layout in parent is managing x/y position then don't allow drag.
+        if (!target.__layoutDomainInUseForView('y')) {
+          target.setAttribute('y', y, true); // 3rd arg enables model update
+        }
       }
     </method>
     
@@ -776,14 +802,14 @@ SOFTWARE. -->
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_y.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'y'}}"
         />
-        <componentsource label="Variable Layout" iconname="variablelayout"
+        <!--componentsource label="Variable Layout" iconname="variablelayout"
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'variablelayout.png', instanceattrs:{class:'variablelayout', locked:true}}"
         />
         <componentsource label="Constant Layout" iconname="constantlayout"
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'constantlayout.png', instanceattrs:{class:'constantlayout', locked:true}}"
-        />
+        /-->
       </view>
     </view>
     

@@ -67,7 +67,7 @@ SOFTWARE. -->
         var layouts = droptarget.getLayouts(), i = layouts.length, layout;
         while (i) {
           layout = layouts[--i];
-          if (layout !== instance && layout.__hasCommonLayoutDomain(instance)) {
+          if (layout !== instance && (layout.__hasCommonLayoutDomain(instance) || layout.__hasCommonLayoutParentDomain(instance))) {
             instance.destroy();
             this.destroy();
             console.log('Layout domain conflict. Aborting drop.'); // FIXME: provide a warning dialog
