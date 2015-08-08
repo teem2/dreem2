@@ -216,6 +216,10 @@ SOFTWARE. -->
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
+        // If a layout in parent is managing x/y position then don't allow drag.
+        var target = reticle.target;
+        if (target.__layoutDomainInUseForView('x') || target.__layoutDomainInUseForView('width')) return;
+        
         reticle._start();
         this._origTargetX = reticle.target.x;
         this._origTargetW = reticle.target.width;
@@ -239,11 +243,8 @@ SOFTWARE. -->
           if (gx > 0) x = gx * Math.round(x / gx);
           diff = x - this._origTargetX;
           
-          // If a layout in parent is managing x/y position then don't allow drag.
-          if (!target.__layoutDomainInUseForView('x') && !target.__layoutDomainInUseForView('width')) {
-            target.setAttribute('x', this._origTargetX + diff, true); // 3rd arg enables model update
-            target.setAttribute('width', this._origTargetW - diff, true); // 3rd arg enables model update
-          }
+          target.setAttribute('x', this._origTargetX + diff, true); // 3rd arg enables model update
+          target.setAttribute('width', this._origTargetW - diff, true); // 3rd arg enables model update
         }
       </method>
       
@@ -270,6 +271,9 @@ SOFTWARE. -->
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
+        // If a layout in child is managing width/height then don't allow drag.
+        if (reticle.target.__layoutDomainInUseForView('width')) return;
+        
         reticle._start();
         this.super();
       </method>
@@ -288,10 +292,7 @@ SOFTWARE. -->
           var gx = Number(gridsizex.value);
           if (gx > 0) x = gx * Math.round(x / gx);
           
-          // If a layout in child is managing width/height then don't allow drag.
-          if (!target.__layoutDomainInUseForView('width')) {
-            target.setAttribute('width', x, true); // 3rd arg enables model update
-          }
+          target.setAttribute('width', x, true); // 3rd arg enables model update
         }
       </method>
       
@@ -320,6 +321,9 @@ SOFTWARE. -->
     <horizontal_ruler_relselecttext name="locrelend" x="${this.parent.width + config.selection_marker_offset}"/>
     
     <method name="startDrag" args="event">
+      // If a layout in parent is managing x/y position then don't allow drag.
+      if (reticle.target.__layoutDomainInUseForView('x')) return;
+      
       reticle._start();
       this.super();
     </method>
@@ -338,10 +342,7 @@ SOFTWARE. -->
         var gx = Number(gridsizex.value);
         if (gx > 0) x = gx * Math.round(x / gx);
         
-        // If a layout in parent is managing x/y position then don't allow drag.
-        if (!target.__layoutDomainInUseForView('x')) {
-          target.setAttribute('x', x, true); // 3rd arg enables model update
-        }
+        target.setAttribute('x', x, true); // 3rd arg enables model update
       }
     </method>
     
@@ -378,6 +379,10 @@ SOFTWARE. -->
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
+        // If a layout in parent is managing x/y position then don't allow drag.
+        var target = reticle.target;
+        if (target.__layoutDomainInUseForView('y') || target.__layoutDomainInUseForView('height')) return;
+        
         reticle._start();
         this._origTargetY = reticle.target.y;
         this._origTargetH = reticle.target.height;
@@ -401,11 +406,8 @@ SOFTWARE. -->
           if (gy > 0) y = gy * Math.round(y / gy);
           diff = y - this._origTargetY;
           
-          // If a layout in parent is managing x/y position then don't allow drag.
-          if (!target.__layoutDomainInUseForView('y') && !target.__layoutDomainInUseForView('height')) {
-            target.setAttribute('y', this._origTargetY + diff, true); // 3rd arg enables model update
-            target.setAttribute('height', this._origTargetH - diff, true); // 3rd arg enables model update
-          }
+          target.setAttribute('y', this._origTargetY + diff, true); // 3rd arg enables model update
+          target.setAttribute('height', this._origTargetH - diff, true); // 3rd arg enables model update
         }
       </method>
       
@@ -432,6 +434,9 @@ SOFTWARE. -->
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
+        // If a layout in child is managing width/height then don't allow drag.
+        if (reticle.target.__layoutDomainInUseForView('height')) return;
+        
         reticle._start();
         this.super();
       </method>
@@ -450,10 +455,7 @@ SOFTWARE. -->
           var gy = Number(gridsizey.value);
           if (gy > 0) y = gy * Math.round(y / gy);
           
-          // If a layout in child is managing width/height then don't allow drag.
-          if (!target.__layoutDomainInUseForView('height')) {
-            target.setAttribute('height', y, true); // 3rd arg enables model update
-          }
+          target.setAttribute('height', y, true); // 3rd arg enables model update
         }
       </method>
       
@@ -476,6 +478,9 @@ SOFTWARE. -->
     </view>
     
     <method name="startDrag" args="event">
+      // If a layout in parent is managing x/y position then don't allow drag.
+      if (reticle.target.__layoutDomainInUseForView('y')) return;
+      
       reticle._start();
       this.super();
     </method>
@@ -494,10 +499,7 @@ SOFTWARE. -->
         var gy = Number(gridsizey.value);
         if (gy > 0) y = gy * Math.round(y / gy);
         
-        // If a layout in parent is managing x/y position then don't allow drag.
-        if (!target.__layoutDomainInUseForView('y')) {
-          target.setAttribute('y', y, true); // 3rd arg enables model update
-        }
+        target.setAttribute('y', y, true); // 3rd arg enables model update
       }
     </method>
     
