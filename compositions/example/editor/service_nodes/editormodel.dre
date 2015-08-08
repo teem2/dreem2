@@ -73,10 +73,9 @@ SOFTWARE. -->
             idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
           
           // Convert child (and tree) to object structure and insert
-          var childModel = child.__editorModel || child.objectify({});
-          parent.child.splice(idx + 1, 0, childModel);
+          parent.child.splice(idx + 1, 0, child.__editorModel || child.objectify({}));
         } else {
-          parent.child.push(child.objectify({}));
+          parent.child.push(child.__editorModel || child.objectify({}));
         }
       }
     }
