@@ -79,10 +79,20 @@ SOFTWARE. -->
   <handler name="_applyChange" event="onblur">
     if (!this.isBeingDestroyed) {
       var oldvalue = this.oldvalue, 
-        newvalue = this.value;
+        newvalue = this.value,
+        target = this.target,
+        targetAttr = this.targetattr;
+      
+      // If attribute is layout locked then revert
+      if (target.__layoutDomainInUseForView(targetAttr)) {
+        this.setAttribute('value', oldvalue);
+        // FIXME: Alert dialog saying why we're rolling back the change.
+        return;
+      }
+      
       if (oldvalue !== newvalue) {
         actions.do(new dr.editor.editorattrundoable({
-          target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
+          target:target, attribute:targetAttr, oldvalue:oldvalue, newvalue:newvalue
         }));
         this.oldvalue = newvalue;
       }
