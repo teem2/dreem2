@@ -152,68 +152,87 @@ SOFTWARE. -->
       if (gx > 0) x = (gx * Math.round((x + this.dx) / gx)) - this.dx;
       if (gy > 0) y = (gy * Math.round((y + this.dy) / gy)) - this.dy;
       
+      var target = this.target,
+        noXAdj = target.__layoutDomainInUseForView('x'),
+        noYAdj = target.__layoutDomainInUseForView('y');
+      
       if (!this._isArrowAdj && snaptoguides.selected) {
-        var pos = this.updateGuides(x, y);
+        var pos = this._updateGuides(x, y, noXAdj, noYAdj);
         x = pos.x;
         y = pos.y;
         guides.setAttribute('visible', true);
       }
       
       // If a layout in parent is managing x/y position then don't allow drag.
-      var target = this.target;
-      if (target.__layoutDomainInUseForView('x')) x = this.getOriginalLocation().x;
-      if (target.__layoutDomainInUseForView('y')) y = this.getOriginalLocation().y;
+      if (noXAdj) x = this.getOriginalLocation().x;
+      if (noYAdj) y = this.getOriginalLocation().y;
       
       this.super(x, y);
     }
   </method>
 
-  <method name="updateGuides" args="x, y">
-    // console.log('updateGuides', x, y)
-    for (var i = 0, l = guides.subviews.length; l > i; i++) {
-      var guide = guides.subviews[i];
-      if (guide) guide.destroy();
-    }
+  <method name="_updateGuides" args="x, y, noXAdj, noYAdj">
+    var svs = guides.getSubviews(), i = svs.length;
+    while (i) svs[--i].destroy();
     
-    var sub = this.target.parent.subviews;
-    var newpos = {x:x, y:y};
+    var target = this.target,
+      newpos = {x:x, y:y},
+      sibling, abs, sx, sy,
+      foundX = false,
+      foundY = false;
     
-    for (var i = 0, l = sub.length; l > i; i++) {
-      var sibling = sub[i];
-      if (sibling !== this.target) {
-        var abs = sibling.getAbsolutePosition(editor);
+    svs = target.parent.getSubviews();
+    i = svs.length;
+    while (i) {
+      sibling = svs[--i];
+      
+      if (sibling !== target) {
+        abs = sibling.getAbsolutePosition(editor);
         
-        var sx = abs.x,
-            scenter = (sibling.width * .5) + sx,
-            sw = sibling.width + sx,
-            sy = abs.y,
-            smiddle = (sibling.height * .5) + sy,
-            sh = sibling.height + sy;
-        if (5 > Math.abs(sx - x)) {
-          guides.createChild({class: 'view', x: sx, y: 0, width: 1, height: 1000, bgcolor: 'cyan'});
-          newpos.x = sx;
-        } else if (5 > Math.abs(scenter - x)) {
-          guides.createChild({class: 'view', x: scenter, y: 0, width: 1, height: 1000, bgcolor: 'cyan'});
-          newpos.x = scenter;
-        } else if (5 > Math.abs(sw - x)) {
-          guides.createChild({class: 'view', x: sw, y: 0, width: 1, height: 1000, bgcolor: 'cyan'});
-          newpos.x = sw;
+        if (!noXAdj && !foundX) {
+          sx = abs.x;
+          foundX = this._createGuide(newpos, sx, x, false, sibling, abs);
+          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x, false, sibling, abs);
+          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x, false, sibling, abs);
         }
         
-        if (5 > Math.abs(sy - y)) {
-          guides.createChild({class: 'view', x: 0, y: sy, width: 1000, height: 1, bgcolor: 'cyan'});
-          newpos.y = sy;
-        } else if (5 > Math.abs(smiddle - y)) {
-          guides.createChild({class: 'view', x: 0, y: smiddle, width: 1000, height: 1, bgcolor: 'cyan'});
-          newpos.y = smiddle;
-        } else if (5 > Math.abs(sh - y)) {
-          guides.createChild({class: 'view', x: 0, y: sh, width: 1000, height: 1, bgcolor: 'cyan'});
-          newpos.y = sh;
+        if (!noYAdj && !foundY) {
+          sy = abs.y;
+          foundY = this._createGuide(newpos, sy, y, true, sibling, abs);
+          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y, true, sibling, abs);
+          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y, true, sibling, abs);
         }
       }
     }
+    
     return newpos;
-    // console.log('found guides', guides.subviews.length)
+  </method>
+  
+  <method name="_createGuide" args="newpos, gv, v, isVertical, sibling, abs">
+    if (5 > Math.abs(gv - v)) {
+      guides.createChild({
+        class:'view', 
+        x:isVertical ? 0 : gv, 
+        y:isVertical ? gv : 0, 
+        width:isVertical ? 5000 : 1, 
+        height:isVertical ? 1 : 5000, 
+        bgcolor:'cyan'
+      });
+      
+      guides.createChild({
+        class:'view', 
+        x:abs.x, 
+        y:abs.y, 
+        width:sibling.width, 
+        height:sibling.height,
+        border:1,
+        bordercolor:'cyan'
+      });
+      
+      newpos[isVertical ? 'y' : 'x'] = gv;
+      return true;
+    }
+    return false;
   </method>
   
   <method name="willPermitDrop" args="droptarget">
