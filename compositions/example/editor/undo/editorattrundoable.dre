@@ -12,16 +12,20 @@
     * @overrides
     */-->
   <method name="undo" args="callback">
-    var target = this.target, attr = this.attribute;
+    var target = this.target,
+      attr = this.attribute, 
+      isLayout = target.isA(dr.Layout);
     if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
       dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
     }
     
     var retval = this.super();
     
-    if (attr === 'updateparent' && target.isA(dr.Layout) && !target.getActualAttribute('updateparent')) {
+    if (attr === 'updateparent' && isLayout && !target.getActualAttribute('updateparent')) {
       dr.editor.createlayoutundoable.restoreManagedParentState(this);
     }
+    
+    if (isLayout) selectionmanager.select(target.parent);
     
     return retval;
   </method>
@@ -31,16 +35,20 @@
     * @overrides
     */-->
   <method name="redo" args="callback">
-    var target = this.target, attr = this.attribute;
+    var target = this.target,
+      attr = this.attribute, 
+      isLayout = target.isA(dr.Layout);
     if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
       dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
     }
     
     var retval = this.super();
     
-    if (attr === 'updateparent' && target.isA(dr.Layout) && !target.getActualAttribute('updateparent')) {
+    if (attr === 'updateparent' && isLayout && !target.getActualAttribute('updateparent')) {
       dr.editor.createlayoutundoable.restoreManagedParentState(this);
     }
+    
+    if (isLayout) selectionmanager.select(target.parent);
     
     return retval;
   </method>
