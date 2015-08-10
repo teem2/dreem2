@@ -72,6 +72,47 @@ SOFTWARE. -->
         </variablelayout>
       </view>
       
+      <!-- Test layout order -->
+      <view name="container2" x="150" width="100" height="100" bgcolor="#999999">
+        <variablelayout name="layoutY" attribute="y" value="5" updateparent="true">
+          <method name="updateSubview" args="count, view, attribute, value">
+            return this.super() + view.height;
+          </method>
+        </variablelayout>
+        
+        <item name="v1" x="10" bgcolor="red"/>
+        <item name="v2" x="20" bgcolor="green"/>
+        <item name="v3" x="30" bgcolor="blue"/>
+        
+        <handler event="oninit">
+          // Verify initial order
+          var layoutSubs = this.layoutY.getSubviews(), subs = this.getSubviews();
+          assert.deepEqual(subs, layoutSubs, 'The parent and layout subviews should be identical.');
+          
+          // Verify ignorelayout changes maintain order
+          this.v2.setAttribute('ignorelayout', true);
+          
+          assert.lengthOf(layoutSubs, 2, 'View 2 was removed from the layout.');
+          assert.equal(layoutSubs[0], subs[0], 'First entries still match.');
+          assert.equal(layoutSubs[1], subs[2], 'Second layout subview should be third view subview.');
+          
+          this.v2.setAttribute('ignorelayout', false);
+          
+          assert.lengthOf(layoutSubs, 3, 'View 3 was removed from the layout.');
+          assert.equal(layoutSubs[0], subs[0], 'First entries still match.');
+          assert.equal(layoutSubs[1], subs[1], 'Second entries still match.');
+          assert.equal(layoutSubs[2], subs[2], 'Third entries still match.');
+          
+          // Lexical order changes
+          this.v3.moveBehind(this.v2);
+          assert.equal(layoutSubs[0], subs[0], 'First entries still match.');
+          assert.equal(layoutSubs[1], subs[1], 'Second entries still match.');
+          assert.equal(layoutSubs[2], subs[2], 'Third entries still match.');
+          
+          // Adding a subview
+        </handler>
+      </view>
+      
       <handler event="oninit">
         var container = this.container,
             layoutX = container.layoutX,

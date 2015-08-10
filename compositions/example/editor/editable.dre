@@ -133,7 +133,7 @@ SOFTWARE. -->
       if (hasOld && hasNew) {
         editormodel.moveNode(this, existingParent.id || existingParent.getRoot().id, this.parent.id || this.parent.getRoot().id);
       } else {
-        if (hasOld) editormodel.deleteNode(this.id, existingParent.id || existingParent.getRoot().id);
+        if (hasOld) editormodel.deleteNode(this, existingParent.id || existingParent.getRoot().id);
         if (hasNew) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
       }
     }
@@ -152,6 +152,14 @@ SOFTWARE. -->
       return retval;
     } else {
       return this.super(name, value);
+    }
+  </method>
+
+  <method name="restoreAttrToModel" args="attrName">
+    var model = editormodel.getModelNode(this);
+    if (model) {
+      var value = model.attr[attrName];
+      this.setAttribute(attrName, value, false);
     }
   </method>
 
@@ -193,19 +201,18 @@ SOFTWARE. -->
     return obj;
   </method>
   <method name="_getAttrsToSave">
-    // FIXME: implement a better way to know what to save
-    
-    // Make sure all properties are strings since the server side markup
-    // generator seems to work better when they are.
-    return {
-      id:'' + this.id,
+    var attrs = {},
+      objectifyAttrsList = this.__objectify_attrs_list, 
+      i = objectifyAttrsList.length, 
+      attrName;
+    while (i) {
+      attrName = objectifyAttrsList[--i];
       
-      x:'' + this.__cfg_x,
-      y:this.__cfg_y,
-      width:'' + this.__cfg_width,
-      height:'' + this.__cfg_height,
-      bgcolor:'' + this.__cfg_bgcolor
-    };
+      // Make sure all properties are strings since the server side markup
+      // generator seems to work better when they are.
+      attrs[attrName] = '' + this['__cfg_' + attrName];
+    }
+    return attrs;
   </method>
 
   <!--// Details Panel Support //-->
@@ -231,6 +238,8 @@ SOFTWARE. -->
     // Root editable only supports a few attributes
     if (selectionmanager.isrootselection) this._filterAttrsForRootBox(attrs);
     
+    this._filterAttrsForClass(attrs);
+    
     attrs.sort(dr.editable.comparator);
     
     return attrs;
@@ -243,6 +252,37 @@ SOFTWARE. -->
           break;
         default:
           attrs.splice(i, 1);
+      }
+    }
+  </method>
+  <method name="_filterAttrsForClass" args="attrs">
+    var klass = this.klass,
+      hiddenattrs = klass.hiddenattrs,
+      readonlyattrs = klass.readonlyattrs,
+      attrimportance = klass.attrimportance,
+      i, attr;
+    
+    if (hiddenattrs) {
+      i = attrs.length;
+      while (i) {
+        attr = attrs[--i];
+        if (hiddenattrs[attr.name]) attrs.splice(i, 1);
+      }
+    }
+    
+    if (readonlyattrs) {
+      i = attrs.length;
+      while (i) {
+        attr = attrs[--i];
+        if (readonlyattrs[attr.name]) attr.readonly = true;
+      }
+    }
+    
+    if (attrimportance) {
+      i = attrs.length;
+      while (i) {
+        attr = attrs[--i];
+        if (attrimportance[attr.name] != null) attr.importance = attrimportance[attr.name];
       }
     }
   </method>

@@ -42,15 +42,19 @@ SOFTWARE. -->
     }
   </method>
   
-  <method name="deleteNode" args="id, oldParentId">
+  <method name="deleteNode" args="child, oldParentId">
+    var id = child.id,
+      model = this.model;
     //console.log('delete', id, oldParentId);
-    var model = this.model;
     if (model) {
-      var child = this._findChild(id, model),
-        parent = this._findChild(oldParentId, model);
-      if (child && parent) {
-       var idx = this._findChildIndex(parent, child);
-       if (idx >= 0) parent.child.splice(idx, 1);
+      var childModel = this._findChild(id, model),
+        parentModel = this._findChild(oldParentId, model);
+      if (childModel && parentModel) {
+        var idx = this._findChildIndex(parentModel, childModel);
+        if (idx >= 0) {
+          child.__editorModel = parentModel.child[idx];
+          parentModel.child.splice(idx, 1);
+        }
       }
     }
   </method>
@@ -61,14 +65,18 @@ SOFTWARE. -->
     if (model) {
       var parent = this._findChild(newParentId, model);
       if (child && parent) {
-        var prevSiblingView = child.getPrevSiblingView(),
-          prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
-          idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
-        
         if (!parent.child) parent.child = [];
-       
-        // Convert child (and tree) to object structure and insert
-        parent.child.splice(idx + 1, 0, child.objectify({}));
+        
+        if (child.isA(dr.View)) {
+          var prevSiblingView = child.getPrevSiblingView(),
+            prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
+            idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
+          
+          // Convert child (and tree) to object structure and insert
+          parent.child.splice(idx + 1, 0, child.__editorModel || child.objectify({}));
+        } else {
+          parent.child.push(child.__editorModel || child.objectify({}));
+        }
       }
     }
   </method>
@@ -243,5 +251,9 @@ SOFTWARE. -->
         if (newchild) return newchild;
       }
     }
+  </method>
+  
+  <method name="getModelNode" args="child">
+    return this._findChild(child.id, this.model);
   </method>
 </node>

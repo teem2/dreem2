@@ -30,6 +30,10 @@ SOFTWARE. -->
 <include href='./componentdropable.dre'/>
 <include href='./componentsource.dre'/>
 
+<include href='./undo/createlayoutundoable.dre'/>
+<include href='./undo/deletelayoutundoable.dre'/>
+<include href='./undo/editorattrundoable.dre'/>
+
 <view name="editor" id="editor" width="100%" height="100%"
   ignoreplacement="true" ignorelayout="true"
   bgcolor="white" clip="true"
@@ -52,75 +56,12 @@ SOFTWARE. -->
 
 
   <!--// SERVICE NODES //////////////////////////////////////////////////////-->
-  <node id="config">
-    <attribute name="img_root" type="string" value="/compositions/example/editor/img/"/>
-    
-    <attribute name="topbar_height" type="number" value="75"/>
-    
-    <attribute name="leftbar_minwidth" type="number" value="50"/>
-    <attribute name="leftbar_maxwidth" type="number" value="300"/>
-    
-    <attribute name="rightbar_minwidth" type="number" value="260"/>
-    <attribute name="rightbar_minx" type="number" value="600"/>
-    <attribute name="bottombar_height" type="number" value="0"/>
-    
-    <attribute name="divider_width" type="number" value="5"/>
-    <attribute name="ruler_thickness" type="number" value="35"/>
-    <attribute name="content_inset" type="number" value="69"/>
-    <attribute name="selection_marker_offset" type="number" value="6"/>
-    
-    <attribute name="attribute_label_width" type="number" value="100"/>
-    
-    <attribute name="primary_panel_color" type="color" value="#dddddd"/>
-    <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
-    <attribute name="content_color" type="color" value="#f8f8f8"/>
-    <attribute name="label_text_color" type="color" value="#666666"/>
-    <attribute name="selection_color" type="color" value="blue"/>
-    <attribute name="relselection_color" type="color" value="green"/>
-    <attribute name="location_color" type="color" value="black"/>
-    
-    <attribute name="boxshadow_normal" type="expression" value="[0,0,4,0,'#000000']"/>
-    <attribute name="boxshadow_large" type="expression" value="[0,0,12,0,'#000000']"/>
-    <attribute name="boxshadow_floater" type="expression" value="[0,2,6,0,'#999999']"/>
-    
-    <attribute name="ruler_marks" type="expression" value="[0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500,2600,2700,2800,2900,3000,3100,3200,3300,3400,3500,3600,3700,3800,3900,4000,4100,4200,4300,4400,4500,4600,4700,4800,4900,5000]"/>
-  </node>
-  
-  <node id="selectionmanager">
-    <attribute name="selected" type="expression" value="null"/>
-    <setter name="selected" args="v">
-      if (editor.inited) this.setAttribute('isrootselection', v === editor.content_bg.content.inner);
-      return v;
-    </setter>
-    <attribute name="isrootselection" type="boolean" value="false"/>
-    
-    <method name="clear" args="restoreable">
-      if (restoreable) this._oldSelection = this.selected;
-      this.select(null);
-    </method>
-    
-    <method name="restore">
-      if (this._oldSelection && this._oldSelection.parent) this.select(this._oldSelection);
-    </method>
-    
-    <method name="select" args="view">
-      if (view) {
-        if (view.isView) {
-          this.setAttribute('selected', view);
-        } else {
-          // Layouts and other nodes should select have their parent selected.
-          this.setAttribute('selected', view.parent);
-        }
-      } else {
-        this.setAttribute('selected', null);
-      }
-    </method>
-  </node>
-  
+  <include href='./service_nodes/config.dre'/>
+  <include href='./service_nodes/selectionmanager.dre'/>
+  <include href='./service_nodes/actions.dre'/>
+  <include href='./service_nodes/editormodel.dre'/>
+
   <editor-undostack id="undo"></editor-undostack>
-  
-  <include href='./actions.dre'/>
-  <include href='./editormodel.dre'/>
 
 
   <!--// HANDLERS ///////////////////////////////////////////////////////////-->
@@ -177,8 +118,9 @@ SOFTWARE. -->
       event = this._lastMouseEvent;
     }
     
-    var x = event.x, 
-      y = event.y,
+    var rootSprite = editor.parent.sprite,
+      x = event.x + rootSprite.getScrollX(), 
+      y = event.y + rootSprite.getScrollY(),
       xLoc = this.xLocation,
       yLoc = this.yLocation,
       content_bg = this.content_bg,
@@ -196,6 +138,9 @@ SOFTWARE. -->
     return true;
   </handler>
   <handler event="onscrollx, onscrolly" reference="this.content_bg">
+    this.updateLocationMarkers();
+  </handler>
+  <handler event="onscrollx, onscrolly" reference="editor.parent">
     this.updateLocationMarkers();
   </handler>
 
@@ -266,10 +211,15 @@ SOFTWARE. -->
     <view name="lower" width="1" height="100%" bgcolor="${config.selection_color}"/>
     <view name="upper" width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
     
+    <!-- Left Edge Resizer -->
     <view with="button, keyboarddraggable" width="10" x="-5" height="100%" cursor="w-resize"
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
+        // If a layout in parent is managing x/y position then don't allow drag.
+        var target = reticle.target;
+        if (target.__layoutDomainInUseForView('x') || target.__layoutDomainInUseForView('width')) return;
+        
         reticle._start();
         this._origTargetX = reticle.target.x;
         this._origTargetW = reticle.target.width;
@@ -316,10 +266,14 @@ SOFTWARE. -->
       </method>
     </view>
     
+    <!-- Right Edge Resizer -->
     <view with="button, keyboarddraggable" width="10" x="${this.parent.width - 5}" height="100%" cursor="e-resize"
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
+        // If a layout in child is managing width/height then don't allow drag.
+        if (reticle.target.__layoutDomainInUseForView('width')) return;
+        
         reticle._start();
         this.super();
       </method>
@@ -337,6 +291,7 @@ SOFTWARE. -->
           x = Math.max(0, x + 5);
           var gx = Number(gridsizex.value);
           if (gx > 0) x = gx * Math.round(x / gx);
+          
           target.setAttribute('width', x, true); // 3rd arg enables model update
         }
       </method>
@@ -366,6 +321,9 @@ SOFTWARE. -->
     <horizontal_ruler_relselecttext name="locrelend" x="${this.parent.width + config.selection_marker_offset}"/>
     
     <method name="startDrag" args="event">
+      // If a layout in parent is managing x/y position then don't allow drag.
+      if (reticle.target.__layoutDomainInUseForView('x')) return;
+      
       reticle._start();
       this.super();
     </method>
@@ -380,9 +338,10 @@ SOFTWARE. -->
     <method name="updatePosition" args="x, y">
       var target = reticle.target;
       if (!this.disabled && target) {
-        x = x - target.getAbsolutePosition().x + target.x;
+        x = x - target.getAbsolutePosition(editor).x + target.x;
         var gx = Number(gridsizex.value);
         if (gx > 0) x = gx * Math.round(x / gx);
+        
         target.setAttribute('x', x, true); // 3rd arg enables model update
       }
     </method>
@@ -415,10 +374,15 @@ SOFTWARE. -->
     <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
     
+    <!-- Top Edge Resizer -->
     <view with="button, keyboarddraggable" height="10" y="-5" width="100%" cursor="n-resize"
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
+        // If a layout in parent is managing x/y position then don't allow drag.
+        var target = reticle.target;
+        if (target.__layoutDomainInUseForView('y') || target.__layoutDomainInUseForView('height')) return;
+        
         reticle._start();
         this._origTargetY = reticle.target.y;
         this._origTargetH = reticle.target.height;
@@ -465,10 +429,14 @@ SOFTWARE. -->
       </method>
     </view>
     
+    <!-- Bottom Edge Resizer -->
     <view with="button, keyboarddraggable" height="10" y="${this.parent.height - 5}" width="100%" cursor="s-resize"
       disabled="${selectionmanager.isrootselection}"
     >
       <method name="startDrag" args="event">
+        // If a layout in child is managing width/height then don't allow drag.
+        if (reticle.target.__layoutDomainInUseForView('height')) return;
+        
         reticle._start();
         this.super();
       </method>
@@ -486,6 +454,7 @@ SOFTWARE. -->
           y = Math.max(0, y + 5);
           var gy = Number(gridsizey.value);
           if (gy > 0) y = gy * Math.round(y / gy);
+          
           target.setAttribute('height', y, true); // 3rd arg enables model update
         }
       </method>
@@ -509,6 +478,9 @@ SOFTWARE. -->
     </view>
     
     <method name="startDrag" args="event">
+      // If a layout in parent is managing x/y position then don't allow drag.
+      if (reticle.target.__layoutDomainInUseForView('y')) return;
+      
       reticle._start();
       this.super();
     </method>
@@ -523,9 +495,10 @@ SOFTWARE. -->
     <method name="updatePosition" args="x, y">
       var target = reticle.target;
       if (!this.disabled && target) {
-        y = y - target.getAbsolutePosition().y + target.y;
+        y = y - target.getAbsolutePosition(editor).y + target.y;
         var gy = Number(gridsizey.value);
         if (gy > 0) y = gy * Math.round(y / gy);
+        
         target.setAttribute('y', y, true); // 3rd arg enables model update
       }
     </method>
@@ -822,10 +795,23 @@ SOFTWARE. -->
           dropclass="view"
           dropclassattrs="{width:'50', height:1, bgcolor:'#000000', instanceattrs:{class:'view', width:'100%', x:'left', height:1, bgcolor:'#000000'}}"
         />
-        <componentsource label="Button" iconname="view" layouthint='{"break":true}'
-          dropclass="view"
-          dropclassattrs="{width:50, height:50, bgcolor:'#ff0000', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#ff0000'}}"
+        <!--// Layouts //-->
+        <componentsource label="X-Axis Layout" iconname="spacedlayout_x" layouthint='{"break":true}'
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_x.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'x'}}"
         />
+        <componentsource label="Y-Axis Layout" iconname="spacedlayout_y"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_y.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'y'}}"
+        />
+        <!--componentsource label="Variable Layout" iconname="variablelayout"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'variablelayout.png', instanceattrs:{class:'variablelayout', locked:true}}"
+        />
+        <componentsource label="Constant Layout" iconname="constantlayout"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'constantlayout.png', instanceattrs:{class:'constantlayout', locked:true}}"
+        /-->
       </view>
     </view>
     
@@ -852,7 +838,7 @@ SOFTWARE. -->
       
       <subhead width="100%" text="Layouts"/>
       
-      <view name="layouts_panel" width="100%" clip="true">
+      <view name="layouts_panel" id="layouts_panel" width="100%" clip="true">
         <spacedlayout axis="y" spacing="5" updateparent="true">
           <method name="__positionView" args="view, attrName, value">
             // Only animate the parent updates
@@ -863,9 +849,11 @@ SOFTWARE. -->
           </method>
         </spacedlayout>
         
-        <replicator classname="layouteditor"
-          data="${selectionmanager.selected ? selectionmanager.selected.getLayouts() : []}"
-        />
+        <handler name="refresh" event="onselected" args="selected" reference="selectionmanager">
+          this.repl.setAttribute('data', selected ? selected.getLayouts(true) : []);
+        </handler>
+        
+        <replicator name="repl" classname="layouteditor"/>
       </view>
     </view>
     

@@ -1,0 +1,106 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.createlayoutundoable {UI Components}
+  * @extends dr.editor.createundoable
+  * An undoable that Inserts a new layout into a parent node.
+  */-->
+<class name="editor-createlayoutundoable" extends="editor-createundoable"
+  undodescription='Undo create layout.'
+  redodescription='Redo create layout.'
+>
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method undo
+    * @overrides
+    * Removes the target layout from its parent.
+    */-->
+  <method name="undo" args="callback">
+    var retval = this.super();
+    
+    // Only do this if creation succeeded
+    if (!this.done) {
+      var CLU = dr.editor.createlayoutundoable;
+      CLU.restoreManagedViewState(this);
+      CLU.refresh(this._targetParent);
+    }
+    
+    return retval;
+  </method>
+
+  <!--/**
+    * @method redo
+    * @overrides
+    * Inserts the target layout into the target parent.
+    */-->
+  <method name="redo" args="callback">
+    var retval = this.super();
+    
+    // Only do this if creation succeeded
+    if (this.done) {
+      var target = this.target,
+        CLU = dr.editor.createlayoutundoable;
+      if (this._notFirstTime) {
+        CLU.refresh(this._targetParent);
+        target.update();
+      } else {
+        CLU.refresh(target.parent);
+        target.setAttribute('locked', false);
+      }
+    }
+    
+    return retval;
+  </method>
+  
+  <!--// Class Methods //////////////////////////////////////////////////////-->
+  <method name="refresh" args="targetParent" allocation="class">
+    if (selectionmanager.selected === targetParent) {
+      layouts_panel.refresh(targetParent);
+    } else {
+      selectionmanager.select(targetParent);
+    }
+  </method>
+  
+  <method name="restoreManagedViewState" args="undoable" allocation="class">
+    var layout = undoable.target,
+      svs = layout.getSubviews(),
+      i = svs.length, sv,
+      domains = layout.__getLayoutDomains(),
+      isDomainX = domains.x,
+      isDomainY = domains.y,
+      isDomainW = domains.width,
+      isDomainH = domains.height;
+    layout.setAttribute('locked', true);
+    while (i) {
+      sv = svs[--i];
+      if (isDomainX) sv.restoreAttrToModel('x');
+      if (isDomainW) sv.restoreAttrToModel('width');
+      if (isDomainY) sv.restoreAttrToModel('y');
+      if (isDomainH) sv.restoreAttrToModel('height');
+    }
+    this._restoreManagedParentState(undoable);
+    layout.setAttribute('locked', false);
+  </method>
+
+  <method name="restoreManagedParentState" args="undoable" allocation="class">
+    var layout = undoable.target;
+    layout.setAttribute('locked', true);
+    this._restoreManagedParentState(undoable);
+    layout.setAttribute('locked', false);
+  </method>
+
+  <method name="_restoreManagedParentState" args="undoable" allocation="class">
+    var layout = undoable.target,
+      domains = layout.__getLayoutDomains(),
+      parent = undoable._targetParent || layout.parent;
+    if (domains.x) parent.restoreAttrToModel('width');
+    if (domains.y) parent.restoreAttrToModel('height');
+  </method>
+  
+  <method name="restoreSingleManagedViewState" args="view" allocation="class">
+    if (view.__layoutDomainInUseForView('x')) view.restoreAttrToModel('x');
+    if (view.__layoutDomainInUseForView('y')) view.restoreAttrToModel('y');
+    if (view.__layoutDomainInUseForView('width')) view.restoreAttrToModel('width');
+    if (view.__layoutDomainInUseForView('height')) view.restoreAttrToModel('height');
+  </method>
+</class>

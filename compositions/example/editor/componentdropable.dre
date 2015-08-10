@@ -45,20 +45,46 @@ SOFTWARE. -->
       
       var attrs = dr.extend({}, this.instanceattrs);
       attrs.id = id;
+      
+      if (!this.islayout) {
+        var targetPos = this.getAbsolutePosition(editor),
+          newParentPos = droptarget.getAbsolutePosition(editor);
+        if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
+        if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
+      }
+      
+      // Remember which attrs to objectify for the model
+      var objectifyAttrs = dr.extend({}, attrs);
+      delete objectifyAttrs.class;
+      if (this.islayout) delete objectifyAttrs.locked;
+      attrs.__objectify_attrs_list = Object.keys(objectifyAttrs);
+      
       attrs.with = 'editable';
-      
-      var targetPos = this.getAbsolutePosition(),
-        newParentPos = droptarget.getAbsolutePosition();
-      if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
-      if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
-      
       var instance = droptarget.createChild(attrs);
+      
+      // Make sure layout domains do not conflict
+      if (this.islayout) {
+        var layouts = droptarget.getLayouts(), i = layouts.length, layout;
+        while (i) {
+          layout = layouts[--i];
+          if (layout !== instance && (layout.__hasCommonLayoutDomain(instance) || layout.__hasCommonLayoutParentDomain(instance))) {
+            instance.destroy();
+            this.destroy();
+            console.log('Layout domain conflict. Aborting drop.'); // FIXME: provide a warning dialog
+            return;
+          }
+        }
+      }
       
       // Mark an instance as "new" so we know it needs serialization.
       instance.__NEW = true;
       
-      undo.do(new dr.editor.createundoable({target:instance}));
-      selectionmanager.select(instance);
+      if (this.islayout) {
+        actions.do(new dr.editor.createlayoutundoable({target:instance}));
+      } else {
+        actions.do(new dr.editor.createundoable({target:instance}));
+        selectionmanager.select(instance);
+      }
       
       this.destroy();
     }

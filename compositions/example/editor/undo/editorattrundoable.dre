@@ -1,0 +1,55 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.editorattrundoable {UI Components}
+  * @extends dr.editor.attrundoable
+  * A specialized attribute undoable implementation for the editor.
+  */-->
+<class name="editor-editorattrundoable" extends="editor-attrundoable">
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method undo
+    * @overrides
+    */-->
+  <method name="undo" args="callback">
+    var target = this.target,
+      attr = this.attribute, 
+      isLayout = target.isA(dr.Layout);
+    if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
+      dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
+    }
+    
+    var retval = this.super();
+    
+    if (attr === 'updateparent' && isLayout && !target.getActualAttribute('updateparent')) {
+      dr.editor.createlayoutundoable.restoreManagedParentState(this);
+    }
+    
+    if (isLayout) selectionmanager.select(target.parent);
+    
+    return retval;
+  </method>
+
+  <!--/**
+    * @method redo
+    * @overrides
+    */-->
+  <method name="redo" args="callback">
+    var target = this.target,
+      attr = this.attribute, 
+      isLayout = target.isA(dr.Layout);
+    if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
+      dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
+    }
+    
+    var retval = this.super();
+    
+    if (attr === 'updateparent' && isLayout && !target.getActualAttribute('updateparent')) {
+      dr.editor.createlayoutundoable.restoreManagedParentState(this);
+    }
+    
+    if (isLayout) selectionmanager.select(target.parent);
+    
+    return retval;
+  </method>
+</class>

@@ -182,4 +182,20 @@
     else
       @__positionView(parent, @__parentAttrName, value + @outset - @__spacingAfter + parent[@__parentAttrName] - parent[@__innerAttrName])
   </method>
+  
+  <!--// Editor //-->
+  <method name="__getLayoutDomains">
+    retval = {}
+    retval[@axis] = true
+    return retval
+  </method>
+  <method name="__getLayoutParentDomains">
+    retval = {}
+    retval[@__parentAttrName] = true
+    return retval
+  </method>
+  
+  <attribute name="hiddenattrs" type="expression" value="{attribute:true, value:true}" allocation="class"/>
+  <attribute name="readonlyattrs" type="expression" value="{axis:true}" allocation="class"/>
+  <attribute name="attrimportance" type="expression" value="{name:-1}" allocation="class"/>
 </class>

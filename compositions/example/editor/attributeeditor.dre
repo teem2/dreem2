@@ -68,18 +68,34 @@ SOFTWARE. -->
   <handler event="onfocus">
     this.oldvalue = this.text;
   </handler>
+  <handler event="onvalue" args="value">
+    // Reset the oldvalue whenever an external update occurs.
+    if (this._isSync) this.oldvalue = value;
+  </handler>
   <handler event="onkeydown" args="platformEvent">
     var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
     if (keyCode === 13) this._applyChange();
   </handler>
   <handler name="_applyChange" event="onblur">
-    var oldvalue = this.oldvalue, 
-      newvalue = this.value;
-    if (oldvalue !== newvalue) {
-      undo.do(new dr.editor.attrundoable({
-        target:this.target, attribute:this.targetattr, oldvalue:oldvalue, newvalue:newvalue
-      }));
-      this.oldvalue = newvalue;
+    if (!this.isBeingDestroyed) {
+      var oldvalue = this.oldvalue, 
+        newvalue = this.value,
+        target = this.target,
+        targetAttr = this.targetattr;
+      
+      // If attribute is layout locked then revert
+      if (target.isA(dr.View) && target.__layoutDomainInUseForView(targetAttr)) {
+        this.setAttribute('value', oldvalue);
+        // FIXME: Alert dialog saying why we're rolling back the change.
+        return;
+      }
+      
+      if (oldvalue !== newvalue) {
+        actions.do(new dr.editor.editorattrundoable({
+          target:target, attribute:targetAttr, oldvalue:oldvalue, newvalue:newvalue
+        }));
+        this.oldvalue = newvalue;
+      }
     }
   </handler>
 </class>
@@ -97,7 +113,7 @@ SOFTWARE. -->
         targetattr = parent.targetattr,
         target = parent.target;
       if (!parent._isSync && target && ('' + target['__cfg_' + targetattr]) !== ('' + selected)) {
-        undo.do(new dr.editor.attrundoable({
+        actions.do(new dr.editor.editorattrundoable({
           target:target, attribute:targetattr, newvalue:selected
         }));
       }
@@ -131,7 +147,7 @@ SOFTWARE. -->
 
   <method name="notifyPanelHidden" args="panel">
     if (this.oldvalue !== this.value) {
-      undo.do(new dr.editor.attrundoable({
+      actions.do(new dr.editor.editorattrundoable({
         target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
       }));
     }
@@ -151,27 +167,32 @@ SOFTWARE. -->
       data = this.data,
       name = data.name,
       target = data.target,
-      classname;
+      readonly = data.readonly,
+      attrs = {
+        name:'field',
+        x:config.attribute_label_width + 4, // 4 pixel spacing
+        target:target, 
+        targetattr:name,
+        disabled:readonly
+      };
     
     switch (data.type) {
       case 'color':
-        classname = 'coloreditor'
+        attrs.class = 'coloreditor'
         break;
       case 'boolean':
-        classname = 'booleaneditor';
+        attrs.class = 'booleaneditor';
         break;
       default:
-        classname = 'texteditor';
+        attrs.class = 'texteditor';
+        if (readonly) {
+          attrs.bgcolor = 'transparent';
+          attrs.bordercolor = 'transparent';
+        }
         break;
     }
-
-    var child = this.createChild({
-      class:classname,
-      name:'field',
-      x:config.attribute_label_width + 4, // 4 pixel spacing
-      target:target, 
-      targetattr:name
-    });
+    
+    var child = this.createChild(attrs);
     
     // Text may look like a constraint so call setActualAttribute rather than
     // setAttribute to work around constraint binding.
