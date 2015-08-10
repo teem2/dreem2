@@ -252,7 +252,11 @@ SOFTWARE. -->
   <method name="notifyDrop" args="droptarget, isAbort">
     this.super();
     
-    if (this.droptarget) this._stop(droptarget);
+    if (isAbort) {
+      this._abort();
+    } else if (this.droptarget) {
+      this._stop(droptarget);
+    }
   </method>
 
   <method name="notifyDropFailed">
@@ -290,11 +294,8 @@ SOFTWARE. -->
     this._undoableh = new EAU({target:target, attribute:'height', oldvalue:target.getAttribute('height')});
     this._undoablex = new EAU({target:target, attribute:'x', oldvalue:target.getAttribute('x')});
     this._undoabley = new EAU({target:target, attribute:'y', oldvalue:target.getAttribute('y')});
-    this._undoableparent = new EAU({target:target, attribute:'parent'});
-    this._undoableparent.setAttribute('oldvalue', target.parent);
     
-    this.listenTo(dr.keyboard, 'onkeydown', this._handleKeyChange);
-    this.listenTo(dr.keyboard, 'onkeyup', this._handleKeyChange);
+    this.listenTo(dr.keyboard, 'onkeydown, onkeyup', this._handleKeyChange);
   </method>
 
   <method name="_stop" args="droptarget">
@@ -303,23 +304,26 @@ SOFTWARE. -->
     var target = this.target;
     if (target) {
       // stopped dragging, store new values
-      var compound = new dr.editor.compoundundoable(),
+      var E = dr.editor,
+        compound = new E.compoundundoable(),
         undoW = this._undoablew,
         undoH = this._undoableh,
         undoX = this._undoablex,
         undoY = this._undoabley,
-        undoP = this._undoableparent;
+        undoP, undoO,
+        isNewParent = false;
       
       undoW.newvalue = '' + target.getAttribute('width'); // Coerce to string for consistent comparison
       undoH.newvalue = '' + target.getAttribute('height'); // Coerce to string for consistent comparison
       undoX.newvalue = '' + target.getAttribute('x'); // Coerce to string for consistent comparison
       undoY.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
       
-      var isNewParent = false;
       if (!this._isArrowAdj) {
-        isNewParent = droptarget && (droptarget !== undoP.oldvalue);
+        isNewParent = droptarget && (droptarget !== target.parent);
         if (isNewParent) {
-          undoP.newvalue = droptarget;
+          undoP = new E.editorattrundoable({target:target, attribute:'parent', oldvalue:target.parent, newvalue:droptarget});
+          undoO = new E.orderundoable({target:target, oldprevsibling:target.getPrevSiblingView()});
+          
           var targetPos = target.getAbsolutePosition(editor),
             newParentPos = droptarget.getAbsolutePosition(editor),
             sprite = droptarget.sprite;
@@ -332,41 +336,40 @@ SOFTWARE. -->
       if (isNewParent || undoH.newvalue !== undoH.oldvalue) compound.add(undoH);
       if (isNewParent || undoX.newvalue !== undoX.oldvalue) compound.add(undoX);
       if (isNewParent || undoY.newvalue !== undoY.oldvalue) compound.add(undoY);
-      if (isNewParent) compound.add(undoP); // Must be last so that dragging into a parent that already has a layout works as expected.
+      if (isNewParent) compound.add(undoO).add(undoP); // Must be last so that dragging into a parent that already has a layout works as expected.
       
       // Only do it if something changed.
       if (compound.getUndoableCount() > 0) actions.do(compound);
     }
     
-    this.stopListening(dr.keyboard, 'onkeydown', this._handleKeyChange);
-    this.stopListening(dr.keyboard, 'onkeyup', this._handleKeyChange);
+    this.stopListening(dr.keyboard, 'onkeydown, onkeyup', this._handleKeyChange);
     this.isStarted = false;
   </method>
 
   <method name="_abort">
     var target = this.target;
     if (target) {
-      target.setAttribute('x', this._undoablex.oldvalue, true); // 3rd arg enables model update
-      target.setAttribute('y', this._undoabley.oldvalue, true); // 3rd arg enables model update
-      target.setAttribute('width', this._undoablew.oldvalue, true); // 3rd arg enables model update
-      target.setAttribute('height', this._undoableh.oldvalue, true); // 3rd arg enables model update
+      target.setAttribute('x', this._undoablex.oldvalue);
+      target.setAttribute('y', this._undoabley.oldvalue);
+      target.setAttribute('width', this._undoablew.oldvalue);
+      target.setAttribute('height', this._undoableh.oldvalue);
     }
     
-    this.stopListening(dr.keyboard, 'onkeydown', this._handleKeyChange);
-    this.stopListening(dr.keyboard, 'onkeyup', this._handleKeyChange);
+    this.stopListening(dr.keyboard, 'onkeydown, onkeyup', this._handleKeyChange);
     this.isStarted = false;
   </method>
 
   <method name="_handleKeyChange" args="platformEvent">
     var sprite = dr.sprite,
-      keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-    if (keyCode === sprite.GlobalKeys.KEYCODE_SHIFT) {
+      keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
+      GK = sprite.GlobakKeys;
+    if (keyCode === GK.KEYCODE_SHIFT) {
       if (this.focused) {
         this.__requestDragPosition();
       } else if (this.resizer.focused) {
         this.resizer.__requestDragPosition();
       }
-    } else if (keyCode === sprite.GlobalKeys.KEYCODE_ALT) {
+    } else if (keyCode === GK.KEYCODE_ALT) {
       if (this.resizer.focused) {
         this.resizer.__requestDragPosition();
       }
