@@ -12,24 +12,15 @@
     * @overrides
     */-->
   <method name="undo" args="callback">
-    var target = this.target,
-      isLayout = target.isA(dr.Layout);
-    if (isLayout) {
-      if (this.attribute === 'updateparent') {
-        if (!target.getActualAttribute('updateparent')) {
-          dr.editor.createlayoutundoable.storeManagedParentState(this);
-        }
-      }
+    var target = this.target, attr = this.attribute;
+    if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
+      dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
     }
     
     var retval = this.super();
     
-    if (isLayout) {
-      if (this.attribute === 'updateparent') {
-        if (!target.getActualAttribute('updateparent')) {
-          dr.editor.createlayoutundoable.restoreManagedParentState(this);
-        }
-      }
+    if (attr === 'updateparent' && target.isA(dr.Layout) && !target.getActualAttribute('updateparent')) {
+      dr.editor.createlayoutundoable.restoreManagedParentState(this);
     }
     
     return retval;
@@ -40,24 +31,15 @@
     * @overrides
     */-->
   <method name="redo" args="callback">
-    var target = this.target,
-      isLayout = target.isA(dr.Layout);
-    if (isLayout) {
-      if (this.attribute === 'updateparent') {
-        if (!target.getActualAttribute('updateparent')) {
-          dr.editor.createlayoutundoable.storeManagedParentState(this);
-        }
-      }
+    var target = this.target, attr = this.attribute;
+    if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
+      dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
     }
     
     var retval = this.super();
     
-    if (isLayout) {
-      if (this.attribute === 'updateparent') {
-        if (!target.getActualAttribute('updateparent')) {
-          dr.editor.createlayoutundoable.restoreManagedParentState(this);
-        }
-      }
+    if (attr === 'updateparent' && target.isA(dr.Layout) && !target.getActualAttribute('updateparent')) {
+      dr.editor.createlayoutundoable.restoreManagedParentState(this);
     }
     
     return retval;

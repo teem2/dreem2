@@ -155,6 +155,14 @@ SOFTWARE. -->
     }
   </method>
 
+  <method name="restoreAttrToModel" args="attrName">
+    var model = editormodel.getModelNode(this);
+    if (model) {
+      var value = model.attr[attrName];
+      this.setAttribute(attrName, value, false);
+    }
+  </method>
+
   <method name="pauseConstraints">
     this.__constraintsPaused = true;
   </method>

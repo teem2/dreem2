@@ -20,7 +20,7 @@
     
     // Only do this if undeletion succeeded
     if (!this.done) {
-      this._refresh();
+      dr.editor.createlayoutundoable.refresh(this._targetParent);
       this.target.update();
     }
     
@@ -37,19 +37,11 @@
     
     // Only do this if undeletion succeeded
     if (this.done) {
-      dr.editor.createlayoutundoable.restoreManagedViewState(this);
-      this._refresh();
+      var CLU = dr.editor.createlayoutundoable;
+      CLU.restoreManagedViewState(this);
+      CLU.refresh(this._targetParent);
     }
     
     return retval;
-  </method>
-  
-  <method name="_refresh">
-    var targetParent = this._targetParent;
-    if (selectionmanager.selected === targetParent) {
-      layouts_panel.refresh(targetParent);
-    } else {
-      selectionmanager.select(targetParent);
-    }
   </method>
 </class>

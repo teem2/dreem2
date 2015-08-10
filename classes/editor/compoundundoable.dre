@@ -12,6 +12,12 @@
   */-->
 <class name="editor-compoundundoable" extends="editor-undoable">
   <!--// LIFE CYCLE /////////////////////////////////////////////////////////-->
+  <method name="init" args="attrs">
+    this.__undoables = [];
+    
+    this.super();
+  </method>
+
   <!--/**
     * @method destroy
     * @overrides
@@ -27,6 +33,10 @@
 
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <method name="getUndoableCount">
+    return this.__undoables.length;
+  </method>
+
   <!--/**
     * @method add
     * Adds an undoable to this dr.editor.compoundundoable.
@@ -41,7 +51,7 @@
     } else if (undoable === this) {
       dr.sprite.console.warn("Adding compoundundoable to itself is not allowed.");
     } else {
-      (this.__undoables || (this.__undoables = [])).push(undoable);
+      this.__undoables.push(undoable);
     }
     return this;
   </method>
@@ -53,15 +63,13 @@
     */-->
   <method name="undo" args="callback">
     if (this.done) {
-      var undoables = this.__undoables;
-      if (undoables) {
-        var i = undoables.length;
-        try {
-          this.done = false; // Provide cyclic protection
-          while (i) undoables[--i].undo(callback);
-        } finally {
-          this.done = true;
-        }
+      var undoables = this.__undoables,
+        i = undoables.length;
+      try {
+        this.done = false; // Provide cyclic protection
+        while (i) undoables[--i].undo(callback);
+      } finally {
+        this.done = true;
       }
       return this.super();
     } else {
@@ -77,16 +85,14 @@
     */-->
   <method name="redo" args="callback">
     if (!this.done) {
-      var undoables = this.__undoables;
-      if (undoables) {
-        var len = undoables.length, i = 0;
-        
-        try {
-          this.done = true; // Provide cyclic protection
-          for (; len > i;) undoables[i++].redo(callback);
-        } finally {
-          this.done = false;
-        }
+      var undoables = this.__undoables,
+        len = undoables.length, i = 0;
+      
+      try {
+        this.done = true; // Provide cyclic protection
+        for (; len > i;) undoables[i++].redo(callback);
+      } finally {
+        this.done = false;
       }
       return this.super();
     } else {

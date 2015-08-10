@@ -252,4 +252,8 @@ SOFTWARE. -->
       }
     }
   </method>
+  
+  <method name="getModelNode" args="child">
+    return this._findChild(child.id, this.model);
+  </method>
 </node>

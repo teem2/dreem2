@@ -303,37 +303,39 @@ SOFTWARE. -->
     var target = this.target;
     if (target) {
       // stopped dragging, store new values
-      var compound = new dr.editor.compoundundoable();
-      this._undoablew.newvalue = '' + target.getAttribute('width'); // Coerce to string for consistent comparison
-      this._undoableh.newvalue = '' + target.getAttribute('height'); // Coerce to string for consistent comparison
-      this._undoablex.newvalue = '' + target.getAttribute('x'); // Coerce to string for consistent comparison
-      this._undoabley.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
-      compound.add(this._undoablew).add(this._undoableh).add(this._undoablex).add(this._undoabley);
+      var compound = new dr.editor.compoundundoable(),
+        undoW = this._undoablew,
+        undoH = this._undoableh,
+        undoX = this._undoablex,
+        undoY = this._undoabley,
+        undoP = this._undoableparent;
+      
+      undoW.newvalue = '' + target.getAttribute('width'); // Coerce to string for consistent comparison
+      undoH.newvalue = '' + target.getAttribute('height'); // Coerce to string for consistent comparison
+      undoX.newvalue = '' + target.getAttribute('x'); // Coerce to string for consistent comparison
+      undoY.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
       
       var isNewParent = false;
       if (!this._isArrowAdj) {
-        isNewParent = droptarget && (droptarget !== this._undoableparent.oldvalue);
+        isNewParent = droptarget && (droptarget !== undoP.oldvalue);
         if (isNewParent) {
-          this._undoableparent.newvalue = droptarget;
-          compound.add(this._undoableparent);
-          
+          undoP.newvalue = droptarget;
           var targetPos = target.getAbsolutePosition(editor),
-            newParentPos = droptarget.getAbsolutePosition(editor);
-          this._undoablex.newvalue = '' + (targetPos.x - newParentPos.x + droptarget.sprite.getScrollX());
-          this._undoabley.newvalue = '' + (targetPos.y - newParentPos.y + droptarget.sprite.getScrollY());
+            newParentPos = droptarget.getAbsolutePosition(editor),
+            sprite = droptarget.sprite;
+          undoX.newvalue = '' + (targetPos.x - newParentPos.x + sprite.getScrollX());
+          undoY.newvalue = '' + (targetPos.y - newParentPos.y + sprite.getScrollY());
         }
       }
       
+      if (isNewParent || undoW.newvalue !== undoW.oldvalue) compound.add(undoW);
+      if (isNewParent || undoH.newvalue !== undoH.oldvalue) compound.add(undoH);
+      if (isNewParent || undoX.newvalue !== undoX.oldvalue) compound.add(undoX);
+      if (isNewParent || undoY.newvalue !== undoY.oldvalue) compound.add(undoY);
+      if (isNewParent) compound.add(undoP); // Must be last so that dragging into a parent that already has a layout works as expected.
+      
       // Only do it if something changed.
-      if (
-        this._undoablew.newvalue !== this._undoablew.oldvalue ||
-        this._undoableh.newvalue !== this._undoableh.oldvalue ||
-        this._undoablex.newvalue !== this._undoablex.oldvalue ||
-        this._undoabley.newvalue !== this._undoabley.oldvalue ||
-        isNewParent
-      ) {
-        actions.do(compound);
-      }
+      if (compound.getUndoableCount() > 0) actions.do(compound);
     }
     
     this.stopListening(dr.keyboard, 'onkeydown', this._handleKeyChange);
