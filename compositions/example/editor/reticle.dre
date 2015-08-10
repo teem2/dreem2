@@ -362,7 +362,7 @@ SOFTWARE. -->
   <method name="_handleKeyChange" args="platformEvent">
     var sprite = dr.sprite,
       keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
-      GK = sprite.GlobakKeys;
+      GK = sprite.GlobalKeys;
     if (keyCode === GK.KEYCODE_SHIFT) {
       if (this.focused) {
         this.__requestDragPosition();

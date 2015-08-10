@@ -84,7 +84,7 @@ SOFTWARE. -->
         targetAttr = this.targetattr;
       
       // If attribute is layout locked then revert
-      if (target.__layoutDomainInUseForView(targetAttr)) {
+      if (target.isA(dr.View) && target.__layoutDomainInUseForView(targetAttr)) {
         this.setAttribute('value', oldvalue);
         // FIXME: Alert dialog saying why we're rolling back the change.
         return;
