@@ -22,27 +22,6 @@ SOFTWARE. -->
 <mixin name="editable" with="droptarget"
   draggroups="{editable:true}" cursor="move"
 >
-  <!--// Life Cycle /////////////////////////////////////////////////////////-->
-  <method name="initNode" args="parent, attrs">
-    this.super();
-    
-    var isView = this.isView = this.isA(dr.View);
-    
-    if (isView) {
-      // Set up mousedown/up handlers which send simulated events to the
-      // reticle. This allows the reticle to behave as the draggable object
-      // while still having clickability based on the view structure.
-      this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
-      this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
-      this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
-      this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
-      this._origClickable = this.getAttribute('clickable');
-      this.setAttribute('clickable', true); // No model update
-      this.setAttribute('focusable', false); // No model update
-    }
-  </method>
-
-
   <!--// Class Methods //////////////////////////////////////////////////////-->
   <method name="comparator" args="a, b" allocation="class">
     var aimport = a.importance || 1,
@@ -63,6 +42,26 @@ SOFTWARE. -->
   </method>
 
 
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    var isView = this.__isView = this.isA(dr.View);
+    if (isView) {
+      // Set up mousedown/up handlers which send simulated events to the
+      // reticle. This allows the reticle to behave as the draggable object
+      // while still having clickability based on the view structure.
+      this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
+      this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
+      this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
+      this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
+      
+      this.setAttribute('clickable', true); // No model update
+      this.setAttribute('focusable', false); // No model update
+    }
+  </method>
+
+
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <!--// Drag and Drop //-->
   <method name="notifyDragEnter" args="dropable">
@@ -76,15 +75,18 @@ SOFTWARE. -->
   
   <method name="willAcceptDrop" args="dropable">
     // Non-views will never accept a drop.
-    if (!this.isView) return false;
+    if (!this.__isView) return false;
     
+    // Leaf views do not support children so no dropping.
     if (this.isLeaf(dropable)) return false;
     
+    // No dropping on descendants of self
     if (this.isDescendantOf(dropable.target)) return false;
+    
     return this.super();
   </method>
 
-  <!--// Event Handling //-->
+  <!--// Event Handling/Forwarding //-->
   <method name="__editable_handleMouseDown" args="event">
     selectionmanager.select(this);
     dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
@@ -104,25 +106,21 @@ SOFTWARE. -->
   </method>
 
   <method name="invokePlatformObserverCallback" args="methodName, eventType, returnEvent">
-    if (editor.paused) {
-      if (
-        eventType === 'onmousedown' && methodName === '__editable_handleMouseDown' ||
-        eventType === 'onmouseup' && methodName === '__editable_handleMouseUp' ||
-        eventType === 'onmouseover' && methodName === '__editable_handleMouseOver' ||
-        eventType === 'onmouseout' && methodName === '__editable_handleMouseOut'
-      ) {
-        // Only process platform events that editable has registered
-        return this.super();
-      } else {
-        // Abort all other platform events
-        return true;
-      }
-    } else {
-      // Process platform event normally when playing.
+    if (
+      eventType === 'onmousedown' && methodName === '__editable_handleMouseDown' ||
+      eventType === 'onmouseup' && methodName === '__editable_handleMouseUp' ||
+      eventType === 'onmouseover' && methodName === '__editable_handleMouseOver' ||
+      eventType === 'onmouseout' && methodName === '__editable_handleMouseOut'
+    ) {
+      // Process platform events that editable has registered for
       return this.super();
     }
+    
+    // Abort all other platform events
+    return true;
   </method>
   
+  <!--// Model Updates //-->
   <setter name="parent" args="parent">
     var existingParent = this.parent;
     var retval = this.super(parent);
@@ -188,102 +186,99 @@ SOFTWARE. -->
   <!--// Model Creation //-->
   <method name="objectify" args="obj">
     obj.tag = this.$tagname;
-    obj.attr = this._getAttrsToSave();
     
-    if (!obj.child) obj.child = [];
-    
-    var subnodes = this.getSubnodes(), subnode;
-    for (var i = 0, len = subnodes.length; len > i; i++) {
-      subnode = subnodes[i];
-      if (subnode.__NEW) obj.child.push(subnode.objectify({}));
-    }
-    
-    return obj;
-  </method>
-  <method name="_getAttrsToSave">
+    // Store Attributes
     var attrs = {},
       objectifyAttrsList = this.__objectify_attrs_list, 
       i = objectifyAttrsList.length, 
       attrName;
     while (i) {
-      attrName = objectifyAttrsList[--i];
-      
       // Make sure all properties are strings since the server side markup
       // generator seems to work better when they are.
+      attrName = objectifyAttrsList[--i];
       attrs[attrName] = '' + this['__cfg_' + attrName];
     }
-    return attrs;
+    obj.attr = attrs;
+    
+    // Store "new" children
+    var children = obj.child || (obj.child = []),
+      subnodes = this.getSubnodes(), 
+      len = subnodes.length, subnode;
+    for (i = 0; len > i; i++) {
+      subnode = subnodes[i];
+      if (subnode.__NEW) children.push(subnode.objectify({}));
+    }
+    
+    return obj;
   </method>
 
   <!--// Details Panel Support //-->
   <method name="getAttrsListForDetails">
-    // pull attributes from ancestor, since we don't want the editor mixin itself
-    var ancestors = this.klass.ancestors();
-    
-    var myattributes = {};
-    
-    for (var i = 5, len = ancestors.length; len > i; i++) {
-      myattributes = dr.extend(myattributes, ancestors[i].attributes);
-    }
-    
-    // build list of attributes for the replicator
-    var key, value, attrs = [];
-    for (key in myattributes) {
-      value = myattributes[key];
+    // Get Attributes. Pull from ancestors and build list of all attributes.
+    var klass = this.klass,
+      ancestors = klass.ancestors(),
+      attrMap = {},
+      key, 
+      value, 
+      attrs = [],
+      i = 5, // 5 skips over some of the base classes and the editor mixin.
+      len = ancestors.length;
+    for (; len > i; i++) attrMap = dr.extend(attrMap, ancestors[i].attributes);
+    for (key in attrMap) {
+      value = attrMap[key];
       value.name = key;
       value.target = this;
       attrs.push(value)
     }
     
-    // Root editable only supports a few attributes
-    if (selectionmanager.isrootselection) this._filterAttrsForRootBox(attrs);
+    // Filter Attributes
+    if (selectionmanager.isrootselection) {
+      // Root editable only supports a few attributes so filter out 
+      // most of them
+      i = attrs.length;
+      while (i) {
+        switch(attrs[--i].name) {
+          case 'bgcolor':
+            break;
+          default:
+            attrs.splice(i, 1);
+        }
+      }
+    } else {
+      // Filter attrs for class
+      var hiddenattrs = klass.hiddenattrs,
+        readonlyattrs = klass.readonlyattrs,
+        attrimportance = klass.attrimportance,
+        attr;
+      
+      if (hiddenattrs) {
+        i = attrs.length;
+        while (i) {
+          attr = attrs[--i];
+          if (hiddenattrs[attr.name]) attrs.splice(i, 1);
+        }
+      }
+      
+      if (readonlyattrs) {
+        i = attrs.length;
+        while (i) {
+          attr = attrs[--i];
+          if (readonlyattrs[attr.name]) attr.readonly = true;
+        }
+      }
+      
+      if (attrimportance) {
+        i = attrs.length;
+        while (i) {
+          attr = attrs[--i];
+          if (attrimportance[attr.name] != null) attr.importance = attrimportance[attr.name];
+        }
+      }
+    }
     
-    this._filterAttrsForClass(attrs);
-    
+    // Sort Attributes
     attrs.sort(dr.editable.comparator);
     
     return attrs;
-  </method>
-  <method name="_filterAttrsForRootBox" args="attrs">
-    var i = attrs.length;
-    while (i) {
-      switch(attrs[--i].name) {
-        case 'bgcolor':
-          break;
-        default:
-          attrs.splice(i, 1);
-      }
-    }
-  </method>
-  <method name="_filterAttrsForClass" args="attrs">
-    var klass = this.klass,
-      hiddenattrs = klass.hiddenattrs,
-      readonlyattrs = klass.readonlyattrs,
-      attrimportance = klass.attrimportance,
-      i, attr;
-    
-    if (hiddenattrs) {
-      i = attrs.length;
-      while (i) {
-        attr = attrs[--i];
-        if (hiddenattrs[attr.name]) attrs.splice(i, 1);
-      }
-    }
-    
-    if (readonlyattrs) {
-      i = attrs.length;
-      while (i) {
-        attr = attrs[--i];
-        if (readonlyattrs[attr.name]) attr.readonly = true;
-      }
-    }
-    
-    if (attrimportance) {
-      i = attrs.length;
-      while (i) {
-        attr = attrs[--i];
-        if (attrimportance[attr.name] != null) attr.importance = attrimportance[attr.name];
-      }
-    }
   </method>
 </mixin>
