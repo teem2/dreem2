@@ -38,7 +38,7 @@ SOFTWARE. -->
   ignoreplacement="true" ignorelayout="true"
   bgcolor="white" clip="true"
   defaultplacement="content_bg.content.inner"
-  requires="resizelayout"
+  requires="resizelayout, alignlayout"
 >
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="paused" type="boolean" value="true"/>
@@ -820,6 +820,14 @@ SOFTWARE. -->
         <componentsource label="Resize-Y Layout" iconname="resizelayout_y"
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'resizelayout_y.png', instanceattrs:{class:'resizelayout', locked:true, axis:'y'}}"
+        />
+        <componentsource label="Align-X Layout" iconname="alignlayout_x"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'alignlayout_x.png', instanceattrs:{class:'alignlayout', locked:true, align:'center', axis:'x'}}"
+        />
+        <componentsource label="Align-Y Layout" iconname="alignlayout_y"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'alignlayout_y.png', instanceattrs:{class:'alignlayout', locked:true, align:'middle', axis:'y'}}"
         />
         <!--componentsource label="Variable Layout" iconname="variablelayout"
           dropclass="bitmap"
