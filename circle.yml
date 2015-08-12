@@ -10,16 +10,16 @@ test:
     - curl --retry 10 --retry-delay 2 -v http://localhost:8080
 #    - FIREFOX=yes bundle exec rspec
   post:
-#    # Run smoke tests
-#    - 'if [ "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "dev" ]; then grunt; fi':
-#        timeout: 500
-#    # Run smoke tests on mobile
+    # Run smoke tests
+    - 'if [ "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "dev" ]; then grunt; fi':
+        timeout: 500
+    # Run smoke tests on mobile
 #    - 'if [ "${CIRCLE_BRANCH}" == "master" -o "${CIRCLE_BRANCH}" == "dev" ]; then grunt --gruntfile Gruntfile_mobile.js; fi':
 #        timeout: 500
-#deployment:
-#  production:
-#    branch: [dev]
-#    commands:
-#      - git tag "nightly_$(date +'%Y-%m-%d_%H-%M-%S')"
-#      - git push --tags
+deployment:
+  production:
+    branch: [dev]
+    commands:
+      - git tag "nightly_$(date +'%Y-%m-%d_%H-%M-%S')"
+      - git push --tags
   
