@@ -796,13 +796,21 @@ SOFTWARE. -->
           dropclassattrs="{width:'50', height:1, bgcolor:'#000000', instanceattrs:{class:'view', width:'100%', x:'left', height:1, bgcolor:'#000000'}}"
         />
         <!--// Layouts //-->
-        <componentsource label="X-Axis Layout" iconname="spacedlayout_x" layouthint='{"break":true}'
+        <componentsource label="X Layout" iconname="spacedlayout_x" layouthint='{"break":true}'
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_x.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'x'}}"
         />
-        <componentsource label="Y-Axis Layout" iconname="spacedlayout_y"
+        <componentsource label="Y Layout" iconname="spacedlayout_y"
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_y.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'y'}}"
+        />
+        <componentsource label="Wrap-X Layout" iconname="wrappinglayout_x" layouthint='{"break":true}'
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'wrappinglayout_x.png', instanceattrs:{class:'wrappinglayout', locked:true, axis:'x'}}"
+        />
+        <componentsource label="Wrap-Y Layout" iconname="wrappinglayout_y"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'wrappinglayout_y.png', instanceattrs:{class:'wrappinglayout', locked:true, axis:'y'}}"
         />
         <!--componentsource label="Variable Layout" iconname="variablelayout"
           dropclass="bitmap"

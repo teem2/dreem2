@@ -418,4 +418,20 @@
     parent = @parent
     @__positionView(parent, @__parentAttrName, @__linePos + @__lineSize + @lineoutset + parent[@__parentAttrName] - parent[@__otherInnerAttrName])
   </method>
+  
+  <!--// Editor //-->
+  <method name="__getLayoutDomains">
+    return {x:true, y:true}
+  </method>
+  <method name="__getLayoutParentDomains">
+    retval = {}
+    retval[@__parentAttrName] = true
+    return retval
+  </method>
+  
+  <attribute name="hiddenattrs" type="expression" value="{attribute:true, value:true}" allocation="class"/>
+  <attribute name="readonlyattrs" type="expression" value="{axis:true}" allocation="class"/>
+  <attribute name="attrimportance" type="expression" allocation="class"
+    value="{axis:-2, name:-1, inset:1, spacing:2, outset:3, lineinset:4, linespacing:5, lineoutset:6, align:7, linealign:8, justify:9, reverse:10, updateparent:11, speed:12}"
+  />
 </class>

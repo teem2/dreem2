@@ -332,10 +332,10 @@ SOFTWARE. -->
         }
       }
       
-      if (isNewParent || undoW.newvalue !== undoW.oldvalue) compound.add(undoW);
-      if (isNewParent || undoH.newvalue !== undoH.oldvalue) compound.add(undoH);
-      if (isNewParent || undoX.newvalue !== undoX.oldvalue) compound.add(undoX);
-      if (isNewParent || undoY.newvalue !== undoY.oldvalue) compound.add(undoY);
+      if (isNewParent || undoW.newvalue !== undoW.oldvalue && !target.__layoutDomainInUseForView('width')) compound.add(undoW);
+      if (isNewParent || undoH.newvalue !== undoH.oldvalue && !target.__layoutDomainInUseForView('height')) compound.add(undoH);
+      if (isNewParent || undoX.newvalue !== undoX.oldvalue && !target.__layoutDomainInUseForView('x')) compound.add(undoX);
+      if (isNewParent || undoY.newvalue !== undoY.oldvalue && !target.__layoutDomainInUseForView('y')) compound.add(undoY);
       if (isNewParent) compound.add(undoO).add(undoP); // Must be last so that dragging into a parent that already has a layout works as expected.
       
       // Only do it if something changed.
