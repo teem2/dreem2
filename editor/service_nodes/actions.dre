@@ -116,7 +116,7 @@ SOFTWARE. -->
       selectionmanager.clear(true);
       editPreviewButton.setAttribute('text', 'Edit');
       preview.setAttribute('visible', true);
-      preview.setAttribute('src', '/compositions/example/editor/preview.dre');
+      preview.setAttribute('src', '/editor/preview.dre');
     }
   </method>
   
