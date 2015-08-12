@@ -214,6 +214,14 @@ SOFTWARE. -->
 
   <!--// Details Panel Support //-->
   <method name="getAttrsListForDetails">
+    return this._getAttrsListForDetails(false);
+  </method>
+  
+  <method name="getMoreAttrsListForDetails">
+    return this._getAttrsListForDetails(true);
+  </method>
+  
+  <method name="_getAttrsListForDetails" args="isMoreList">
     // Get Attributes. Pull from ancestors and build list of all attributes.
     var klass = this.klass,
       ancestors = klass.ancestors(),
@@ -273,6 +281,18 @@ SOFTWARE. -->
           attr = attrs[--i];
           if (attrimportance[attr.name] != null) attr.importance = attrimportance[attr.name];
         }
+      }
+    }
+    
+    // Filter
+    var threshold = config.more_threshold;
+    i = attrs.length;
+    while (i) {
+      attr = attrs[--i];
+      if (isMoreList) {
+        if (threshold > attr.importance) attrs.splice(i, 1);
+      } else {
+        if (attr.importance >= threshold || attr.importance == null) attrs.splice(i, 1);
       }
     }
     

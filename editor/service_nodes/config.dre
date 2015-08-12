@@ -37,6 +37,7 @@ SOFTWARE. -->
   <attribute name="selection_marker_offset" type="number" value="6"/>
   
   <attribute name="attribute_label_width" type="number" value="100"/>
+  <attribute name="more_threshold" type="number" value="100"/>
   
   <attribute name="primary_panel_color" type="color" value="#dddddd"/>
   <attribute name="secondary_panel_color" type="color" value="#cccccc"/>
