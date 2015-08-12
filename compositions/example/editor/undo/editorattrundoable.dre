@@ -15,6 +15,15 @@
     var target = this.target,
       attr = this.attribute, 
       isLayout = target.isA(dr.Layout);
+    
+    var layouts, len, i;
+    if (!isLayout) {
+      layouts = target.parent.getLayouts();
+      len = layouts.length;
+      i = len;
+      while (i) layouts[--i].setActualAttribute('locked', true);
+    }
+    
     if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
       dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
     }
@@ -23,6 +32,15 @@
     
     if (attr === 'updateparent' && isLayout && !target.getActualAttribute('updateparent')) {
       dr.editor.createlayoutundoable.restoreManagedParentState(this);
+    }
+    
+    if (attr === 'layouthint') {
+      dr.editor.createlayoutundoable.restoreForLayoutHint(target, this.newvalue, this.oldvalue);
+    }
+    
+    if (len > 0) {
+      i = len;
+      while (i) layouts[--i].setActualAttribute('locked', false);
     }
     
     if (isLayout) selectionmanager.select(target.parent);
@@ -38,6 +56,15 @@
     var target = this.target,
       attr = this.attribute, 
       isLayout = target.isA(dr.Layout);
+    
+    var layouts, len, i;
+    if (!isLayout) {
+      layouts = target.parent.getLayouts();
+      len = layouts.length;
+      i = len;
+      while (i) layouts[--i].setActualAttribute('locked', true);
+    }
+    
     if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
       dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
     }
@@ -46,6 +73,15 @@
     
     if (attr === 'updateparent' && isLayout && !target.getActualAttribute('updateparent')) {
       dr.editor.createlayoutundoable.restoreManagedParentState(this);
+    }
+    
+    if (attr === 'layouthint') {
+      dr.editor.createlayoutundoable.restoreForLayoutHint(target, this.oldvalue, this.newvalue);
+    }
+    
+    if (len > 0) {
+      i = len;
+      while (i) layouts[--i].setActualAttribute('locked', false);
     }
     
     if (isLayout) selectionmanager.select(target.parent);

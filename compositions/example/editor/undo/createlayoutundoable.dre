@@ -69,14 +69,16 @@
       isDomainX = domains.x,
       isDomainY = domains.y,
       isDomainW = domains.width,
-      isDomainH = domains.height;
+      isDomainH = domains.height,
+      layouthint;
     layout.setAttribute('locked', true);
     while (i) {
       sv = svs[--i];
-      if (isDomainX) sv.restoreAttrToModel('x');
-      if (isDomainW) sv.restoreAttrToModel('width');
-      if (isDomainY) sv.restoreAttrToModel('y');
-      if (isDomainH) sv.restoreAttrToModel('height');
+      layouthint = sv.getActualAttribute('layouthint');
+      if (isDomainX || layout.__shouldRestoreForLayoutHint('x', layouthint, null)) sv.restoreAttrToModel('x');
+      if (isDomainW || layout.__shouldRestoreForLayoutHint('width', layouthint, null)) sv.restoreAttrToModel('width');
+      if (isDomainY || layout.__shouldRestoreForLayoutHint('y', layouthint, null)) sv.restoreAttrToModel('y');
+      if (isDomainH || layout.__shouldRestoreForLayoutHint('height', layouthint, null)) sv.restoreAttrToModel('height');
     }
     this._restoreManagedParentState(undoable);
     layout.setAttribute('locked', false);
@@ -98,9 +100,22 @@
   </method>
   
   <method name="restoreSingleManagedViewState" args="view" allocation="class">
-    if (view.__layoutDomainInUseForView('x')) view.restoreAttrToModel('x');
-    if (view.__layoutDomainInUseForView('y')) view.restoreAttrToModel('y');
-    if (view.__layoutDomainInUseForView('width')) view.restoreAttrToModel('width');
-    if (view.__layoutDomainInUseForView('height')) view.restoreAttrToModel('height');
+    var layouthint = view.getActualAttribute('layouthint');
+    
+    if (view.__layoutDomainInUseForView('x') || view.__shouldRestoreForLayoutHint('x', layouthint, null)) view.restoreAttrToModel('x');
+    if (view.__layoutDomainInUseForView('y') || view.__shouldRestoreForLayoutHint('y', layouthint, null)) view.restoreAttrToModel('y');
+    if (view.__layoutDomainInUseForView('width') || view.__shouldRestoreForLayoutHint('width', layouthint, null)) view.restoreAttrToModel('width');
+    if (view.__layoutDomainInUseForView('height') || view.__shouldRestoreForLayoutHint('height', layouthint, null)) view.restoreAttrToModel('height');
+  </method>
+  
+  <method name="restoreForLayoutHint" args="view, from, to" allocation="class">
+    var AS = dr.AccessorSupport;
+    from = AS.coerce('layouthint', from, 'json');
+    to = AS.coerce('layouthint', to, 'json');
+    
+    if (view.__shouldRestoreForLayoutHint('x', from, to)) view.restoreAttrToModel('x');
+    if (view.__shouldRestoreForLayoutHint('y', from, to)) view.restoreAttrToModel('y');
+    if (view.__shouldRestoreForLayoutHint('width', from, to)) view.restoreAttrToModel('width');
+    if (view.__shouldRestoreForLayoutHint('height', from, to)) view.restoreAttrToModel('height');
   </method>
 </class>
