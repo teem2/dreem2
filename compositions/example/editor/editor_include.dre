@@ -38,6 +38,7 @@ SOFTWARE. -->
   ignoreplacement="true" ignorelayout="true"
   bgcolor="white" clip="true"
   defaultplacement="content_bg.content.inner"
+  requires="resizelayout"
 >
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="paused" type="boolean" value="true"/>
@@ -804,13 +805,21 @@ SOFTWARE. -->
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'spacedlayout_y.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'y'}}"
         />
-        <componentsource label="Wrap-X Layout" iconname="wrappinglayout_x" layouthint='{"break":true}'
+        <componentsource label="Wrap-X Layout" iconname="wrappinglayout_x"
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'wrappinglayout_x.png', instanceattrs:{class:'wrappinglayout', locked:true, axis:'x'}}"
         />
         <componentsource label="Wrap-Y Layout" iconname="wrappinglayout_y"
           dropclass="bitmap"
           dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'wrappinglayout_y.png', instanceattrs:{class:'wrappinglayout', locked:true, axis:'y'}}"
+        />
+        <componentsource label="Resize-X Layout" iconname="resizelayout_x"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'resizelayout_x.png', instanceattrs:{class:'resizelayout', locked:true, axis:'x'}}"
+        />
+        <componentsource label="Resize-Y Layout" iconname="resizelayout_y"
+          dropclass="bitmap"
+          dropclassattrs="{width:60, height:55, bgcolor:'#999999', islayout:true, src:config.img_root + 'resizelayout_y.png', instanceattrs:{class:'resizelayout', locked:true, axis:'y'}}"
         />
         <!--componentsource label="Variable Layout" iconname="variablelayout"
           dropclass="bitmap"
