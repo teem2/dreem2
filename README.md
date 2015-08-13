@@ -3,7 +3,7 @@ Dreem2
 
 Dreem with multiple screens, IOT and backwards compatibility for dre syntax.
 
-getting started with dreem
+Getting Started with Dreem
 --------------------------
 
 It is quick and easy to get started writing your dreem application, first install [Node.js v0.10.x](http://nodejs.org/download/), and then clone the repo:
@@ -11,7 +11,6 @@ It is quick and easy to get started writing your dreem application, first instal
     git clone https://github.com/teem2/dreem2.git
 
 You will need to serve the dreem files through a web server to satisfy the browser's same-origin policy.  To start the dreem server just run:
-
     > cd <your dreem installation root>
     > node server
 
@@ -19,7 +18,26 @@ This will turn that directory into a webserver and allow you to run any of the e
 
 You can open a page with all the examples here: [http://localhost:8080/examplelinks](http://localhost:8080/examplelinks)
 
-running smoke tests
+Running the Visual Editor
+--------------------------
+
+You can use the visual editor in two ways:
+
+Edit mode:
+[http://localhost:8080/compositions/example/editor.dre?edit=1](http://localhost:8080/compositions/example/editor.dre?edit=1)
+
+Preview mode: 
+[http://localhost:8080/compositions/example/editor.dre](http://localhost:8080/compositions/example/editor.dre)
+
+If you have any issues, try these steps:
+
+
+1. Shut down the server
+2. Make sure the file you are trying to edit is current (that you have the latest code from the repository)
+3. Start the server (node server.js)
+4. Start either edit or preview mode using the URLs above.
+
+Running Smoke Tests
 --------------------------
 
 (Important! See the README.md file in /3rd_party for a temporary workaround for phantomjs 2. You will not want to do the npm install if you're on the latest OSX)
@@ -41,7 +59,7 @@ You can also target a specific smoke tests by naming it on the commandline. All 
 
     > phantomjs ./bin/phantomrunner.js view
 
-other notes
+Other Notes
 --------------------------
 Dreem2 introduces the concept of "compositions". These combine client and server side functionality together into a single dre file. What you would have thought of as a page in dreem1 is now a "screen" which is found within a composition.
 
