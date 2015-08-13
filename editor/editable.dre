@@ -24,8 +24,8 @@ SOFTWARE. -->
 >
   <!--// Class Methods //////////////////////////////////////////////////////-->
   <method name="comparator" args="a, b" allocation="class">
-    var aimport = a.importance || 1,
-      bimport = b.importance || 1;
+    var aimport = a.importance || 99999,
+      bimport = b.importance || 99999;
     if (bimport === aimport) {
       if (b.name > a.name) {
         return -1;
