@@ -35,7 +35,7 @@ SOFTWARE. -->
         <text bgcolor="lightpink">
           <handler event="oninit">
             var el = this.sprite.platformObject;
-            assert.equal(this.text, '', 'Text should be empty');
+            assert.equal(this.text, '', 'Text should be empty when no text or $textcontent provided.');
             assert.equal(this.sprite.getText(), '', 'No innerText should exist #1');
           </handler>
         </text>

@@ -162,6 +162,7 @@ SOFTWARE. -->
       this.setAttribute('cursor', 'auto');
       this.setAttribute('editable', true);
       this.setAttribute('focusable', true);
+      this.sprite.selectAll();
       this.focus();
     }
   </method>

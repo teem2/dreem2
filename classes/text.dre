@@ -201,7 +201,7 @@
 
   <handler event="oninput" args="event">
     if @editable
-      @setAttribute('text', @sprite.getText());
+      @setAttribute('text', @sprite.getText(true));
   </handler>
 
   <method name="isPlatformEvent" args="eventType">
