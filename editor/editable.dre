@@ -46,7 +46,15 @@ SOFTWARE. -->
   <method name="initNode" args="parent, attrs">
     this.super();
     
-    var isView = this.__isView = this.isA(dr.View);
+    var isView = false, isText = false;
+    if (this.isA(dr.text)) {
+      isView = isText = true;
+    } else if (this.isA(dr.View)) {
+      isView = true;
+    }
+    this.__isView = isView;
+    this.__isText = isText;
+    
     if (isView) {
       // Set up mousedown/up handlers which send simulated events to the
       // reticle. This allows the reticle to behave as the draggable object
@@ -55,11 +63,18 @@ SOFTWARE. -->
       this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
       this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
       this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
+      this.listenTo(this, 'ondblclick', '__editable_handleDoubleClick');
       
       this.setAttribute('clickable', true); // No model update
       this.setAttribute('focusable', false); // No model update
     }
+    
+    if (isText) this.setAttribute('focusembellishment', false);
   </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="inlineedit" type="boolean" value="false"/>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
@@ -88,29 +103,93 @@ SOFTWARE. -->
 
   <!--// Event Handling/Forwarding //-->
   <method name="__editable_handleMouseDown" args="event">
-    selectionmanager.select(this);
-    dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
-    reticle.doMouseOver(true);
+    if (!this.inlineedit) {
+      selectionmanager.select(this);
+      dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
+      reticle.doMouseOver(true);
+    }
   </method>
   
   <method name="__editable_handleMouseUp" args="event">
-    dr.sprite.simulatePlatformEvent(reticle, 'mouseup', {pointerX:event.x, pointerY:event.y});
+    if (!this.inlineedit) {
+      dr.sprite.simulatePlatformEvent(reticle, 'mouseup', {pointerX:event.x, pointerY:event.y});
+    }
   </method>
 
   <method name="__editable_handleMouseOver" args="event">
-    if (reticle.target === this) dr.sprite.simulatePlatformEvent(reticle, 'mouseover', {pointerX:event.x, pointerY:event.y});
+    if (!this.inlineedit) {
+      if (reticle.target === this) dr.sprite.simulatePlatformEvent(reticle, 'mouseover', {pointerX:event.x, pointerY:event.y});
+    }
   </method>
   
   <method name="__editable_handleMouseOut" args="event">
-    if (reticle.target === this) dr.sprite.simulatePlatformEvent(reticle, 'mouseout', {pointerX:event.x, pointerY:event.y});
+    if (!this.inlineedit) {
+      if (reticle.target === this) dr.sprite.simulatePlatformEvent(reticle, 'mouseout', {pointerX:event.x, pointerY:event.y});
+    }
+  </method>
+  
+  <method name="__editable_handleDoubleClick" args="event">
+    this.startEditing();
+  </method>
+  
+  <!--/**
+    * @method notifyDeselected
+    * Called by the selectionmanager when this editable is no longer selected.
+    * @return {void}
+    */-->
+  <method name="notifyDeselected">
+    this.endEditing();
+  </method>
+  
+  <!--/**
+    * @method isLocalEdit
+    * Used to check if some kind of specialized inline edit is in progress.
+    * @return {Boolean}
+    */-->
+  <method name="isInlineEdit">
+    return this.inlineedit;
+  </method>
+  
+  <!--/**
+    * @method startEditing
+    * Starts inline editing.
+    * @return {void}
+    */-->
+  <method name="startEditing">
+    if (!this.inlineedit && this.__isText) {
+      this.setAttribute('inlineedit', true);
+      
+      this.setAttribute('cursor', 'auto');
+      this.setAttribute('editable', true);
+      this.setAttribute('focusable', true);
+      this.focus();
+    }
+  </method>
+  
+  <!--/**
+    * @method startEditing
+    * Ends inline editing.
+    * @return {void}
+    */-->
+  <method name="endEditing">
+    if (this.inlineedit && this.__isText) {
+      this.setAttribute('cursor', 'move');
+      this.setAttribute('editable', false);
+      this.setAttribute('focusable', false);
+      
+      this.setAttribute('inlineedit', false);
+    }
   </method>
 
   <method name="invokePlatformObserverCallback" args="methodName, eventType, returnEvent">
     if (
+      (eventType === 'oninput' || eventType === 'onkeydown') && this.__isText && this.isInlineEdit() ||
+      
       eventType === 'onmousedown' && methodName === '__editable_handleMouseDown' ||
       eventType === 'onmouseup' && methodName === '__editable_handleMouseUp' ||
       eventType === 'onmouseover' && methodName === '__editable_handleMouseOver' ||
-      eventType === 'onmouseout' && methodName === '__editable_handleMouseOut'
+      eventType === 'onmouseout' && methodName === '__editable_handleMouseOut' ||
+      eventType === 'ondblclick' && methodName === '__editable_handleDoubleClick'
     ) {
       // Process platform events that editable has registered for
       return this.super();

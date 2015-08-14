@@ -150,12 +150,6 @@ SOFTWARE. -->
     @sprite.filterInputPress(platformEvent)
   </method>
 
-  <method name="isPlatformEvent" args="eventType">
-    if dr.sprite.InputObservable.EVENT_TYPES[eventType]
-      return true
-    return @super()
-  </method>
-
   <method name="createSprite" args="attrs">
     return new dr.sprite.InputText(this, attrs)
   </method>

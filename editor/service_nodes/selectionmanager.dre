@@ -37,7 +37,10 @@ SOFTWARE. -->
     if (this._oldSelection && this._oldSelection.parent) this.select(this._oldSelection);
   </method>
   
-  <method name="select" args="view">
-    this.setAttribute('selected', view);
+  <method name="select" args="newSelection">
+    var curSelection = this.selected;
+    if (curSelection && newSelection !== curSelection) curSelection.notifyDeselected();
+    
+    this.setAttribute('selected', newSelection);
   </method>
 </node>

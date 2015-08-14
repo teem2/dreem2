@@ -178,6 +178,19 @@
       if @inited then @sizeToPlatform()
   </setter>
 
+  <attribute name="editable" type="boolean" value="false"/>
+  <setter name="editable" args="v">
+    if @setActual('editable', v, 'boolean', false)
+      if @editable
+        @listenToPlatform(@, 'onkeydown', @__cleanInput)
+      else
+        @stopListeningToPlatform(@, 'onkeydown', @__cleanInput)
+  </setter>
+  
+  <method name="__cleanInput" args="event">
+    @sprite.cleanInput(event)
+  </method>
+
   <setter name="data" args="v">
     @setActualAttribute('text', v)
   </setter>
@@ -186,6 +199,17 @@
     @setActualAttribute('text', v)
   </setter>
 
+  <handler event="oninput" args="event">
+    if @editable
+      @setAttribute('text', @sprite.getText());
+  </handler>
+
+  <method name="isPlatformEvent" args="eventType">
+    if dr.sprite.InputObservable.EVENT_TYPES[eventType]
+      return true
+    return @super()
+  </method>
+  
   <method name="createSprite" args="attrs">
     return new dr.sprite.Text(this, attrs);
   </method>
