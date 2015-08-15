@@ -378,8 +378,10 @@ SOFTWARE. -->
 
 
   <!--// Views //////////////////////////////////////////////////////////////-->
+  <!-- This view allows the reticle to visually appear zero width/height while
+       still supporting borders. -->
   <view name="fill" width="100%" height="100%" clip="true">
-    <view name="inner" width="100%" height="100%" border="1" bordercolor="${config.selection_color}"></view>
+    <view name="inner" width="100%" height="100%" border="1" bordercolor="${config.selection_color}"/>
   </view>
 
   <controlhandle name="resizer" visible="${!selectionmanager.isrootselection}">

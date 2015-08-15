@@ -536,15 +536,15 @@ SOFTWARE. -->
 
 
   <!--// Top Panel //-->
-  <view name="topbar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
+  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     width="100%" height="${config.topbar_height}"
   >
     <view name="left" padding="2" height="${config.topbar_height}">
       <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
       
-      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" label="Actions"
-        width="73" textalign="right"
+      <listviewbutton floatingpanelid="actions" floatingvalignoffset="2"
+        label="Actions" width="73" textalign="right"
         listviewattrs="{maxheight:300}"
       >
         <method name="doActivated">
@@ -571,12 +571,14 @@ SOFTWARE. -->
           this.super();
         </method>
       </listviewbutton>
-      <floatingpanelbutton id="settingsButton" floatingpanelid="settings" floatingvalignoffset="2" label="Settings"
-        width="78" textalign="right"
+      <floatingpanelbutton floatingpanelid="settings" floatingvalignoffset="2"
+        label="Settings" width="78" textalign="right"
       />
     </view>
     
-    <view name="center" padding="2" x="${this.parent.left.width}" width="${this.parent.right.x - this.x}" height="${config.topbar_height}"/>
+    <view name="center" padding="2" x="${this.parent.left.width}"
+      width="${this.parent.right.x - this.x}" height="${config.topbar_height}"
+    />
     
     <view name="right" padding="2" x="right" height="${config.topbar_height}">
       <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
@@ -611,7 +613,7 @@ SOFTWARE. -->
       <spacedlayout spacing="8"/>
       <constantlayout attribute="y" value="'middle'"/>
       
-      <view with="button, listviewanchor" id="screenSizeButton"
+      <view with="button, listviewanchor"
         width="auto" height="auto"
         floatingpanelid="screensizes" floatingvalignoffset="2"
         focusembellishment="false"
@@ -763,16 +765,16 @@ SOFTWARE. -->
       </view>
     </view>
     
-    <view name="extra"
+    <!-- Creates extra space to the bottom and right of the content view. -->
+    <view
       x="${this.parent.content.x + this.parent.content.width}" width="${config.content_inset}"
       y="${this.parent.content.y + this.parent.content.height}" height="${config.content_inset}"
     />
     
-    <webpage name="preview" id="preview" visible="false"
+    <webpage id="preview" visible="false"
       x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
       width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
-      border="2" bordercolor="#66ee00"
-      clickable="true" bgcolor="#999999"
+      border="2" bordercolor="#66ee00" clickable="true" bgcolor="#999999"
     />
   </view>
 
@@ -783,7 +785,8 @@ SOFTWARE. -->
     width="${this.parent.innerwidth - this.parent.divider_right.x}"
     height="${this.parent.leftbar.height}"
   >
-    <view name="component_list_panel" width="100%" height="${this.parent.divider_top.y}" bgcolor="white" scrollable="true">
+    <!-- Component list panel -->
+    <view width="100%" height="${this.parent.divider_top.y}" bgcolor="white" scrollable="true">
       <view width="100%">
         <wrappinglayout axis="x" spacing="5" inset="5" outset="5" linespacing="5" lineinset="5" lineoutset="5" updateparent="true"/>
         <componentsource label="Image" iconname="bitmap"
@@ -850,6 +853,7 @@ SOFTWARE. -->
       </view>
     </view>
     
+    <!-- Attributes Panel(s) -->
     <view y="${this.parent.divider_top.y}" width="100%" height="${this.parent.innerheight - this.y}" scrollable="true">
       <spacedlayout axis="y"/>
       
@@ -975,6 +979,8 @@ SOFTWARE. -->
       </view>
     </view>
     
+    <!-- Line at the top of the attribute panels so that a visual separation
+         occurs even when scrolled. -->
     <view ignoreplacement="true"
       width="100%" y="${this.parent.divider_top.y}" height="1"
       bgcolor="${config.secondary_panel_color}"
@@ -991,7 +997,7 @@ SOFTWARE. -->
 
 
   <!--// Bottom Panel //-->
-  <view name="bottombar" ignoreplacement="true" bgcolor="${config.primary_panel_color}"
+  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
     y="bottom" width="100%" height="${config.bottombar_height}"
   />
 
@@ -1034,12 +1040,14 @@ SOFTWARE. -->
     </method>
   </view>
 
-  <view id="guides" ignorelayout="true" ignoreplacement="true"></view>
+  <!-- The guides layer that sits in front of the content being edited. -->
+  <view id="guides" ignoreplacement="true"/>
 
   <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>
 </view>
 
+<!--// FLOATING PANEL VIEWS //-->
 <basefloatingpanel panelid="settings" width="auto" height="auto" padding="4">
   <method name="getFirstFocusableDescendant">
     return gridsizex;
@@ -1048,7 +1056,7 @@ SOFTWARE. -->
   <spacedlayout axis="y" spacing="4" updateparent="true"/>
   
   <view height="auto">
-    <spacedlayout spacing="4" updateparent="true"></spacedlayout>
+    <spacedlayout spacing="4" updateparent="true"/>
     <editor_text text="grid x:" y="2"/>
     <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
     <editor_text text="y:" y="2"/>
@@ -1056,7 +1064,7 @@ SOFTWARE. -->
   </view>
   
   <view height="auto">
-    <spacedlayout spacing="4" updateparent="true"></spacedlayout>
+    <spacedlayout spacing="4" updateparent="true"/>
     <editor_text text="snap to guides:" y="2"/>
     <view with="checkbutton" id="snaptoguides" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20"
       selected="true"
