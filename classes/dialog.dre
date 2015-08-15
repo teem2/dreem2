@@ -1,0 +1,18 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.dialog {UI Component}
+   * A base class for dialogs.
+   */-->
+<class name="dialog"
+  cornerradius="8" boxshadow="[0, 0, 9, 0, '#666666']" bgcolor="white"
+  border="1" bordercolor="black"
+  focuscage="true"
+>
+  <attribute name="dialogmanager" type="expression" value=""/>
+  <attribute name="callback" type="expression" value=""/>
+  
+  <method name="setInitialFocus">
+    // Subclasses to implement as needed.
+  </method>
+</class>

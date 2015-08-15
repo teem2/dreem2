@@ -97,12 +97,32 @@ SOFTWARE. -->
   </method>
   
   <method name="save">
-    editormodel.save();
-    undo.reset();
+    dialogmanager.showConfirm(
+      'Are you sure you want to save your changes?', null, null, function(dialog, success) {
+        if (success) {
+          editormodel.save();
+          undo.reset();
+        } else {
+          // Save cancelled
+        }
+      }
+    );
   </method>
 
   <method name="stop">
-    editormodel.stop();
+    if (!saveButton.disabled) {
+      dialogmanager.showConfirm(
+        'You have unsaved changes. Are you sure you want to exit the editor?', null, null, function(dialog, success) {
+          if (success) {
+            editormodel.stop();
+          } else {
+            // Exit cancelled
+          }
+        }
+      );
+    } else {
+      editormodel.stop();
+    }
   </method>
   
   <method name="editPreview">

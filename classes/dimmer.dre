@@ -1,0 +1,75 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.dimmer {UI Component}
+   * A dimmer that can be placed on another dr.view to obscure the subviews of
+   * that view.
+   */-->
+<class name="dimmer" width="100%" height="100%"
+  visible="false" ignorelayout="true" focusable="true" focuscage="true"
+>
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Boolean} restorefocus
+    * Determines if focus will be sent back to the view that had focus before 
+    * the dimmer was shown when the dimmer is hidden.
+    */-->
+  <attribute name="restorefocus" type="boolean" value="true"/>
+  
+  <!--/**
+    * @attribute {dr.View} restorefocus
+    * @readonly
+    * The thing to set focus on when the dimmer is hidden if restorefocus 
+    * is true.
+    */-->
+  <attribute name="prevfocus" type="expression" value=""/>
+
+
+  <!--// Handlers ///////////////////////////////////////////////////////////-->
+  <!-- Eat mouse/keyboard events. -->
+  <handler event="onmouseover, onmouseout, onmousedown, onmouseup, onclick, ondblclick, onmousemove, onkeydown, onkeyup, onkeypress"/>
+  
+  <!-- Eat and cancel drag and drop events. -->
+  <handler event="ondrop, ondragover" args="platformEvent">
+    dr.sprite.preventDefault(platformEvent);
+  </handler>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="isPlatformEvent" args="eventType">
+    if (dr.sprite.DropObservable.EVENT_TYPES[eventType]) return true;
+    return this.super();
+  </method>
+
+  <!--/**
+    * @method show
+    * Shows the dimmer and remembers the focus location.
+    * @returns {void}
+    */-->
+  <method name="show">
+    this.setAttribute('prevfocus', dr.global.focus.focusedView);
+    
+    this.moveToFront();
+    this.setAttribute('visible', true);
+    
+    // Prevent focus traversing
+    if (this.focusable) this.focus();
+  </method>
+  
+  <!--/**
+    * @method show
+    * Hides the dimmer and restores focus if necessary.
+    * @returns {void}
+    */-->
+  <method name="hide" args="ignoreRestoreFocus">
+    this.setAttribute('visible', false);
+    
+    if (!ignoreRestoreFocus && this.restorefocus && this.prevfocus) this.prevfocus.focus();
+  </method>
+  
+  
+  <!--// Views //////////////////////////////////////////////////////////////-->
+  <view name="overlay" width="100%" height="100%"
+    ignoreplacement="true" opacity="0.35" bgcolor="black"
+  />
+</class>

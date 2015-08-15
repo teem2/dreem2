@@ -70,7 +70,8 @@ SOFTWARE. -->
           if (layout !== instance && (layout.__hasCommonLayoutDomain(instance) || layout.__hasCommonLayoutParentDomain(instance))) {
             instance.destroy();
             this.destroy();
-            console.log('Layout domain conflict. Aborting drop.'); // FIXME: provide a warning dialog
+            
+            dialogmanager.showAlert('The layout you are trying to add conflicts with an existing layout.');
             return;
           }
         }
