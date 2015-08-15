@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="componentsource" with="button, dropsource"
   width="80" height="85" cornerradius="8" focusembellishment="false"
-  disabled="${!editor.paused}"
+  disabled="${!editor.editmode}"
 >
   <attribute name="label" type="string" value=""/>
   <attribute name="iconname" type="string" value=""/>

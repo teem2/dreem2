@@ -44,7 +44,7 @@ SOFTWARE. -->
   </method>
   
   <method name="do" args="undoable">
-    if (editor.paused) {
+    if (editor.editmode) {
       undo.do(undoable, null, function(error) {
         console.error(error);
         undoable.destroy();
@@ -53,11 +53,11 @@ SOFTWARE. -->
   </method>
   
   <method name="undo">
-    if (editor.paused) undo.undo(this._undoRedoCallback, this._undoRedoErrorHandler);
+    if (editor.editmode) undo.undo(this._undoRedoCallback, this._undoRedoErrorHandler);
   </method>
   
   <method name="redo">
-    if (editor.paused) undo.redo(this._undoRedoCallback, this._undoRedoErrorHandler);
+    if (editor.editmode) undo.redo(this._undoRedoCallback, this._undoRedoErrorHandler);
   </method>
   
   <method name="bringToFront">
@@ -126,8 +126,8 @@ SOFTWARE. -->
   </method>
   
   <method name="editPreview">
-    editor.setAttribute('paused', !editor.paused);
-    if (editor.paused) {
+    editor.setAttribute('editmode', !editor.editmode);
+    if (editor.editmode) {
       selectionmanager.restore();
       editPreviewButton.setAttribute('text', 'Preview');
       preview.setAttribute('visible', false);
@@ -149,6 +149,6 @@ SOFTWARE. -->
   
   <method name="_isEditableSelection">
     var selected = selectionmanager.selected;
-    return editor.paused && selected && !selectionmanager.isrootselection;
+    return editor.editmode && selected && !selectionmanager.isrootselection;
   </method>
 </node>

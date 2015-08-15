@@ -125,7 +125,7 @@ SOFTWARE. -->
     var existingParent = this.parent;
     var retval = this.super(parent);
     
-    if (editor.paused && !this.isBeingDestroyed) {
+    if (editor.editmode && !this.isBeingDestroyed) {
       var hasOld = existingParent && this.inited,
         hasNew = this.parent && this.parent.inited;
       if (hasOld && hasNew) {
@@ -143,7 +143,7 @@ SOFTWARE. -->
     // Optional attribute, noModelUpdate, is used to prevent updated to the
     // model that are unnecessary or possibly incorrect.
     
-    if (isModelUpdate && editor.paused && name !== 'parent') {
+    if (isModelUpdate && editor.editmode && name !== 'parent') {
       var retval = this.super(name, value);
       var parent = this.parent;
       if (parent && parent.inited) editormodel.updateAttr(this.id || this.getRoot().id, name, this.getAttribute(name));
@@ -174,12 +174,12 @@ SOFTWARE. -->
   </method>
 
   <method name="moveInFrontOf" args="sibling">
-    if (editor.paused) editormodel.moveInFrontOf(this.id, sibling.id, this.parent.id || this.getRoot().id);
+    if (editor.editmode) editormodel.moveInFrontOf(this.id, sibling.id, this.parent.id || this.getRoot().id);
     return this.super();
   </method>
   
   <method name="moveToBack">
-    if (editor.paused) editormodel.moveToBack(this.id, this.parent.id || this.getRoot().id);
+    if (editor.editmode) editormodel.moveToBack(this.id, this.parent.id || this.getRoot().id);
     return this.super();
   </method>
 
@@ -300,5 +300,9 @@ SOFTWARE. -->
     attrs.sort(dr.editable.comparator);
     
     return attrs;
+  </method>
+  
+  <method name="getBehaviors">
+    return []; // FIXME
   </method>
 </mixin>

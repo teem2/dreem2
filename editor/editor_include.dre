@@ -26,6 +26,7 @@ SOFTWARE. -->
 <include href='./toolbarbutton.dre'/>
 <include href='./attributeeditor.dre'/>
 <include href='./layouteditor.dre'/>
+<include href='./behavioreditor.dre'/>
 <include href='./colorpicker.dre'/>
 <include href='./componentdropable.dre'/>
 <include href='./componentsource.dre'/>
@@ -34,26 +35,18 @@ SOFTWARE. -->
 <include href='./undo/deletelayoutundoable.dre'/>
 <include href='./undo/editorattrundoable.dre'/>
 
-<view name="editor" id="editor" width="100%" height="100%"
+<view name="editor" id="editor"
+  clip="true" bgcolor="white"
+  width="${Math.max(1000, this.parent.width)}"
+  height="${Math.max(500, this.parent.height)}"
   ignoreplacement="true" ignorelayout="true"
-  bgcolor="white" clip="true"
   defaultplacement="content_bg.content.inner"
   requires="resizelayout, alignlayout"
 >
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
-  <attribute name="paused" type="boolean" value="true"/>
+  <attribute name="editmode" type="boolean" value="true"/>
 
   <attribute name="showlocationmarkers" type="boolean" value="true"/>
-
-  <!-- Enforce a minimum width for the editor. -->
-  <setter name="width" args="width">
-    return this.super(Math.max(width, 1000));
-  </setter>
-
-  <!-- Enforce a minimum height for the editor. -->
-  <setter name="height" args="height">
-    return this.super(Math.max(height, 500));
-  </setter>
 
 
   <!--// SERVICE NODES //////////////////////////////////////////////////////-->
@@ -62,7 +55,7 @@ SOFTWARE. -->
   <include href='./service_nodes/actions.dre'/>
   <include href='./service_nodes/editormodel.dre'/>
 
-  <editor-undostack id="undo"></editor-undostack>
+  <editor-undostack id="undo"/>
 
 
   <!--// HANDLERS ///////////////////////////////////////////////////////////-->
@@ -71,14 +64,15 @@ SOFTWARE. -->
     if (dialogmanager.getActiveDialog() != null) return;
     
     var keyboard = dr.keyboard,
-      keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
+      sprite = dr.sprite,
+      keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
       isAcceleratorKeyDown = keyboard.isAcceleratorKeyDown(),
       isShiftKeyDown = keyboard.isShiftKeyDown();
     
     // If current focus is an input text don't do anything. In particular,
     // we want to allow the delete key to be processed normally.
     var focusedView = dr.global.focus.focusedView;
-    if (focusedView && focusedView.sprite.isA(dr.sprite.InputText)) {
+    if (focusedView && focusedView.sprite.isA(sprite.InputText)) {
       if (!isAcceleratorKeyDown) return;
       if (keyCode !== 90) return; // Z: Process undo/redo below since we want to supress the browser undo/redo mechanism
     }
@@ -86,24 +80,24 @@ SOFTWARE. -->
     if (isAcceleratorKeyDown) {
       switch (keyCode) {
         case 66: // B: Reorder backward
-          platformEvent.preventDefault(); // Prevent browser show bookmarks bar functionality
+          sprite.preventDefault(platformEvent); // Prevent browser show bookmarks bar functionality
           actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
           break;
         case 70: // F: Reorder forward
-          platformEvent.preventDefault(); // Prevent browser find functionality
+          sprite.preventDefault(platformEvent); // Prevent browser find functionality
           actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
           break;
         case 83: // S: Save document
-          platformEvent.preventDefault(); // Prevent browser save functionality
+          sprite.preventDefault(platformEvent); // Prevent browser save functionality
           saveButton.doActivated();
           break;
         case 90: // Z: Undo/Redo
-          platformEvent.preventDefault(); // Prevent browser undo/redo functionality
+          sprite.preventDefault(platformEvent); // Prevent browser undo/redo functionality
           actions[(isShiftKeyDown ? 'redo' : 'undo')]();
           break;
       }
     } else {
-      var GK = dr.sprite.GlobalKeys;
+      var GK = sprite.GlobalKeys;
       switch (keyCode) {
         case GK.KEYCODE_BACKSPACE: // Delete selected view
           actions.deleteSelected();
@@ -125,8 +119,8 @@ SOFTWARE. -->
     var rootSprite = editor.parent.sprite,
       x = event.x + rootSprite.getScrollX(), 
       y = event.y + rootSprite.getScrollY(),
-      xLoc = this.xLocation,
-      yLoc = this.yLocation,
+      xLoc = xLocation,
+      yLoc = yLocation,
       content_bg = this.content_bg,
       content = content_bg.content,
       inner = content.inner;
@@ -152,6 +146,17 @@ SOFTWARE. -->
        drag and drop. -->
   <handler event="oncontextmenu" args="event"/>
 
+  <!-- Eat and cancel drag and drop events. -->
+  <handler event="ondrop, ondragover" args="platformEvent">
+    dr.sprite.preventDefault(platformEvent);
+  </handler>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <method name="isPlatformEvent" args="eventType">
+    if (dr.sprite.DropObservable.EVENT_TYPES[eventType]) return true;
+    return this.super();
+  </method>
 
 
   <!--// VIEWS //////////////////////////////////////////////////////////////-->
@@ -160,7 +165,7 @@ SOFTWARE. -->
   </modalpanel>
 
   <!--// Rulers, Location and Selection Overlays //-->
-  <view id="ruler_horizontal" name="ruler_horizontal" ignoreplacement="true" clip="true"
+  <view id="ruler_horizontal" ignoreplacement="true" clip="true"
     x="${this.parent.ruler_corner.x + this.parent.ruler_corner.width}"
     y="${config.topbar_height}"
     width="${this.parent.divider_right.x - this.x}"
@@ -168,7 +173,7 @@ SOFTWARE. -->
     scrollx="${this.parent.content_bg.scrollx + this.parent.content_bg.content.inner.scrollx + 100 - config.content_inset}"
   >
     <spacedlayout axis="x" spacing="100" inset="102"/>
-    <replicator name="repl" classname="horizontal_rulertext" data="${config.ruler_marks}"/>
+    <replicator classname="horizontal_rulertext" data="${config.ruler_marks}"/>
     
     <bitmap width="5200" ignorelayout="true"
       height="${config.ruler_thickness}"
@@ -178,7 +183,7 @@ SOFTWARE. -->
     </bitmap>
   </view>
   
-  <view id="ruler_vertical" name="ruler_vertical" ignoreplacement="true" clip="true"
+  <view id="ruler_vertical" ignoreplacement="true" clip="true"
     x="${this.parent.divider_left.x}"
     y="${this.parent.ruler_corner.y + this.parent.ruler_corner.height}"
     width="${config.ruler_thickness}"
@@ -186,7 +191,7 @@ SOFTWARE. -->
     scrolly="${this.parent.content_bg.scrolly + this.parent.content_bg.content.inner.scrolly + 100 - config.content_inset}"
   >
     <spacedlayout axis="y" spacing="100" inset="97"/>
-    <replicator name="repl" classname="vertical_rulertext" data="${config.ruler_marks}"/>
+    <replicator classname="vertical_rulertext" data="${config.ruler_marks}"/>
     
     <bitmap height="5200" ignorelayout="true"
       width="${config.ruler_thickness}"
@@ -196,23 +201,22 @@ SOFTWARE. -->
     </bitmap>
   </view>
   
-  <view id="xLocation" name="xLocation" ignoreplacement="true"
-    y="${this.parent.ruler_horizontal.y}" width="1" height="${config.ruler_thickness}" bgcolor="${config.location_color}"
+  <view id="xLocation" ignoreplacement="true"
+    y="${ruler_horizontal.y}" width="1" height="${config.ruler_thickness}" bgcolor="${config.location_color}"
   >
     <text with="locationtext" name="label" x="3" y="2"/>
   </view>
 
-  <view id="yLocation" name="yLocation" ignoreplacement="true"
-    x="${this.parent.ruler_vertical.x}" width="${config.ruler_thickness}" height="1" bgcolor="${config.location_color}"
+  <view id="yLocation" ignoreplacement="true"
+    x="${ruler_vertical.x}" width="${config.ruler_thickness}" height="1" bgcolor="${config.location_color}"
   >
     <verticaltext with="locationtext" name="label" x="2" y="-2"/>
   </view>
   
   <view id="horizontal_selection" with="button, keyboarddraggable" ignoreplacement="true"
-    disabled="${selectionmanager.isrootselection}"
-    cursor="col-resize"
+    disabled="${selectionmanager.isrootselection}" cursor="col-resize"
     visible="${reticle.visible}" opacity="0.75"
-    x="${reticle.x}" y="${this.parent.ruler_horizontal.y}"
+    x="${reticle.x}" y="${ruler_horizontal.y}"
     width="${Math.max(1, reticle.width)}" height="${config.ruler_thickness}"
   >
     <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
@@ -368,7 +372,7 @@ SOFTWARE. -->
   <view id="vertical_selection" with="button, keyboarddraggable" ignoreplacement="true"
     disabled="${selectionmanager.isrootselection}"
     visible="${reticle.visible}" opacity="0.75"
-    x="${this.parent.ruler_vertical.x}" y="${reticle.y}"
+    x="${ruler_vertical.x}" y="${reticle.y}"
     width="${config.ruler_thickness}" height="${Math.max(1, reticle.height)}"
     cursor="row-resize"
   >
@@ -544,7 +548,7 @@ SOFTWARE. -->
         listviewattrs="{maxheight:300}"
       >
         <method name="doActivated">
-          var editorPlaying = !editor.paused;
+          var editorPlaying = !editor.editmode;
           var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
           var cfg = [
             {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
@@ -580,8 +584,8 @@ SOFTWARE. -->
       
       <toolbarbutton id="editPreviewButton" action="editPreview" width="64" textalign="center">Preview</toolbarbutton>
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.paused}">Save</toolbarbutton>
-      <toolbarbutton id="stopButton" action="stop" disabled="${!editor.paused}" width="54" textalign="center">Exit</toolbarbutton>
+      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}">Save</toolbarbutton>
+      <toolbarbutton id="stopButton" action="stop" disabled="${!editor.editmode}" width="54" textalign="center">Exit</toolbarbutton>
     </view>
   </view>
 
@@ -596,8 +600,7 @@ SOFTWARE. -->
 
   <!--// Content Panels //-->
   <view name="content_bg" ignoreplacement="true" bgcolor="${config.content_color}"
-    x="${this.parent.ruler_horizontal.x}"
-    y="${this.parent.ruler_vertical.y}"
+    x="${ruler_horizontal.x}" y="${ruler_vertical.y}"
     width="${this.parent.divider_right.x - this.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
     scrollable="true"
@@ -738,7 +741,7 @@ SOFTWARE. -->
       <!-- Use an additional inner view so that scrollbars show up inside the
            "page" rather than over the boxshadow. -->
       <view name="inner" with="editable" width="100%" height="100%" scrollable="true"
-        maskfocus="${editor.paused}" focuscage="true"
+        maskfocus="${editor.editmode}" focuscage="true"
         cursor="pointer"
       >
         <method name="initNode" args="parent, attrs">
@@ -852,10 +855,10 @@ SOFTWARE. -->
       
       <subhead width="100%" text="Attributes"/>
       
-      <view name="attrs_panel" width="100%" clip="true">
+      <view width="100%" clip="true">
         <spacedlayout axis="y" updateparent="true"/>
         
-        <view name="attrs_panel" width="100%" clip="true">
+        <view width="100%" clip="true">
           <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
             <method name="__positionView" args="view, attrName, value">
               // Only animate the parent updates so that the panel appears to
@@ -933,7 +936,7 @@ SOFTWARE. -->
       
       <subhead width="100%" text="Layouts"/>
       
-      <view name="layouts_panel" id="layouts_panel" width="100%" clip="true">
+      <view id="layouts_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true">
           <method name="__positionView" args="view, attrName, value">
             // Only animate the parent updates
@@ -949,6 +952,26 @@ SOFTWARE. -->
         </handler>
         
         <replicator name="repl" classname="layouteditor"/>
+      </view>
+      
+      <subhead width="100%" text="Behaviors"/>
+      
+      <view id="behaviors_panel" width="100%" clip="true">
+        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true">
+          <method name="__positionView" args="view, attrName, value">
+            // Only animate the parent updates
+            var isParent = view === this.parent;
+            if (isParent) this.speed = 500;
+            this.super();
+            if (isParent) this.speed = 0;
+          </method>
+        </spacedlayout>
+        
+        <handler name="refresh" event="onselected" args="selected" reference="selectionmanager">
+          this.repl.setAttribute('data', selected ? selected.getBehaviors() : []);
+        </handler>
+        
+        <replicator name="repl" classname="behavioreditor"/>
       </view>
     </view>
     

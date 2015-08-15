@@ -19,7 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="layouteditor" height="auto" width="100%">
+<class name="behavioreditor" height="auto" width="100%">
   <method name="initNode" args="parent, attrs">
     this.super();
     this.label.setAttribute('text', this.data.klass.__displayName);
