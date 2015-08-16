@@ -56,7 +56,7 @@ SOFTWARE. -->
   <include href='./service_nodes/actions.dre'/>
   <include href='./service_nodes/editormodel.dre'/>
   
-  <include href='./behaviormanifest.dre'/>
+  <include href='./service_nodes/behaviormanifest.dre'/>
 
   <editor-undostack id="undo"/>
 
