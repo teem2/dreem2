@@ -207,7 +207,7 @@ SOFTWARE. -->
       </method>
 
       <method name="clear">
-        @_lockLayouts(true)
+        if not @locked then @_lockLayouts(true)
         # @parent.setAttribute('display', 'none')
         if @children
           for child in @children
@@ -215,7 +215,7 @@ SOFTWARE. -->
             child.destroy()
         @children = []
         # @parent.setAttribute('display', null)
-        @_lockLayouts(false)
+        if not @locked then @_lockLayouts(false)
       </method>
 
       <method name="_lockLayouts" args="locked">

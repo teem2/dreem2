@@ -254,6 +254,12 @@ SOFTWARE. -->
   </method>
   
   <method name="getModelNode" args="child">
-    return this._findChild(child.id, this.model);
+    return this._findChild(child.id || child.getRoot().id, this.model);
+  </method>
+  
+  <method name="getAttrValue" args="child, attrName">
+    var modelNode = this.getModelNode(child);
+    if (modelNode) return modelNode.attr[attrName];
+    return undefined;
   </method>
 </node>

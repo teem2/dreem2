@@ -302,7 +302,12 @@ SOFTWARE. -->
     return attrs;
   </method>
   
+  <!--// Behavior Support //-->
   <method name="getBehaviors">
-    return []; // FIXME
+    return behavior_manifest.getAvailableBehaviorsForInstance(this);
+  </method>
+  
+  <method name="getAttrsListForBehavior" args="behaviorMixin">
+    return behavior_manifest.getAttrsListForBehavior(behaviorMixin, this);
   </method>
 </mixin>

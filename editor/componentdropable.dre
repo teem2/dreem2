@@ -31,6 +31,7 @@ SOFTWARE. -->
   <method name="notifyDropFailed">
     var self = this;
     this.setAttribute('disabled', true);
+    this.stopActiveAnimators('opacity');
     this.animate({attribute:'opacity', to:0, from:this.opacity, duration:500}).next(
       function(success) {self.destroy();}
     );

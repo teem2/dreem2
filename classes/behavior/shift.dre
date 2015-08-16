@@ -1,0 +1,61 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<mixin name="behavior-shift">
+  <attribute name="xshift" type="number" value="0"/>
+  <attribute name="yshift" type="number" value="20"/>
+  
+  <method name="initNode" args="parent, attrs">
+    this.__shifted = false;
+    
+    this.super();
+  </method>
+  
+  <handler event="onclick">
+    if (this.__shifted = !this.__shifted) {
+      var xshift = this.xshift;
+      if (xshift !== 0) {
+        var origX = this.__origX = this.x;
+        this.stopActiveAnimators('x');
+        this.animate({attribute:'x', to:origX + xshift, duration:800});
+      }
+      
+      var yshift = this.yshift;
+      if (yshift !== 0) {
+        var origY = this.__origY = this.y;
+        this.stopActiveAnimators('y');
+        this.animate({attribute:'y', to:origY + yshift, duration:800});
+      }
+    } else {
+      var origX = this.__origX;
+      if (this.x !== origX) {
+        this.stopActiveAnimators('x');
+        this.animate({attribute:'x', to:origX, duration:400});
+      }
+      
+      var origY = this.__origY;
+      if (this.y !== origY) {
+        this.stopActiveAnimators('y');
+        this.animate({attribute:'y', to:origY, duration:400});
+      }
+    }
+  </handler>
+</mixin>

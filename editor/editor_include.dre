@@ -34,6 +34,7 @@ SOFTWARE. -->
 <include href='./undo/createlayoutundoable.dre'/>
 <include href='./undo/deletelayoutundoable.dre'/>
 <include href='./undo/editorattrundoable.dre'/>
+<include href='./undo/modelattrundoable.dre'/>
 
 <view name="editor" id="editor"
   clip="true" bgcolor="white"
@@ -54,6 +55,8 @@ SOFTWARE. -->
   <include href='./service_nodes/selectionmanager.dre'/>
   <include href='./service_nodes/actions.dre'/>
   <include href='./service_nodes/editormodel.dre'/>
+  
+  <include href='./behaviormanifest.dre'/>
 
   <editor-undostack id="undo"/>
 
@@ -892,14 +895,15 @@ SOFTWARE. -->
           <handler name="updateHeight" event="onselected" reference="selectionmanager">
             var animAttrs = {attribute:'height', to:0, duration:500};
             if (selectionmanager.selected) {
+              var svs = this.content.getSubviews();
               if (this.selected) {
-                var svs = this.content.getSubviews(),
-                  lastChild = svs[svs.length - 1];
+                var lastChild = svs[svs.length - 1];
                 animAttrs.to = lastChild ? lastChild.y + lastChild.height + 5 : 0;
               } else {
-                animAttrs.to = this.header.height;
+                animAttrs.to = svs.length > 0 ? this.header.height : 0;
               }
             }
+            this.stopActiveAnimators('height');
             this.animate(animAttrs);
           </handler>
           
@@ -928,7 +932,7 @@ SOFTWARE. -->
             <spacedlayout axis="y" spacing="5" inset="5">
               <method name="update">
                 this.super();
-                this.parent.parent.updateHeight();
+                if (this.canUpdate()) this.parent.parent.updateHeight();
               </method>
             </spacedlayout>
             <replicator classname="attributeeditor"
