@@ -965,15 +965,7 @@ SOFTWARE. -->
       <subhead width="100%" text="Behaviors"/>
       
       <view id="behaviors_panel" width="100%" clip="true">
-        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true">
-          <method name="__positionView" args="view, attrName, value">
-            // Only animate the parent updates
-            var isParent = view === this.parent;
-            if (isParent) this.speed = 500;
-            this.super();
-            if (isParent) this.speed = 0;
-          </method>
-        </spacedlayout>
+        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
         
         <handler name="refresh" event="onselected" args="selected" reference="selectionmanager">
           this.repl.setAttribute('data', selected ? selected.getBehaviors() : []);
