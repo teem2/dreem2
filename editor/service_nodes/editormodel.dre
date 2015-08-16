@@ -38,7 +38,13 @@ SOFTWARE. -->
     var model = this.model;
     if (model) {
       var child = this._findChild(id, model);
-      if (child) child.attr[name] = value;
+      if (child) {
+        if (value == null) {
+          delete child.attr[name];
+        } else {
+          child.attr[name] = value;
+        }
+      }
     }
   </method>
   

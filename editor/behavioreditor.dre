@@ -23,7 +23,9 @@ SOFTWARE. -->
   <method name="initNode" args="parent, attrs">
     this.super();
     
-    this.label.setAttribute('text', this.data.behavior.__displayName);
+    var data = this.data;
+    this.repl.setAttribute('data', data.target.getAttrsListForBehavior(data.behavior));
+    this.label.setAttribute('text', data.behavior.__displayName);
     this.checkbutton.syncValue();
   </method>
   
@@ -36,16 +38,7 @@ SOFTWARE. -->
     return mixinMap;
   </method>
 
-  <spacedlayout axis="y" spacing="5" outset="5" updateparent="true">
-    <method name="__positionView" args="view, attrName, value">
-      // Only animate the parent updates so that the panel appears to
-      // slide open/closed
-      var isParent = view === this.parent;
-      if (isParent) this.speed = 500;
-      this.super();
-      if (isParent) this.speed = 0;
-    </method>
-  </spacedlayout>
+  <spacedlayout axis="y" spacing="5" outset="5" updateparent="true"/>
   
   <text name="label" leftpadding="27" toppadding="6" bottompadding="6"
     topborder="1" bottomborder="1" bordercolor="${config.secondary_panel_color}"
@@ -72,10 +65,11 @@ SOFTWARE. -->
           delete mixinMap[behaviorName];
         }
         
+        var newvalue = Object.keys(mixinMap).join(',');
         actions.do(new dr.editor.modelattrundoable({
           target:data.target,
           attribute:'with',
-          newvalue:Object.keys(mixinMap).join(',')
+          newvalue:newvalue || undefined
         }));
       }
     </handler>
@@ -91,7 +85,98 @@ SOFTWARE. -->
     </method>
   </view>
   
-  <!--replicator classname="attributeeditor"
-    data="${selectionmanager.selected ? selectionmanager.selected.getAttrsListForBehavior(this.parent.data) : []}"
-  /-->
+  <replicator name="repl" classname="behaviorattributeeditor"/>
+</class>
+
+<class name="behaviorattributeeditor" height="auto" width="100%"
+  color="${this.parent.checkbutton.value ? '#000000' : '#999999'}"
+>
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    var self = this,
+      data = this.data,
+      name = data.name,
+      target = data.target,
+      attrs = {
+        name:'field',
+        x:config.attribute_label_width + 4, // 4 pixel spacing
+        target:target, 
+        targetattr:name
+      };
+    
+    attrs.class = 'behaviortexteditor';
+    
+    var child = this.createChild(attrs);
+    
+    // Text may look like a constraint so call setActualAttribute rather than
+    // setAttribute to work around constraint binding.
+    child.setActualAttribute('value', target.getAttribute(name));
+    
+    // update when selected item's value changes
+    child.listenTo(target, 'on__cfg_' + name, function(val) {
+      this._isSync = true;
+      this.setActualAttribute('value', val);
+      self._checkActualIsDifferent();
+      this._isSync = false;
+    });
+    
+    child.syncTo(this, 'oninnerwidth', function(w) {
+      this.setAttribute('width', w - this.x - self.actual.width - 8); // 8 is 4 pixel spacing before and after
+    });
+    
+    this.actual.syncTo(target, 'on' + name, function(val) {
+      this.setActualAttribute('text', val);
+      self._checkActualIsDifferent();
+    });
+    
+    this.label.setAttribute('text', name);
+  </method>
+  
+  <method name="_checkActualIsDifferent">
+    var actual = this.actual;
+    actual.setAttribute('visible', '' + this.field.value !== actual.text);
+  </method>
+
+  <editor_text name="label" x="${config.attribute_label_width - this.width}" y="2"/>
+  <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" width="60"/><!-- 4 pixel spacing -->
+</class>
+
+<class name="behaviortexteditor" extends="editor_inputtext"
+  disabled="${!this.parent.parent.checkbutton.value}"
+>
+  <handler event="onfocus">
+    this.oldvalue = this.text;
+  </handler>
+  <handler event="onvalue" args="value">
+    // Reset the oldvalue whenever an external update occurs.
+    if (this._isSync) this.oldvalue = value;
+  </handler>
+  <handler event="onkeydown" args="platformEvent">
+    var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
+    if (keyCode === 13) this._applyChange();
+  </handler>
+  <handler name="_applyChange" event="onblur">
+    if (!this.isBeingDestroyed) {
+      /*var oldvalue = this.oldvalue, 
+        newvalue = this.value,
+        target = this.target,
+        targetAttr = this.targetattr;
+      
+      // If attribute is layout locked then revert
+      if (target.isA(dr.View) && target.__layoutDomainInUseForView(targetAttr)) {
+        this.setAttribute('value', oldvalue);
+        // FIXME: Alert dialog saying why we're rolling back the change.
+        return;
+      }
+      
+      if (oldvalue !== newvalue) {
+        actions.do(new dr.editor.editorattrundoable({
+          target:target, attribute:targetAttr, oldvalue:oldvalue, newvalue:newvalue
+        }));
+        this.oldvalue = newvalue;
+      }
+      */
+    }
+  </handler>
 </class>
