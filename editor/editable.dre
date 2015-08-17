@@ -157,6 +157,7 @@ SOFTWARE. -->
     */-->
   <method name="startEditing">
     if (!this.inlineedit && this.__isText) {
+      this.__oldTextValue = this.text;
       this.setAttribute('inlineedit', true);
       
       this.setAttribute('cursor', 'auto');
@@ -179,6 +180,10 @@ SOFTWARE. -->
       this.setAttribute('focusable', false);
       
       this.setAttribute('inlineedit', false);
+    
+      actions.do(new dr.editor.editorattrundoable({
+        target:this, attribute:'text', oldvalue:this.__oldTextValue, newvalue:this.text
+      }));
     }
   </method>
 
