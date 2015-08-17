@@ -157,7 +157,7 @@ SOFTWARE. -->
     */-->
   <method name="startEditing">
     if (!this.inlineedit && this.__isText) {
-      this.__oldTextValue = this.text;
+      this.__oldTextValue = this.getAttribute('text');
       this.setAttribute('inlineedit', true);
       
       this.setAttribute('cursor', 'auto');
