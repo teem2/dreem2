@@ -42,7 +42,7 @@ SOFTWARE. -->
   height="${Math.max(500, this.parent.height)}"
   ignoreplacement="true" ignorelayout="true"
   defaultplacement="content_bg.content.inner"
-  requires="resizelayout, alignlayout"
+  requires="resizelayout, alignlayout, behavior-scale, behavior-shift"
 >
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="editmode" type="boolean" value="true"/>
