@@ -19,7 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<mixin name="behavior-shift">
+<class name="behavior-shift" extends="node" with="behavior-behavior">
   <attribute name="xshift" type="number" value="0"/>
   <attribute name="yshift" type="number" value="20"/>
   
@@ -29,33 +29,34 @@ SOFTWARE. -->
     this.super();
   </method>
   
-  <handler event="onclick">
+  <handler event="onclick" reference="this.parent">
+    var parent = this.parent;
     if (this.__shifted = !this.__shifted) {
       var xshift = this.xshift;
       if (xshift !== 0) {
-        var origX = this.__origX = this.x;
-        this.stopActiveAnimators('x');
-        this.animate({attribute:'x', to:origX + xshift, duration:800});
+        var origX = this.__origX = parent.x;
+        parent.stopActiveAnimators('x');
+        parent.animate({attribute:'x', to:origX + xshift, duration:800});
       }
       
       var yshift = this.yshift;
       if (yshift !== 0) {
-        var origY = this.__origY = this.y;
-        this.stopActiveAnimators('y');
-        this.animate({attribute:'y', to:origY + yshift, duration:800});
+        var origY = this.__origY = parent.y;
+        parent.stopActiveAnimators('y');
+        parent.animate({attribute:'y', to:origY + yshift, duration:800});
       }
     } else {
       var origX = this.__origX;
-      if (this.x !== origX) {
-        this.stopActiveAnimators('x');
-        this.animate({attribute:'x', to:origX, duration:400});
+      if (parent.x !== origX) {
+        parent.stopActiveAnimators('x');
+        parent.animate({attribute:'x', to:origX, duration:400});
       }
       
       var origY = this.__origY;
-      if (this.y !== origY) {
-        this.stopActiveAnimators('y');
-        this.animate({attribute:'y', to:origY, duration:400});
+      if (parent.y !== origY) {
+        parent.stopActiveAnimators('y');
+        parent.animate({attribute:'y', to:origY, duration:400});
       }
     }
   </handler>
-</mixin>
+</class>

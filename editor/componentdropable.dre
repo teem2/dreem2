@@ -47,7 +47,7 @@ SOFTWARE. -->
       var attrs = dr.extend({}, this.instanceattrs);
       attrs.id = id;
       
-      if (!this.islayout) {
+      if (!this.islayout && !this.isbehavior) {
         var targetPos = this.getAbsolutePosition(editor),
           newParentPos = droptarget.getAbsolutePosition(editor);
         if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
@@ -63,9 +63,11 @@ SOFTWARE. -->
       attrs.with = 'editable';
       var instance = droptarget.createChild(attrs);
       
-      // Make sure layout domains do not conflict
+      var i;
       if (this.islayout) {
-        var layouts = droptarget.getLayouts(), i = layouts.length, layout;
+        // Make sure layout domains do not conflict
+        var layouts = droptarget.getLayouts(), layout;
+        i = layouts.length;
         while (i) {
           layout = layouts[--i];
           if (layout !== instance && (layout.__hasCommonLayoutDomain(instance) || layout.__hasCommonLayoutParentDomain(instance))) {
@@ -76,6 +78,20 @@ SOFTWARE. -->
             return;
           }
         }
+      } else if (this.isbehavior) {
+        // Make sure behavior domains do not conflict
+        var behaviors = droptarget.getBehaviors(), behavior;
+        i = behaviors.length;
+        while (i) {
+          behavior = behaviors[--i];
+          if (behavior !== instance && behavior.__hasCommonBehaviorDomain(instance)) {
+            instance.destroy();
+            this.destroy();
+            
+            dialogmanager.showAlert('The behavior you are trying to add conflicts with an existing behavior.');
+            return;
+          }
+        }
       }
       
       // Mark an instance as "new" so we know it needs serialization.
@@ -83,6 +99,8 @@ SOFTWARE. -->
       
       if (this.islayout) {
         actions.do(new dr.editor.createlayoutundoable({target:instance}));
+      } else if (this.isbehavior) {
+        actions.do(new dr.editor.createbehaviorundoable({target:instance}));
       } else {
         actions.do(new dr.editor.createundoable({target:instance}));
         selectionmanager.select(instance);

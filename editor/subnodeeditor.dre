@@ -19,7 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="layouteditor" width="100%">
+<class name="subnodeeditor" width="100%">
   <method name="initNode" args="parent, attrs">
     this.super();
     this.label.setAttribute('text', this.data.klass.__displayName);
@@ -29,15 +29,24 @@ SOFTWARE. -->
   
   <text name="label" leftpadding="10" toppadding="6" bottompadding="6"
     topborder="1" bottomborder="1" bordercolor="${config.secondary_panel_color}"
-    bgcolor="#f8f8f8" color="${config.label_text_color}"
-    fontsize="10" width="100%"
+    bgcolor="#f8f8f8" color="${config.label_text_color}" fontsize="10" width="100%"
   />
   
   <smallbutton x="${this.parent.innerwidth - this.width - 2}" y="3" ignorelayout="true" text="delete">
     <method name="doActivated">
-      if (!this.disabled) actions.do(new dr.editor.deletelayoutundoable({target:this.classroot.data}));
+      if (!this.disabled) {
+        var target = this.classroot.data, E = dr.editor, undoClass;
+        if (target.isA(dr.Layout)) {
+          undoClass = E.deletelayoutundoable;
+        } else {
+          undoClass = E.deletebehaviorundoable;
+        }
+        // FIXME: Support arbitrary subnodes at some point?
+        
+        actions.do(new undoClass({target:this.classroot.data}));
+      }
     </method>
   </smallbutton>
   
-  <replicator classname="attributeeditor" data="${this.parent.data.getAttrsListForDetails()}"/>
+  <replicator classname="attributeeditor" data="${this.parent.data.getAllAttrsListForDetails()}"/>
 </class>

@@ -19,40 +19,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<node id="behavior_manifest"
-  requires="behavior-shift, behavior-scale"
->
-  <attribute name="allbehaviors" type="expression" value="[dr.behavior.scale, dr.behavior.shift]"/>
-  
-  <method name="getAvailableBehaviorsForInstance" args="instance">
-    var behaviors = [];
-    if (instance.isA(dr.View)) {
-      behaviors = this.allbehaviors;
-    }
-    
-    var retval = [], i = behaviors.length;
-    while (i) {
-      retval.unshift({behavior:behaviors[--i], target:instance});
-    }
-    
-    return retval;
+<mixin name="behavior-behavior">
+  <!-- Editor Support -->
+  <!--/** 
+      @private
+      Gets a map of domains this behavior modifies. The editor will
+      not allow a new behavior to be created if a behavior already exists
+      that uses a common domain. */-->
+  <method name="__getBehaviorDomains">
+    return {};
   </method>
   
-  <method name="getAttrsListForBehavior" args="behaviorMixin, instance">
-    var attrMap = {}, key, value, attrs = [];
-    
-    dr.extend(attrMap, behaviorMixin.attributes);
-    
-    for (key in attrMap) {
-      value = attrMap[key];
-      value.name = key;
-      value.target = instance;
-      attrs.push(value)
-    }
-    
-    // Sort Attributes
-    attrs.sort(dr.editable.comparator);
-    
-    return attrs;
+  <!--/** 
+      @private
+      Determines if this behavior and the provided one have any behavior
+      domains in common. */-->
+  <method name="__hasCommonBehaviorDomain" args="behavior">
+    var selfDomains = this.__getBehaviorDomains(),
+        otherDomains = behavior.__getBehaviorDomains();
+    for (var domain in selfDomains) if (otherDomains[domain]) return true;
+    return false;
   </method>
-</node>
+</mixin>

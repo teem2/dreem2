@@ -14,7 +14,8 @@
   <method name="undo" args="callback">
     var target = this.target,
       attr = this.attribute, 
-      isLayout = target.isA(dr.Layout);
+      isLayout = target.isA(dr.Layout), 
+      isBehavior = target.isA(dr.behavior.behavior);
     
     var layouts, len, i;
     if (!isLayout) {
@@ -43,7 +44,7 @@
       while (i) layouts[--i].setActualAttribute('locked', false);
     }
     
-    if (isLayout) selectionmanager.select(target.parent);
+    if (isLayout || isBehavior) selectionmanager.select(target.parent);
     
     return retval;
   </method>
@@ -55,7 +56,8 @@
   <method name="redo" args="callback">
     var target = this.target,
       attr = this.attribute, 
-      isLayout = target.isA(dr.Layout);
+      isLayout = target.isA(dr.Layout), 
+      isBehavior = target.isA(dr.behavior.behavior);
     
     var layouts, len, i;
     if (!isLayout) {
@@ -84,7 +86,7 @@
       while (i) layouts[--i].setActualAttribute('locked', false);
     }
     
-    if (isLayout) selectionmanager.select(target.parent);
+    if (isLayout || isBehavior) selectionmanager.select(target.parent);
     
     return retval;
   </method>

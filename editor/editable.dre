@@ -214,23 +214,25 @@ SOFTWARE. -->
 
   <!--// Details Panel Support //-->
   <method name="getAttrsListForDetails">
-    return this._getAttrsListForDetails(false);
+    return this._getAttrsListForDetails(null, config.more_threshold);
   </method>
   
   <method name="getMoreAttrsListForDetails">
-    return this._getAttrsListForDetails(true);
+    return this._getAttrsListForDetails(config.more_threshold, null);
   </method>
   
-  <method name="_getAttrsListForDetails" args="isMoreList">
+  <method name="getAllAttrsListForDetails">
+    return this._getAttrsListForDetails(null, null);
+  </method>
+  
+  <method name="_getAttrsListForDetails" args="lowerLimit, upperLimit">
     // Get Attributes. Pull from ancestors and build list of all attributes.
-    var klass = this.klass,
-      ancestors = klass.ancestors(),
-      attrMap = {},
-      key, 
-      value, 
-      attrs = [],
-      i = 5, // 5 skips over some of the base classes and the editor mixin.
+    var klass = this.klass, ancestors = klass.ancestors(),
+      attrMap = {}, attrs = [],
+      key, value, attr, importance,
+      i = 6, // 6 skips over some of the base classes and the editor mixin.
       len = ancestors.length;
+    
     for (; len > i; i++) attrMap = dr.extend(attrMap, ancestors[i].attributes);
     for (key in attrMap) {
       value = attrMap[key];
@@ -239,7 +241,7 @@ SOFTWARE. -->
       attrs.push(value)
     }
     
-    // Filter Attributes
+    //// Filter Attributes ////
     if (selectionmanager.isrootselection) {
       // Root editable only supports a few attributes so filter out 
       // most of them
@@ -256,8 +258,7 @@ SOFTWARE. -->
       // Filter attrs for class
       var hiddenattrs = klass.hiddenattrs,
         readonlyattrs = klass.readonlyattrs,
-        attrimportance = klass.attrimportance,
-        attr;
+        attrimportance = klass.attrimportance;
       
       if (hiddenattrs) {
         i = attrs.length;
@@ -284,19 +285,24 @@ SOFTWARE. -->
       }
     }
     
-    // Filter
-    var threshold = config.more_threshold;
+    //// Filter By Importance ////
+    lowerLimit = lowerLimit == null ? -99999999 : lowerLimit;
+    upperLimit = upperLimit == null ? 99999999 : upperLimit;
+    
+    // Unspecified importances will be at the end of the non-more section.
+    var unspecifiedImportance = config.more_threshold - 1;
+    
     i = attrs.length;
     while (i) {
       attr = attrs[--i];
-      if (isMoreList) {
-        if (threshold > attr.importance) attrs.splice(i, 1);
-      } else {
-        if (attr.importance >= threshold || attr.importance == null) attrs.splice(i, 1);
-      }
+      
+      importance = attr.importance;
+      if (importance == null) importance = unspecifiedImportance;
+      
+      if (lowerLimit > importance || importance >= upperLimit) attrs.splice(i, 1);
     }
     
-    // Sort Attributes
+    //// Sort Attributes ////
     attrs.sort(dr.editable.comparator);
     
     return attrs;
@@ -304,10 +310,11 @@ SOFTWARE. -->
   
   <!--// Behavior Support //-->
   <method name="getBehaviors">
-    return behavior_manifest.getAvailableBehaviorsForInstance(this);
-  </method>
-  
-  <method name="getAttrsListForBehavior" args="behaviorMixin">
-    return behavior_manifest.getAttrsListForBehavior(behaviorMixin, this);
+    var children = this.getSubnodes(), i = children.length, child, retval = [];
+    while (i) {
+      child = children[--i];
+      if (child.isA(dr.behavior.behavior)) retval.push(child);
+    }
+    return retval;
   </method>
 </mixin>
