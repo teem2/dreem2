@@ -268,17 +268,23 @@ SOFTWARE. -->
             i = @children.length;
             while @data.length > @children.length
               datum = @data[i++]
-              @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
+              @_createChild(datum)
               # console.log 'replicator created', @classname, @children[@children.length - 1]
         else
           @clear()
           for datum in @data
             # console.log 'replicator creating', @classname, 'in', @parent
-            @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
+            @_createChild(datum)
             # console.log 'replicator created', @classname, @children[@children.length - 1]
 
         @_lockLayouts(false)
         @locked = locked
         @sendEvent('onreplicated', @)
       </handler>
+      <method name="_createChild" args="data">
+        child = @createChild({class: @classname, data: data, parent: @parent, replicator: @})
+        # Work around ondata event not firing
+        @children.push(child)
+        child.sendEvent('ondata', data)
+      </method>
     </class>

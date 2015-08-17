@@ -23,6 +23,17 @@ SOFTWARE. -->
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Replicator'>
     <include href="./includes/boilerplate.dre"></include>
+    <class name="testtext" extends="text">
+        <handler event="ondata" args="d">
+          this.ondatafired = true 
+        </handler>
+        <handler event="oninit">
+          setTimeout(function(){
+            // console.log('timeout ran');
+            assert.equal(true, this.ondatafired, 'There should be an ondata event');
+          }.bind(this), 750)
+        </handler>
+    </class>
     
     <testingtimer>1000</testingtimer>
     
@@ -37,7 +48,7 @@ timeout ran</expectedoutput>
 
       <wrappinglayout></wrappinglayout>
       <!-- Replicate over the data array -->
-      <replicator classname="text" data="[0,1,2,3]">
+      <replicator classname="testtext" data="[0,1,2,3]">
         <handler event="onreplicated" args="replicated">
           this.onreplicated = true;
           assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
@@ -87,7 +98,7 @@ timeout ran</expectedoutput>
           }
         }
       </dataset>
-      <replicator classname="text" datapath="$static/store/book[*]/title">
+      <replicator classname="testtext" datapath="$static/store/book[*]/title">
         <handler event="onreplicated" args="replicated">
           this.onreplicated = true;
           assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
@@ -103,7 +114,7 @@ timeout ran</expectedoutput>
 
       <!-- Replicate over a datapath with a dynamic dataset-->
       <dataset name="dynamic"></dataset>
-      <replicator classname="text" datapath="$dynamic/store/book[*]/price">
+      <replicator classname="testtext" datapath="$dynamic/store/book[*]/price">
         <handler event="onreplicated" args="replicated">
           if (this.onreplicated) {
             this.onreplicated++;
@@ -123,7 +134,7 @@ timeout ran</expectedoutput>
           var self = this;
           
           setTimeout(function(){
-            console.log('timeout ran');
+            // console.log('timeout ran');
             assert.equal(2, self.onreplicated, 'There should be a second onreplicated event');
           }.bind(this), 750)
           
