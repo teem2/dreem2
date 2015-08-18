@@ -177,6 +177,11 @@
 
   <!--/** @private */-->
   <method name="__doMouseDown" args="event">
+    var absPosition = this.getAbsolutePosition();
+    this.__initAbsLocX = absPosition.x;
+    this.__initAbsLocY = absPosition.y;
+    this.__initMouseX = event.x;
+    this.__initMouseY = event.y;
     this.__initLocX = this.x;
     this.__initLocY = this.y;
     this.draginitx = event.x - this.x;
