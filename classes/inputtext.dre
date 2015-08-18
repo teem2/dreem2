@@ -79,8 +79,15 @@ SOFTWARE. -->
     * @event onrows
     * Fired the rows attribute changes.
     * @param {number} The number of rows displayed for multiline text input.
+    *
+    * @event onwrap
+    * Fired the wrap attribute changes.
+    * @param {string} The wrap behavior for multiline text input.
     */-->
   <attribute name="rows" type="number" value="3"/>
+  
+  <!-- Determines wether text will wrap or not. -->
+  <attribute name="wrap" type="boolean" value="true"/>
 
   <attribute name="value" type="string" value=""/>
   <setter name="value" args="v">

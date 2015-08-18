@@ -74,7 +74,7 @@ SOFTWARE. -->
   </handler>
   <handler event="onkeydown" args="platformEvent">
     var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-    if (keyCode === 13) this._applyChange();
+    if (keyCode === 13 && !this.multiline) this._applyChange();
   </handler>
   <handler name="_applyChange" event="onblur">
     if (!this.isBeingDestroyed) {
@@ -186,6 +186,11 @@ SOFTWARE. -->
       case 'boolean':
         attrs.class = 'booleaneditor';
         break;
+      case 'string':
+        if (name === 'text') {
+          attrs.multiline = true;
+          attrs.wrap = false;
+        }
       default:
         attrs.class = 'texteditor';
         if (readonly) {
