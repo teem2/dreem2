@@ -157,13 +157,21 @@ SOFTWARE. -->
     */-->
   <method name="startEditing">
     if (!this.inlineedit && this.__isText) {
-      this.__oldTextValue = this.getAttribute('text');
+      this.__oldActualTextValue = this.getActualAttribute('text');
+      this.__oldCfgTextValue = this.getAttribute('text');
+      
       this.setAttribute('inlineedit', true);
+      
+      this.setActualAttribute('text', this.__oldCfgTextValue);
+      
+      reticle.resizer.setActualAttribute('visible', false);
       
       this.setAttribute('cursor', 'auto');
       this.setAttribute('editable', true);
       this.setAttribute('focusable', true);
       this.sprite.selectAll();
+      
+      if (this.focused) this.focused = false; // WORKAROUND: For some reason focusable gets stuck on so unset it before setting focus.
       this.focus();
     }
   </method>
@@ -175,15 +183,22 @@ SOFTWARE. -->
     */-->
   <method name="endEditing">
     if (this.inlineedit && this.__isText) {
+      reticle.resizer.setActualAttribute('visible', true);
+      
       this.setAttribute('cursor', 'move');
       this.setAttribute('editable', false);
       this.setAttribute('focusable', false);
       
       this.setAttribute('inlineedit', false);
-    
-      actions.do(new dr.editor.editorattrundoable({
-        target:this, attribute:'text', oldvalue:this.__oldTextValue, newvalue:this.text
-      }));
+      
+      var newValue = this.getActualAttribute('text');
+      if (this.__oldCfgTextValue === newValue) {
+        this.setActualAttribute('text', this.__oldActualTextValue);
+      } else {
+        actions.do(new dr.editor.editorattrundoable({
+          target:this, attribute:'text', oldvalue:this.__oldCfgTextValue, newvalue:newValue
+        }));
+      }
     }
   </method>
 
@@ -227,6 +242,12 @@ SOFTWARE. -->
   <method name="setAttribute" args="name, value, isModelUpdate">
     // Optional attribute, noModelUpdate, is used to prevent updated to the
     // model that are unnecessary or possibly incorrect.
+    
+    // Prevent inline text edit from updating the config value until editing is complete.
+    if (this.inlineedit && name === 'text') {
+      this.setActualAttribute(name, value);
+      return;
+    }
     
     if (isModelUpdate && editor.editmode && name !== 'parent') {
       var retval = this.super(name, value);
