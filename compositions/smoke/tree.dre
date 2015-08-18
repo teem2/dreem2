@@ -46,6 +46,12 @@ SOFTWARE. -->
           </handler>
         </tree>
 
+        <tree id="a" name="selection" height="200" width="200" border="1" bordercolor="#eee" multipleselection="false" branchselection="true"
+          data='[{"label":"first", "items": [1, 2, 3]}, {"label":"second", "items": ["a", "b", "c"]}]'>
+          <handler event="oninit">
+          </handler>
+        </tree>
+
         <!--<tree name="advanced" height="500" width="200" border="1" bordercolor="#eee"-->
           <!--data='[{"label":"first", "items":[{"name":"a", "items":["1", "2", "3"]}, "b", {"c":["d", "e"], "f":"g"}, {"h":"i"}]}, "second", {"title":"third"}, "3.5th", ["fourth", "fifth", ["sixth", "seventh"]]]'>-->
           <!--<handler event="oninit" args="p">-->
