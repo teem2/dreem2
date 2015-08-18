@@ -626,6 +626,7 @@ SOFTWARE. -->
             {attrs:{name:'custom', text:'custom'}},
             {klass:dr.listviewseparator},
             
+            {attrs:{name:'hdtv', text:'HDTV', w:1920, h:1080}},
             {attrs:{name:'iphonetall', text:'iphone (Portrait)',              w:320, h:480}},
             {attrs:{name:'iphonewide', text:'iphone (Landscape)',             w:480, h:320}},
             
@@ -651,7 +652,7 @@ SOFTWARE. -->
           this.arrow.setAttribute('text', (isopen ? '▼' : '▶'));
         </handler>
         
-        <attribute name="selecteditem" type="expression" value="this.cfg[4].attrs"/>
+        <attribute name="selecteditem" type="expression" value="this.cfg[2].attrs"/>
         <handler event="onselecteditem" args="selecteditem">
           this.label.setAttribute('text', selecteditem.text);
           
