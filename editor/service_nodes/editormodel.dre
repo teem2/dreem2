@@ -47,6 +47,34 @@ SOFTWARE. -->
       }
     }
   </method>
+
+  <attribute name="classesmutated" value="false" type="boolean"></attribute>
+  <method name="updateClassAttr" args="classname, name, value">
+    //console.log('updateAttr', id, name, value);
+    var model = this.model;
+    if (model) {
+      var classmodel = this._findChildByTag('class', model);
+      if (classmodel.attr.name === classname) {
+        // console.log('found inline class model', classname, classmodel);
+        classmodel.attr[name] = value;
+        this.classesmutated = true;
+      }
+    }
+  </method>
+  <handler event="onselected" args="selected" reference="selectionmanager">
+    if ((! selected) && this.classesmutated) {
+      dialogmanager.showConfirm(
+        'Changes to replicated classes may require a save to show changes accurately. Save now?', null, null, function(dialog, success) {
+          if (success) {
+            editormodel.save();
+            undo.reset();
+          } else {
+            // Save cancelled
+          }
+        }
+      );
+    }
+  </handler>
   
   <method name="deleteNode" args="child, oldParentId">
     var id = child.id,

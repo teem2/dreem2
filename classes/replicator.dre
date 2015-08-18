@@ -282,7 +282,12 @@ SOFTWARE. -->
         @sendEvent('onreplicated', @)
       </handler>
       <method name="_createChild" args="data">
-        child = @createChild({class: @classname, data: data, parent: @parent, replicator: @})
+        attrs = {class: @classname, data: data, parent: @parent, replicator: @}
+        # add stuff required by the editor
+        if 'editable' of dr
+          attrs.with = 'editable'
+          attrs.__objectify_attrs_list = []
+        child = @createChild(attrs)
         # Work around ondata event not firing
         @children.push(child)
         child.sendEvent('ondata', data)
