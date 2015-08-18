@@ -62,7 +62,8 @@ SOFTWARE. -->
     }
   </method>
   <handler event="onselected" args="selected" reference="selectionmanager">
-    if ((! selected) && this.replicatorchanges) {
+    if (this.replicatorchanges && (!saveButton.disabled)) {
+      // selection was lost and we have changes that would require a save
       dialogmanager.showConfirm(
         'Changes to replicated classes may require a save to show changes accurately. Save now?', null, null, function(dialog, success) {
           if (success) {
@@ -73,6 +74,7 @@ SOFTWARE. -->
           }
         }
       );
+      this.replicatorchanges = false;
     }
   </handler>
   
