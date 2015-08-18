@@ -283,8 +283,8 @@ SOFTWARE. -->
       </handler>
       <method name="_createChild" args="data">
         attrs = {class: @classname, data: data, parent: @parent, replicator: @}
-        # add stuff required by the editor
-        if 'editable' of dr
+        # add stuff required by the editor unless it's a class used by the editor itself!
+        if 'editable' of dr and @classname != 'attributeeditor'
           attrs.with = 'editable'
           attrs.__objectify_attrs_list = []
         child = @createChild(attrs)
