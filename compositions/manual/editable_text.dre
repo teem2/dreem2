@@ -19,28 +19,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<node id="selectionmanager">
-  <attribute name="selected" type="expression" value="null"/>
-  <setter name="selected" args="v">
-    if (editor.inited) this.setAttribute('isrootselection', v === editor.content_bg.content.inner);
-    return v;
-  </setter>
+<composition>
+<screens>
+<screen type="browser" name="default" title='Manual Test - Editable Text'>
+<view width="100%" height="100%" padding="20">
+  <spacedlayout axis="y" spacing="10"></spacedlayout>
   
-  <attribute name="isrootselection" type="boolean" value="false"/>
+  <text id="testText">Test</text>
   
-  <method name="clear" args="restoreable">
-    if (restoreable) this._oldSelection = this.selected;
-    this.select(null);
-  </method>
+  <labelbutton text="Make Text Editable">
+    <handler event="onclick">
+      testText.setAttribute('editable', true);
+      testText.setAttribute('clickable', true);
+      
+      hint.setAttribute('visible', true);
+    </handler>
+  </labelbutton>
   
-  <method name="restore">
-    if (this._oldSelection && this._oldSelection.parent) this.select(this._oldSelection);
-  </method>
-  
-  <method name="select" args="newSelection">
-    var curSelection = this.selected;
-    if (curSelection && newSelection !== curSelection) curSelection.notifyDeselected();
-    
-    this.setAttribute('selected', newSelection);
-  </method>
-</node>
+  <text id="hint" visible="false" color="DodgerBlue">Now you should be able to click or double click on the text and edit it in place.</text>
+</view>
+</screen>
+</screens>
+</composition>

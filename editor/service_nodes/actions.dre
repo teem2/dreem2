@@ -149,6 +149,6 @@ SOFTWARE. -->
   
   <method name="_isEditableSelection">
     var selected = selectionmanager.selected;
-    return editor.editmode && selected && !selectionmanager.isrootselection;
+    return editor.editmode && selected && !selected.isInlineEdit() && !selectionmanager.isrootselection;
   </method>
 </node>
