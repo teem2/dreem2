@@ -251,6 +251,6 @@
   
   <!--// Editor //-->
   <attribute name="attrimportance" type="expression" allocation="class"
-    value="{name:-1, text:50, fontfamily:51, fontsize:52, bold:53, italic:54, multiline:200, ellipsis:201, smallcaps:210, underline:211, strike:212}"
+    value="{name:-1, text:50, color:51, fontfamily:52, fontsize:53, bold:54, italic:55, multiline:200, ellipsis:201, smallcaps:210, underline:211, strike:212}"
   />
 </class>
