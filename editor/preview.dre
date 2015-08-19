@@ -40,12 +40,27 @@ SOFTWARE. -->
           }
         }
         
+        // Find first screen
+        var screens = screensNode.child, screen;
+        i = screens.length;
+        while (i) {
+          screen = screens[--i];
+          if (screen.tag === 'screen') {
+            firstScreen = screen;
+            break;
+          }
+        }
+        
+        if (!firstScreen) {
+          console.warn("Could not find a screen node in the package.");
+          return;
+        }
+        
         // Render the first screen into the target view
-        var screens = screensNode.child;
         define.onMain = function() {
           var compiler = new dr.maker.Compiler();
           dr.ready = false;
-          compiler.execute(screens[0], classmap, dr.teem, root, true);
+          compiler.execute(firstScreen, classmap, dr.teem, root, true);
         };
         
         for (var key in classmap) {
