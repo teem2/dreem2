@@ -217,23 +217,29 @@
     var RootActor;
     if (args["-dali"]) {
         var window = {
-            x: 800,
-            y: 500,
-            width: 1280,
-            height: 1268,
+            x: 100,
+            y: 0,
+            width: 600,
+            height: 508,
             transparent: false,
             name: 'Dreem Dali Runtime: ' + composition
         };
+        
         var viewMode = {
             'stereoscopic-mode': 'mono', // stereo-horizontal, stereo-vertical, stereo-interlaced,
             'stereo-base': 65 // Distance in millimeters between left/right cameras typically between (50-70mm)
         };
+
         var options = {
             'window': window,
             'view-mode': viewMode,
         }
+        
         console.log("** loading Dali")
         global.dali = require('./dalinode/dali')(options);
+
+//        global.dali.stage.add(new global.dali.ImageActor(new global.dali.ResourceImage({url:"./img/shoarma.jpg"})));
+
         console.color("~~** Dali loaded");
         global.dalihost = require('./lib/dr/sprite_daliruntime/dalihost.js');
         global.dalihost.init();
