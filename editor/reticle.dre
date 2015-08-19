@@ -317,8 +317,9 @@ SOFTWARE. -->
       undoH.newvalue = '' + target.getAttribute('height'); // Coerce to string for consistent comparison
       undoX.newvalue = '' + target.getAttribute('x'); // Coerce to string for consistent comparison
       undoY.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
-      
-      if (!this._isArrowAdj) {
+     
+      // TODO: remove check for _isInReplicator() when we have a true class editor. For now, it prevents attempts to reparent child views inside replicated classes. 
+      if (!this._isArrowAdj && !this.target._isInReplicator()) {
         isNewParent = droptarget && (droptarget !== target.parent);
         if (isNewParent) {
           undoP = new E.editorattrundoable({target:target, attribute:'parent', oldvalue:target.parent, newvalue:droptarget});
