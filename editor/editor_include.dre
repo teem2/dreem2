@@ -42,7 +42,6 @@ SOFTWARE. -->
   height="${Math.max(500, this.parent.height)}"
   ignoreplacement="true" ignorelayout="true"
   defaultplacement="content_bg.content.inner"
-  requires="resizelayout, alignlayout, behavior-scale, behavior-shift"
 >
   <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
   <attribute name="editmode" type="boolean" value="true"/>
@@ -791,76 +790,7 @@ SOFTWARE. -->
     <view width="100%" height="${this.parent.divider_top.y}" bgcolor="white" scrollable="true">
       <view width="100%">
         <wrappinglayout axis="x" spacing="5" inset="5" outset="5" linespacing="5" lineinset="5" lineoutset="5" updateparent="true"/>
-        <componentsource label="Image" iconname="bitmap"
-          dropclass="view"
-          dropclassattrs="{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'bitmap', width:50, height:50}}"
-        />
-        <componentsource label="Text" iconname="text"
-          dropclass="text"
-          dropclassattrs="{text:'text', instanceattrs:{class:'text', text:'text'}}"
-        />
-        <componentsource label="Rectangle" iconname="view" layouthint='{"break":true}'
-          dropclass="view"
-          dropclassattrs="{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#cccccc'}}"
-        />
-        <componentsource label="Vertical Line" iconname="verticalline"
-          dropclass="view"
-          dropclassattrs="{width:1, height:'50', bgcolor:'#000000', instanceattrs:{class:'view', width:1, height:'100%', y:'top', bgcolor:'#000000'}}"
-        />
-        <componentsource label="Horizontal Line" iconname="horizontalline"
-          dropclass="view"
-          dropclassattrs="{width:'50', height:1, bgcolor:'#000000', instanceattrs:{class:'view', width:'100%', x:'left', height:1, bgcolor:'#000000'}}"
-        />
-        <!--// Layouts //-->
-        <componentsource label="X Layout" iconname="spacedlayout_x" layouthint='{"break":true}'
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'spacedlayout_x.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'x'}}"
-        />
-        <componentsource label="Y Layout" iconname="spacedlayout_y"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'spacedlayout_y.png', instanceattrs:{class:'spacedlayout', locked:true, axis:'y'}}"
-        />
-        <componentsource label="Wrap-X Layout" iconname="wrappinglayout_x"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'wrappinglayout_x.png', instanceattrs:{class:'wrappinglayout', locked:true, axis:'x'}}"
-        />
-        <componentsource label="Wrap-Y Layout" iconname="wrappinglayout_y"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'wrappinglayout_y.png', instanceattrs:{class:'wrappinglayout', locked:true, axis:'y'}}"
-        />
-        <componentsource label="Resize-X Layout" iconname="resizelayout_x"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'resizelayout_x.png', instanceattrs:{class:'resizelayout', locked:true, axis:'x'}}"
-        />
-        <componentsource label="Resize-Y Layout" iconname="resizelayout_y"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'resizelayout_y.png', instanceattrs:{class:'resizelayout', locked:true, axis:'y'}}"
-        />
-        <componentsource label="Align-X Layout" iconname="alignlayout_x"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'alignlayout_x.png', instanceattrs:{class:'alignlayout', locked:true, align:'center', axis:'x'}}"
-        />
-        <componentsource label="Align-Y Layout" iconname="alignlayout_y"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'alignlayout_y.png', instanceattrs:{class:'alignlayout', locked:true, align:'middle', axis:'y'}}"
-        />
-        <!--componentsource label="Variable Layout" iconname="variablelayout"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'variablelayout.png', instanceattrs:{class:'variablelayout', locked:true}}"
-        />
-        <componentsource label="Constant Layout" iconname="constantlayout"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, islayout:true, src:config.img_root + 'constantlayout.png', instanceattrs:{class:'constantlayout', locked:true}}"
-        /-->
-        <!--// Behaviors //-->
-        <componentsource label="Scale Behavior" iconname="behavior_scale" layouthint='{"break":true}'
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, isbehavior:true, src:config.img_root + 'behavior_scale.png', instanceattrs:{class:'behavior-scale'}}"
-        />
-        <componentsource label="Shift Behavior" iconname="behavior_shift"
-          dropclass="bitmap"
-          dropclassattrs="{width:60, height:55, isbehavior:true, src:config.img_root + 'behavior_shift.png', instanceattrs:{class:'behavior-shift'}}"
-        />
+        <include href='./service_nodes/component_manifest.dre'/>
       </view>
     </view>
     
