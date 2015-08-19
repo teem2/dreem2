@@ -543,8 +543,8 @@ SOFTWARE. -->
       <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
       
-      <listviewbutton floatingpanelid="actions" floatingvalignoffset="2"
-        label="Actions" width="73" textalign="right"
+      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" label="Actions"
+        width="73" textalign="right"
         listviewattrs="{maxheight:300}"
       >
         <method name="doActivated">
@@ -583,7 +583,7 @@ SOFTWARE. -->
     <view name="right" padding="2" x="right" height="${config.topbar_height}">
       <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
-      
+
       <toolbarbutton id="editPreviewButton" action="editPreview" width="64" textalign="center">Preview</toolbarbutton>
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}">Save</toolbarbutton>
@@ -597,7 +597,10 @@ SOFTWARE. -->
     y="${config.topbar_height}"
     width="${this.parent.divider_left.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
-  />
+  >
+    <include href='./treemodel.dre'/>
+
+  </view>
 
 
   <!--// Content Panels //-->

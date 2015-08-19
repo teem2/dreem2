@@ -25,9 +25,9 @@ SOFTWARE. -->
     if (editor.inited) this.setAttribute('isrootselection', v === editor.content_bg.content.inner);
     return v;
   </setter>
-  
+
   <attribute name="isrootselection" type="boolean" value="false"/>
-  
+
   <method name="clear" args="restoreable">
     if (restoreable) this._oldSelection = this.selected;
     this.select(null);
