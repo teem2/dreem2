@@ -34,7 +34,7 @@ SOFTWARE. -->
     this.target = selected;
     if (selected) {
       this.setAttribute('visible', true);
-      this.focus();
+      this.focus(true);
       this._syncPosition();
       if (!oldTarget) this.listenTo(dr.idle, 'onidle', this._syncPosition);
     } else {

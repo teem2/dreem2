@@ -4,6 +4,10 @@
 >
   <handler event="onselected" args="view" reference="selectionmanager">
     if (view) {
+      // Map inner view to root since the inner view is what allows editing of
+      // the root view for the screen.
+      if (view === editor.content_bg.content.inner) view = view.getRoot();
+      
       this._selectInTree(this._getViewForId(view.id))
     } else {
       this.clearSelection();
