@@ -93,7 +93,7 @@ SOFTWARE. -->
     if (!this.__isView) return false;
     
     // Leaf views do not support children so no dropping.
-    if (this.isLeaf(dropable)) return false;
+    if (!dropable.isbehavior && this.isLeaf(dropable)) return false;
     
     // No dropping on descendants of self
     if (this.isDescendantOf(dropable.target)) return false;
