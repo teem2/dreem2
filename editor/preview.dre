@@ -44,6 +44,7 @@ SOFTWARE. -->
         var screens = screensNode.child;
         define.onMain = function() {
           var compiler = new dr.maker.Compiler();
+          dr.ready = false;
           compiler.execute(screens[0], classmap, dr.teem, root, true);
         };
         
