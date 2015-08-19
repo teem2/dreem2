@@ -239,6 +239,11 @@ SOFTWARE. -->
     return retval;
   </setter>
 
+  <method name="_isInReplicator" args="name, value, isModelUpdate">
+    return this.searchAncestors(function(node) {
+      return node.replicator;
+    })
+  </method>
   <method name="setAttribute" args="name, value, isModelUpdate">
     // Optional attribute, noModelUpdate, is used to prevent updated to the
     // model that are unnecessary or possibly incorrect.
@@ -253,16 +258,18 @@ SOFTWARE. -->
       var retval = this.super(name, value);
       var parent = this.parent;
       if (parent && parent.inited) {
+        // This gets the configured attribute value, as opposed to the current value
+        var realval = this.getAttribute(name);
         if (this.replicator) {
-          editormodel.updateClassAttr(this.replicator.classname, name, this.getAttribute(name));
+          editormodel.updateClassAttr(this.replicator.classname, name, realval);
         } else {
-          // If we're inside something that's being replicated prompt to save when done editing
-          if (this.searchAncestors(function(node) {
-            return node.replicator;
-          })) {
+          // If we're inside a class that's being replicated prompt to save when done editing
+          if (this._isInReplicator()) {
             editormodel.replicatorchanges = true;
           }
-          editormodel.updateAttr(this.id || this.getRoot().id, name, this.getAttribute(name));
+          // TODO: this could fail for replicated instances that don't have editor IDs, or subnodes of replicated classes with repeated IDs
+          var id = this.id || this.getRoot().id;
+          editormodel.updateAttr(id, name, realval);
         }
       }
       return retval;
