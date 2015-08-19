@@ -66,6 +66,14 @@ SOFTWARE. -->
         for (var key in classmap) {
           define.insertScriptTag(define.expandVariables(classmap[key]), window.location.href);
         }
+        
+        // Modify base href since the preview iframe is not at the same location
+        // as the original document.
+        var loc = window.top.location.toString(),
+          basePath = loc.substring(0, loc.lastIndexOf('/')) + '/',
+          elem = document.createElement('base');
+        elem.href = basePath;
+        document.getElementsByTagName('head')[0].appendChild(elem);
       </handler>
     </node>
   </screen>
