@@ -98,7 +98,7 @@ SOFTWARE. -->
     if (yDifferent) {
       vLocsize.setAttribute('text', h);
       vLocend.setAttribute('text', endY);
-      vLocrelend.setAttribute('text', startYRelative + w);
+      vLocrelend.setAttribute('text', startYRelative + h);
     }
   </method>
 

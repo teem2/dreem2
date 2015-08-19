@@ -35,7 +35,7 @@ SOFTWARE. -->
       label:'text',
       iconname:'text',
       dropclass:'text',
-      dropclassattrs:{text:'text', instanceattrs:{class:'text', text:'text'}}
+      dropclassattrs:{text:'text', instanceattrs:{class:'text', text:'text', multiline:true}}
     });
     
     this.addComponent({
