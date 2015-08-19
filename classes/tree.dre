@@ -34,43 +34,33 @@ SOFTWARE. -->
    *      data='[{"label":"first", "items": [1, 2, 3]}]'></tree>
    *
    */-->
-<class name="tree" extends="view" x="${this.indentwidth}" clip="false" editable="false" scrollable="true">
+<class name="tree" extends="view" clip="false" scrollable="true">
 
   <attribute name="strict" type="boolean" value="true"></attribute>
   <attribute name="multipleselection" type="boolean" value="true"></attribute>
+  <attribute name="isroot" type="boolean" value="true"></attribute>
+  <attribute name="root" type="object" value=""></attribute>
+  <attribute name="populated" type="boolean" value="false"></attribute>
+  <attribute name="data" type="object" value=""></attribute>
+  <attribute name="selectcolor" type="color" value="#eee"></attribute>
 
-  <method name="isroot">
-    return this.treeroot() === this;
-  </method>
+  <attribute name="branchselection" type="boolean" value="false"></attribute>
+  <attribute name="selected" type="boolean" value="false"></attribute>
 
-  <method name="treeroot">
-    if (this.parent && this.parent.treeroot) {
-      return this.parent.treeroot();
+  <attribute name="collapsed" type="boolean" value="false"></attribute>
+
+
+  <method name="__findtreeroot">
+    if (this.parent && this.parent.__findtreeroot) {
+      return this.parent.__findtreeroot();
     }
     return this;
   </method>
 
-  <attribute name="indentwidth" type="number" value="${this.calcwidth()}"></attribute>
-  <method name="calcwidth">
-    if (this.parent.calcwidth) {
-      return this.parent.calcwidth();
-    }
-    if (this.indentwidth) {
-      return this.indentwidth;
-    }
-
-    return 0;
-  </method>
-
-
-  <attribute name="depth" type="number" value="${this.calcdepth()}"></attribute>
-
-  <method name="calcdepth">
-    if (this.parent.calcdepth) {
-      return this.parent.calcdepth() + 1;
-    }
-    return 0;
-  </method>
+  <handler event="oninit">
+    this.setAttribute('root', this.__findtreeroot())
+    this.setAttribute('isroot', this.root === this)
+  </handler>
 
   <method name="populate">
     if (typeof(this.data) === 'undefined') {
@@ -154,8 +144,8 @@ SOFTWARE. -->
       this.nodes.setAttribute('data', d);
     }
 
-    if (this.isroot()) {
-      this.toggle.setAttribute('visible', false)
+    if (this.isroot) {
+      this.toggle.setAttribute('visible', false);
     }
 
     this.setAttribute('populating', false);
@@ -180,14 +170,8 @@ SOFTWARE. -->
     this.setAttribute('width', childwidth);
   </method>
 
-  <attribute name="populated" type="boolean" value="false"></attribute>
-  <attribute name="data" type="object" value=""></attribute>
   <handler event="ondata,oninit" method="populate"></handler>
 
-  <attribute name="selectcolor" type="color" value="#eee"></attribute>
-
-  <attribute name="branchselection" type="boolean" value="false"></attribute>
-  <attribute name="selected" type="boolean" value="false"></attribute>
   <handler event="onselected">
     if (this.selected) {
       this.label.setAttribute('bgcolor', this.selectcolor)
@@ -195,7 +179,7 @@ SOFTWARE. -->
       this.label.setAttribute('bgcolor', 'transparent')
     }
 
-    if (this.treeroot().branchselection && !this.isroot()) {
+    if (this.root.branchselection && !this.isroot) {
       this.parent.setAttribute('selected', this.selected);
     }
   </handler>
@@ -216,7 +200,6 @@ SOFTWARE. -->
     }
   </method>
 
-  <attribute name="collapsed" type="boolean" value="false"></attribute>
   <handler event="oncollapsed">
     this.__setToggleRotation();
     if (this.nodes.children) {
@@ -244,8 +227,8 @@ SOFTWARE. -->
   </method>
 
   <method name="triggerSelection" args="sel">
-    if (!this.treeroot().multipleselection) {
-      this.treeroot().clearSelection();
+    if (!this.root.multipleselection) {
+      this.root.clearSelection();
     }
 
     this.setAttribute('selected', sel)
@@ -253,14 +236,17 @@ SOFTWARE. -->
   </method>
 
   <indicator name="toggle" fill="${this.parent.bordercolor}" visible="false"
-    x="0" y="${this.parent.label.height / 2 - this.height / 2}"
-    rotation="-45" fill="#333">
+    x="0" y="${this.parent.label.height / 2 - this.height / 2}" width="20"
+    rotation="-45" fill="#333" xanchor="middle" yanchor="middle">
     <handler event="onclick">
       this.parent.setAttribute('collapsed', !this.parent.collapsed)
     </handler>
   </indicator>
+
   <bitmap name="image" width="0"></bitmap>
-  <text name="label" text="" clickable="true" editable="false" y="0" x="${this.parent.toggle.width + this.parent.image.width + this.parent.indentwidth}">
+
+  <text name="label" text="" clickable="true" editable="false"
+    y="0" x="0">
     <handler event="onclick">
       var sel = this.parent.selected;
       this.parent.triggerSelection(!sel);
@@ -269,17 +255,24 @@ SOFTWARE. -->
 
   <replicator name="nodes" classname="tree">
     <handler event="onreplicated" args="r">
-      this.parent.toggle.setAttribute('visible', (r.children.length > 0));
+      if (r.children.length) {
+        this.parent.toggle.setAttribute('visible', true);
+        this.parent.label.setAttribute('x', this.parent.toggle.width + this.parent.image.width);
+      } else {
+        this.parent.toggle.setAttribute('visible', true);
+        this.parent.label.setAttribute('x', 0)
+      }
 
       for (var i = 0; i < r.children.length; i++) {
         var child = r.children[i];
         child.__resizeToChildren();
+        child.setAttribute('x', this.parent.toggle.width)
         child.setAttribute('name', 'treenode_' + i);
         if (i) {
           var lastChild = i - 1;
-          child.setAttribute('y', '${this.parent.treenode_' + lastChild + '.y + this.parent.treenode_' + lastChild + '.height}');
+          child.setAttribute('y', '${this.parent.treenode_' + lastChild + '.y + this.parent.treenode_' + lastChild + '.height + 5}');
         } else {
-          child.setAttribute('y', '${this.parent.label.height}');
+          child.setAttribute('y', '${this.parent.label.height + 5}');
         }
       }
 

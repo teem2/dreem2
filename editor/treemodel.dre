@@ -1,4 +1,4 @@
-<tree id="treemodel" x="10" width="90%" height="100%" data="${this.normalizedmodel.data}" scrollable="true"
+<tree id="treemodel" x="${this.depth * 10 }" width="90%" height="100%" data="${this.normalizedmodel.data}" scrollable="true"
   multipleselection="false" indentwidth="5">
 
   <handler event="onselected" args="view" reference="selectionmanager">
@@ -99,7 +99,7 @@
             }
 
             if (name) {
-              title = name + " {" + tag + "}";
+              title = tag + ' {"' + name + '"}';
             } else {
               title = tag;
             }
