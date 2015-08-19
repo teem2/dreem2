@@ -39,8 +39,16 @@ SOFTWARE. -->
   
   <method name="select" args="newSelection">
     var curSelection = this.selected;
-    if (curSelection && newSelection !== curSelection) curSelection.notifyDeselected();
     
-    this.setAttribute('selected', newSelection);
+    // Make sure attempts to select the root view map to the view used in the
+    // editor for the root.
+    if (newSelection && newSelection.isRoot()) newSelection = editor.content_bg.content.inner;
+    
+    if (newSelection === curSelection) {
+      console.warn('Already selected so aborting select.');
+    } else {
+      if (curSelection) curSelection.notifyDeselected();
+      this.setAttribute('selected', newSelection);
+    }
   </method>
 </node>

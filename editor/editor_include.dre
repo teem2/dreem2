@@ -593,13 +593,12 @@ SOFTWARE. -->
 
 
   <!--// Left Panel //-->
-  <view name="leftbar" ignoreplacement="true" bgcolor="white"
+  <view name="leftbar" ignoreplacement="true" bgcolor="white" scrollable="true"
     y="${config.topbar_height}"
     width="${this.parent.divider_left.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
   >
     <include href='./treemodel.dre'/>
-
   </view>
 
 

@@ -24,7 +24,7 @@ SOFTWARE. -->
   
   <attribute name="topbar_height" type="number" value="75"/>
   
-  <attribute name="leftbar_minwidth" type="number" value="200"/>
+  <attribute name="leftbar_minwidth" type="number" value="150"/>
   <attribute name="leftbar_maxwidth" type="number" value="500"/>
   
   <attribute name="rightbar_minwidth" type="number" value="260"/>

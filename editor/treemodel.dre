@@ -1,48 +1,44 @@
-<tree id="treemodel" x="${this.depth * 10 }" width="90%" height="100%" data="${this.normalizedmodel.data}" scrollable="true"
-  multipleselection="false" indentwidth="5">
-
+<tree id="treemodel"
+  x="${this.depth * 10}" multipleselection="false" indentwidth="20"
+  data="${this.normalizedmodel.data}"
+>
   <handler event="onselected" args="view" reference="selectionmanager">
     if (view) {
-      this.selectInTree(window[view.id])
+      this._selectInTree(this._getViewForId(view.id))
     } else {
       this.clearSelection();
     }
   </handler>
 
-  <method name="selectInTree" args="view">
-    if (typeof(view) === 'string') {
-      view = window[view];
-    }
-
-    if (!view) {
-      return;
-    }
-
-    var walk = function(v) {
-      if (!v.selected && v.data && v.data.id == view.id) {
-        v.triggerSelection(true)
-        return true;
-      }
-      for (var i = 0; i < v.subviews.length; i++) {
-        var subview = v.subviews[i];
-        if (walk(subview)) {
+  <method name="_selectInTree" args="view">
+    if (view) {
+      var walk = function(v) {
+        if (!v.selected && v.data && v.data.id == view.id) {
+          v.triggerSelection(true)
           return true;
         }
-      }
-      return false;
-    };
-
-    return walk(this);
+        for (var i = 0; v.subviews.length > i; i++) {
+          if (walk(v.subviews[i])) return true;
+        }
+        return false;
+      };
+      
+      return walk(this);
+    }
   </method>
 
+  <method name="_getViewForId" args="viewid">
+    return window[viewid];
+  </method>
 
   <method name="selectHandler" args="sel, d">
     var viewid = d.id;
     if (viewid) {
       if (sel) {
-        selectionmanager.select(viewid);
+        var view = this._getViewForId(viewid);
+        if (view !== selectionmanager.selected) selectionmanager.select(view);
       } else {
-        selectionmanager.clear();
+        selectionmanager.select(null);
       }
     }
   </method>
@@ -130,5 +126,4 @@
       this.super(model);
     </setter>
   </dataset>
-
 </tree>
