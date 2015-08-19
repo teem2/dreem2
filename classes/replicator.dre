@@ -284,7 +284,10 @@ SOFTWARE. -->
       <method name="_createChild" args="data">
         attrs = {class: @classname, data: data, parent: @parent, replicator: @}
         # add stuff required by the editor unless it's a class used by the editor itself!
-        if 'editable' of dr and @classname != 'attributeeditor'
+        shouldedit = this.searchAncestors((node) ->
+          return node.isA(dr.editable)
+        )
+        if 'editable' of dr and shouldedit?
           attrs.with = 'editable'
           attrs.__objectify_attrs_list = []
         child = @createChild(attrs)
