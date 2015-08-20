@@ -99,14 +99,18 @@
                 name = attr.name;
               } else if (attr.event) {
                 name = attr.event;
+              } else if (attr.text) {
+                name = '"' + attr.text + '"';
               }
             }
 
             if (name) {
-              title = tag + ' {"' + name + '"}';
+              title = name;
             } else {
               title = tag;
+              title = title.charAt(0).toUpperCase() + title.slice(1);
             }
+
 
             var items = [];
             var object = { title: title, image: img };

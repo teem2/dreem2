@@ -167,7 +167,7 @@ SOFTWARE. -->
       }
       x = x + this.image.width;
     }
-    this.label.setAttribute('x', x);
+    this.label.setAttribute('x', x + 5);
 
     this.setAttribute('populating', false);
     this.setAttribute('populated', true)
