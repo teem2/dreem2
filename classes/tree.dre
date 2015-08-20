@@ -48,7 +48,9 @@ SOFTWARE. -->
   <attribute name="multipleselection" type="boolean" value="true"></attribute>
   <attribute name="branchselection" type="boolean" value="false"></attribute>
   <attribute name="selected" type="boolean" value="false"></attribute>
-  <attribute name="selectcolor" type="color" value="#eee"></attribute>
+  <attribute name="selectcolor" type="color" value="#999"></attribute>
+  <attribute name="selecttextcolor" type="color" value="white"></attribute>
+  <attribute name="textcolor" type="color" value="#333"></attribute>
 
   <attribute name="collapsed" type="boolean" value="false"></attribute>
 
@@ -225,6 +227,9 @@ SOFTWARE. -->
   </method>
 
   <handler event="oninit">
+    this.label.setAttribute('bgcolor', 'transparent')
+    this.label.setAttribute('color', this.textcolor)
+
     this.setAttribute('root', this.__findtreeroot())
     this.setAttribute('isroot', this.root === this)
     this.populate();
@@ -235,8 +240,10 @@ SOFTWARE. -->
   <handler event="onselected">
     if (this.selected) {
       this.label.setAttribute('bgcolor', this.selectcolor)
+      this.label.setAttribute('color', this.selecttextcolor)
     } else {
       this.label.setAttribute('bgcolor', 'transparent')
+      this.label.setAttribute('color', this.textcolor)
     }
 
     if (this.root.branchselection && !this.isroot) {
