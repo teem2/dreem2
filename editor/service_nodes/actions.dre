@@ -140,12 +140,14 @@ SOFTWARE. -->
     editor.setAttribute('editmode', !editor.editmode);
     if (editor.editmode) {
       selectionmanager.restore();
-      editPreviewButton.setAttribute('text', 'Preview');
+      editPreviewButton.setAttribute('label', 'preview');
+      editPreviewButton.setAttribute('iconname', 'preview');
       preview.setAttribute('visible', false);
       preview.setAttribute('src', '/iframe_stub.html');
     } else {
       selectionmanager.clear(true);
-      editPreviewButton.setAttribute('text', 'Edit');
+      editPreviewButton.setAttribute('label', 'edit');
+      editPreviewButton.setAttribute('iconname', 'edit');
       preview.setAttribute('visible', true);
       preview.setAttribute('src', '/editor/preview.dre');
     }

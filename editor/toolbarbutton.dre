@@ -147,3 +147,57 @@ SOFTWARE. -->
     this.setAttribute('selected', true);
   </method>
 </class>
+
+<class name="toolbariconbutton" with="button"
+  width="auto" height="54" focusembellishment="false"
+  cornerradius="4" toppadding="8" leftpadding="8" rightpadding="8"
+>
+  <attribute name="label" type="string" value=""/>
+  <attribute name="iconname" type="string" value=""/>
+  <setter name="iconname" args="iconname">
+    if (this.inited) this.icon.setAttribute('src', config.img_root + iconname + '.png');
+    return iconname;
+  </setter>
+  
+  <attribute name="action" type="string" value=""/>
+  <method name="doActivated">
+    if (!this.disabled) actions[this.action]();
+  </method>
+  
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    this.icon.setAttribute('src', config.img_root + this.iconname + '.png');
+  </method>
+
+  <method name="drawDisabledState">
+    this.setAttribute('opacity', 0.5);
+    this.setAttribute('bgcolor', 'transparent');
+    this.labelView.setAttribute('color', 'transparent');
+  </method>
+  <method name="drawFocusedState">
+    this.setAttribute('opacity', 1);
+    this.setAttribute('bgcolor', '#cccccc');
+    this.labelView.setAttribute('color', '#000000');
+  </method>
+  <method name="drawHoverState">
+    this.setAttribute('opacity', 1);
+    this.setAttribute('bgcolor', '#cccccc');
+    this.labelView.setAttribute('color', '#000000');
+  </method>
+  <method name="drawActiveState">
+    this.setAttribute('opacity', 1);
+    this.setAttribute('bgcolor', '#aaaaaa');
+    this.labelView.setAttribute('color', '#000000');
+  </method>
+  <method name="drawReadyState">
+    this.setAttribute('opacity', 1);
+    this.setAttribute('bgcolor', 'transparent');
+    this.labelView.setAttribute('color', 'transparent');
+  </method>
+  
+  <bitmap name="icon" width="32" height="32"/>
+  <text name="labelView" y="32" text="${this.parent.label}" fontsize="10" color="transparent"/>
+  
+  <alignlayout align="center"/>
+</class>

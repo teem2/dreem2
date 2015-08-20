@@ -754,13 +754,12 @@ SOFTWARE. -->
     />
     
     <view name="right" padding="2" x="right" height="${config.topbar_height}">
-      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
+      <spacedlayout spacing="2" inset="2" outset="10" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
-
-      <toolbarbutton id="editPreviewButton" action="editPreview" width="64" textalign="center">Preview</toolbarbutton>
+      <toolbariconbutton id="editPreviewButton" action="editPreview" label="preview" iconname="preview" width="54"/>
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}">Save</toolbarbutton>
-      <toolbarbutton id="stopButton" action="stop" disabled="${!editor.editmode}" width="54" textalign="center">Exit</toolbarbutton>
+      <toolbariconbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}" label="save" iconname="save"/>
+      <toolbariconbutton id="stopButton" action="stop" disabled="${!editor.editmode}" label="exit" iconname="exit"/>
     </view>
   </view>
 
