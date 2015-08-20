@@ -598,6 +598,8 @@ SOFTWARE. -->
     width="${this.parent.divider_left.x}"
     height="${this.parent.innerheight - this.y - config.bottombar_height}"
   >
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    
     <include href='./treemodel.dre'/>
   </view>
 

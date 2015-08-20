@@ -367,7 +367,7 @@ SOFTWARE. -->
     }
     
     //// Filter Attributes ////
-    if (selectionmanager.isrootselection) {
+    if (selectionmanager.isrootselection && this === selectionmanager.selected) {
       // Root editable only supports a few attributes so filter out 
       // most of them
       i = attrs.length;
