@@ -621,15 +621,32 @@ SOFTWARE. -->
         width="auto" height="auto"
         floatingpanelid="screensizes" floatingvalignoffset="2"
         focusembellishment="false"
-        listviewattrs="{maxheight:300}"
+        listviewattrs="{maxheight:340}"
         floatingalign="insideleft" floatingvalign="outsidebottom"
       >
         <method name="initNode" args="parent, attrs">
           this.cfg = [
             {attrs:{name:'custom', text:'custom'}},
+            
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'4k', text:'4K', w:4096, h:2160}},
+            {attrs:{name:'2k', text:'2K', w:2048, h:1080}},
+            
             {klass:dr.listviewseparator},
             
             {attrs:{name:'hdtv', text:'HDTV', w:1920, h:1080}},
+            {attrs:{name:'pal',  text:'PAL',  w:720,  h:576}},
+            {attrs:{name:'ntsc', text:'NTSC', w:720,  h:486}},
+            
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'xvga', text:'XVGA', w:1024, h:768}},
+            {attrs:{name:'svga', text:'SVGA', w:800,  h:600}},
+            {attrs:{name:'vga',  text:'VGA',  w:640,  h:480}},
+            
+            {klass:dr.listviewseparator},
+            
             {attrs:{name:'iphonetall', text:'iphone (Portrait)',              w:320, h:480}},
             {attrs:{name:'iphonewide', text:'iphone (Landscape)',             w:480, h:320}},
             
@@ -655,7 +672,7 @@ SOFTWARE. -->
           this.arrow.setAttribute('text', (isopen ? '▼' : '▶'));
         </handler>
         
-        <attribute name="selecteditem" type="expression" value="this.cfg[2].attrs"/>
+        <attribute name="selecteditem" type="expression" value="this.cfg[5].attrs"/>
         <handler event="onselecteditem" args="selecteditem">
           this.label.setAttribute('text', selecteditem.text);
           
