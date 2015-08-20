@@ -146,7 +146,7 @@ SOFTWARE. -->
        drag and drop. -->
   <handler event="oncontextmenu" args="event"/>
 
-  <!-- Eat and cancel drag and drop events. -->
+  <!-- Eat and cancel desktop drag and drop events. -->
   <handler event="ondrop, ondragover" args="platformEvent">
     dr.sprite.preventDefault(platformEvent);
   </handler>
@@ -154,6 +154,8 @@ SOFTWARE. -->
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->
   <method name="isPlatformEvent" args="eventType">
+    // Makes the ondrop, ondragover handler work for platform events.
+    // Part of the prevention of desktop drag and drop behavior.
     if (dr.sprite.DropObservable.EVENT_TYPES[eventType]) return true;
     return this.super();
   </method>
@@ -535,75 +537,6 @@ SOFTWARE. -->
   </view>
 
 
-  <!--// Top Panel //-->
-  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
-    width="100%" height="${config.topbar_height}"
-  >
-    <view name="left" padding="2" height="${config.topbar_height}">
-      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
-      <constantlayout attribute="y" value="'middle'"/>
-      
-      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" label="Actions"
-        width="73" textalign="right"
-        listviewattrs="{maxheight:300}"
-      >
-        <method name="doActivated">
-          var editorPlaying = !editor.editmode;
-          var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
-          var cfg = [
-            {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
-            {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
-            {klass:dr.listviewseparator},
-            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
-            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
-            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
-            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
-            {klass:dr.listviewseparator},
-            {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
-          ];
-          this.setAttribute('itemconfig', cfg);
-          
-          this.toggleFloatingPanel();
-        </method>
-        
-        <method name="doItemActivated" args="itemview">
-          actions[itemview.name]();
-          this.super();
-        </method>
-      </listviewbutton>
-      <floatingpanelbutton floatingpanelid="settings" floatingvalignoffset="2"
-        label="Settings" width="78" textalign="right"
-      />
-    </view>
-    
-    <view name="center" padding="2" x="${this.parent.left.width}"
-      width="${this.parent.right.x - this.x}" height="${config.topbar_height}"
-    />
-    
-    <view name="right" padding="2" x="right" height="${config.topbar_height}">
-      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
-      <constantlayout attribute="y" value="'middle'"/>
-
-      <toolbarbutton id="editPreviewButton" action="editPreview" width="64" textalign="center">Preview</toolbarbutton>
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}">Save</toolbarbutton>
-      <toolbarbutton id="stopButton" action="stop" disabled="${!editor.editmode}" width="54" textalign="center">Exit</toolbarbutton>
-    </view>
-  </view>
-
-
-  <!--// Left Panel //-->
-  <view name="leftbar" ignoreplacement="true" bgcolor="white" scrollable="true"
-    y="${config.topbar_height}"
-    width="${this.parent.divider_left.x}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height}"
-  >
-    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
-    
-    <include href='./treemodel.dre'/>
-  </view>
-
-
   <!--// Content Panels //-->
   <view name="content_bg" ignoreplacement="true" bgcolor="${config.content_color}"
     x="${ruler_horizontal.x}" y="${ruler_vertical.y}"
@@ -800,6 +733,78 @@ SOFTWARE. -->
     />
   </view>
 
+  <!--// The guides layer that sits in front of the content being edited. //-->
+  <view id="guides" ignoreplacement="true"/>
+
+  <!--// Selection Reticle //-->
+  <reticle id="reticle" ignoreplacement="true"/>
+
+  <!--// Top Panel //-->
+  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
+    width="100%" height="${config.topbar_height}"
+  >
+    <view name="left" padding="2" height="${config.topbar_height}">
+      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
+      <constantlayout attribute="y" value="'middle'"/>
+      
+      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" label="Actions"
+        width="73" textalign="right"
+        listviewattrs="{maxheight:300}"
+      >
+        <method name="doActivated">
+          var editorPlaying = !editor.editmode;
+          var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
+          var cfg = [
+            {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
+            {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
+            {klass:dr.listviewseparator},
+            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
+            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
+            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
+            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
+            {klass:dr.listviewseparator},
+            {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
+          ];
+          this.setAttribute('itemconfig', cfg);
+          
+          this.toggleFloatingPanel();
+        </method>
+        
+        <method name="doItemActivated" args="itemview">
+          actions[itemview.name]();
+          this.super();
+        </method>
+      </listviewbutton>
+      <floatingpanelbutton floatingpanelid="settings" floatingvalignoffset="2"
+        label="Settings" width="78" textalign="right"
+      />
+    </view>
+    
+    <view name="center" padding="2" x="${this.parent.left.width}"
+      width="${this.parent.right.x - this.x}" height="${config.topbar_height}"
+    />
+    
+    <view name="right" padding="2" x="right" height="${config.topbar_height}">
+      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
+      <constantlayout attribute="y" value="'middle'"/>
+
+      <toolbarbutton id="editPreviewButton" action="editPreview" width="64" textalign="center">Preview</toolbarbutton>
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      <toolbarbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}">Save</toolbarbutton>
+      <toolbarbutton id="stopButton" action="stop" disabled="${!editor.editmode}" width="54" textalign="center">Exit</toolbarbutton>
+    </view>
+  </view>
+
+  <!--// Left Panel //-->
+  <view name="leftbar" ignoreplacement="true" bgcolor="white" scrollable="true"
+    y="${config.topbar_height}"
+    width="${this.parent.divider_left.x}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+  >
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    
+    <include href='./treemodel.dre'/>
+  </view>
 
   <!--// Right Panel //-->
   <view name="rightbar" ignoreplacement="true" bgcolor="#fcfcfc"
@@ -994,12 +999,6 @@ SOFTWARE. -->
       if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
     </method>
   </view>
-
-  <!-- The guides layer that sits in front of the content being edited. -->
-  <view id="guides" ignoreplacement="true"/>
-
-  <!--// Selection Reticle //-->
-  <reticle id="reticle" ignoreplacement="true"/>
 </view>
 
 <!--// FLOATING PANEL VIEWS //-->
