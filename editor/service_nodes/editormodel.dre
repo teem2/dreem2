@@ -254,7 +254,7 @@ SOFTWARE. -->
         searchId = child.attr.id;
       while (i) {
         child = children[--i];
-        if (child.attr.id === searchId) return i;
+        if (child.attr && child.attr.id === searchId) return i;
       }
     } else {
       return -1;

@@ -56,71 +56,6 @@ SOFTWARE. -->
   </method>
 </class>
 
-<class name="basefloatingpanelbutton" extends="baseeditorbutton"
-  floatingalign="insideright" floatingvalign="outsidebottom"
->
-  <attribute name="selected" type="boolean" value="false"/>
-  <attribute name="label" type="string" value=""/>
-  <handler event="onselected" args="selected">
-    this.updateUI();
-    
-    this.setAttribute('text', (selected ? '▼' : '▶') + this.label);
-  </handler>
-  
-  <method name="doActivated">
-    if (!this.disabled) {
-      var fp = this.getFloatingPanel();
-      if (fp) this.toggleFloatingPanel();
-    }
-  </method>
-  
-  <method name="drawDisabledState">
-    this.setAttribute('boxshadow', null);
-    this.setAttribute('bgcolor', this.selected ? '#333333' : '#aaaaaa');
-    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
-  </method>
-  <method name="drawFocusedState">
-    this.setAttribute('boxshadow', config.boxshadow_normal);
-    this.setAttribute('bgcolor', this.selected ? '#888888' : '#ffffff');
-    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
-  </method>
-  <method name="drawHoverState">
-    this.setAttribute('boxshadow', null);
-    this.setAttribute('bgcolor', this.selected ? '#888888' : '#ffffff');
-    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
-  </method>
-  <method name="drawActiveState">
-    this.setAttribute('boxshadow', null);
-    this.setAttribute('bgcolor', this.selected ? '#444444' : '#dddddd');
-    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
-  </method>
-  <method name="drawReadyState">
-    this.setAttribute('boxshadow', null);
-    this.setAttribute('bgcolor', this.selected ? '#666666' : '#eeeeee');
-    this.setAttribute('color', this.selected ? '#ffffff' : '#000000');
-  </method>
-</class>
-
-<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor">
-  <method name="notifyPanelHidden" args="panel">
-    this.setAttribute('selected', false);
-  </method>
-  
-  <method name="notifyPanelShown" args="panel">
-    this.setAttribute('selected', true);
-  </method>
-</class>
-
-<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor">
-  <method name="notifyPanelHidden" args="panel">
-    this.setAttribute('selected', false);
-  </method>
-  
-  <method name="notifyPanelShown" args="panel">
-    this.setAttribute('selected', true);
-  </method>
-</class>
-
 <class name="verticaltext" extends="text" xanchor="0" yanchor="0" rotation="-90"/>
 
 <mixin name="rulertext" fontsize="10" color="${config.secondary_panel_color}" width="0" height="0"/>
@@ -158,4 +93,57 @@ SOFTWARE. -->
 <class name="editor_text" extends="text" fontsize="14"/>
 <class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee">
   <handler event="onfocus" method="selectAll"/>
+</class>
+
+<class name="basefloatingpanelbutton" with="button"
+  width="auto" height="auto" focusembellishment="false"
+  floatingvalignoffset="2" floatingalign="insideright" floatingvalign="outsidebottom"
+>
+  <attribute name="fontsize" type="number" value="14"/>
+  <attribute name="selected" type="boolean" value="false"/>
+  <attribute name="label" type="string" value=""/>
+  <handler event="onselected" args="selected" method="updateUI"/>
+  
+  <method name="doActivated">
+    if (!this.disabled) {
+      var fp = this.getFloatingPanel();
+      if (fp) this.toggleFloatingPanel();
+    }
+  </method>
+  
+  <method name="drawDisabledState">
+    this.setAttribute('color', '#999999');
+  </method>
+  <method name="drawHoverState">
+    this.setAttribute('color', '#666666');
+  </method>
+  <method name="drawActiveState">
+    this.setAttribute('color', '#333333');
+  </method>
+  <method name="drawReadyState">
+    this.setAttribute('color', '#000000');
+  </method>
+  
+  <text name="arrow" text="${this.parent.selected ? '▼' : '▶'}" fontsize="${this.parent.fontsize - 2}" y="2"/>
+  <text text="${this.parent.label}" x="${Math.round(this.parent.fontsize / 2) + 5}" fontsize="${this.parent.fontsize}"/>
+</class>
+
+<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor">
+  <method name="notifyPanelHidden" args="panel">
+    this.setAttribute('selected', false);
+  </method>
+  
+  <method name="notifyPanelShown" args="panel">
+    this.setAttribute('selected', true);
+  </method>
+</class>
+
+<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor">
+  <method name="notifyPanelHidden" args="panel">
+    this.setAttribute('selected', false);
+  </method>
+  
+  <method name="notifyPanelShown" args="panel">
+    this.setAttribute('selected', true);
+  </method>
 </class>

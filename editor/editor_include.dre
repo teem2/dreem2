@@ -546,16 +546,12 @@ SOFTWARE. -->
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     
-    <view x="69" y="35" color="#999999">
+    <view x="69" y="36" color="#999999">
       <spacedlayout spacing="8"/>
       <constantlayout attribute="y" value="'middle'"/>
       
-      <view with="button, listviewanchor"
-        width="auto" height="auto"
-        floatingpanelid="screensizes" floatingvalignoffset="2"
-        focusembellishment="false"
+      <listviewbutton floatingpanelid="screensizes" fontsize="12"
         listviewattrs="{maxheight:340}"
-        floatingalign="insideleft" floatingvalign="outsidebottom"
       >
         <method name="initNode" args="parent, attrs">
           this.cfg = [
@@ -599,15 +595,9 @@ SOFTWARE. -->
           this.super();
         </method>
         
-        <attribute name="isopen" type="boolean" value="false"/>
-        <handler event="onisopen" args="isopen">
-          this.updateUI();
-          this.arrow.setAttribute('text', (isopen ? '▼' : '▶'));
-        </handler>
-        
         <attribute name="selecteditem" type="expression" value="this.cfg[5].attrs"/>
         <handler event="onselecteditem" args="selecteditem">
-          this.label.setAttribute('text', selecteditem.text);
+          this.setAttribute('label', selecteditem.text);
           
           var isCustom = selecteditem.name === 'custom';
           this.parent.custom.setAttribute('visible', isCustom);
@@ -616,21 +606,6 @@ SOFTWARE. -->
             screensizeh.setAttribute('value', selecteditem.h);
           }
         </handler>
-        
-        <method name="doActivated">
-          if (!this.disabled) {
-            var fp = this.getFloatingPanel();
-            if (fp) this.toggleFloatingPanel();
-          }
-        </method>
-        
-        <method name="notifyPanelHidden" args="panel">
-          this.setAttribute('isopen', false);
-        </method>
-        
-        <method name="notifyPanelShown" args="panel">
-          this.setAttribute('isopen', true);
-        </method>
         
         <method name="drawDisabledState">
           this.setAttribute('color', this.selected ? '#000000' : '#cccccc');
@@ -664,12 +639,9 @@ SOFTWARE. -->
           this.setAttribute('selecteditem', itemview);
           this.super();
         </method>
-        
-        <text name="arrow" fontsize="10" y="3"/>
-        <text name="label" x="11" y="1" fontsize="12"/>
-      </view>
+      </listviewbutton>
       
-      <view name="custom" height="auto" visible="false">
+      <view name="custom" height="18" visible="false">
         <spacedlayout spacing="4" updateparent="true"></spacedlayout>
         <editor_text text="w:" y="2" fontsize="12"/>
         <editor_inputtext id="screensizew" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
@@ -744,11 +716,10 @@ SOFTWARE. -->
     width="100%" height="${config.topbar_height}"
   >
     <view name="left" padding="2" height="${config.topbar_height}">
-      <spacedlayout spacing="4" inset="2" outset="2" updateparent="true"/>
+      <spacedlayout spacing="16" inset="20" outset="20" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
       
-      <listviewbutton id="actionsButton" floatingpanelid="actions" floatingvalignoffset="2" label="Actions"
-        width="73" textalign="right"
+      <listviewbutton id="actionsButton" floatingpanelid="actions" label="Actions"
         listviewattrs="{maxheight:300}"
       >
         <method name="doActivated">
@@ -775,9 +746,7 @@ SOFTWARE. -->
           this.super();
         </method>
       </listviewbutton>
-      <floatingpanelbutton floatingpanelid="settings" floatingvalignoffset="2"
-        label="Settings" width="78" textalign="right"
-      />
+      <floatingpanelbutton floatingpanelid="settings" label="Settings"/>
     </view>
     
     <view name="center" padding="2" x="${this.parent.left.width}"
