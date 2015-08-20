@@ -21,12 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <node id="actions">
   <method name="_undoRedoCallback" args="undoable">
+    // Prevents the callback from executing multiple times, once for each 
+    // subundoable of a compound undoable.
+    if (this._callbackAlreadyCalled) return;
+    this._callbackAlreadyCalled = true;
+    
     if (!undoable.isA(dr.editor.compoundundoable)) {
       var target = undoable.target;
       if (target) {
         if (target.isA(dr.View)) {
           if (target.parent) {
-            selectionmanager.select(target);
+            if (selectionmanager.selected !== target) selectionmanager.select(target);
           } else {
             selectionmanager.clear();
           }
@@ -53,11 +58,17 @@ SOFTWARE. -->
   </method>
   
   <method name="undo">
-    if (editor.editmode) undo.undo(this._undoRedoCallback, this._undoRedoErrorHandler);
+    if (editor.editmode) {
+      this._callbackAlreadyCalled = false;
+      undo.undo(this._undoRedoCallback.bind(this), this._undoRedoErrorHandler);
+    }
   </method>
   
   <method name="redo">
-    if (editor.editmode) undo.redo(this._undoRedoCallback, this._undoRedoErrorHandler);
+    if (editor.editmode) {
+      this._callbackAlreadyCalled = false;
+      undo.redo(this._undoRedoCallback.bind(this), this._undoRedoErrorHandler);
+    }
   </method>
   
   <method name="bringToFront">

@@ -235,22 +235,22 @@ SOFTWARE. -->
     this.selectHandler(this.selected, this.data);
   </method>
 
-  <indicator name="toggle" fill="${this.parent.bordercolor}" visible="false"
+  <indicator with="button" name="toggle" fill="${this.parent.bordercolor}" visible="false"
     x="0" y="${this.parent.label.height / 2 - this.height / 2}" width="20"
-    rotation="-45" fill="#333" xanchor="middle" yanchor="middle">
-    <handler event="onclick">
+    rotation="-45" fill="#333" xanchor="middle" yanchor="middle" focusembellishment="false"
+  >
+    <method name="doActivated">
       this.parent.setAttribute('collapsed', !this.parent.collapsed)
-    </handler>
+    </method>
   </indicator>
 
-  <bitmap name="image" width="0"></bitmap>
+  <bitmap name="image" width="0"/>
 
-  <text name="label" text="" clickable="true" editable="false"
-    y="0" x="0">
-    <handler event="onclick">
+  <text with="button" name="label" text="" editable="false" focusembellishment="false">
+    <method name="doActivated">
       var sel = this.parent.selected;
       this.parent.triggerSelection(!sel);
-    </handler>
+    </method>
   </text>
 
   <replicator name="nodes" classname="tree">
@@ -279,6 +279,4 @@ SOFTWARE. -->
       this.parent.__resizeToChildren();
     </handler>
   </replicator>
-
-
 </class>
