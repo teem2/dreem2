@@ -44,9 +44,7 @@ SOFTWARE. -->
     // editor for the root.
     if (newSelection && newSelection.isRoot()) newSelection = editor.content_bg.content.inner;
     
-    if (newSelection === curSelection) {
-      console.warn('Already selected so aborting select.');
-    } else {
+    if (newSelection !== curSelection) {
       if (curSelection) curSelection.notifyDeselected();
       this.setAttribute('selected', newSelection);
     }
