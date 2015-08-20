@@ -42,11 +42,13 @@ SOFTWARE. -->
     if (model) {
       var child = this._findChild(id, model);
       if (child) {
+        this.setAttribute('ready', false);
         if (value == null) {
           delete child.attr[name];
         } else {
           child.attr[name] = value;
         }
+        this.setAttribute('ready', true);
       }
     }
   </method>
