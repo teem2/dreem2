@@ -791,7 +791,7 @@ SOFTWARE. -->
     <!-- Component list panel -->
     <view width="100%" height="${this.parent.divider_top.y}" bgcolor="white" scrollable="true">
       <view width="100%">
-        <wrappinglayout axis="x" spacing="5" inset="5" outset="5" linespacing="5" lineinset="5" lineoutset="5" updateparent="true"/>
+        <wrappinglayout axis="x" inset="15" outset="15" lineinset="7" lineoutset="7" updateparent="true"/>
         <include href='./service_nodes/component_manifest.dre'/>
       </view>
     </view>
@@ -923,10 +923,10 @@ SOFTWARE. -->
     />
     
     <view name="divider_top" with="keyboarddraggable" cursor="row-resize"
-      x="0" y="185" width="100%" height="${config.divider_width}"
+      x="0" y="123" width="100%" height="${config.divider_width}"
     >
       <method name="updatePosition" args="x, y">
-        if (!this.disabled) this.setAttribute('y', Math.max(95, Math.min(455, y)));
+        if (!this.disabled) this.setAttribute('y', Math.max(123, Math.min(290, y)));
       </method>
     </view>
   </view>

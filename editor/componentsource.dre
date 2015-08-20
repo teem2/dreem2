@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="componentsource" with="button, dropsource"
-  width="80" height="85" cornerradius="8" focusembellishment="false"
+  width="50" height="55" focusembellishment="false"
   disabled="${!editor.editmode}"
 >
   <attribute name="label" type="string" value=""/>
@@ -46,25 +46,25 @@ SOFTWARE. -->
 
   <method name="drawDisabledState">
     this.setAttribute('opacity', 0.5);
-    this.setAttribute('bgcolor', '#f8f8f8');
+    this.labelView.setAttribute('visible', false);
   </method>
   <method name="drawFocusedState">
     this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#eeeeee');
+    this.labelView.setAttribute('visible', true);
   </method>
   <method name="drawHoverState">
     this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#f8f8f8');
+    this.labelView.setAttribute('visible', true);
   </method>
   <method name="drawActiveState">
     this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#e8e8e8');
+    this.labelView.setAttribute('visible', true);
   </method>
   <method name="drawReadyState">
     this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', 'transparent');
+    this.labelView.setAttribute('visible', false);
   </method>
   
-  <bitmap name="icon" width="60" height="55" x="10" y="10"/>
-  <text width="80" y="68" text="${this.parent.label}" textalign="center" fontsize="10"/>
+  <bitmap name="icon" width="30" height="30" x="10" y="10"/>
+  <text name="labelView" width="100" x="-25" y="44" text="${this.parent.label}" textalign="center" fontsize="10" visible="false"/>
 </class>

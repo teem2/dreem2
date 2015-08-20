@@ -27,7 +27,7 @@ SOFTWARE. -->
   <attribute name="leftbar_minwidth" type="number" value="150"/>
   <attribute name="leftbar_maxwidth" type="number" value="500"/>
   
-  <attribute name="rightbar_minwidth" type="number" value="260"/>
+  <attribute name="rightbar_minwidth" type="number" value="280"/>
   <attribute name="rightbar_minx" type="number" value="600"/>
   <attribute name="bottombar_height" type="number" value="0"/>
   

@@ -41,7 +41,6 @@ SOFTWARE. -->
     this.addComponent({
       label:'rectange',
       iconname:'view',
-      layouthint:'{"break":true}',
       dropclass:'view',
       dropclassattrs:{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#cccccc'}}
     });
@@ -84,8 +83,8 @@ SOFTWARE. -->
     instanceAttrs.locked = true;
     
     attrs.dropclassattrs = {
-      width:60, 
-      height:55, 
+      width:30, 
+      height:30, 
       islayout:true, 
       src:config.img_root + key + '.png', 
       instanceattrs:instanceAttrs
@@ -99,7 +98,7 @@ SOFTWARE. -->
       dropclass: 'bitmap',
       label:key + ' Behavior',
       iconname:'behavior_' + key,
-      dropclassattrs:{width:60, height:55, isbehavior:true, src:config.img_root + 'behavior_' + key + '.png', instanceattrs:{class:'behavior-' + key}}
+      dropclassattrs:{width:30, height:30, isbehavior:true, src:config.img_root + 'behavior_' + key + '.png', instanceattrs:{class:'behavior-' + key}}
     };
     
     this.addComponent(attrs, isNewLine);
