@@ -174,7 +174,7 @@ SOFTWARE. -->
     this.setAttribute('populating', false);
     this.setAttribute('populated', true)
   </method>
-
+  
   <method name="__resizeToChildren">
     var childheight = 0;
     var childwidth = 0;
