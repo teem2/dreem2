@@ -49,6 +49,9 @@
   <handler event="onready" args="ready" reference="editormodel">
     if (ready) {
       this.reloadTree();
+      dr.idle.callOnIdle(function() {
+        treemodel.__resizeToChildren();
+      });
     }
   </handler>
 
