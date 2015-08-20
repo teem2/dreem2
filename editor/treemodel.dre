@@ -1,7 +1,5 @@
-<tree id="treemodel"
-  x="${this.depth * 10}" multipleselection="false" indentwidth="20"
-  data="${this.normalizedmodel.data}"
->
+<tree id="treemodel" x="0" multipleselection="false" data="${this.normalizedmodel.data}">
+
   <handler event="onselected" args="view" reference="selectionmanager">
     if (view) {
       // Map inner view to root since the inner view is what allows editing of
@@ -18,7 +16,7 @@
     if (view) {
       var walk = function(v) {
         if (!v.selected && v.data && v.data.id == view.id) {
-          v.triggerSelection(true)
+          v.triggerSelection(true);
           return true;
         }
         for (var i = 0; v.subviews.length > i; i++) {
@@ -84,6 +82,12 @@
             var name = '';
             var tag = scr.tag;
             var id = '';
+            var img = config.img_root + 'view.png';
+
+            if (["text", "bitmap"].indexOf(tag) >= 0) {
+              img = config.img_root + tag + '.png';
+            }
+
             if (scr.attr) {
               var attr = scr.attr;
 
@@ -105,7 +109,7 @@
             }
 
             var items = [];
-            var object = { title: title };
+            var object = { title: title, image: img };
             if (id) {
               object['id'] = id;
             }
@@ -115,6 +119,7 @@
                 object['items'] = items;
               }
             }
+
             if (object.id) {
               var obj = window[object.id];
               if (obj && obj.isA(dr.View)) {
