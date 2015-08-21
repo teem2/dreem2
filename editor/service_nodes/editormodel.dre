@@ -28,7 +28,7 @@ SOFTWARE. -->
         var parser = new dr.htmlparser();
         var jsobj = parser.parse(data)
         _this.setAttribute('model', jsobj);
-        _this.setAttribute('ready', true);
+        _this.sendEvent('onmodelchange', _this)
         //console.log('loaded model', jsobj)
       }
     );
@@ -42,13 +42,14 @@ SOFTWARE. -->
     if (model) {
       var child = this._findChild(id, model);
       if (child) {
-        this.setAttribute('ready', false);
         if (value == null) {
           delete child.attr[name];
         } else {
           child.attr[name] = value;
         }
-        this.setAttribute('ready', true);
+        if (['name', 'title', 'tag', 'text'].indexOf(name) >= 0) {
+          this.sendEvent('onmodelchange', this);
+        }
       }
     }
   </method>
@@ -61,10 +62,9 @@ SOFTWARE. -->
       var classmodel = this._findChildByTag('class', model);
       if (classmodel.attr.name === classname) {
         // console.log('found inline class model', classname, classmodel);
-        this.setAttribute('ready', false);
         classmodel.attr[name] = value;
         this.replicatorchanges = true;
-        this.setAttribute('ready', true);
+        this.sendEvent('onmodelchange', this);
       }
     }
   </method>
@@ -95,10 +95,9 @@ SOFTWARE. -->
       if (childModel && parentModel) {
         var idx = this._findChildIndex(parentModel, childModel);
         if (idx >= 0) {
-          this.setAttribute('ready', false);
           child.__editorModel = parentModel.child[idx];
           parentModel.child.splice(idx, 1);
-          this.setAttribute('ready', true);
+          this.sendEvent('onmodelchange', this);
         }
       }
     }
@@ -118,15 +117,13 @@ SOFTWARE. -->
             idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
           
           // Convert child (and tree) to object structure and insert
-          this.setAttribute('ready', false);
           parent.child.splice(idx + 1, 0, child.__editorModel || child.objectify({}));
-          this.setAttribute('ready', true);
+          this.sendEvent('onmodelchange', this);
 
         } else {
 
-          this.setAttribute('ready', false);
           parent.child.push(child.__editorModel || child.objectify({}));
-          this.setAttribute('ready', true);
+          this.sendEvent('onmodelchange', this);
 
         }
       }
@@ -142,7 +139,6 @@ SOFTWARE. -->
       if (child && parent) {
         var idx = this._findChildIndex(parent, child);
         if (idx >= 0) {
-          this.setAttribute('ready', false);
           parent.child.splice(idx, 1);
           
           var newParent = this._findChild(newParentId, model);
@@ -155,7 +151,7 @@ SOFTWARE. -->
             
             newParent.child.splice(newIdx + 1, 0, child);
           }
-          this.setAttribute('ready', true);
+          this.sendEvent('onmodelchange', this);
 
         }
       }
@@ -170,7 +166,6 @@ SOFTWARE. -->
         sibling = this._findChild(siblingId, model),
         parent = this._findChild(parentId, model);
       if (child && sibling && parent) {
-        this.setAttribute('ready', false);
         // Remove child
         var idx = this._findChildIndex(parent, child);
         if (idx >= 0) parent.child.splice(idx, 1);
@@ -178,7 +173,7 @@ SOFTWARE. -->
         // Insert child
         idx = this._findChildIndex(parent, sibling);
         if (idx >= 0) parent.child.splice(idx + 1, 0, child);
-        this.setAttribute('ready', true);
+        this.sendEvent('onmodelchange', this);
       }
     }
   </method>
@@ -192,8 +187,6 @@ SOFTWARE. -->
       if (child && parent) {
         var idx = this._findChildIndex(parent, child);
         if (idx > 0) {
-          this.setAttribute('ready', false);
-
           parent.child.splice(idx, 1);
           
           // HACK: if the parent is the root then the first child must continue
@@ -206,7 +199,7 @@ SOFTWARE. -->
               break;
             }
           }
-          this.setAttribute('ready', true);
+          this.sendEvent('onmodelchange', this);
         }
       }
     }

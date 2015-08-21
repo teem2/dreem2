@@ -46,13 +46,11 @@
   </method>
 
   <handler event="oninit" method="reloadTree"></handler>
-  <handler event="onready" args="ready" reference="editormodel">
-    if (ready) {
-      this.reloadTree();
-      dr.idle.callOnIdle(function() {
-        treemodel.__resizeToChildren();
-      });
-    }
+  <handler event="onmodelchange" reference="editormodel">
+    this.reloadTree();
+    dr.idle.callOnIdle(function() {
+      treemodel.__resizeToChildren();
+    });
   </handler>
 
   <method name="reloadTree">
