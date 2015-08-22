@@ -20,7 +20,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="componentsource" with="button, dropsource"
-  width="50" height="55" focusembellishment="false"
+  width="50" height="55" focusembellishment="false" focusable="false"
   disabled="${!editor.editmode}"
 >
   <attribute name="label" type="string" value=""/>
@@ -47,10 +47,6 @@ SOFTWARE. -->
   <method name="drawDisabledState">
     this.setAttribute('opacity', 0.5);
     this.labelView.setAttribute('visible', false);
-  </method>
-  <method name="drawFocusedState">
-    this.setAttribute('opacity', 1);
-    this.labelView.setAttribute('visible', true);
   </method>
   <method name="drawHoverState">
     this.setAttribute('opacity', 1);
