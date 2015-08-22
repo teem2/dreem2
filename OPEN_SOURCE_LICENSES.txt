@@ -1,0 +1,52 @@
+Chai.js - v1.10.0
+    Copyright(c) 2013 Jake Luer <jake@qualiancy.com>
+    MIT License
+
+CoffeeScript Compiler - v1.7.1
+    Copyright(c) 2011, Jeremy Ashkenas
+    MIT License
+
+Easing Equations
+    Copyright(c) 2001, Robert Penner
+    MIT License
+
+jQuery Easing - v1.3
+    Copyright(c) 2008, George McGinley Smith
+    BSD License, https://raw.github.com/danro/jquery-easing/master/LICENSE
+
+Atomic.js
+    Copyright(c) 2014, Todd Motto
+    MIT License
+    Based on a fork by Rene Hernandez found at: https://github.com/renehernandez/atomic/blob/develop/src/atomic.js
+    
+two.js
+    Copyright (c)2012 - 2013, jonobr1 / http://jonobr1.com
+    MIT License
+    
+jsclass
+    Copyright (c) 2007-2013 James Coglan and contributors
+    MIT License
+    
+    Parts of the Software build on techniques from the following open-source
+    projects:
+    
+    * [Prototype](http://prototypejs.org/), (c) 2005-2010 Sam Stephenson (MIT
+      license)
+    * Alex Arnell's [Inheritance](http://www.twologic.com/projects/inheritance/)
+      library, (c) 2006 Alex Arnell (MIT license)
+    * [Base](http://dean.edwards.name/weblog/2006/03/base/), (c) 2006-2010 Dean
+      Edwards (MIT license)
+    
+    The Software contains direct translations to JavaScript of these open-source
+    Ruby libraries:
+    
+    * [Ruby standard library modules](http://www.ruby-lang.org/en/), (c) Yukihiro
+      Matsumoto and contributors (Ruby license)
+    * [Test::Unit](http://test-unit.rubyforge.org/), (c) 2000-2003 Nathaniel
+      Talbott (Ruby license)
+    * [Context](http://github.com/jm/context), (c) 2008 Jeremy McAnally (MIT
+      license)
+    * [EventMachine::Deferrable](http://rubyeventmachine.com/), (c) 2006-07 Francis
+      Cianfrocca (Ruby license)
+
+

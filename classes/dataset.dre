@@ -170,4 +170,7 @@ SOFTWARE. -->
       # TODO: send smaller updates based on path argument
       @sendEvent('data', @data)
   </method>
+
+  <!--// Editor //-->
+  <attribute name="hiddenattrs" type="expression" value="{data:true}" allocation="class"/>
 </class>

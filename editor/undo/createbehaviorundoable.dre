@@ -1,0 +1,50 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.createbehaviorundoable {UI Components}
+  * @extends dr.editor.createundoable
+  * An undoable that Inserts a new layout into a parent node.
+  */-->
+<class name="editor-createbehaviorundoable" extends="editor-createundoable"
+  undodescription='Undo create behavior.'
+  redodescription='Redo create behavior.'
+>
+  <!--// Class Methods //////////////////////////////////////////////////////-->
+  <method name="refresh" args="targetParent" allocation="class">
+    if (selectionmanager.selectedview === targetParent) {
+      behaviors_panel.refresh(targetParent);
+    } else {
+      selectionmanager.select(targetParent);
+    }
+  </method>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method undo
+    * @overrides
+    * Removes the target behavior from its parent.
+    */-->
+  <method name="undo" args="callback">
+    var retval = this.super();
+    
+    // Only do this if creation succeeded
+    if (!this.done) dr.editor.createbehaviorundoable.refresh(this._targetParent);
+    
+    return retval;
+  </method>
+
+  <!--/**
+    * @method redo
+    * @overrides
+    * Inserts the target behavior into the target parent.
+    */-->
+  <method name="redo" args="callback">
+    var retval = this.super();
+    
+    // Only do this if creation succeeded
+    if (this.done) dr.editor.createbehaviorundoable.refresh(this._notFirstTime ? this._targetParent : this.target.parent);
+    
+    return retval;
+  </method>
+</class>

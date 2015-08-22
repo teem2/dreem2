@@ -1,0 +1,67 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.dialogmanager {UI Component}
+   * A node that manages dialogs in a parent view.
+   */-->
+<class name="dialogmanager" extends="node" requires="alertdialog, confirmdialog">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="modalpanel" type="expression" value=""/>
+  <attribute name="activedialog" type="expression" value=""/>
+  
+  
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    if (!this.modalpanel) this.setAttribute('modalpanel', this.searchAncestorsForClass(dr.modalpanel));
+  </method>
+  
+  
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="reset">
+    var svs = this.parent.getSubviews(), i = svs.length;
+    while (i) svs[--i].destroy();
+  </method>
+  
+  <method name="getActiveDialog">
+    return this.activedialog;
+  </method>
+  
+  <method name="closeDialog" args="dialog">
+    var mp = this.modalpanel;
+    if (typeof mp.hide === 'function') mp.hide();
+    this.setAttribute('activedialog', null);
+  </method>
+  
+  <method name="showDialog" args="attrs">
+    this.reset();
+    
+    var mp = this.modalpanel;
+    
+    if (!attrs.dialogmanager) attrs.dialogmanager = this;
+    var dialog = mp.createChild(attrs);
+    
+    if (typeof mp.show === 'function') mp.show();
+    
+    dialog.setInitialFocus();
+    this.setAttribute('activedialog', dialog);
+  </method>
+  
+  <method name="showAlert" args="msg, btnlabel, callback">
+    this.showDialog({
+      class:dr.alertdialog, msg:msg, 
+      btnlabel:btnlabel ? btnlabel : 'OK', 
+      callback:callback
+    });
+  </method>
+  
+  <method name="showConfirm" args="msg, btnlabel, cancelbtnlabel, callback">
+    this.showDialog({
+      class:dr.confirmdialog, msg:msg, 
+      btnlabel:btnlabel ? btnlabel : 'Confirm', 
+      cancelbtnlabel:cancelbtnlabel ? cancelbtnlabel : 'Cancel', 
+      callback:callback
+    });
+  </method>
+</class>

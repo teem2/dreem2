@@ -195,7 +195,12 @@ define(function(require, exports, module) {
           filePath = filePath.substring(0, filePath.indexOf('?'))
         }
         filePath = decodeURI(filePath);
-        
+
+        if (url[url.length - 1] == '/' && fs.existsSync(filePath + 'index.html')) {
+          url = url + 'index.html';
+          filePath = filePath + 'index.html';
+        }
+
         fs.stat(filePath, function(err, stat) {
           if (err || !stat.isFile()) {
             if (url == '/favicon.ico') {

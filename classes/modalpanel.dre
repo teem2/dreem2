@@ -1,0 +1,14 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.modalpanel {UI Component}
+   * A dr.dimmer that also provides a content panel.
+   */-->
+<class name="modalpanel" extends="dimmer"
+  defaultplacement="content"
+>
+  <!--// Views //////////////////////////////////////////////////////////////-->
+  <view name="content" x="center" y="middle" width="auto" height="auto"
+    ignoreplacement="true"
+  />
+</class>

@@ -1,0 +1,264 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+<!--/**
+   * @class dr.tree {UI Components}
+   * @extends dr.view
+   * An visual component whose state represents a node in a tree structure.  Trees will try to interpret many different
+   * data formats, but the preferred is an array of objects that have a "label" text property and optionally an "nodes"
+   * property which can contain more nodes.  The simplest example, for example, might look like this:
+   * `[{"label":"first node", "nodes": [{"label":"inner node"}], {"label":"second top node"}]`
+   *
+   *     @example
+   *
+   *     <tree name="simple" height="200" width="200" border="1" bordercolor="#eee"
+   *      data='[{"label":"first", "items": [1, 2, 3]}]'></tree>
+   *
+   */-->
+<class name="tree" extends="view" width="${Math.max(this.maxwidth + 12, this.parent.innerwidth)}">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="strict" type="boolean" value="true"/>
+
+  <attribute name="data" type="object" value=""/>
+
+  <attribute name="multipleselection" type="boolean" value="true"/>
+  <attribute name="branchselection" type="boolean" value="false"/>
+  <attribute name="selected" type="boolean" value="false"/>
+  <attribute name="collapsed" type="boolean" value="false"/>
+
+  <attribute name="indentwidth" type="number" value="16"/>
+  <attribute name="depth" type="number" value="0"/>
+  
+  <attribute name="selectcolor" type="color" value="#999"/>
+  <attribute name="hovercolor" type="color" value="#eee"/>
+  <attribute name="activecolor" type="color" value="#ccc"/>
+  <attribute name="selecttextcolor" type="color" value="white"/>
+  <attribute name="textcolor" type="color" value="#333"/>
+  
+  <attribute name="maxwidth" type="number" value="0"/>
+
+
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    if (parent.root) {
+      this.root = parent.root;
+      this.isroot = false;
+      attrs.depth = parent.depth + 1;
+    } else {
+      this.root = this;
+      this.isroot = true;
+      attrs.depth = 0;
+    }
+    
+    this.super();
+  </method>
+
+
+  <!--// Handlers ///////////////////////////////////////////////////////////-->
+  <handler event="ondata" method="populate"/>
+
+  <handler event="onselected">
+    var item = this.item,
+      selected = this.selected;
+    item.setAttribute('bgcolor', selected ? this.root.selectcolor : 'transparent');
+    item.setAttribute('color', selected ? this.root.selecttextcolor : this.textcolor);
+    
+    if (this.root.branchselection && !this.isroot) this.parent.setAttribute('selected', selected);
+  </handler>
+
+  <handler event="oncollapsed">
+    var children = this.nodes.children;
+    if (children) {
+      var i = 0,
+        len = children.length,
+        newCollapsedValue = !this.collapsed;
+      for (; len > i; i++) children[i].setAttribute('visible', newCollapsedValue)
+    }
+  </handler>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="populate">
+    var d = this.data;
+    if (typeof(d) === 'undefined') return;
+    
+    if (typeof(d) === 'string' && ((d[0] == '[' && d[d.length - 1] == ']') || (d[0] == '{' && d[d.length - 1] == '}'))) {
+      try {
+        d = this.data = JSON.parse(d);
+      } catch (e) {
+        console.log('String looked like JSON but had error parsing', e, d);
+      }
+    }
+    
+    if (typeof(d) === 'number') d = d.toString();
+    
+    var item = this.item,
+      label = item.label,
+      image = item.image;
+    if (typeof(d) === 'string') {
+      label.setAttribute('text', d);
+    } else if (!Array.isArray(d)) {
+      if (d.image) {
+        image.setAttribute('src', d.image);
+        image.setAttribute('visible', true);
+      }
+      
+      if (d.title) {
+        label.setAttribute('text', d.title)
+      } else if (d.label) {
+        label.setAttribute('text', d.label)
+      } else if (d.text) {
+        label.setAttribute('text', d.text)
+      } else if (d.name) {
+        label.setAttribute('text', d.name)
+      } else if (d.tag) {
+        label.setAttribute('text', d.tag)
+      } else {
+        label.setAttribute('visible', false);
+      }
+      
+      if (Array.isArray(d.items)) {
+        d = d.items;
+      } else if (Array.isArray(d.nodes)) {
+        d = d.nodes;
+      } else if (Array.isArray(d.children)) {
+        d = d.children;
+      } else if (Array.isArray(d.child)) {
+        d = d.child;
+      } else if (!this.strict) { //be fancy
+        var found = [],
+          props = Object.getOwnPropertyNames(d),
+          i = 0, len = props.length, name, value;
+        for (; len > i; i++) {
+          name = props[i];
+          if (name == 'title' || name == 'text' || name == 'label' || name == 'name' || name == 'tag') continue;
+          value = d[name];
+          if (!Array.isArray(value)) value = [value];
+          found.push({name:name, items:value});
+        }
+        if (found.length) d = found;
+      }
+    }
+    
+    if (d.title) {
+      label.setAttribute('text', d.title)
+    } else if (d.label) {
+      label.setAttribute('text', d.label)
+    } else if (d.text) {
+      label.setAttribute('text', d.text)
+    } else if (d.name) {
+      label.setAttribute('text', d.name)
+    } else if (d.tag) {
+      label.setAttribute('text', d.tag)
+    }
+    
+    if (Array.isArray(d)) {
+      this.nodes.setAttribute('data', d);
+      item.toggle.setAttribute('visible', !this.isroot && d.length > 0);
+    }
+    
+    var mw = label.x + label.width;
+    if (mw > this.root.maxwidth) this.root.setAttribute('maxwidth', mw);
+  </method>
+
+  <method name="clearSelection">
+    this.setAttribute('selected', false);
+    var svs = this.getSubviews(), i = 0, len = svs.length, sv;
+    for (; len > i; i++) {
+      sv = svs[i];
+      if (sv.clearSelection) sv.clearSelection();
+    }
+  </method>
+
+  <method name="selectHandler" args="selecting, data">
+    if (this.parent.selectHandler) this.parent.selectHandler(selecting, data);
+  </method>
+
+  <method name="triggerSelection" args="sel">
+    if (!this.root.multipleselection) this.root.clearSelection();
+    
+    this.setAttribute('selected', sel);
+    this.selectHandler(this.selected, this.data);
+  </method>
+
+
+  <!--// Views/Nodes ////////////////////////////////////////////////////////-->
+  <view name="item" with="button" height="${this.parent.isroot ? 0 : 25}"
+    width="${this.parent.root.width}"
+    focusembellishment="false" focusable="false"
+  >
+    <method name="doActivated">
+      var classroot = this.classroot;
+      classroot.triggerSelection(!classroot.selected);
+    </method>
+    
+    <method name="drawHoverState">
+      var cr = this.classroot;
+      this.setAttribute('color', cr.textcolor);
+      this.setAttribute('bgcolor', cr.root.hovercolor);
+    </method>
+    <method name="drawActiveState">
+      var cr = this.classroot;
+      this.setAttribute('color', cr.textcolor);
+      this.setAttribute('bgcolor', cr.root.activecolor);
+    </method>
+    <method name="drawReadyState">
+      var cr = this.classroot, selected = cr.selected, root = cr.root;
+      this.setAttribute('color', selected ? root.selecttextcolor : cr.textcolor);
+      this.setAttribute('bgcolor', selected ? root.selectcolor : 'transparent');
+    </method>
+    
+    <text name="toggle" with="button" focusembellishment="false"
+      visible="false" focusable="false"
+      x="${this.classroot.indentwidth * (this.classroot.depth - 1) + 5}" y="6"
+      text="${this.classroot.collapsed ? '▶' : '▼'}"
+      fontsize="12"
+    >
+      <method name="doActivated">
+        var classroot = this.classroot;
+        classroot.setAttribute('collapsed', !classroot.collapsed);
+      </method>
+      
+      <method name="drawHoverState">
+        this.parent.drawHoverState();
+      </method>
+      <method name="drawActiveState">
+        this.parent.drawActiveState();
+      </method>
+      <method name="drawReadyState">
+        this.parent.drawReadyState();
+      </method>
+    </text>
+    
+    <bitmap name="image" visible="false" x="${this.parent.toggle.x + 15}" y="5" width="15" height="15"/>
+    <text name="label" x="${this.parent.image.x + (this.parent.image.visible ? 20 : 0)}" y="5" fontsize="14"/>
+  </view>
+
+  <replicator name="nodes" classname="tree">
+    <handler event="onreplicated" args="r">
+      var children = r.children, len = children.length, i = 0;
+      for (; len > i; i++) children[i].setAttribute('name', 'treenode_' + i);
+    </handler>
+  </replicator>
+
+  <spacedlayout axis="y" updateparent="true"/>
+</class>

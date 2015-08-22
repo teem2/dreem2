@@ -162,123 +162,140 @@ SOFTWARE. -->
      *
      * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
      */-->
-    <class name="replicator" type="coffee" extends="node" requires="datapath">
-      <attribute name="_arrayidentity" type="expression" value="[]" allocation="class"></attribute>
-      <!--/**
-        * @attribute {Boolean} [pooling=false]
-        * If true, reuse views when replicating.
-        */-->
-      <attribute name="pooling" value="false" type="boolean"></attribute>
+<class name="replicator" type="coffee" extends="node" requires="datapath">
+  <attribute name="_arrayidentity" type="expression" value="[]" allocation="class"></attribute>
+  <!--/**
+    * @attribute {Boolean} [pooling=false]
+    * If true, reuse views when replicating.
+    */-->
+  <attribute name="pooling" value="false" type="boolean"></attribute>
 
-      <!--/**
-        * @attribute {Array} [data=[]]
-        * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
-        */-->
-      <attribute name="data" value="dr.replicator._arrayidentity" type="expression"></attribute>
-      <!--/**
-        * @attribute {String} [path=]
-        * If set, a {@link #datapath datapath} will be used to look up the value.
-        */-->
-      <attribute name="datapath" value="" type="string"></attribute>
-      <handler event="ondatapath" args="datapath">
-        if datapath
-          unless @_datapath?
-            @_datapath = new dr.datapath(@parent)
-            @listenTo(@_datapath, 'onresult', (data) =>
-              @setAttribute('data', data) #unless data == dr.datapath._arrayidentity
-              # console.log('data callback', data, @)
-            )
-            # console.log('new datapath', @_datapath)
-          @_datapath.setAttribute('path', datapath)
-      </handler>
+  <!--/**
+    * @attribute {Array} [data=[]]
+    * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
+    */-->
+  <attribute name="data" value="dr.replicator._arrayidentity" type="expression"></attribute>
+  <!--/**
+    * @attribute {String} [path=]
+    * If set, a {@link #datapath datapath} will be used to look up the value.
+    */-->
+  <attribute name="datapath" value="" type="string"></attribute>
+  <handler event="ondatapath" args="datapath">
+    if datapath
+      unless @_datapath?
+        @_datapath = new dr.datapath(@parent)
+        @listenTo(@_datapath, 'onresult', (data) =>
+          @setAttribute('data', data) #unless data == dr.datapath._arrayidentity
+          # console.log('data callback', data, @)
+        )
+        # console.log('new datapath', @_datapath)
+      @_datapath.setAttribute('path', datapath)
+  </handler>
 
-      <!--/**
-        * @attribute {String} classname (required)
-        * The name of the class to be replicated.
-        */-->
-      <attribute name="classname" value="" type="string"></attribute>
+  <!--/**
+    * @attribute {String} classname (required)
+    * The name of the class to be replicated.
+    */-->
+  <attribute name="classname" value="" type="string"></attribute>
 
-      <handler event="ondestroy" method="clear"></handler>
+  <handler event="ondestroy" method="clear"></handler>
 
-      <method name="updateData" args="data">
-        # remove dataset declaration
-        re = /^\$([^\/]+)/
-        @dataset.updateData(@datapath.replace(re, ''), data);
-      </method>
+  <method name="updateData" args="data">
+    # remove dataset declaration
+    re = /^\$([^\/]+)/
+    @dataset.updateData(@datapath.replace(re, ''), data);
+  </method>
 
-      <method name="clear">
-        @_lockLayouts(true)
-        # @parent.setAttribute('display', 'none')
-        if @children
-          for child in @children
-            # console.log 'destroying child', child
-            child.destroy()
-        @children = []
-        # @parent.setAttribute('display', null)
-        @_lockLayouts(false)
-      </method>
+  <method name="clear">
+    if not @locked then @_lockLayouts(true)
+    # @parent.setAttribute('display', 'none')
+    if @children
+      for child in @children
+        # console.log 'destroying child', child
+        child.destroy()
+    @children = []
+    # @parent.setAttribute('display', null)
+    if not @locked then @_lockLayouts(false)
+  </method>
 
-      <method name="_lockLayouts" args="locked">
-        if @parent.layouts
-          for layout in @parent.layouts
-            layout.setAttribute('locked', locked)
-      </method>
+  <method name="_lockLayouts" args="locked">
+    if @parent.layouts
+      for layout in @parent.layouts
+        layout.setAttribute('locked', locked)
+  </method>
 
-      <!--/**
-        * @event onreplicated
-        * Fired when the replicator is done
-        * @param {dr.replicator} replicator The dr.replicator that fired the event
-        */-->
-      <handler event="onclassname,ondata,oninit">
-        return unless @inited and @parent
-        unless @classname
-          console.warn 'missing classname for replicator', @
-          return
-        # console.log('_applyData', @data, @classname, @parent, @children, @, @inited)
+  <!--/**
+    * @event onreplicated
+    * Fired when the replicator is done
+    * @param {dr.replicator} replicator The dr.replicator that fired the event
+    */-->
+  <handler event="onclassname,ondata,oninit">
+    return unless @inited and @parent
+    unless @classname
+      console.warn 'missing classname for replicator', @
+      return
+    # console.log('_applyData', @data, @classname, @parent, @children, @, @inited)
 
-        unless dr.lookupClass(@classname)
-          console.warn 'missing class for replicator', @classname, 'skipping replication'
-          return
+    unless dr.lookupClass(@classname)
+      console.warn 'missing class for replicator', @classname, 'skipping replication'
+      return
 
-        return if @locked
-        return unless @data and @data != dr.replicator._arrayidentity
+    return if @locked
+    return unless @data and @data != dr.replicator._arrayidentity
 
-        locked = @locked
-        @locked = true
+    locked = @locked
+    @locked = true
 
-        if @classname == 'node'
-          # bail out before actually replicating
-          @locked = locked
-          return
+    if @classname == 'node'
+      # bail out before actually replicating
+      @locked = locked
+      return
 
-        @_lockLayouts(true)
+    @_lockLayouts(true)
 
-        #console.log @data.length
-        @children ?= []
-        if @pooling 
-          for child, i in @children
-            datum = @data[i]
-            # console.log 'replicator updating', i, child, 'in', datum
-            if i < @data.length
-              child.setAttribute('data', datum)
-              child.setAttribute('visible', true);
-            else
-              child.setAttribute('visible', false);
-          if @data.length > @children.length
-            i = @children.length;
-            while @data.length > @children.length
-              datum = @data[i++]
-              @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
-              # console.log 'replicator created', @classname, @children[@children.length - 1]
+    #console.log @data.length
+    @children ?= []
+    if @pooling 
+      for child, i in @children
+        datum = @data[i]
+        # console.log 'replicator updating', i, child, 'in', datum
+        if i < @data.length
+          child.setAttribute('data', datum)
+          child.setAttribute('visible', true);
         else
-          @clear()
-          for datum in @data
-            # console.log 'replicator creating', @classname, 'in', @parent
-            @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
-            # console.log 'replicator created', @classname, @children[@children.length - 1]
+          child.setAttribute('visible', false);
+      if @data.length > @children.length
+        i = @children.length;
+        while @data.length > @children.length
+          datum = @data[i++]
+          @_createChild(datum)
+          # console.log 'replicator created', @classname, @children[@children.length - 1]
+    else
+      @clear()
+      for datum in @data
+        # console.log 'replicator creating', @classname, 'in', @parent
+        @_createChild(datum)
+        # console.log 'replicator created', @classname, @children[@children.length - 1]
 
-        @_lockLayouts(false)
-        @locked = locked
-        @sendEvent('onreplicated', @)
-      </handler>
-    </class>
+    @_lockLayouts(false)
+    @locked = locked
+    @sendEvent('onreplicated', @)
+  </handler>
+  <method name="_createChild" args="data">
+    attrs = {class: @classname, data: data, parent: @parent, replicator: @}
+    # add stuff required by the editor unless it's a class used by the editor itself!
+    shouldedit = this.searchAncestors((node) ->
+      return node.isA(dr.editable)
+    )
+    if 'editable' of dr and shouldedit?
+      attrs.with = 'editable'
+      attrs.__objectify_attrs_list = []
+    child = @createChild(attrs)
+    # Work around ondata event not firing
+    @children.push(child)
+    child.sendEvent('ondata', data)
+  </method>
+  
+  <!--// Editor //-->
+  <attribute name="hiddenattrs" type="expression" value="{pooling:true, data:true}" allocation="class"/>
+</class>

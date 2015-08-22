@@ -1,0 +1,445 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<mixin name="editable" with="droptarget"
+  draggroups="{editable:true}" cursor="move"
+>
+  <!--// Class Methods //////////////////////////////////////////////////////-->
+  <method name="comparator" args="a, b" allocation="class">
+    var aimport = a.importance || 99999,
+      bimport = b.importance || 99999;
+    if (bimport === aimport) {
+      if (b.name > a.name) {
+        return -1;
+      } else if (a.name > b.name) {
+        return 1;
+      }
+    } else if (bimport > aimport) {
+      return -1;
+    } else if (aimport > bimport) {
+      return 1;
+    } else {
+      return 0;
+    }
+  </method>
+
+
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    var isView = false, isText = false;
+    if (this.isA(dr.text)) {
+      isView = isText = true;
+    } else if (this.isA(dr.View)) {
+      isView = true;
+    }
+    this.__isView = isView;
+    this.__isText = isText;
+    
+    if (isView) {
+      // Set up mousedown/up handlers which send simulated events to the
+      // reticle. This allows the reticle to behave as the draggable object
+      // while still having clickability based on the view structure.
+      this.listenTo(this, 'onmousedown', '__editable_handleMouseDown');
+      this.listenTo(this, 'onmouseup', '__editable_handleMouseUp');
+      this.listenTo(this, 'onmouseover', '__editable_handleMouseOver');
+      this.listenTo(this, 'onmouseout', '__editable_handleMouseOut');
+      this.listenTo(this, 'ondblclick', '__editable_handleDoubleClick');
+      
+      this.setAttribute('clickable', true); // No model update
+      this.setAttribute('focusable', false); // No model update
+    }
+    
+    if (isText) this.setAttribute('focusembellishment', false);
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="inlineedit" type="boolean" value="false"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--// Drag and Drop //-->
+  <method name="notifyDragEnter" args="dropable">
+    this.__origBoxShadow = this.getActualAttribute('boxshadow');
+    this.setActualAttribute('boxshadow', [0, 0, 12, 1, '#00ff00']);
+  </method>
+  
+  <method name="notifyDragLeave" args="dropable">
+    this.setActualAttribute('boxshadow', this.__origBoxShadow);
+  </method>
+  
+  <method name="willAcceptDrop" args="dropable">
+    // Non-views will never accept a drop.
+    if (!this.__isView) return false;
+    
+    // Leaf views do not support children so no dropping.
+    if (!dropable.isbehavior && this.isLeaf(dropable)) return false;
+    
+    // No dropping on descendants of self
+    if (this.isDescendantOf(dropable.target)) return false;
+    
+    return this.super();
+  </method>
+
+  <!--// Event Handling/Forwarding //-->
+  <method name="__editable_handleMouseDown" args="event">
+    if (!this.inlineedit) {
+      selectionmanager.select(this);
+      dr.sprite.simulatePlatformEvent(reticle, 'mousedown', {pointerX:event.x, pointerY:event.y});
+      reticle.doMouseOver(true);
+    }
+  </method>
+  
+  <method name="__editable_handleMouseUp" args="event">
+    if (!this.inlineedit) {
+      dr.sprite.simulatePlatformEvent(reticle, 'mouseup', {pointerX:event.x, pointerY:event.y});
+    }
+  </method>
+
+  <method name="__editable_handleMouseOver" args="event">
+    if (!this.inlineedit) {
+      if (reticle.target === this) dr.sprite.simulatePlatformEvent(reticle, 'mouseover', {pointerX:event.x, pointerY:event.y});
+    }
+  </method>
+  
+  <method name="__editable_handleMouseOut" args="event">
+    if (!this.inlineedit) {
+      if (reticle.target === this) dr.sprite.simulatePlatformEvent(reticle, 'mouseout', {pointerX:event.x, pointerY:event.y});
+    }
+  </method>
+  
+  <method name="__editable_handleDoubleClick" args="event">
+    this.startEditing();
+  </method>
+  
+  <!--/**
+    * @method notifyDeselected
+    * Called by the selectionmanager when this editable is no longer selected.
+    * @return {void}
+    */-->
+  <method name="notifyDeselected">
+    this.endEditing();
+  </method>
+  
+  <!--/**
+    * @method isLocalEdit
+    * Used to check if some kind of specialized inline edit is in progress.
+    * @return {Boolean}
+    */-->
+  <method name="isInlineEdit">
+    return this.inlineedit;
+  </method>
+  
+  <!--/**
+    * @method startEditing
+    * Starts inline editing.
+    * @return {void}
+    */-->
+  <method name="startEditing">
+    if (!this.inlineedit && this.__isText) {
+      this.__oldActualTextValue = this.getActualAttribute('text');
+      this.__oldCfgTextValue = this.getAttribute('text');
+      
+      this.setAttribute('inlineedit', true);
+      
+      this.setActualAttribute('text', this.__oldCfgTextValue);
+      
+      reticle.resizer.setActualAttribute('visible', false);
+      
+      this.setAttribute('cursor', 'auto');
+      this.setAttribute('editable', true);
+      this.setAttribute('focusable', true);
+      this.sprite.selectAll();
+      
+      if (this.focused) this.focused = false; // WORKAROUND: For some reason focusable gets stuck on so unset it before setting focus.
+      this.focus();
+    }
+  </method>
+  
+  <!--/**
+    * @method startEditing
+    * Ends inline editing.
+    * @return {void}
+    */-->
+  <method name="endEditing">
+    if (this.inlineedit && this.__isText) {
+      reticle.resizer.setActualAttribute('visible', true);
+      
+      this.setAttribute('cursor', 'move');
+      this.setAttribute('editable', false);
+      this.setAttribute('focusable', false);
+      
+      this.setAttribute('inlineedit', false);
+      
+      var newValue = this.getActualAttribute('text');
+      if (this.__oldCfgTextValue === newValue) {
+        this.setActualAttribute('text', this.__oldActualTextValue);
+      } else {
+        actions.do(new dr.editor.editorattrundoable({
+          target:this, attribute:'text', oldvalue:this.__oldCfgTextValue, newvalue:newValue
+        }));
+      }
+    }
+  </method>
+
+  <method name="invokePlatformObserverCallback" args="methodName, eventType, returnEvent">
+    if (
+      (eventType === 'oninput' || eventType === 'onkeydown') && this.__isText && this.isInlineEdit() ||
+      
+      eventType === 'onmousedown' && methodName === '__editable_handleMouseDown' ||
+      eventType === 'onmouseup' && methodName === '__editable_handleMouseUp' ||
+      eventType === 'onmouseover' && methodName === '__editable_handleMouseOver' ||
+      eventType === 'onmouseout' && methodName === '__editable_handleMouseOut' ||
+      eventType === 'ondblclick' && methodName === '__editable_handleDoubleClick'
+    ) {
+      // Process platform events that editable has registered for
+      return this.super();
+    }
+    
+    // Abort all other platform events
+    return true;
+  </method>
+  
+  <!--// Model Updates //-->
+  <setter name="parent" args="parent">
+    var existingParent = this.parent;
+    var retval = this.super(parent);
+    
+    if (editor.editmode && !this.isBeingDestroyed && ! this.replicator) {
+      var hasOld = existingParent && this.inited,
+        hasNew = this.parent && this.parent.inited;
+      if (hasOld && hasNew) {
+        editormodel.moveNode(this, existingParent.id || existingParent.getRoot().id, this.parent.id || this.parent.getRoot().id);
+      } else {
+        if (hasOld) editormodel.deleteNode(this, existingParent.id || existingParent.getRoot().id);
+        if (hasNew) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
+      }
+    }
+    
+    return retval;
+  </setter>
+
+  <method name="_isInReplicator" args="name, value, isModelUpdate">
+    return this.searchAncestors(function(node) {
+      return node.replicator;
+    })
+  </method>
+  <method name="setAttribute" args="name, value, isModelUpdate">
+    // Optional attribute, noModelUpdate, is used to prevent updated to the
+    // model that are unnecessary or possibly incorrect.
+    
+    // Prevent inline text edit from updating the config value until editing is complete.
+    if (this.inlineedit && name === 'text') {
+      this.setActualAttribute(name, value);
+      return;
+    }
+    
+    if (isModelUpdate && editor.editmode && name !== 'parent') {
+      var retval = this.super(name, value);
+      var parent = this.parent;
+      if (parent && parent.inited) {
+        // This gets the configured attribute value, as opposed to the current value
+        var realval = this.getAttribute(name);
+        if (this.replicator) {
+          editormodel.updateClassAttr(this.replicator.classname, name, realval);
+        } else {
+          // If we're inside a class that's being replicated prompt to save when done editing
+          if (this._isInReplicator()) {
+            editormodel.replicatorchanges = true;
+          }
+          // TODO: this could fail for replicated instances that don't have editor IDs, or subnodes of replicated classes with repeated IDs
+          var id = this.id || this.getRoot().id;
+          editormodel.updateAttr(id, name, realval);
+        }
+      }
+      return retval;
+    } else {
+      return this.super(name, value);
+    }
+  </method>
+
+  <method name="restoreAttrToModel" args="attrName">
+    var model = editormodel.getModelNode(this);
+    if (model) {
+      var value = model.attr[attrName];
+      this.setAttribute(attrName, value, false);
+    }
+  </method>
+
+  <method name="pauseConstraints">
+    this.__constraintsPaused = true;
+  </method>
+
+  <method name="resumeConstraints">
+    this.__constraintsPaused = false;
+  </method>
+
+  <method name="getConstraintTemplate" args="attrName, expression">
+    return 'if (this.__constraintsPaused) return; ' + this.super();
+  </method>
+
+  <method name="moveInFrontOf" args="sibling">
+    if (editor.editmode) editormodel.moveInFrontOf(this.id, sibling.id, this.parent.id || this.getRoot().id);
+    return this.super();
+  </method>
+  
+  <method name="moveToBack">
+    if (editor.editmode) editormodel.moveToBack(this.id, this.parent.id || this.getRoot().id);
+    return this.super();
+  </method>
+
+  <!--// Model Creation //-->
+  <method name="objectify" args="obj">
+    obj.tag = this.$tagname;
+    
+    // Store Attributes
+    var attrs = {},
+      objectifyAttrsList = this.__objectify_attrs_list, 
+      i = objectifyAttrsList.length, 
+      attrName;
+    while (i) {
+      // Make sure all properties are strings since the server side markup
+      // generator seems to work better when they are.
+      attrName = objectifyAttrsList[--i];
+      attrs[attrName] = '' + this['__cfg_' + attrName];
+    }
+    obj.attr = attrs;
+    
+    // Store "new" children
+    var children = obj.child || (obj.child = []),
+      subnodes = this.getSubnodes(), 
+      len = subnodes.length, subnode;
+    for (i = 0; len > i; i++) {
+      subnode = subnodes[i];
+      if (subnode.__NEW) children.push(subnode.objectify({}));
+    }
+    
+    return obj;
+  </method>
+
+  <!--// Details Panel Support //-->
+  <method name="getAttrsListForDetails">
+    return this._getAttrsListForDetails(null, config.more_threshold);
+  </method>
+  
+  <method name="getMoreAttrsListForDetails">
+    return this._getAttrsListForDetails(config.more_threshold, null);
+  </method>
+  
+  <method name="getAllAttrsListForDetails">
+    return this._getAttrsListForDetails(null, null);
+  </method>
+  
+  <method name="_getAttrsListForDetails" args="lowerLimit, upperLimit">
+    // Get Attributes. Pull from ancestors and build list of all attributes.
+    var klass = this.klass, ancestors = klass.ancestors(),
+      attrMap = {}, attrs = [],
+      key, value, attr, importance,
+      i = 6, // 6 skips over some of the base classes and the editor mixin.
+      len = ancestors.length;
+    
+    for (; len > i; i++) attrMap = dr.extend(attrMap, ancestors[i].attributes);
+    for (key in attrMap) {
+      value = attrMap[key];
+      value.name = key;
+      value.target = this;
+      attrs.push(value)
+    }
+    
+    //// Filter Attributes ////
+    if (selectionmanager.isrootselection && this === selectionmanager.selected) {
+      // Root editable only supports a few attributes so filter out 
+      // most of them
+      i = attrs.length;
+      while (i) {
+        switch(attrs[--i].name) {
+          case 'bgcolor':
+            break;
+          default:
+            attrs.splice(i, 1);
+        }
+      }
+    } else {
+      // Filter attrs for class
+      var hiddenattrs = klass.hiddenattrs,
+        readonlyattrs = klass.readonlyattrs,
+        attrimportance = klass.attrimportance;
+      
+      if (hiddenattrs) {
+        i = attrs.length;
+        while (i) {
+          attr = attrs[--i];
+          if (hiddenattrs[attr.name]) attrs.splice(i, 1);
+        }
+      }
+      
+      if (readonlyattrs) {
+        i = attrs.length;
+        while (i) {
+          attr = attrs[--i];
+          if (readonlyattrs[attr.name]) attr.readonly = true;
+        }
+      }
+      
+      if (attrimportance) {
+        i = attrs.length;
+        while (i) {
+          attr = attrs[--i];
+          if (attrimportance[attr.name] != null) attr.importance = attrimportance[attr.name];
+        }
+      }
+    }
+    
+    //// Filter By Importance ////
+    lowerLimit = lowerLimit == null ? -99999999 : lowerLimit;
+    upperLimit = upperLimit == null ? 99999999 : upperLimit;
+    
+    // Unspecified importances will be at the end of the non-more section.
+    var unspecifiedImportance = config.more_threshold - 1;
+    
+    i = attrs.length;
+    while (i) {
+      attr = attrs[--i];
+      
+      importance = attr.importance;
+      if (importance == null) importance = unspecifiedImportance;
+      
+      if (lowerLimit > importance || importance >= upperLimit) attrs.splice(i, 1);
+    }
+    
+    //// Sort Attributes ////
+    attrs.sort(dr.editable.comparator);
+    
+    return attrs;
+  </method>
+  
+  <!--// Behavior Support //-->
+  <method name="getBehaviors">
+    var children = this.getSubnodes(), i = children.length, child, retval = [];
+    while (i) {
+      child = children[--i];
+      if (child.isA(dr.behavior.behavior)) retval.push(child);
+    }
+    return retval;
+  </method>
+</mixin>

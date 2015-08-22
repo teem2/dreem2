@@ -1,0 +1,997 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<include href='./keyboarddraggable.dre'/>
+<include href='./editable.dre'/>
+<include href='./controlhandle.dre'/>
+<include href='./reticle.dre'/>
+<include href='./toolbarbutton.dre'/>
+<include href='./attributeeditor.dre'/>
+<include href='./subnodeeditor.dre'/>
+<include href='./colorpicker.dre'/>
+<include href='./componentdropable.dre'/>
+<include href='./componentsource.dre'/>
+
+<include href='./undo/createlayoutundoable.dre'/>
+<include href='./undo/deletelayoutundoable.dre'/>
+<include href='./undo/createbehaviorundoable.dre'/>
+<include href='./undo/deletebehaviorundoable.dre'/>
+<include href='./undo/editorattrundoable.dre'/>
+
+<view name="editor" id="editor"
+  clip="true" bgcolor="white"
+  width="${Math.max(1000, this.parent.width)}"
+  height="${Math.max(500, this.parent.height)}"
+  ignoreplacement="true" ignorelayout="true"
+  defaultplacement="content_bg.content.inner"
+>
+  <!--// ATTRIBUTES /////////////////////////////////////////////////////////-->
+  <attribute name="editmode" type="boolean" value="true"/>
+
+  <attribute name="showlocationmarkers" type="boolean" value="true"/>
+
+
+  <!--// SERVICE NODES //////////////////////////////////////////////////////-->
+  <include href='./service_nodes/config.dre'/>
+  <include href='./service_nodes/selectionmanager.dre'/>
+  <include href='./service_nodes/actions.dre'/>
+  <include href='./service_nodes/editormodel.dre'/>
+
+  <editor-undostack id="undo"/>
+
+
+  <!--// HANDLERS ///////////////////////////////////////////////////////////-->
+  <handler event="onkeydown" reference="dr.keyboard" args="platformEvent">
+    // Abort if the modal dialog is open.
+    if (dialogmanager.getActiveDialog() != null) return;
+    
+    var keyboard = dr.keyboard,
+      sprite = dr.sprite,
+      keyCode = sprite.KeyObservable.getKeyCodeFromEvent(platformEvent),
+      isAcceleratorKeyDown = keyboard.isAcceleratorKeyDown(),
+      isShiftKeyDown = keyboard.isShiftKeyDown();
+    
+    // If current focus is an input text don't do anything. In particular,
+    // we want to allow the delete key to be processed normally.
+    var focusedView = dr.global.focus.focusedView;
+    if (focusedView && focusedView.sprite.isA(sprite.InputText)) {
+      if (!isAcceleratorKeyDown) return;
+      if (keyCode !== 90) return; // Z: Process undo/redo below since we want to supress the browser undo/redo mechanism
+    }
+    
+    if (isAcceleratorKeyDown) {
+      switch (keyCode) {
+        case 66: // B: Reorder backward
+          sprite.preventDefault(platformEvent); // Prevent browser show bookmarks bar functionality
+          actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
+          break;
+        case 70: // F: Reorder forward
+          sprite.preventDefault(platformEvent); // Prevent browser find functionality
+          actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
+          break;
+        case 83: // S: Save document
+          sprite.preventDefault(platformEvent); // Prevent browser save functionality
+          saveButton.doActivated();
+          break;
+        case 90: // Z: Undo/Redo
+          sprite.preventDefault(platformEvent); // Prevent browser undo/redo functionality
+          actions[(isShiftKeyDown ? 'redo' : 'undo')]();
+          break;
+      }
+    } else {
+      var GK = sprite.GlobalKeys;
+      switch (keyCode) {
+        case GK.KEYCODE_BACKSPACE: // Delete selected view
+          actions.deleteSelected();
+          break;
+        case GK.KEYCODE_ESC: // Clear selection
+          if (!reticle.isStarted) selectionmanager.clear();
+          break;
+      }
+    }
+  </handler>
+
+  <handler name="updateLocationMarkers" event="onmousemove" reference="dr.mouse" args="event">
+    if (event) {
+      this._lastMouseEvent = event;
+    } else {
+      event = this._lastMouseEvent;
+    }
+    
+    var rootSprite = editor.parent.sprite,
+      x = event.x + rootSprite.getScrollX(), 
+      y = event.y + rootSprite.getScrollY(),
+      xLoc = xLocation,
+      yLoc = yLocation,
+      content_bg = this.content_bg,
+      content = content_bg.content,
+      inner = content.inner;
+    
+    xLoc.setAttribute('visible', this.showlocationmarkers);
+    xLoc.setAttribute('x', x - 1);
+    xLoc.label.setAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
+    
+    yLoc.setAttribute('visible', this.showlocationmarkers);
+    yLoc.setAttribute('y', y - 1);
+    yLoc.label.setAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
+    
+    return true;
+  </handler>
+  <handler event="onscrollx, onscrolly" reference="this.content_bg">
+    this.updateLocationMarkers();
+  </handler>
+  <handler event="onscrollx, onscrolly" reference="editor.parent">
+    this.updateLocationMarkers();
+  </handler>
+
+  <!-- Eat attempts to open the context menu since this typically messes up
+       drag and drop. -->
+  <handler event="oncontextmenu" args="event"/>
+
+  <!-- Eat and cancel desktop drag and drop events. -->
+  <handler event="ondrop, ondragover" args="platformEvent">
+    dr.sprite.preventDefault(platformEvent);
+  </handler>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <method name="isPlatformEvent" args="eventType">
+    // Makes the ondrop, ondragover handler work for platform events.
+    // Part of the prevention of desktop drag and drop behavior.
+    if (dr.sprite.DropObservable.EVENT_TYPES[eventType]) return true;
+    return this.super();
+  </method>
+
+
+  <!--// VIEWS //////////////////////////////////////////////////////////////-->
+  <modalpanel>
+    <dialogmanager id="dialogmanager"/>
+  </modalpanel>
+
+  <!--// Rulers, Location and Selection Overlays //-->
+  <view id="ruler_horizontal" ignoreplacement="true" clip="true"
+    x="${this.parent.ruler_corner.x + this.parent.ruler_corner.width}"
+    y="${config.topbar_height}"
+    width="${this.parent.divider_right.x - this.x}"
+    height="${config.ruler_thickness}"
+    scrollx="${this.parent.content_bg.scrollx + this.parent.content_bg.content.inner.scrollx + 100 - config.content_inset}"
+  >
+    <spacedlayout axis="x" spacing="100" inset="102"/>
+    <replicator classname="horizontal_rulertext" data="${config.ruler_marks}"/>
+    
+    <bitmap width="5200" ignorelayout="true"
+      height="${config.ruler_thickness}"
+      src="/classes/editor/img/ruler_horizontal.png" stretches="contain" repeat="repeat-x"
+    >
+      <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    </bitmap>
+  </view>
+  
+  <view id="ruler_vertical" ignoreplacement="true" clip="true"
+    x="${this.parent.divider_left.x}"
+    y="${this.parent.ruler_corner.y + this.parent.ruler_corner.height}"
+    width="${config.ruler_thickness}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    scrolly="${this.parent.content_bg.scrolly + this.parent.content_bg.content.inner.scrolly + 100 - config.content_inset}"
+  >
+    <spacedlayout axis="y" spacing="100" inset="97"/>
+    <replicator classname="vertical_rulertext" data="${config.ruler_marks}"/>
+    
+    <bitmap height="5200" ignorelayout="true"
+      width="${config.ruler_thickness}"
+      src="/classes/editor/img/ruler_vertical.png" stretches="contain" repeat="repeat-y"
+    >
+      <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    </bitmap>
+  </view>
+  
+  <view id="xLocation" ignoreplacement="true"
+    y="${ruler_horizontal.y}" width="1" height="${config.ruler_thickness}" bgcolor="${config.location_color}"
+  >
+    <text with="locationtext" name="label" x="3" y="2"/>
+  </view>
+
+  <view id="yLocation" ignoreplacement="true"
+    x="${ruler_vertical.x}" width="${config.ruler_thickness}" height="1" bgcolor="${config.location_color}"
+  >
+    <verticaltext with="locationtext" name="label" x="2" y="-2"/>
+  </view>
+  
+  <view id="horizontal_selection" with="button, keyboarddraggable" ignoreplacement="true"
+    disabled="${selectionmanager.isrootselection}" cursor="col-resize"
+    visible="${reticle.visible}" opacity="0.75"
+    x="${reticle.x}" y="${ruler_horizontal.y}"
+    width="${Math.max(1, reticle.width)}" height="${config.ruler_thickness}"
+  >
+    <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
+    <view name="lower" width="1" height="100%" bgcolor="${config.selection_color}"/>
+    <view name="upper" width="1" x="right" height="100%" bgcolor="${config.selection_color}"/>
+    
+    <!-- Left Edge Resizer -->
+    <view with="button, keyboarddraggable" width="10" x="-5" height="100%" cursor="w-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
+      <method name="startDrag" args="event">
+        // If a layout in parent is managing x/y position then don't allow drag.
+        var target = reticle.target;
+        if (target.__layoutDomainInUseForView('x') || target.__layoutDomainInUseForView('width')) return;
+        
+        reticle._start();
+        this._origTargetX = reticle.target.x;
+        this._origTargetW = reticle.target.width;
+        this.super();
+      </method>
+      <method name="stopDrag" args="event, isAbort">
+        if (isAbort) {
+          reticle._abort();
+        } else {
+          reticle._stop();
+        }
+        this.super();
+      </method>
+      <method name="updatePosition" args="x, y">
+        var target = reticle.target;
+        if (!this.disabled && target) {
+          var diff = Math.min(this._origTargetW, x + 5);
+          
+          x = this._origTargetX + diff;
+          var gx = Number(gridsizex.value);
+          if (gx > 0) x = gx * Math.round(x / gx);
+          diff = x - this._origTargetX;
+          
+          target.setAttribute('x', this._origTargetX + diff, true); // 3rd arg enables model update
+          target.setAttribute('width', this._origTargetW - diff, true); // 3rd arg enables model update
+        }
+      </method>
+      
+      <method name="drawFocusedState">
+        this.parent.lower.setAttribute('bgcolor', 'black');
+        this.parent.lower.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+      </method>
+      <method name="drawHoverState">
+        this.parent.lower.setAttribute('bgcolor', 'black');
+        this.parent.lower.setAttribute('boxshadow', config.boxshadow_normal);
+      </method>
+      <method name="drawActiveState">
+        this.parent.lower.setAttribute('bgcolor', config.selection_color);
+        this.parent.lower.setAttribute('boxshadow', null);
+      </method>
+      <method name="drawReadyState">
+        this.parent.lower.setAttribute('bgcolor', config.selection_color);
+        this.parent.lower.setAttribute('boxshadow', null);
+      </method>
+    </view>
+    
+    <!-- Right Edge Resizer -->
+    <view with="button, keyboarddraggable" width="10" x="${this.parent.width - 5}" height="100%" cursor="e-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
+      <method name="startDrag" args="event">
+        // If a layout in child is managing width/height then don't allow drag.
+        if (reticle.target.__layoutDomainInUseForView('width')) return;
+        
+        reticle._start();
+        this.super();
+      </method>
+      <method name="stopDrag" args="event, isAbort">
+        if (isAbort) {
+          reticle._abort();
+        } else {
+          reticle._stop();
+        }
+        this.super();
+      </method>
+      <method name="updatePosition" args="x, y">
+        var target = reticle.target;
+        if (!this.disabled && target) {
+          x = Math.max(0, x + 5);
+          var gx = Number(gridsizex.value);
+          if (gx > 0) x = gx * Math.round(x / gx);
+          
+          target.setAttribute('width', x, true); // 3rd arg enables model update
+        }
+      </method>
+      
+      <method name="drawFocusedState">
+        this.parent.upper.setAttribute('bgcolor', 'black');
+        this.parent.upper.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+      </method>
+      <method name="drawHoverState">
+        this.parent.upper.setAttribute('bgcolor', 'black');
+        this.parent.upper.setAttribute('boxshadow', config.boxshadow_normal);
+      </method>
+      <method name="drawActiveState">
+        this.parent.upper.setAttribute('bgcolor', config.selection_color);
+        this.parent.upper.setAttribute('boxshadow', null);
+      </method>
+      <method name="drawReadyState">
+        this.parent.upper.setAttribute('bgcolor', config.selection_color);
+        this.parent.upper.setAttribute('boxshadow', null);
+      </method>
+    </view>
+    
+    <horizontal_ruler_relselecttext name="locrelstart" x="${-this.width - config.selection_marker_offset}"/>
+    <horizontal_ruler_selecttext name="locstart" x="${-this.width - config.selection_marker_offset}"/>
+    <horizontal_ruler_selecttext name="locsize" x="center"/>
+    <horizontal_ruler_selecttext name="locend" x="${this.parent.width + config.selection_marker_offset}"/>
+    <horizontal_ruler_relselecttext name="locrelend" x="${this.parent.width + config.selection_marker_offset}"/>
+    
+    <method name="startDrag" args="event">
+      // If a layout in parent is managing x/y position then don't allow drag.
+      if (reticle.target.__layoutDomainInUseForView('x')) return;
+      
+      reticle._start();
+      this.super();
+    </method>
+    <method name="stopDrag" args="event, isAbort">
+      if (isAbort) {
+        reticle._abort();
+      } else {
+        reticle._stop();
+      }
+      this.super();
+    </method>
+    <method name="updatePosition" args="x, y">
+      var target = reticle.target;
+      if (!this.disabled && target) {
+        x = x - target.getAbsolutePosition(editor).x + target.x;
+        var gx = Number(gridsizex.value);
+        if (gx > 0) x = gx * Math.round(x / gx);
+        
+        target.setAttribute('x', x, true); // 3rd arg enables model update
+      }
+    </method>
+    
+    <method name="drawHoverState">
+      this.fill.setAttribute('opacity', 0.25);
+    </method>
+    <method name="drawActiveState">
+      this.fill.setAttribute('opacity', 0.4);
+    </method>
+    <method name="drawReadyState">
+      this.fill.setAttribute('opacity', 0.15);
+    </method>
+  </view>
+  
+  <view id="vertical_selection" with="button, keyboarddraggable" ignoreplacement="true"
+    disabled="${selectionmanager.isrootselection}"
+    visible="${reticle.visible}" opacity="0.75"
+    x="${ruler_vertical.x}" y="${reticle.y}"
+    width="${config.ruler_thickness}" height="${Math.max(1, reticle.height)}"
+    cursor="row-resize"
+  >
+    <view name="fill" width="100%" height="100%" opacity="0.15" bgcolor="${config.selection_color}"/>
+    <view name="lower" height="1" width="100%" bgcolor="${config.selection_color}"/>
+    <view name="upper" height="1" y="bottom" width="100%" bgcolor="${config.selection_color}"/>
+    
+    <vertical_ruler_relselecttext name="locrelstart" y="${-config.selection_marker_offset}"/>
+    <vertical_ruler_selecttext name="locstart" y="${-config.selection_marker_offset}"/>
+    <vertical_ruler_selecttext name="locsize" y="middle"/>
+    <vertical_ruler_selecttext name="locend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
+    <vertical_ruler_relselecttext name="locrelend" y="${this.parent.height + this.height + config.selection_marker_offset}"/>
+    
+    <!-- Top Edge Resizer -->
+    <view with="button, keyboarddraggable" height="10" y="-5" width="100%" cursor="n-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
+      <method name="startDrag" args="event">
+        // If a layout in parent is managing x/y position then don't allow drag.
+        var target = reticle.target;
+        if (target.__layoutDomainInUseForView('y') || target.__layoutDomainInUseForView('height')) return;
+        
+        reticle._start();
+        this._origTargetY = reticle.target.y;
+        this._origTargetH = reticle.target.height;
+        this.super();
+      </method>
+      <method name="stopDrag" args="event, isAbort">
+        if (isAbort) {
+          reticle._abort();
+        } else {
+          reticle._stop();
+        }
+        this.super();
+      </method>
+      <method name="updatePosition" args="x, y">
+        var target = reticle.target;
+        if (!this.disabled && target) {
+          var diff = Math.min(this._origTargetH, y + 5);
+          
+          y = this._origTargetY + diff;
+          var gy = Number(gridsizey.value);
+          if (gy > 0) y = gy * Math.round(y / gy);
+          diff = y - this._origTargetY;
+          
+          target.setAttribute('y', this._origTargetY + diff, true); // 3rd arg enables model update
+          target.setAttribute('height', this._origTargetH - diff, true); // 3rd arg enables model update
+        }
+      </method>
+      
+      <method name="drawFocusedState">
+        this.parent.lower.setAttribute('bgcolor', 'black');
+        this.parent.lower.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+      </method>
+      <method name="drawHoverState">
+        this.parent.lower.setAttribute('bgcolor', 'black');
+        this.parent.lower.setAttribute('boxshadow', config.boxshadow_normal);
+      </method>
+      <method name="drawActiveState">
+        this.parent.lower.setAttribute('bgcolor', config.selection_color);
+        this.parent.lower.setAttribute('boxshadow', null);
+      </method>
+      <method name="drawReadyState">
+        this.parent.lower.setAttribute('bgcolor', config.selection_color);
+        this.parent.lower.setAttribute('boxshadow', null);
+      </method>
+    </view>
+    
+    <!-- Bottom Edge Resizer -->
+    <view with="button, keyboarddraggable" height="10" y="${this.parent.height - 5}" width="100%" cursor="s-resize"
+      disabled="${selectionmanager.isrootselection}"
+    >
+      <method name="startDrag" args="event">
+        // If a layout in child is managing width/height then don't allow drag.
+        if (reticle.target.__layoutDomainInUseForView('height')) return;
+        
+        reticle._start();
+        this.super();
+      </method>
+      <method name="stopDrag" args="event, isAbort">
+        if (isAbort) {
+          reticle._abort();
+        } else {
+          reticle._stop();
+        }
+        this.super();
+      </method>
+      <method name="updatePosition" args="x, y">
+        var target = reticle.target;
+        if (!this.disabled && target) {
+          y = Math.max(0, y + 5);
+          var gy = Number(gridsizey.value);
+          if (gy > 0) y = gy * Math.round(y / gy);
+          
+          target.setAttribute('height', y, true); // 3rd arg enables model update
+        }
+      </method>
+      
+      <method name="drawFocusedState">
+        this.parent.upper.setAttribute('bgcolor', 'black');
+        this.parent.upper.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+      </method>
+      <method name="drawHoverState">
+        this.parent.upper.setAttribute('bgcolor', 'black');
+        this.parent.upper.setAttribute('boxshadow', config.boxshadow_normal);
+      </method>
+      <method name="drawActiveState">
+        this.parent.upper.setAttribute('bgcolor', config.selection_color);
+        this.parent.upper.setAttribute('boxshadow', null);
+      </method>
+      <method name="drawReadyState">
+        this.parent.upper.setAttribute('bgcolor', config.selection_color);
+        this.parent.upper.setAttribute('boxshadow', null);
+      </method>
+    </view>
+    
+    <method name="startDrag" args="event">
+      // If a layout in parent is managing x/y position then don't allow drag.
+      if (reticle.target.__layoutDomainInUseForView('y')) return;
+      
+      reticle._start();
+      this.super();
+    </method>
+    <method name="stopDrag" args="event, isAbort">
+      if (isAbort) {
+        reticle._abort();
+      } else {
+        reticle._stop();
+      }
+      this.super();
+    </method>
+    <method name="updatePosition" args="x, y">
+      var target = reticle.target;
+      if (!this.disabled && target) {
+        y = y - target.getAbsolutePosition(editor).y + target.y;
+        var gy = Number(gridsizey.value);
+        if (gy > 0) y = gy * Math.round(y / gy);
+        
+        target.setAttribute('y', y, true); // 3rd arg enables model update
+      }
+    </method>
+    
+    <method name="drawHoverState">
+      this.fill.setAttribute('opacity', 0.25);
+    </method>
+    <method name="drawActiveState">
+      this.fill.setAttribute('opacity', 0.4);
+    </method>
+    <method name="drawReadyState">
+      this.fill.setAttribute('opacity', 0.15);
+    </method>
+  </view>
+
+  <view name="ruler_corner" ignoreplacement="true" bgcolor="white"
+    x="${this.parent.divider_left.x}" y="${config.topbar_height}"
+    height="${config.ruler_thickness}" width="${config.ruler_thickness}"
+    border="1" bordercolor="${config.secondary_panel_color}"
+  >
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+  </view>
+
+
+  <!--// Content Panels //-->
+  <view name="content_bg" ignoreplacement="true" bgcolor="${config.content_color}"
+    x="${ruler_horizontal.x}" y="${ruler_vertical.y}"
+    width="${this.parent.divider_right.x - this.x}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    scrollable="true"
+  >
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    
+    <view x="69" y="36" color="#999999">
+      <spacedlayout spacing="8"/>
+      <constantlayout attribute="y" value="'middle'"/>
+      
+      <listviewbutton floatingpanelid="screensizes" fontsize="12"
+        listviewattrs="{maxheight:340}"
+      >
+        <method name="initNode" args="parent, attrs">
+          this.cfg = [
+            {attrs:{name:'custom', text:'custom'}},
+            
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'4k', text:'4K', w:4096, h:2160}},
+            {attrs:{name:'2k', text:'2K', w:2048, h:1080}},
+            
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'hdtv', text:'HDTV', w:1920, h:1080}},
+            {attrs:{name:'pal',  text:'PAL',  w:720,  h:576}},
+            {attrs:{name:'ntsc', text:'NTSC', w:720,  h:486}},
+            
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'xvga', text:'XVGA', w:1024, h:768}},
+            {attrs:{name:'svga', text:'SVGA', w:800,  h:600}},
+            {attrs:{name:'vga',  text:'VGA',  w:640,  h:480}},
+            
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'iphonetall', text:'iphone (Portrait)',              w:320, h:480}},
+            {attrs:{name:'iphonewide', text:'iphone (Landscape)',             w:480, h:320}},
+            
+            {attrs:{name:'iphone4tall', text:'iphone 4 (Portrait)',           w:Math.round(640  * 163/326), h:Math.round(960  * 163/326)}},
+            {attrs:{name:'iphone4wide', text:'iphone 4 (Landscape)',          w:Math.round(960  * 163/326), h:Math.round(640  * 163/326)}},
+            
+            {attrs:{name:'iphone5tall', text:'iphone 5 (Portrait)',           w:Math.round(640  * 163/326), h:Math.round(1135 * 163/326)}},
+            {attrs:{name:'iphone5wide', text:'iphone 5 (Landscape)',          w:Math.round(1135 * 163/326), h:Math.round(640  * 163/326)}},
+            
+            {attrs:{name:'iphone6tall', text:'iphone 6 (Portrait)',           w:Math.round(750  * 163/326), h:Math.round(1334 * 163/326)}},
+            {attrs:{name:'iphone6wide', text:'iphone 6 (Landscape)',          w:Math.round(1334 * 163/326), h:Math.round(750  * 163/326)}},
+            
+            {attrs:{name:'iphone6plustall', text:'iphone 6 Plus (Portrait)',  w:Math.round(1080 * 163/401), h:Math.round(1920 * 163/401)}},
+            {attrs:{name:'iphone6pluswide', text:'iphone 6 Plus (Landscape)', w:Math.round(1920 * 163/401), h:Math.round(1080 * 163/401)}}
+          ];
+          
+          this.super();
+        </method>
+        
+        <attribute name="selecteditem" type="expression" value="this.cfg[5].attrs"/>
+        <handler event="onselecteditem" args="selecteditem">
+          this.setAttribute('label', selecteditem.text);
+          
+          var isCustom = selecteditem.name === 'custom';
+          this.parent.custom.setAttribute('visible', isCustom);
+          if (!isCustom) {
+            screensizew.setAttribute('value', selecteditem.w);
+            screensizeh.setAttribute('value', selecteditem.h);
+          }
+        </handler>
+        
+        <method name="drawDisabledState">
+          this.setAttribute('color', this.selected ? '#000000' : '#cccccc');
+        </method>
+        <method name="drawFocusedState">
+          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+        </method>
+        <method name="drawHoverState">
+          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+        </method>
+        <method name="drawActiveState">
+          this.setAttribute('color', this.selected ? '#000000' : '#888888');
+        </method>
+        <method name="drawReadyState">
+          this.setAttribute('color', this.selected ? '#000000' : '#999999');
+        </method>
+        <method name="doActivated">
+          var cfg = this.cfg, 
+            i = cfg.length, attrs, selecteditemname = this.selecteditem.name;
+          while (i) {
+            attrs = cfg[--i].attrs;
+            if (attrs) attrs.disabled = attrs.name === selecteditemname;
+          }
+          
+          this.setAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
+          
+          this.toggleFloatingPanel();
+        </method>
+        
+        <method name="doItemActivated" args="itemview">
+          this.setAttribute('selecteditem', itemview);
+          this.super();
+        </method>
+      </listviewbutton>
+      
+      <view name="custom" height="18" visible="false">
+        <spacedlayout spacing="4" updateparent="true"></spacedlayout>
+        <editor_text text="w:" y="2" fontsize="12"/>
+        <editor_inputtext id="screensizew" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+          <setter name="value" args="v">
+            if (v > 5000) v = 5000;
+            return v;
+          </setter>
+        </editor_inputtext>
+        <editor_text text="h:" y="2" fontsize="12"/>
+        <editor_inputtext id="screensizeh" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+          <setter name="value" args="v">
+            if (v > 5000) v = 5000;
+            return v;
+          </setter>
+        </editor_inputtext>
+      </view>
+    </view>
+    
+    <view name="content"
+      x="${config.content_inset}"
+      y="${config.content_inset}"
+      width="${screensizew.value}"
+      height="${screensizeh.value}"
+      boxshadow="[0,0,16,4,'#cccccc']"
+    >
+      <!-- Use an additional inner view so that scrollbars show up inside the
+           "page" rather than over the boxshadow. -->
+      <view name="inner" with="editable" width="100%" height="100%" scrollable="true"
+        maskfocus="${editor.editmode}" focuscage="true"
+        cursor="pointer"
+      >
+        <method name="initNode" args="parent, attrs">
+          this.super();
+          
+          this.setAttribute('bgcolor', editor.parent.bgcolor);
+        </method>
+        
+        <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+        
+        <method name="notifyDragEnter" args="dropable">
+          this.__origBoxShadow = this.getActualAttribute('boxshadow');
+          this.setActualAttribute('boxshadow', [0, 0, 12, 1, '#00ff00']);
+        </method>
+        
+        <method name="notifyDragLeave" args="dropable">
+          this.setActualAttribute('boxshadow', this.__origBoxShadow);
+        </method>
+      </view>
+    </view>
+    
+    <!-- Creates extra space to the bottom and right of the content view. -->
+    <view
+      x="${this.parent.content.x + this.parent.content.width}" width="${config.content_inset}"
+      y="${this.parent.content.y + this.parent.content.height}" height="${config.content_inset}"
+    />
+    
+    <webpage id="preview" visible="false"
+      x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
+      width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
+      border="2" bordercolor="#66ee00" clickable="true" bgcolor="#999999"
+    />
+  </view>
+
+  <!--// The guides layer that sits in front of the content being edited. //-->
+  <view id="guides" ignoreplacement="true"/>
+
+  <!--// Selection Reticle //-->
+  <reticle id="reticle" ignoreplacement="true"/>
+
+  <!--// Top Panel //-->
+  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
+    width="100%" height="${config.topbar_height}"
+  >
+    <view name="left" padding="2" height="${config.topbar_height}">
+      <spacedlayout spacing="3" inset="9" outset="3" updateparent="true"/>
+      <constantlayout attribute="y" value="'middle'"/>
+      
+      <listviewiconbutton id="actionsButton" floatingpanelid="actions" label="actions" iconname="actions"
+        listviewattrs="{maxheight:300}"
+      >
+        <method name="doActivated">
+          var editorPlaying = !editor.editmode;
+          var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
+          var cfg = [
+            {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
+            {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
+            {klass:dr.listviewseparator},
+            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
+            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
+            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
+            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
+            {klass:dr.listviewseparator},
+            {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
+          ];
+          this.setAttribute('itemconfig', cfg);
+          
+          this.toggleFloatingPanel();
+        </method>
+        
+        <method name="doItemActivated" args="itemview">
+          actions[itemview.name]();
+          this.super();
+        </method>
+      </listviewiconbutton>
+      <floatingpaneliconbutton floatingpanelid="settings" label="settings" iconname="settings"/>
+    </view>
+    
+    <view name="center" padding="2" x="${this.parent.left.width}"
+      width="${this.parent.right.x - this.x}" height="${config.topbar_height}"
+    />
+    
+    <view name="right" padding="2" x="right" height="${config.topbar_height}">
+      <spacedlayout spacing="3" inset="3" outset="9" updateparent="true"/>
+      <constantlayout attribute="y" value="'middle'"/>
+      <toolbariconbutton id="editPreviewButton" action="editPreview" label="preview" iconname="preview" width="54"/>
+      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
+      <toolbariconbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}" label="save" iconname="save"/>
+      <toolbariconbutton id="stopButton" action="stop" disabled="${!editor.editmode}" label="exit" iconname="exit"/>
+    </view>
+  </view>
+
+  <!--// Left Panel //-->
+  <view name="leftbar" ignoreplacement="true" bgcolor="white" scrollable="true"
+    y="${config.topbar_height}"
+    width="${this.parent.divider_left.x}"
+    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+  >
+    <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    
+    <include href='./treemodel.dre'/>
+  </view>
+
+  <!--// Right Panel //-->
+  <view name="rightbar" ignoreplacement="true" bgcolor="#fcfcfc"
+    x="right" y="${config.topbar_height}"
+    width="${this.parent.innerwidth - this.parent.divider_right.x}"
+    height="${this.parent.leftbar.height}"
+  >
+    <!-- Component list panel -->
+    <view width="100%" height="${this.parent.divider_top.y}" bgcolor="white" scrollable="true">
+      <view width="100%">
+        <wrappinglayout axis="x" inset="15" outset="15" lineinset="7" lineoutset="7" updateparent="true"/>
+        <include href='./service_nodes/component_manifest.dre'/>
+      </view>
+    </view>
+    
+    <!-- Attributes Panel(s) -->
+    <view y="${this.parent.divider_top.y}" width="100%" height="${this.parent.innerheight - this.y}" scrollable="true">
+      <spacedlayout axis="y"/>
+      
+      <subhead width="100%" text="Attributes"/>
+      
+      <view width="100%" clip="true">
+        <spacedlayout axis="y" updateparent="true"/>
+        
+        <view width="100%" clip="true">
+          <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
+            <method name="__positionView" args="view, attrName, value">
+              // Only animate the parent updates so that the panel appears to
+              // slide open/closed
+              var isParent = view === this.parent;
+              if (isParent) this.speed = 500;
+              this.super();
+              if (isParent) this.speed = 0;
+            </method>
+          </spacedlayout>
+          <replicator classname="attributeeditor"
+            data="${selectionmanager.selected ? selectionmanager.selected.getAttrsListForDetails() : []}"
+          />
+        </view>
+        
+        <!-- More attrs subpanel. -->
+        <view width="100%">
+          <attribute name="selected" type="boolean" value="false"/>
+          <handler event="onselected" args="selected">
+            var header = this.header;
+            header.updateUI();
+            header.setAttribute('text', (selected ? '▼' : '▶') + " more");
+            
+            this.updateHeight();
+          </handler>
+          
+          <handler name="updateHeight" event="onselected" reference="selectionmanager">
+            var animAttrs = {attribute:'height', to:0, duration:500};
+            if (selectionmanager.selected) {
+              var svs = this.content.getSubviews();
+              if (this.selected) {
+                var lastChild = svs[svs.length - 1];
+                animAttrs.to = lastChild ? lastChild.y + lastChild.height + 5 : 0;
+              } else {
+                animAttrs.to = svs.length > 0 ? this.header.height : 0;
+              }
+            }
+            this.stopActiveAnimators('height');
+            this.animate(animAttrs);
+          </handler>
+          
+          <text with="button" name="header" width="60" textalign="right"
+            toppadding="4" bottompadding="4" fontsize="14" focusembellishment="false"
+            disabled="${!selectionmanager.selected || this.parent.height === 0}"
+          >
+            <method name="doActivated">
+              if (!this.disabled) this.parent.setAttribute('selected', !this.parent.selected);
+            </method>
+            <method name="drawDisabledState">
+              this.setAttribute('color', '#999999');
+            </method>
+            <method name="drawHoverState">
+              this.setAttribute('color', '#666666');
+            </method>
+            <method name="drawActiveState">
+              this.setAttribute('color', '#333333');
+            </method>
+            <method name="drawReadyState">
+              this.setAttribute('color', '#000000');
+            </method>
+          </text>
+          
+          <view name="content" width="100%" y="${this.parent.header.height}" maskfocus="${!this.parent.selected}">
+            <spacedlayout axis="y" spacing="5" inset="5">
+              <method name="update">
+                this.super();
+                if (this.canUpdate()) this.parent.parent.updateHeight();
+              </method>
+            </spacedlayout>
+            <replicator classname="attributeeditor"
+              data="${selectionmanager.selected ? selectionmanager.selected.getMoreAttrsListForDetails() : []}"
+            />
+          </view>
+        </view>
+      </view>
+      
+      <subhead width="100%" text="Layouts"/>
+      
+      <view id="layouts_panel" width="100%" clip="true">
+        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true">
+          <method name="__positionView" args="view, attrName, value">
+            // Only animate the parent updates
+            var isParent = view === this.parent;
+            if (isParent) this.speed = 500;
+            this.super();
+            if (isParent) this.speed = 0;
+          </method>
+        </spacedlayout>
+        
+        <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
+          this.repl.setAttribute('data', selectedview ? selectedview.getLayouts(true) : []);
+        </handler>
+        
+        <replicator name="repl" classname="subnodeeditor"/>
+      </view>
+      
+      <subhead width="100%" text="Behaviors"/>
+      
+      <view id="behaviors_panel" width="100%" clip="true">
+        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
+        
+        <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
+          this.repl.setAttribute('data', selectedview ? selectedview.getBehaviors() : []);
+        </handler>
+        
+        <replicator name="repl" classname="subnodeeditor"/>
+      </view>
+    </view>
+    
+    <!-- Line at the top of the attribute panels so that a visual separation
+         occurs even when scrolled. -->
+    <view ignoreplacement="true"
+      width="100%" y="${this.parent.divider_top.y}" height="1"
+      bgcolor="${config.secondary_panel_color}"
+    />
+    
+    <view name="divider_top" with="keyboarddraggable" cursor="row-resize"
+      x="0" y="123" width="100%" height="${config.divider_width}"
+    >
+      <method name="updatePosition" args="x, y">
+        if (!this.disabled) this.setAttribute('y', Math.max(123, Math.min(290, y)));
+      </method>
+    </view>
+  </view>
+
+
+  <!--// Bottom Panel //-->
+  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
+    y="bottom" width="100%" height="${config.bottombar_height}"
+  />
+
+
+  <!--// Misc Lines //-->
+  <!-- Line directly below the header. -->
+  <view ignoreplacement="true"
+    width="100%" y="${config.topbar_height}" height="1"
+    bgcolor="${config.secondary_panel_color}"
+  />
+
+  <!-- Line at the left edge of the rightbar. -->
+  <view ignoreplacement="true"
+    x="${this.parent.rightbar.x}" y="${this.parent.rightbar.y}"
+    width="1" height="${this.parent.rightbar.height}"
+    bgcolor="${config.secondary_panel_color}"
+  />
+
+
+  <!--// Dividers //-->
+  <view name="divider_left" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
+    x="${config.leftbar_minwidth + 50}" y="${config.topbar_height}"
+    width="${config.divider_width}" height="${this.parent.leftbar.height}"
+  >
+    <method name="updatePosition" args="x, y">
+      if (!this.disabled) this.setAttribute('x', Math.max(config.leftbar_minwidth, Math.min(config.leftbar_maxwidth, x)));
+    </method>
+  </view>
+
+  <view name="divider_right" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
+    x="${this.parent.innerwidth - config.rightbar_minwidth}" y="${config.topbar_height}"
+    width="${config.divider_width}" height="${this.parent.leftbar.height}"
+  >
+    <handler event="oninnerwidth" reference="parent">
+      // Respond to browser window resizing
+      this.updatePosition(this.x, this.y);
+    </handler>
+    <method name="updatePosition" args="x, y">
+      if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
+    </method>
+  </view>
+</view>
+
+<!--// FLOATING PANEL VIEWS //-->
+<basefloatingpanel panelid="settings" width="auto" height="auto" padding="4">
+  <method name="getFirstFocusableDescendant">
+    return gridsizex;
+  </method>
+  
+  <spacedlayout axis="y" spacing="4" updateparent="true"/>
+  
+  <view height="auto">
+    <spacedlayout spacing="4" updateparent="true"/>
+    <editor_text text="grid x:" y="2"/>
+    <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+    <editor_text text="y:" y="2"/>
+    <editor_inputtext id="gridsizey" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+  </view>
+  
+  <view height="auto">
+    <spacedlayout spacing="4" updateparent="true"/>
+    <editor_text text="snap to guides:" y="2"/>
+    <view with="checkbutton" id="snaptoguides" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20"
+      selected="true"
+    />
+  </view>
+</basefloatingpanel>
+
+<colorpicker panelid="colorpicker"/>
