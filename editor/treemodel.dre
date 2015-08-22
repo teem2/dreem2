@@ -1,5 +1,5 @@
 <tree id="treemodel" multipleselection="false"
-  selectcolor="${config.selection_color}"
+  y="1" selectcolor="${config.selection_color}"
 >
   <handler event="onselected" args="view" reference="selectionmanager">
     if (view) {

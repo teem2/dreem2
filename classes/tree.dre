@@ -34,7 +34,7 @@ SOFTWARE. -->
    *      data='[{"label":"first", "items": [1, 2, 3]}]'></tree>
    *
    */-->
-<class name="tree" extends="view">
+<class name="tree" extends="view" width="${Math.max(this.maxwidth + 12, this.parent.innerwidth)}">
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="strict" type="boolean" value="true"/>
 
@@ -49,9 +49,12 @@ SOFTWARE. -->
   <attribute name="depth" type="number" value="0"/>
   
   <attribute name="selectcolor" type="color" value="#999"/>
+  <attribute name="hovercolor" type="color" value="#eee"/>
+  <attribute name="activecolor" type="color" value="#ccc"/>
   <attribute name="selecttextcolor" type="color" value="white"/>
   <attribute name="textcolor" type="color" value="#333"/>
-  <attribute name="fontsize" type="number" value="14"/>
+  
+  <attribute name="maxwidth" type="number" value="0"/>
 
 
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
@@ -85,10 +88,9 @@ SOFTWARE. -->
   <handler event="oncollapsed">
     var children = this.nodes.children;
     if (children) {
-      var child, i = 0,
+      var i = 0,
         len = children.length,
-        newCollapsedValue = !this.collapsed,
-        parent = this.parent;
+        newCollapsedValue = !this.collapsed;
       for (; len > i; i++) children[i].setAttribute('visible', newCollapsedValue)
     }
   </handler>
@@ -143,22 +145,17 @@ SOFTWARE. -->
       } else if (Array.isArray(d.child)) {
         d = d.child;
       } else if (!this.strict) { //be fancy
-        var found = [];
-        var props = Object.getOwnPropertyNames(d);
-        for (var i=0; props.length > i; i++) {
-          var name = props[i];
-          if (name == 'title' || name == 'text' || name == 'label' || name == 'name' || name == 'tag') {
-            continue;
-          }
-          var value = d[name];
-          if (!Array.isArray(value)) {
-            value = [value];
-          }
-          found.push({name:name, items:value})
+        var found = [],
+          props = Object.getOwnPropertyNames(d),
+          i = 0, len = props.length, name, value;
+        for (; len > i; i++) {
+          name = props[i];
+          if (name == 'title' || name == 'text' || name == 'label' || name == 'name' || name == 'tag') continue;
+          value = d[name];
+          if (!Array.isArray(value)) value = [value];
+          found.push({name:name, items:value});
         }
-        if (found.length) {
-          d = found;
-        }
+        if (found.length) d = found;
       }
     }
     
@@ -176,12 +173,11 @@ SOFTWARE. -->
     
     if (Array.isArray(d)) {
       this.nodes.setAttribute('data', d);
-      
-      var hasChildren = d.length > 0,
-        item = this.item;
-      item.toggle.setAttribute('visible', !this.isroot && hasChildren);
-      item.horizLayout.setAttribute('inset', hasChildren ? 20 : 4);
+      item.toggle.setAttribute('visible', !this.isroot && d.length > 0);
     }
+    
+    var mw = label.x + label.width;
+    if (mw > this.root.maxwidth) this.root.setAttribute('maxwidth', mw);
   </method>
 
   <method name="clearSelection">
@@ -206,33 +202,55 @@ SOFTWARE. -->
 
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <view name="item" with="button" toppadding="3" bottompadding="4"
-    x="${this.parent.indentwidth * (this.parent.depth - 1)}"
-    focusembellishment="false"
+  <view name="item" with="button" height="${this.parent.isroot ? 0 : 25}"
+    width="${this.parent.root.width}"
+    focusembellishment="false" focusable="false"
   >
     <method name="doActivated">
       var classroot = this.classroot;
       classroot.triggerSelection(!classroot.selected);
     </method>
     
+    <method name="drawHoverState">
+      var cr = this.classroot;
+      this.setAttribute('color', cr.textcolor);
+      this.setAttribute('bgcolor', cr.root.hovercolor);
+    </method>
+    <method name="drawActiveState">
+      var cr = this.classroot;
+      this.setAttribute('color', cr.textcolor);
+      this.setAttribute('bgcolor', cr.root.activecolor);
+    </method>
+    <method name="drawReadyState">
+      var cr = this.classroot, selected = cr.selected, root = cr.root;
+      this.setAttribute('color', selected ? root.selecttextcolor : cr.textcolor);
+      this.setAttribute('bgcolor', selected ? root.selectcolor : 'transparent');
+    </method>
+    
     <text name="toggle" with="button" focusembellishment="false"
-      visible="false" ignorelayout='{"horizLayout":true}' x="5"
+      visible="false" focusable="false"
+      x="${this.classroot.indentwidth * (this.classroot.depth - 1) + 5}" y="6"
       text="${this.classroot.collapsed ? '▶' : '▼'}"
-      fontsize="${this.classroot.fontsize - 2}"
+      fontsize="12"
     >
       <method name="doActivated">
         var classroot = this.classroot;
         classroot.setAttribute('collapsed', !classroot.collapsed);
-        
-        this.parent.doActivated();
+      </method>
+      
+      <method name="drawHoverState">
+        this.parent.drawHoverState();
+      </method>
+      <method name="drawActiveState">
+        this.parent.drawActiveState();
+      </method>
+      <method name="drawReadyState">
+        this.parent.drawReadyState();
       </method>
     </text>
     
-    <bitmap name="image" visible="false" width="15" height="15"/>
-    <text name="label" fontsize="${this.classroot.fontsize}"/>
-    
-    <alignlayout align="middle" updateparent="true"/>
-    <spacedlayout name="horizLayout" axis="x" inset="4" spacing="8" outset="12" updateparent="true"/>
+    <bitmap name="image" visible="false" x="${this.parent.toggle.x + 15}" y="5" width="15" height="15"/>
+    <text name="label" x="${this.parent.image.x + (this.parent.image.visible ? 20 : 0)}" y="5" fontsize="14"/>
   </view>
 
   <replicator name="nodes" classname="tree">
