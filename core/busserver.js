@@ -57,9 +57,12 @@ define(function(require, exports, module) {
       * Send a message to all connected sockets
       * @param {Object} message
       */
-    this.broadcast = function(message) {
+    this.broadcast = function(message, ignore) {
       message = JSON.stringify(message);
-      for (var i = 0; i < this.sockets.length; i++) this.sockets[i].send(message);
+      for (var i = 0; i < this.sockets.length; i++){
+        var socket = this.sockets[i]
+        if(socket !== ignore) socket.send(message);
+      }
     };
     
     this.closeAll = function() {

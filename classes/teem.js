@@ -11,11 +11,28 @@ define(function(require, exports, module) {
     RpcMulti = require('$CORE/rpcmulti');
 
   teem._modules = {};
+  teem._intervals = []
+  teem.setInterval = function(cb, time){
+    var id = setInterval(cb, time)
+    teem._intervals.push(id)
+    return id
+  }
+
+  teem.clearInterval = function(id){
+    var idx = teem._intervals.indexOf(id)
+    if(idx !== -1){
+      teem._intervals.splice(idx, 1)
+      clearInterval(id)
+    }
+  }
 
   teem.destroy = function() {
     for (var key in teem) {
       prop = teem[key];
       if (typeof prop == 'object' && prop !== teem && typeof prop.destroy == 'function') prop.destroy();
+    }
+    for(var i = 0; i < teem._intervals; i++){
+      clearInterval(teem._intervals[i])
     }
   };
 
@@ -103,6 +120,7 @@ define(function(require, exports, module) {
             obj[msg.attribute] = msg.value;
             obj._onAttributeSet = old
           }
+          bus.broadcast(msg, socket)
         } else if (msg.type == 'method') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
           if (obj) RpcProxy.handleCall(obj, msg, socket);
