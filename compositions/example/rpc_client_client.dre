@@ -29,7 +29,6 @@ SOFTWARE. -->
 
 <screens>
   <screen type="browser" name="default" title="Smoke Test - RPC Client-Server">
-    <include href="./includes/boilerplate.dre"></include>
     <attribute name='sldvalue' type='number'/>
     <handler event='onsldvalue'>
       console.log(this.sldvalue)
@@ -52,7 +51,6 @@ SOFTWARE. -->
 
   </screen>
   <screen type="browser" name="mobile" title="Smoke Test - RPC Client-Server">
-    <include href="./includes/boilerplate.dre"></include>
     <view width="100%" height="100%" padding="4">
       <slider name="toohigh" height="20" width="200" minvalue="20" maxvalue="80" value="${dr.teem.server.testvalue}"></slider>
     </view>
