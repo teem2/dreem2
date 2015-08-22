@@ -169,6 +169,7 @@ SOFTWARE. -->
     var self = this,
       data = this.data,
       name = data.name,
+      type = data.type,
       target = data.target,
       readonly = data.readonly,
       attrs = {
@@ -179,7 +180,7 @@ SOFTWARE. -->
         disabled:readonly
       };
     
-    switch (data.type) {
+    switch (type) {
       case 'color':
         attrs.class = 'coloreditor'
         break;
@@ -219,6 +220,10 @@ SOFTWARE. -->
     });
     
     this.actual.syncTo(target, 'on' + name, function(val) {
+      if (type === 'number') {
+        // Allow at most 2 decimal places to be shown for "actual" numbers.
+        val = +(+(val).toFixed(2));
+      }
       this.setActualAttribute('text', val);
       self._checkActualIsDifferent();
     });

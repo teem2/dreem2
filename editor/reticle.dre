@@ -69,16 +69,16 @@ SOFTWARE. -->
       hLocsize = hSel.locsize,
       hLocend = hSel.locend,
       hLocrelend = hSel.locrelend;
-    hSel.locstart.setAttribute('text', startX);
-    hSel.locrelstart.setAttribute('text', startXRelative);
+    hSel.locstart.setAttribute('text', this._formatNumber(startX));
+    hSel.locrelstart.setAttribute('text', this._formatNumber(startXRelative));
     
     hLocsize.setAttribute('visible', xDifferent);
     hLocend.setAttribute('visible', xDifferent);
     hLocrelend.setAttribute('visible', xDifferent);
     if (xDifferent) {
-      hLocsize.setAttribute('text', w);
-      hLocend.setAttribute('text', endX);
-      hLocrelend.setAttribute('text', startXRelative + w);
+      hLocsize.setAttribute('text', this._formatNumber(w));
+      hLocend.setAttribute('text', this._formatNumber(endX));
+      hLocrelend.setAttribute('text', this._formatNumber(startXRelative + w));
     }
     
     var startY = vertical_selection.y - ruler_vertical.y + ruler_vertical.scrolly - 100,
@@ -89,17 +89,22 @@ SOFTWARE. -->
       vLocsize = vSel.locsize,
       vLocend = vSel.locend,
       vLocrelend = vSel.locrelend;
-    vSel.locstart.setAttribute('text', startY);
-    vSel.locrelstart.setAttribute('text', startYRelative);
+    vSel.locstart.setAttribute('text', this._formatNumber(startY));
+    vSel.locrelstart.setAttribute('text', this._formatNumber(startYRelative));
     
     vLocsize.setAttribute('visible', yDifferent);
     vLocend.setAttribute('visible', yDifferent);
     vLocrelend.setAttribute('visible', yDifferent);
     if (yDifferent) {
-      vLocsize.setAttribute('text', h);
-      vLocend.setAttribute('text', endY);
-      vLocrelend.setAttribute('text', startYRelative + h);
+      vLocsize.setAttribute('text', this._formatNumber(h));
+      vLocend.setAttribute('text', this._formatNumber(endY));
+      vLocrelend.setAttribute('text', this._formatNumber(startYRelative + h));
     }
+  </method>
+  
+  <method name="_formatNumber" args="v">
+    // Allow at most 2 decimal places to be shown.
+    return +(v.toFixed(2));
   </method>
 
   <method name="drawFocusedState">
