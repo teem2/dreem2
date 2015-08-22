@@ -450,7 +450,7 @@ define(function(require, exports, module) {
                   value = '"' + value.split('"').join('\\"').split('\n').join('\\n') + '"';
                 }
                 attributes[attr.name.toLowerCase()] = [
-                  attr.type.toLowerCase() || 'string',
+                  attr.type!==undefined && attr.type.toLowerCase() || 'string',
                   value
                 ];
               } else {

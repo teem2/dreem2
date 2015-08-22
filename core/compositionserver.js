@@ -577,7 +577,7 @@ define(function(require, exports, module) {
         this.__packageDali(screenPath, screenPath.slice(0, -3) + ".dali.js");
         define.SPRITE = '$LIB/dr/sprite_browser';
       }
-      
+      console.log("MAKING SCREEN "+screenJson.name)
       this.screens[screenJson.name] = screenNode;
     };
     
