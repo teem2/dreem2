@@ -947,7 +947,7 @@ SOFTWARE. -->
 
   <!--// Dividers //-->
   <view name="divider_left" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
-    x="${config.leftbar_minwidth}" y="${config.topbar_height}"
+    x="${config.leftbar_minwidth + 50}" y="${config.topbar_height}"
     width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
     <method name="updatePosition" args="x, y">
