@@ -830,7 +830,7 @@ SOFTWARE. -->
               var svs = this.content.getSubviews();
               if (this.selected) {
                 var lastChild = svs[svs.length - 1];
-                animAttrs.to = lastChild ? lastChild.y + lastChild.height + 5 : 0;
+                animAttrs.to = lastChild ? lastChild.y + lastChild.height + this.header.height + 5 : 0;
               } else {
                 animAttrs.to = svs.length > 0 ? this.header.height : 0;
               }
@@ -970,12 +970,12 @@ SOFTWARE. -->
 </view>
 
 <!--// FLOATING PANEL VIEWS //-->
-<basefloatingpanel panelid="settings" width="auto" height="auto" padding="4">
+<basefloatingpanel panelid="settings" width="auto" height="auto" padding="8" clickable="true" cornerradius="4">
   <method name="getFirstFocusableDescendant">
     return gridsizex;
   </method>
   
-  <spacedlayout axis="y" spacing="4" updateparent="true"/>
+  <spacedlayout axis="y" spacing="8" updateparent="true"/>
   
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"/>
@@ -987,10 +987,8 @@ SOFTWARE. -->
   
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"/>
-    <editor_text text="snap to guides:" y="2"/>
-    <view with="checkbutton" id="snaptoguides" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20"
-      selected="true"
-    />
+    <checkbox id="snaptoguides" selected="true" checkcolor="#999999"/>
+    <editor_text text="snap to guides"/>
   </view>
 </basefloatingpanel>
 

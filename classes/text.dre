@@ -250,6 +250,7 @@
   </method>
   
   <!--// Editor //-->
+  <attribute name="hiddenattrs" type="expression" value="{editable:true, clip:true, scrollable:true, underline:true, strike:true, smallcaps:true}" allocation="class"/>
   <attribute name="attrimportance" type="expression" allocation="class"
     value="{name:-1, text:50, color:51, fontfamily:52, fontsize:53, bold:54, italic:55, multiline:200, ellipsis:201, smallcaps:210, underline:211, strike:212}"
   />

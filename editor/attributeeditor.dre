@@ -102,12 +102,9 @@ SOFTWARE. -->
 
 <class name="booleaneditor" height="20">
   <handler event="onvalue" args="value">
-    this.field.setAttribute('value', value);
+    this.field.setAttribute('selected', value);
   </handler>
-  <view name="field" with="checkbutton" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20">
-    <handler event="onvalue" args="value">
-      this.setAttribute('selected', value);
-    </handler>
+  <checkbox name="field" checkcolor="#999999" y="2">
     <handler event="onselected" args="selected">
       var parent = this.parent,
         targetattr = parent.targetattr,
@@ -118,7 +115,7 @@ SOFTWARE. -->
         }));
       }
     </handler>
-  </view>
+  </checkbox>
 </class>
 
 <class name="coloreditor" with="floatingpanelanchor, button"
