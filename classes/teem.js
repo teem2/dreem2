@@ -97,7 +97,12 @@ define(function(require, exports, module) {
           }
         } else if (msg.type == 'attribute') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
-          if (obj) obj[msg.attribute] = msg.value;
+          if (obj){
+            var old = obj._onAttributeSet
+            obj._onAttributeSet = undefined
+            obj[msg.attribute] = msg.value;
+            obj._onAttributeSet = old
+          }
         } else if (msg.type == 'method') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
           if (obj) RpcProxy.handleCall(obj, msg, socket);
@@ -136,7 +141,12 @@ define(function(require, exports, module) {
             
           case 'attribute':
             var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
-            if (obj) obj[msg.attribute] = msg.value;
+            if (obj){
+              var old = obj._onAttributeSet
+              obj._onAttributeSet = undefined
+              obj[msg.attribute] = msg.value;
+              obj._onAttributeSet = old
+            }
             break;
             
           case 'method':

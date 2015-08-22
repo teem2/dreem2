@@ -81,17 +81,20 @@ define(function(require, exports, module) {
   RpcProxy.bindSetAttribute = function(object, rpcid, bus) {
     // ok lets now wire our mod.vdom.onSetAttribute
     object._onAttributeSet = function(key, value) {
+
       // lets broadcast
       if (!RpcProxy.isJsonSafe(value)) {
         console.log('setAttribute not JSON safe ' + name + '.' + key);
         return;
       }
+
       var msg = {
         type:'attribute',
         rpcid:rpcid,
         attribute:key,
         value: value
       };
+
       // lets keep this attribute set as wel for new joins.
       if (bus.broadcast) {
         bus.attribute_sets[rpcid+'.'+key] = msg
@@ -162,7 +165,7 @@ define(function(require, exports, module) {
         RpcProxy.defineProp(obj, key, prop);
       }
     }
-    
+    if(rpcpromise) RpcProxy.bindSetAttribute(obj, rpcid, rpcpromise.sendbus)
     return obj;
   };
 

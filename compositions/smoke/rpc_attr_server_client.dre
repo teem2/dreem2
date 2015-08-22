@@ -58,7 +58,6 @@ SOFTWARE. -->
       <method name="unittest">
         // Initial value should match server's value
         assert.equal(dr.teem.server.server_attr1, true, "server_attr1 initial value");
-
         // Change the server value from the client
         dr.teem.server.server_attr1 = false;
         assert.equal(dr.teem.server.server_attr1, false, "server_attr1=false");
@@ -68,7 +67,7 @@ SOFTWARE. -->
         dr.teem.server.server_toggle().then(function(ret) {
           console.log('server_toggle completion');
           assert.equal(dr.teem.server.server_attr1, true, "server_toggle");
-	});
+	     });
       </method>
 
     </view>
