@@ -31,7 +31,7 @@ SOFTWARE. -->
           data='[{"label":"first", "items": [1, 2, 3]}]'>
           <handler event="oninit">
             assert.deepEqual([{label: "first", items:[1, 2, 3]}], this.data);
-            assert.equal('first', this.treenode_0.label.text);
+            assert.equal('first', this.treenode_0.item.label.text);
           </handler>
         </tree>
 
@@ -39,10 +39,10 @@ SOFTWARE. -->
           data='[{"label":"first", "items":[{"name":"first inner", "items":["a", "b", "c"]}, {"name":"second inner", "items":["a2", "b2", {"name":"much in", "items":[1, 2, 3, 4]}]}]}, "second", { "name": "third", "nodes": [4, 5, 6] }]'>
           <handler event="oninit" args="p">
             assert.deepEqual([{"label":"first", "items":[{"name":"first inner", "items":["a", "b", "c"]}, {"name":"second inner", "items":["a2", "b2", {"name":"much in", "items":[1, 2, 3, 4]}]}]}, "second", { "name": "third", "nodes": [4, 5, 6] }], this.data)
-            assert.equal('first', this.treenode_0.label.text);
-            assert.equal('second inner', this.treenode_0.treenode_1.label.text);
-            assert.equal('much in', this.treenode_0.treenode_1.treenode_2.label.text);
-            assert.equal('4', this.treenode_0.treenode_1.treenode_2.treenode_3.label.text);
+            assert.equal('first', this.treenode_0.item.label.text);
+            assert.equal('second inner', this.treenode_0.treenode_1.item.label.text);
+            assert.equal('much in', this.treenode_0.treenode_1.treenode_2.item.label.text);
+            assert.equal('4', this.treenode_0.treenode_1.treenode_2.treenode_3.item.label.text);
           </handler>
         </tree>
 

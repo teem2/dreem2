@@ -1,5 +1,6 @@
-<tree id="treemodel" x="0" multipleselection="false">
-
+<tree id="treemodel" x="0" multipleselection="false"
+  selectcolor="blue"
+>
   <handler event="onselected" args="view" reference="selectionmanager">
     if (view) {
       // Map inner view to root since the inner view is what allows editing of
@@ -46,11 +47,9 @@
   </method>
 
   <handler event="oninit" method="reloadTree"></handler>
+
   <handler event="onmodelchange" reference="editormodel">
     this.reloadTree();
-    dr.idle.callOnIdle(function() {
-      treemodel.__resizeToChildren();
-    });
   </handler>
 
   <method name="reloadTree">
