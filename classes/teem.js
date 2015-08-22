@@ -25,7 +25,7 @@ define(function(require, exports, module) {
     // our teem bus is the local server bus
     define.onMain = function(moddescs, bus) {
       teem.bus = bus;
-      
+      bus.attribute_sets = {}
       teem.session = '' + Math.random() * 10000000;
       
       // lets render all modules and store them on the teem tag
@@ -88,11 +88,13 @@ define(function(require, exports, module) {
       bus.onMessage = function(msg, socket) {
         // we will get messages from the clients
         if (msg.type == 'connectBrowser') {
-          socket.send({type:'connectBrowserOK', rpcdef: rpcdef});
           // ok we have to send it all historic joins.
+          socket.send({type:'connectBrowserOK', rpcdef: rpcdef});
           socket.rpcpromise = new RpcPromise(socket);
-          
-          if (teem.screens) teem.screens.screenJoin(socket);
+          if (teem.screens){
+            teem.screens.screenJoin(socket, bus.attribute_sets);
+            socket.send({type:'joinComplete'});
+          }
         } else if (msg.type == 'attribute') {
           var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
           if (obj) obj[msg.attribute] = msg.value;
@@ -161,9 +163,10 @@ define(function(require, exports, module) {
                 teem[key] = RpcProxy.createFromDef(def, key, rpcpromise);
               }
             }
-            
+
             teem.root = mainModuleExports();
-            
+            break
+          case 'joinComplete':            
             teem.__startup(mainModuleExports);
             break;
             
