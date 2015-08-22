@@ -97,7 +97,7 @@ SOFTWARE. -->
 
 <class name="basefloatingpanelbutton" with="button"
   width="auto" height="auto" focusembellishment="false"
-  floatingvalignoffset="2" floatingalign="insideright" floatingvalign="outsidebottom"
+  floatingalign="insideright" floatingvalign="outsidebottom"
 >
   <attribute name="fontsize" type="number" value="14"/>
   <attribute name="selected" type="boolean" value="false"/>
@@ -128,7 +128,9 @@ SOFTWARE. -->
   <text text="${this.parent.label}" x="${Math.round(this.parent.fontsize / 2) + 5}" fontsize="${this.parent.fontsize}"/>
 </class>
 
-<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor">
+<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor"
+  floatingvalignoffset="2" 
+>
   <method name="notifyPanelHidden" args="panel">
     this.setAttribute('selected', false);
   </method>
@@ -138,7 +140,9 @@ SOFTWARE. -->
   </method>
 </class>
 
-<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor">
+<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor"
+  floatingvalignoffset="2" 
+>
   <method name="notifyPanelHidden" args="panel">
     this.setAttribute('selected', false);
   </method>
@@ -200,4 +204,42 @@ SOFTWARE. -->
   <text name="labelView" y="32" text="${this.parent.label}" fontsize="10" color="transparent"/>
   
   <alignlayout align="center"/>
+</class>
+
+<class name="basefloatingpaneliconbutton" extends="toolbariconbutton"
+  floatingalign="insideright" floatingvalign="outsidebottom"
+>
+  <attribute name="selected" type="boolean" value="false"/>
+  <handler event="onselected" args="selected" method="updateUI"/>
+  
+  <method name="doActivated">
+    if (!this.disabled) {
+      var fp = this.getFloatingPanel();
+      if (fp) this.toggleFloatingPanel();
+    }
+  </method>
+</class>
+
+<class name="floatingpaneliconbutton" extends="basefloatingpaneliconbutton" with="floatingpanelanchor"
+  floatingvalignoffset="2" 
+>
+  <method name="notifyPanelHidden" args="panel">
+    this.setAttribute('selected', false);
+  </method>
+  
+  <method name="notifyPanelShown" args="panel">
+    this.setAttribute('selected', true);
+  </method>
+</class>
+
+<class name="listviewiconbutton" extends="basefloatingpaneliconbutton" with="listviewanchor"
+  floatingvalignoffset="2" 
+>
+  <method name="notifyPanelHidden" args="panel">
+    this.setAttribute('selected', false);
+  </method>
+  
+  <method name="notifyPanelShown" args="panel">
+    this.setAttribute('selected', true);
+  </method>
 </class>

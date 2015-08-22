@@ -716,10 +716,10 @@ SOFTWARE. -->
     width="100%" height="${config.topbar_height}"
   >
     <view name="left" padding="2" height="${config.topbar_height}">
-      <spacedlayout spacing="16" inset="20" outset="20" updateparent="true"/>
+      <spacedlayout spacing="3" inset="9" outset="3" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
       
-      <listviewbutton id="actionsButton" floatingpanelid="actions" label="Actions"
+      <listviewiconbutton id="actionsButton" floatingpanelid="actions" label="actions" iconname="actions"
         listviewattrs="{maxheight:300}"
       >
         <method name="doActivated">
@@ -745,8 +745,8 @@ SOFTWARE. -->
           actions[itemview.name]();
           this.super();
         </method>
-      </listviewbutton>
-      <floatingpanelbutton floatingpanelid="settings" label="Settings"/>
+      </listviewiconbutton>
+      <floatingpaneliconbutton floatingpanelid="settings" label="settings" iconname="settings"/>
     </view>
     
     <view name="center" padding="2" x="${this.parent.left.width}"
@@ -754,7 +754,7 @@ SOFTWARE. -->
     />
     
     <view name="right" padding="2" x="right" height="${config.topbar_height}">
-      <spacedlayout spacing="2" inset="2" outset="10" updateparent="true"/>
+      <spacedlayout spacing="3" inset="3" outset="9" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
       <toolbariconbutton id="editPreviewButton" action="editPreview" label="preview" iconname="preview" width="54"/>
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
