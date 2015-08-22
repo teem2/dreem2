@@ -20,11 +20,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <node id="selectionmanager">
-  <attribute name="selected" type="expression" value="null"/>
+  <attribute name="selected" type="expression" value="${null}"/>
   <setter name="selected" args="v">
     if (editor.inited) this.setAttribute('isrootselection', v === editor.content_bg.content.inner);
+    if (v && v.isA(dr.View)) {
+      this.setAttribute('selectedview', v);
+    } else {
+      this.setAttribute('selectedview', null);
+    }
     return v;
   </setter>
+
+  <attribute name="selectedview" type="expression" value="null"/>
 
   <attribute name="isrootselection" type="boolean" value="false"/>
 
@@ -42,7 +49,7 @@ SOFTWARE. -->
     
     // Make sure attempts to select the root view map to the view used in the
     // editor for the root.
-    if (newSelection && newSelection.isRoot()) newSelection = editor.content_bg.content.inner;
+    if (newSelection && newSelection.isRoot() && newSelection.isA(dr.View)) newSelection = editor.content_bg.content.inner;
     
     if (newSelection !== curSelection) {
       if (curSelection) curSelection.notifyDeselected();

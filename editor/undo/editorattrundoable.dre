@@ -14,11 +14,12 @@
   <method name="undo" args="callback">
     var target = this.target,
       attr = this.attribute, 
+      isView = target.isA(dr.View),
       isLayout = target.isA(dr.Layout), 
       isBehavior = target.isA(dr.behavior.behavior);
     
     var layouts, len, i;
-    if (!isLayout) {
+    if (isView) {
       layouts = target.parent.getLayouts();
       len = layouts.length;
       i = len;
@@ -56,11 +57,12 @@
   <method name="redo" args="callback">
     var target = this.target,
       attr = this.attribute, 
+      isView = target.isA(dr.View),
       isLayout = target.isA(dr.Layout), 
       isBehavior = target.isA(dr.behavior.behavior);
     
     var layouts, len, i;
-    if (!isLayout) {
+    if (isView) {
       layouts = target.parent.getLayouts();
       len = layouts.length;
       i = len;

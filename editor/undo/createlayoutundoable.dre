@@ -54,7 +54,7 @@
   
   <!--// Class Methods //////////////////////////////////////////////////////-->
   <method name="refresh" args="targetParent" allocation="class">
-    if (selectionmanager.selected === targetParent) {
+    if (selectionmanager.selectedview === targetParent) {
       layouts_panel.refresh(targetParent);
     } else {
       selectionmanager.select(targetParent);

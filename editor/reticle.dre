@@ -29,7 +29,7 @@ SOFTWARE. -->
   <!-- clickable:false is because the mousedown/up events are in fact
        simulated from the editable. This prevents the reticle from covering
        but still allows it to behave as draggable. -->
-  <handler event="onselected" args="selected" reference="selectionmanager">
+  <handler event="onselectedview" args="selected" reference="selectionmanager">
     var oldTarget = this.target;
     this.target = selected;
     if (selected) {

@@ -887,8 +887,8 @@ SOFTWARE. -->
           </method>
         </spacedlayout>
         
-        <handler name="refresh" event="onselected" args="selected" reference="selectionmanager">
-          this.repl.setAttribute('data', selected ? selected.getLayouts(true) : []);
+        <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
+          this.repl.setAttribute('data', selectedview ? selectedview.getLayouts(true) : []);
         </handler>
         
         <replicator name="repl" classname="subnodeeditor"/>
@@ -899,8 +899,8 @@ SOFTWARE. -->
       <view id="behaviors_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
         
-        <handler name="refresh" event="onselected" args="selected" reference="selectionmanager">
-          this.repl.setAttribute('data', selected ? selected.getBehaviors() : []);
+        <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
+          this.repl.setAttribute('data', selectedview ? selectedview.getBehaviors() : []);
         </handler>
         
         <replicator name="repl" classname="subnodeeditor"/>

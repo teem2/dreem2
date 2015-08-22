@@ -91,7 +91,7 @@
           var id = '';
           var img = config.img_root + 'view.png';
 
-          if (["text", "bitmap"].indexOf(tag) >= 0) {
+          if (["text", "bitmap", "replicator", "dataset"].indexOf(tag) >= 0) {
             img = config.img_root + tag + '.png';
           }
 
@@ -133,7 +133,7 @@
 
           if (object.id) {
             var obj = window[object.id];
-            if (obj && obj.isA(dr.View)) {
+            if (obj && !obj.isA(dr.Layout) && !obj.isA(dr.behavior.behavior)) {
               m.push(object);
             }
           }

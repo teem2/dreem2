@@ -73,33 +73,33 @@ SOFTWARE. -->
   
   <method name="bringToFront">
     if (this._isEditableSelection()) {
-      var selected = selectionmanager.selected,
-        newprevsibling = selected.getLastSiblingView();
-      if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      var selectedview = selectionmanager.selectedview,
+        newprevsibling = selectedview && selectedview.getLastSiblingView();
+      if (newprevsibling) this._updateOrder(selectedview, selectedview.getPrevSiblingView(), newprevsibling);
     }
   </method>
   
   <method name="bringForward">
     if (this._isEditableSelection()) {
-      var selected = selectionmanager.selected,
-        newprevsibling = selected.getNextSiblingView();
-      if (newprevsibling) this._updateOrder(selected, selected.getPrevSiblingView(), newprevsibling);
+      var selectedview = selectionmanager.selectedview,
+        newprevsibling = selectedview && selectedview.getNextSiblingView();
+      if (newprevsibling) this._updateOrder(selectedview, selectedview.getPrevSiblingView(), newprevsibling);
     }
   </method>
   
   <method name="sendToBack">
     if (this._isEditableSelection()) {
-      var selected = selectionmanager.selected,
-        oldprevsibling = selected.getPrevSiblingView();
-      if (oldprevsibling) this._updateOrder(selected, oldprevsibling, null);
+      var selectedview = selectionmanager.selectedview,
+        oldprevsibling = selectedview && selectedview.getPrevSiblingView();
+      if (oldprevsibling) this._updateOrder(selectedview, oldprevsibling, null);
     }
   </method>
   
   <method name="sendBackward">
     if (this._isEditableSelection()) {
-      var selected = selectionmanager.selected,
-        oldprevsibling = selected.getPrevSiblingView();
-      if (oldprevsibling) this._updateOrder(selected, oldprevsibling, oldprevsibling.getPrevSiblingView());
+      var selectedview = selectionmanager.selectedview,
+        oldprevsibling = selectedview && selectedview.getPrevSiblingView();
+      if (oldprevsibling) this._updateOrder(selectedview, oldprevsibling, oldprevsibling.getPrevSiblingView());
     }
   </method>
   

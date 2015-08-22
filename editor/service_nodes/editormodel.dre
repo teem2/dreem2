@@ -68,7 +68,7 @@ SOFTWARE. -->
       }
     }
   </method>
-  <handler event="onselected" args="selected" reference="selectionmanager">
+  <handler event="onselectedview" args="selected" reference="selectionmanager">
     if (this.replicatorchanges && (!saveButton.disabled)) {
       // selection was lost and we have changes that would require a save
       dialogmanager.showConfirm(

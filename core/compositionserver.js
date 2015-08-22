@@ -772,7 +772,7 @@ define(function(require, exports, module) {
             if (! attr.id) {
               attr.id = 'lzeditor_' + this.__guid++;
             }
-            if (setwith) {
+            if (setwith || child.tag === 'dataset') { // Also do dataset children of screen.
               if (! attr.with) {
                 attr.with = 'editable';
               } else if (! attr.with.match(this.__editableRE)){
