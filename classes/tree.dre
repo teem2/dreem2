@@ -205,6 +205,7 @@ SOFTWARE. -->
   <view name="item" with="button" height="${this.parent.isroot ? 0 : 25}"
     width="${this.parent.root.width}"
     focusembellishment="false" focusable="false"
+    disabled="${this.parent.root.disabled}"
   >
     <method name="doActivated">
       var classroot = this.classroot;
@@ -232,6 +233,7 @@ SOFTWARE. -->
       x="${this.classroot.indentwidth * (this.classroot.depth - 1) + 5}" y="6"
       text="${this.classroot.collapsed ? '▶' : '▼'}"
       fontsize="12"
+      disabled="${this.parent.disabled}"
     >
       <method name="doActivated">
         var classroot = this.classroot;
