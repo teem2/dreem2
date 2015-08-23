@@ -19,16 +19,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<!---------------
+<!------
   Transmit data from the client to the server, via methods and attributes.
   Each method on the server returns a value to the client.
 -->
 <composition>
 	<screens>
-		<screen type='browser' name='default' title='Smoke Test - RPC Client-Server'>
-			<view name='mainview' width='100%' height='100%' padding='4'>
-				<attribute name='sldvalue' type='number' input='false'/>
-				<slider name='toohigh' height='20' width='200' minvalue='20' maxvalue='80' value='100'>
+		<screen type='browser' name='default' title='SmartTV - GridView' icon='tv' basecolor='#8080ff'>
+			<view name='mainview' width='100%' height='100%' padding='4' id='lzeditor_18'>
+				<include href='/editor/editor_include.dre'/>
+				<attribute name='selected' icon='bullseye' title='Grid position' type='number' input='true' id='lzeditor_19' with='editable' placement='editor' value='${dr.teem.flowserver.screens_default_selected}'/>
+				<attribute name='data' icon='database' title='Grid content' type='string' input='true' id='lzeditor_19' with='editable' placement='editor'/>
+				<slider name='toohigh' height='20' width='200' minvalue='20' maxvalue='80' value='100' id='lzeditor_20' with='editable' placement='editor'>
 					<handler event='onvalue'>
 						console.log(this, this.value)
           this.parent.setAttribute('sldvalue',this.value)
@@ -41,16 +43,27 @@ SOFTWARE. -->
 				</handler>
 			</view>
 		</screen>
-		<screen type='browser' name='mobile' title='Smoke Test - RPC Client-Server'>
-			<view width='100%' height='100%' padding='4'>
-				<attribute name='sldinput' input='true' value='${dr.teem.flowserver.screens_mobile_sldinput}'/>
-				<slider name='toohigh' height='20' width='200' minvalue='20' maxvalue='80' value='${this.parent.sldinput}'/>
+		<screen type='browser' name='mobile1' title='Galaxy Remote - Slider' icon='mobile' basecolor='#80ffff'>
+			<view width='100%' height='100%' padding='4' id='lzeditor_23'>
+				<include href='/editor/editor_include.dre'/>
+				<attribute name='sldoutput' input='false' title='Slider' icon='sliders' id='lzeditor_24' with='editable' placement='editor' value='${dr.teem.flowserver.screens_mobile1_sldinput}'/>
+				<slider name='toohigh' height='20' width='200' minvalue='20' maxvalue='80' value='${this.parent.sldinput}' id='lzeditor_25' with='editable' placement='editor'/>
+				<handler event='onsldoutput'>
+					dr.teem.flowserver.screens_default_selected = this.sldoutput
+				</handler>
+			</view>
+		</screen>
+		<screen type='browser' name='mobile2' title='Galaxy Remote - XYPad' icon='android' basecolor='#ff80ff'>
+			<view width='100%' height='100%' padding='4' id='lzeditor_23'>
+				<include href='/editor/editor_include.dre'/>
+				<attribute name='xyoutput' input='false' title='XYPad' icon='gamepad' id='lzeditor_24' with='editable' placement='editor' value='${dr.teem.flowserver.screens_mobile1_sldinput}'/>
+				<slider name='toohigh' height='20' width='200' minvalue='20' maxvalue='80' value='${this.parent.sldinput}' id='lzeditor_25' with='editable' placement='editor'/>
 			</view>
 		</screen>
 	</screens>
-	<server>
-		<attribute name='testvalue' type='number' value='70'/>
-		<attribute name='attrtest2' type='object'/>
+	<server id='lzeditor_26' with='editable'>
+		<attribute name='testvalue' type='number' value='70' id='lzeditor_27' with='editable'/>
+		<attribute name='attrtest2' type='object' id='lzeditor_28' with='editable'/>
 		<handler event='init'>
 			//console.log("rpc_client_server server init");
     //this.attrtest2 = {check:2}
@@ -59,7 +72,7 @@ SOFTWARE. -->
     //}.bind(this),1000)
 		</handler>
 	</server>
-	<flowserver>
-		<attribute name='screens_mobile_sldinput' to='screens_default_sldvalue' type='string'/>
+	<flowserver id='lzeditor_30' with='editable'>
+		<attribute name='screens_default_selected' to='screens_mobile1_sldoutput' type='string'/>
 	</flowserver>
 </composition>
