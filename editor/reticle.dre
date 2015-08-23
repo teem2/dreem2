@@ -333,8 +333,8 @@ SOFTWARE. -->
           var targetPos = target.getAbsolutePosition(editor),
             newParentPos = droptarget.getAbsolutePosition(editor),
             sprite = droptarget.sprite;
-          undoX.newvalue = '' + (targetPos.x - newParentPos.x + sprite.getScrollX());
-          undoY.newvalue = '' + (targetPos.y - newParentPos.y + sprite.getScrollY());
+          undoX.newvalue = '' + (targetPos.x - newParentPos.x - droptarget.leftborder + sprite.getScrollX());
+          undoY.newvalue = '' + (targetPos.y - newParentPos.y - droptarget.topborder + sprite.getScrollY());
         }
       }
       
