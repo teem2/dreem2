@@ -41,10 +41,10 @@ SOFTWARE. -->
         }
         
         // Find first screen
-        var screens = screensNode.child, screen;
-        i = screens.length;
-        while (i) {
-          screen = screens[--i];
+        var screens = screensNode.child, screen, len = screens.length;
+        i = 0;
+        for (; len > i; i++) {
+          screen = screens[i];
           if (screen.tag === 'screen') {
             firstScreen = screen;
             break;
