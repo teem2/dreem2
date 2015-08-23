@@ -1,4 +1,4 @@
-<!-- The MIT License (MIT)
+<!--The MIT License (MIT)
 
 Copyright ( c ) 2014-2015 Teem2 LLC
 
@@ -19,56 +19,47 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-
-<!--
+<!-----
   Transmit data from the client to the server, via methods and attributes.
   Each method on the server returns a value to the client.
 -->
-
 <composition>
-
-<screens>
-  <screen type="browser" name="default" title="Smoke Test - RPC Client-Server">
-    <include href="./includes/boilerplate.dre"></include>
-    <attribute name='sldvalue' type='number'/>
-    <handler event='onsldvalue'>
-      console.log(this.sldvalue)
-    </handler>
-    <view name='mainview' width="100%" height="100%" padding="4">
-       <handler event='onsldvalue'>
-        console.log(this.sldvalue)
-      </handler>
-      <slider name="toohigh" height="20" width="200" minvalue="20" maxvalue="80" value="100">
-        <handler event='onvalue'>
-          dr.teem.server.testvalue = this.value
-        </handler>
-      </slider>
-      <handler event="oninit">
-      </handler>
-
-      <method name="unittest">
-      </method>
-    </view>
-
-  </screen>
-  <screen type="browser" name="mobile" title="Smoke Test - RPC Client-Server">
-    <include href="./includes/boilerplate.dre"></include>
-    <view width="100%" height="100%" padding="4">
-      <slider name="toohigh" height="20" width="200" minvalue="20" maxvalue="80" value="${dr.teem.server.testvalue}"></slider>
-    </view>
-  </screen>  
-</screens>
-
-<server>
-  <attribute name='testvalue' type='number' value='70'/>
-  <attribute name='attrtest2' type='object'/>
-  <handler event="init">
-    //console.log("rpc_client_server server init");
+	<screens>
+		<screen type='browser' name='default' title='Smoke Test - RPC Client-Server'>
+			<view name='mainview' width='100%' height='100%' padding='4'>
+				<attribute name='sldvalue' type='number' input='false'/>
+				<slider name='toohigh' height='20' width='200' minvalue='20' maxvalue='80' value='100'>
+					<handler event='onvalue'>
+						console.log(this, this.value)
+          this.parent.setAttribute('sldvalue',this.value)
+					</handler>
+				</slider>
+				<handler event='oninit'/>
+				<method name='unittest'/>
+				<handler event='onsldvalue'>
+					dr.teem.flowserver.screens_mobile_sldinput = this.sldvalue
+				</handler>
+			</view>
+		</screen>
+		<screen type='browser' name='mobile' title='Smoke Test - RPC Client-Server'>
+			<view width='100%' height='100%' padding='4'>
+				<attribute name='sldinput' input='true' value='${dr.teem.flowserver.screens_mobile_sldinput}'/>
+				<slider name='toohigh' height='20' width='200' minvalue='20' maxvalue='80' value='${this.parent.sldinput}'/>
+			</view>
+		</screen>
+	</screens>
+	<server>
+		<attribute name='testvalue' type='number' value='70'/>
+		<attribute name='attrtest2' type='object'/>
+		<handler event='init'>
+			//console.log("rpc_client_server server init");
     //this.attrtest2 = {check:2}
     //this.teem.setInterval(function(){
      // this.testvalue = Math.random()*100
     //}.bind(this),1000)
-  </handler>
-</server>
-
+		</handler>
+	</server>
+	<flowserver>
+		<attribute name='screens_mobile_sldinput' to='screens_default_sldvalue' type='string'/>
+	</flowserver>
 </composition>
