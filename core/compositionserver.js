@@ -713,7 +713,7 @@ define(function(require, exports, module) {
       return newdata
     }
     this.__editableRE = /[,\s]*editable/;
-    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter/;
+    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter|attribute/;
     this.__walkChildren = function(jsobj, stripeditor, insidescreen) {
       var setplacement = false, setwith = false;
       if (jsobj.tag !== 'screen') {
