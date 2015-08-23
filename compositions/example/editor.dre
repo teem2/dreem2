@@ -21,8 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <composition>
  <screens>
-  <screen type='browser' name='default' title='Editor'>
-    <attribute name='testslot' type='string' input='true'/>
+  <screen type='browser' name='default' title='Editor' basecolor="#60ff60">
+    <attribute name='Input A' type='string' input='true'/>
+    <attribute name='Input B' type='string' input='true'/>
+    <attribute name='Output A' type='string' input='false'/>
+    <attribute name='Output B' type='string' input='false'/>
    <view width='100%' height='100%' bgcolor='#f4b8ee' scrollable='true' id='lzeditor_1'>
     <include href='/editor/editor_include.dre'/>
     <view with='button,editable' x='-1' y='2' bgcolor='purple' width='${this.parent.blue.x}' height='105' opacity='1' visible='true' id='lzeditor_2' placement='editor'>
@@ -87,9 +90,23 @@ SOFTWARE. -->
     </view>
    </view>
   </screen>
-  <screen type='mobile' name='mobile'>
-    <attribute name='myinput' type='string'/>
+  <screen type='mobile' name='mobile' basecolor="#ff6060">
+   
+	<attribute name='Input A' type='string' input='true'/>
+    <attribute name='Input B' type='string' input='true'/>
+    <attribute name='Output A' type='string' input='false'/>
+    <attribute name='Output B' type='string' input='false'/>
+   
   </screen>
+  <screen type='browser' name='remote' basecolor="#ffff60">
+   
+	<attribute name='Input A' type='string' input='true'/>
+    <attribute name='Input B' type='string' input='true'/>
+    <attribute name='Output A' type='string' input='false'/>
+    <attribute name='Output B' type='string' input='false'/>
+   
+  </screen>
+ 
  </screens>
  <server name='myserver'>
     <attribute name='myoutput' type='string' input='false'/>
