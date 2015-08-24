@@ -121,8 +121,15 @@ SOFTWARE. -->
 <class name="coloreditor" with="floatingpanelanchor, button"
   floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
   border="1" bordercolor="#eeeeee" width="100" height="20"
-  floatingpanelid="colorpicker"
+  floatingpanelid="colorpicker" cornerradius="3"
 >
+  <method name="showFocusEmbellishment">
+    this.sprite.hideFocusEmbellishment();
+    this.setAttribute('boxshadow', config.boxshadow_normal);
+  </method>
+  <method name="hideFocusEmbellishment">
+    this.setAttribute('boxshadow', null);
+  </method>
   <method name="destroy">
     this.hideFloatingPanel();
     this.super();

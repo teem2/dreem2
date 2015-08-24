@@ -1082,9 +1082,9 @@ SOFTWARE. -->
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"/>
     <editor_text text="grid x:" y="2"/>
-    <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+    <editor_inputtext id="gridsizex" width="30" allowedchars="0123456789" maxlength="3" text="0"/>
     <editor_text text="y:" y="2"/>
-    <editor_inputtext id="gridsizey" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+    <editor_inputtext id="gridsizey" width="30" allowedchars="0123456789" maxlength="3" text="0"/>
   </view>
   
   <view height="auto">

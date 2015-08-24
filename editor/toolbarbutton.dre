@@ -91,8 +91,17 @@ SOFTWARE. -->
 </class>
 
 <class name="editor_text" extends="text" fontsize="14"/>
-<class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee">
+<class name="editor_inputtext" extends="inputtext" fontsize="14" border="1" bordercolor="#eeeeee" bgcolor="white"
+  cornerradius="3" leftpadding="2" rightpadding="2"
+>
   <handler event="onfocus" method="selectAll"/>
+  <method name="showFocusEmbellishment">
+    this.sprite.hideFocusEmbellishment();
+    this.setAttribute('boxshadow', config.boxshadow_normal);
+  </method>
+  <method name="hideFocusEmbellishment">
+    this.setAttribute('boxshadow', null);
+  </method>
 </class>
 
 <class name="basefloatingpanelbutton" with="button"
