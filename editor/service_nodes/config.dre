@@ -29,7 +29,6 @@ SOFTWARE. -->
   
   <attribute name="rightbar_minwidth" type="number" value="280"/>
   <attribute name="rightbar_minx" type="number" value="600"/>
-  <attribute name="bottombar_height" type="number" value="0"/>
   
   <attribute name="divider_width" type="number" value="5"/>
   <attribute name="ruler_thickness" type="number" value="35"/>

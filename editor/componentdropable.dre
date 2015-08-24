@@ -75,7 +75,7 @@ SOFTWARE. -->
             instance.destroy();
             this.destroy();
             
-            dialogmanager.showAlert('The layout you are trying to add conflicts with an existing layout.');
+            messages.addMessage('The layout you are trying to add conflicts with an existing layout.');
             return;
           }
         }
@@ -89,7 +89,7 @@ SOFTWARE. -->
             instance.destroy();
             this.destroy();
             
-            dialogmanager.showAlert('The behavior you are trying to add conflicts with an existing behavior.');
+            messages.addMessage('The behavior you are trying to add conflicts with an existing behavior.');
             return;
           }
         }

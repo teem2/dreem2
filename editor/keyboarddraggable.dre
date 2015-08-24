@@ -24,8 +24,7 @@ SOFTWARE. -->
 >
   <handler event="onkeydown" args="platformEvent">
     if (!this.disabled) {
-      var keyCode = dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent);
-      switch (keyCode) {
+      switch (dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent)) {
         case 37: // Left arrow
           this._shiftPos(true, false);
           break;
@@ -41,51 +40,41 @@ SOFTWARE. -->
       }
     }
   </handler>
-  
+
   <method name="_shiftPos" args="isX, increase">
-    var shiftKeyDown = dr.keyboard.isShiftKeyDown(),
-      amount = shiftKeyDown ? 10 : 1,
-      gridAmt = Math.max(1, isX ? gridsizex.value : gridsizey.value),
-      isdragging = this.isdragging,
-      event = {x:this.x, y:this.y};
-    this._isArrowAdj = true;
-    
-    this.setActualAttribute('draginitx', 0);
-    this.setActualAttribute('draginity', 0);
-    if (!isdragging) this.startDrag(event);
-    event[isX ? 'x' : 'y'] += (increase ? 1 : -1) * amount * gridAmt;
-    this.updatePosition(event.x, event.y);
-    if (!isdragging) this.stopDrag(event);
-    this._isArrowAdj = false;
+    if (!this.isdragging) {
+      var amount = dr.keyboard.isShiftKeyDown() ? 10 : 1,
+        gridAmt = Math.max(1, isX ? gridsizex.value : gridsizey.value),
+        event = {x:this.x, y:this.y};
+      
+      this._isArrowAdj = true;
+      
+      this.setActualAttribute('draginitx', 0).setActualAttribute('draginity', 0);
+      this.startDrag(event);
+      event[isX ? 'x' : 'y'] += (increase ? 1 : -1) * amount * gridAmt;
+      this.updatePosition(event.x, event.y);
+      this.stopDrag(event);
+      
+      this._isArrowAdj = false;
+    }
   </method>
-  
+
   <method name="__doMouseDown" args="event">
     this.super();
-    xLocation.setAttribute('visible', false);
-    yLocation.setAttribute('visible', false);
     editor.setAttribute('showlocationmarkers', false);
     return true;
   </method>
+
   <method name="__doMouseUp" args="event">
     this.super();
     editor.setAttribute('showlocationmarkers', true);
-    xLocation.setAttribute('visible', true);
-    yLocation.setAttribute('visible', true);
     return true;
   </method>
-  
-  <method name="startDrag" args="event">
-    xLocation.setAttribute('visible', false);
-    yLocation.setAttribute('visible', false);
-    editor.setAttribute('showlocationmarkers', false);
-    this.super();
-  </method>
-  
+
   <method name="stopDrag" args="event, isAbort">
+    // Needed when aborting a drag to show the location markers
     this.super();
-    editor.setAttribute('showlocationmarkers', true);
-    xLocation.setAttribute('visible', true);
-    yLocation.setAttribute('visible', true);
+    if (isAbort) editor.setAttribute('showlocationmarkers', true);
   </method>
 
   <method name="willPermitDrop" args="droptarget">

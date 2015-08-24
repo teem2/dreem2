@@ -37,4 +37,9 @@ SOFTWARE. -->
     parent.animate({attribute:'xscale', to:1, duration:400});
     parent.animate({attribute:'yscale', to:1, duration:400});
   </handler>
+  
+  <!--// Editor Support //-->
+  <method name="__getBehaviorDomains">
+    return {behavior_scale:true}; // Don't allow two of this behavior
+  </method>
 </class>

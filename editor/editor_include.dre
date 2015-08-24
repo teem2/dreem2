@@ -116,30 +116,34 @@ SOFTWARE. -->
       event = this._lastMouseEvent;
     }
     
-    var rootSprite = editor.parent.sprite,
-      x = event.x + rootSprite.getScrollX(), 
-      y = event.y + rootSprite.getScrollY(),
-      xLoc = xLocation,
-      yLoc = yLocation,
-      content_bg = this.content_bg,
-      content = content_bg.content,
-      inner = content.inner;
-    
-    xLoc.setAttribute('visible', this.showlocationmarkers);
-    xLoc.setAttribute('x', x - 1);
-    xLoc.label.setAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
-    
-    yLoc.setAttribute('visible', this.showlocationmarkers);
-    yLoc.setAttribute('y', y - 1);
-    yLoc.label.setAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
-    
+    if (event) {
+      var xLoc = xLocation, yLoc = yLocation;
+      if (this.showlocationmarkers) {
+        var rootSprite = editor.parent.sprite,
+          x = event.x + rootSprite.getScrollX(), 
+          y = event.y + rootSprite.getScrollY(),
+          content_bg = this.content_bg,
+          content = content_bg.content,
+          inner = content.inner;
+        xLoc.setAttribute('visible', true).setAttribute('x', x - 1);
+        xLoc.label.setAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
+        yLoc.setAttribute('visible', true).setAttribute('y', y - 1);
+        yLoc.label.setAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
+      } else {
+        if (xLoc.visible) xLoc.setAttribute('visible', false);
+        if (yLoc.visible) yLoc.setAttribute('visible', false);
+      }
+    }
     return true;
   </handler>
+  <handler event="onshowlocationmarkers">
+    this.updateLocationMarkers(); // Do not pass event
+  </handler>
   <handler event="onscrollx, onscrolly" reference="this.content_bg">
-    this.updateLocationMarkers();
+    this.updateLocationMarkers(); // Do not pass event
   </handler>
   <handler event="onscrollx, onscrolly" reference="editor.parent">
-    this.updateLocationMarkers();
+    this.updateLocationMarkers(); // Do not pass event
   </handler>
 
   <!-- Eat attempts to open the context menu since this typically messes up
@@ -189,7 +193,7 @@ SOFTWARE. -->
     x="${this.parent.divider_left.x}"
     y="${this.parent.ruler_corner.y + this.parent.ruler_corner.height}"
     width="${config.ruler_thickness}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    height="${this.parent.innerheight - this.y}"
     scrolly="${this.parent.content_bg.scrolly + this.parent.content_bg.content.inner.scrolly + 100 - config.content_inset}"
   >
     <spacedlayout axis="y" spacing="100" inset="97"/>
@@ -541,7 +545,7 @@ SOFTWARE. -->
   <view name="content_bg" ignoreplacement="true" bgcolor="${config.content_color}"
     x="${ruler_horizontal.x}" y="${ruler_vertical.y}"
     width="${this.parent.divider_right.x - this.x}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    height="${this.parent.innerheight - this.y}"
     scrollable="true"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
@@ -749,10 +753,6 @@ SOFTWARE. -->
       <floatingpaneliconbutton floatingpanelid="settings" label="settings" iconname="settings"/>
     </view>
     
-    <view name="center" padding="2" x="${this.parent.left.width}"
-      width="${this.parent.right.x - this.x}" height="${config.topbar_height}"
-    />
-    
     <view name="right" padding="2" x="right" height="${config.topbar_height}">
       <spacedlayout spacing="3" inset="3" outset="9" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
@@ -767,7 +767,7 @@ SOFTWARE. -->
   <view name="leftbar" ignoreplacement="true" bgcolor="white" scrollable="true"
     y="${config.topbar_height}"
     width="${this.parent.divider_left.x}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    height="${this.parent.innerheight - this.y}"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     
@@ -924,12 +924,6 @@ SOFTWARE. -->
   </view>
 
 
-  <!--// Bottom Panel //-->
-  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
-    y="bottom" width="100%" height="${config.bottombar_height}"
-  />
-
-
   <!--// Misc Lines //-->
   <!-- Line directly below the header. -->
   <view ignoreplacement="true"
@@ -966,6 +960,114 @@ SOFTWARE. -->
     <method name="updatePosition" args="x, y">
       if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
     </method>
+  </view>
+
+  <view id="messages" with="button" ignoreplacement="true" focusembellishment="false"
+    x="center" width="400" height="12"
+    bgcolor="#bbbbbb" boxshadow="${config.boxshadow_large}"
+    bottomleftcornerradius="12" bottomrightcornerradius="12"
+  >
+    <attribute name="selected" type="boolean" value="false"/>
+    <attribute name="useropened" type="boolean" value="false"/>
+    <handler event="onselected" args="selected">
+      this.stopActiveAnimators('height');
+      this.animate({
+        attribute:'height',
+        to: 12 + (selected ? this.container.content.height : 0),
+        duration:selected || this.useropened ? 400 : 1000
+      });
+      
+      // Animate closed after a delay
+      if (selected && !this.useropened) {
+        var self = this;
+        if (this._timerId) clearTimeout(this._timerId);
+        this._timerId = setTimeout(function() {
+          self.setAttribute('selected', false);
+        }, 3000);
+      }
+    </handler>
+    <method name="doActivated">
+      this.setAttribute('useropened', true);
+      this.setAttribute('selected', !this.selected);
+    </method>
+    <method name="initNode" args="parent, attrs">
+      this.super();
+      this.addMessage('No Messages.', true, true);
+    </method>
+    <method name="drawDisabledState">
+      this.setAttribute('bgcolor', '#bbbbbb');
+    </method>
+    <method name="drawHoverState">
+      this.setAttribute('bgcolor', '#cccccc');
+    </method>
+    <method name="drawActiveState">
+      this.setAttribute('bgcolor', '#aaaaaa');
+    </method>
+    <method name="drawReadyState">
+      this.setAttribute('bgcolor', '#bbbbbb');
+    </method>
+    
+    <method name="addMessage" args="msg, noopen, notime">
+      if (msg) {
+        var content = this.container.content;
+        
+        // Remove and existing children that have the exact same message.
+        var svs = content.getSubviews(), i = svs.length, sv;
+        while (i) {
+          sv = svs[--i];
+          if (sv.msg === msg || sv.msg === 'No Messages.') sv.destroy();
+        }
+        
+        // Create a new message.
+        var child = content.createChild({
+          class:'text',
+          text:'${this.time + this.msg}',
+          width:content.innerwidth,
+          fontsize:14, multiline:true, opacity:0,
+          msg:msg,
+          time:notime ? '' : ((new Date()).toLocaleTimeString() + ' - ')
+        });
+        child.animate({attribute:'opacity', to:1, duration:600});
+        
+        // Only retain 5 most recent messages
+        while (svs.length > 5) svs[0].destroy();
+        
+        // Dim out all but the most recent message
+        while (svs.length - 1 > i) svs[i++].setAttribute('color', '#aaaaaa');
+        
+        // Open
+        if (!noopen) {
+          if (this.selected) {
+            this.setAttribute('selected', false); // Force reanimation
+            this.setAttribute('selected', true);
+          } else {
+            this.setAttribute('useropened', false);
+            this.setAttribute('selected', true);
+          }
+        }
+      }
+    </method>
+    
+    <view name="container" width="400" height="${this.parent.innerheight - 12}"
+      bgcolor="#cccccc" scrollable="true"
+    >
+      <view name="content" x="2" width="396" padding="4" bgcolor="white"
+        bottomleftcornerradius="4" bottomrightcornerradius="4" color="#666666"
+      >
+        <spacedlayout axis="y" spacing="4" updateparent="true" reverse="true" speed="400">
+          <method name="__positionView" args="view, attrName, value">
+            if (view === this.parent) {
+              // Make parent updates happen immediately
+              this.speed = 0;
+              this.super();
+              this.speed = 400;
+            } else {
+              this.super();
+            }
+          </method>
+        </spacedlayout>
+      </view>
+    </view>
   </view>
 </view>
 

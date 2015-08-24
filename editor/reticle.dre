@@ -33,72 +33,73 @@ SOFTWARE. -->
     var oldTarget = this.target;
     this.target = selected;
     if (selected) {
-      this.setAttribute('visible', true);
+      this.setActualAttribute('visible', true);
       this.focus(true);
       this._syncPosition();
       if (!oldTarget) this.listenTo(dr.idle, 'onidle', this._syncPosition);
     } else {
       this.stopListening(dr.idle, 'onidle', this._syncPosition);
-      this.setAttribute('visible', false);
+      this.setActualAttribute('visible', false);
     }
   </handler>
 
   <method name="_syncPosition">
-    var content = editor.content,
-      target = this.target;
-    
+    var target = this.target;
     if (target.destroyed) {
       console.log('Selection target was destroyed so aborting _syncPosition.');
       selectionmanager.clear();
-      return;
-    }
-    
-    var pos = target.getAbsolutePosition(editor),
-      w = target.width,
-      h = target.height;
-    this._isSync = true;
-    this.setAttributes({width:w, height:h, x:pos.x, y:pos.y});
-    this._isSync = false;
-    
-    // Update selection bars
-    var startX = horizontal_selection.x - ruler_horizontal.x + ruler_horizontal.scrollx - 100,
-      startXRelative = target.x,
-      endX = startX + w,
-      xDifferent = startX !== endX,
-      hSel = horizontal_selection,
-      hLocsize = hSel.locsize,
-      hLocend = hSel.locend,
-      hLocrelend = hSel.locrelend;
-    hSel.locstart.setAttribute('text', this._formatNumber(startX));
-    hSel.locrelstart.setAttribute('text', this._formatNumber(startXRelative));
-    
-    hLocsize.setAttribute('visible', xDifferent);
-    hLocend.setAttribute('visible', xDifferent);
-    hLocrelend.setAttribute('visible', xDifferent);
-    if (xDifferent) {
-      hLocsize.setAttribute('text', this._formatNumber(w));
-      hLocend.setAttribute('text', this._formatNumber(endX));
-      hLocrelend.setAttribute('text', this._formatNumber(startXRelative + w));
-    }
-    
-    var startY = vertical_selection.y - ruler_vertical.y + ruler_vertical.scrolly - 100,
-      startYRelative = target.y,
-      endY = startY + h,
-      yDifferent = startY !== endY,
-      vSel = vertical_selection,
-      vLocsize = vSel.locsize,
-      vLocend = vSel.locend,
-      vLocrelend = vSel.locrelend;
-    vSel.locstart.setAttribute('text', this._formatNumber(startY));
-    vSel.locrelstart.setAttribute('text', this._formatNumber(startYRelative));
-    
-    vLocsize.setAttribute('visible', yDifferent);
-    vLocend.setAttribute('visible', yDifferent);
-    vLocrelend.setAttribute('visible', yDifferent);
-    if (yDifferent) {
-      vLocsize.setAttribute('text', this._formatNumber(h));
-      vLocend.setAttribute('text', this._formatNumber(endY));
-      vLocrelend.setAttribute('text', this._formatNumber(startYRelative + h));
+    } else {
+      var pos = target.getAbsolutePosition(editor),
+        w = target.width,
+        h = target.height;
+      
+      this._isSync = true;
+      this.setActualAttribute('width', w);
+      this.setActualAttribute('height', h);
+      this.setActualAttribute('x', pos.x);
+      this.setActualAttribute('y', pos.y);
+      this._isSync = false;
+      
+      // Update selection bars
+      var hSel = horizontal_selection,
+        startX = hSel.x - ruler_horizontal.x + ruler_horizontal.scrollx - 100,
+        startXRelative = target.x,
+        endX = startX + w,
+        xDifferent = startX !== endX,
+        hLocsize = hSel.locsize,
+        hLocend = hSel.locend,
+        hLocrelend = hSel.locrelend;
+      hSel.locstart.setActualAttribute('text', this._formatNumber(startX));
+      hSel.locrelstart.setActualAttribute('text', this._formatNumber(startXRelative));
+      
+      hLocsize.setActualAttribute('visible', xDifferent);
+      hLocend.setActualAttribute('visible', xDifferent);
+      hLocrelend.setActualAttribute('visible', xDifferent);
+      if (xDifferent) {
+        hLocsize.setActualAttribute('text', this._formatNumber(w));
+        hLocend.setActualAttribute('text', this._formatNumber(endX));
+        hLocrelend.setActualAttribute('text', this._formatNumber(startXRelative + w));
+      }
+      
+      var vSel = vertical_selection,
+        startY = vSel.y - ruler_vertical.y + ruler_vertical.scrolly - 100,
+        startYRelative = target.y,
+        endY = startY + h,
+        yDifferent = startY !== endY,
+        vLocsize = vSel.locsize,
+        vLocend = vSel.locend,
+        vLocrelend = vSel.locrelend;
+      vSel.locstart.setActualAttribute('text', this._formatNumber(startY));
+      vSel.locrelstart.setActualAttribute('text', this._formatNumber(startYRelative));
+      
+      vLocsize.setActualAttribute('visible', yDifferent);
+      vLocend.setActualAttribute('visible', yDifferent);
+      vLocrelend.setActualAttribute('visible', yDifferent);
+      if (yDifferent) {
+        vLocsize.setActualAttribute('text', this._formatNumber(h));
+        vLocend.setActualAttribute('text', this._formatNumber(endY));
+        vLocrelend.setActualAttribute('text', this._formatNumber(startYRelative + h));
+      }
     }
   </method>
   
@@ -108,20 +109,23 @@ SOFTWARE. -->
   </method>
 
   <method name="drawFocusedState">
-    this.fill.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+    this.fill.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
   </method>
   <method name="drawHoverState">
-    this.fill.setAttribute('boxshadow', config.boxshadow_normal);
+    this.fill.setActualAttribute('boxshadow', config.boxshadow_normal);
   </method>
   <method name="drawActiveState">
-    this.fill.setAttribute('boxshadow', null);
+    this.fill.setActualAttribute('boxshadow', null);
   </method>
   <method name="drawReadyState">
-    this.fill.setAttribute('boxshadow', config.boxshadow_normal);
+    this.fill.setActualAttribute('boxshadow', config.boxshadow_normal);
   </method>
 
   <method name="_updateTarget" args="attr, value">
-    if (this.target && !this._isSync) this.target.setAttribute(attr, value, true); // 3rd arg enables model update
+    if (!this._isSync) {
+      var target = this.target;
+      if (target) target.setAttribute(attr, value, true); // 3rd arg enables model update
+    }
   </method>
   
   <handler event="onx" args="x">
@@ -134,12 +138,12 @@ SOFTWARE. -->
   
   <handler event="onwidth" args="width">
     this._updateTarget('width', width);
-    this.resizer.setAttribute('x', this.width - 5)
+    this.resizer.setActualAttribute('x', this.width - 5)
   </handler>
   
   <handler event="onheight" args="height">
     this._updateTarget('height', height);
-    this.resizer.setAttribute('y', this.height - 5)
+    this.resizer.setActualAttribute('y', this.height - 5)
   </handler>
   
   <method name="updatePosition" args="x, y">
@@ -165,7 +169,7 @@ SOFTWARE. -->
         var pos = this._updateGuides(x, y, noXAdj, noYAdj);
         x = pos.x;
         y = pos.y;
-        guides.setAttribute('visible', true);
+        guides.setActualAttribute('visible', true);
       }
       
       // If a layout in parent is managing x/y position then don't allow drag.
@@ -239,7 +243,7 @@ SOFTWARE. -->
     }
     return false;
   </method>
-  
+
   <method name="willPermitDrop" args="droptarget">
     return true;
   </method>
@@ -253,7 +257,7 @@ SOFTWARE. -->
     this._origOpacity = target.getActualAttribute('opacity');
     target.setActualAttribute('opacity', this._origOpacity / 2);
   </method>
-  
+
   <method name="notifyDrop" args="droptarget, isAbort">
     this.super();
     
@@ -282,7 +286,7 @@ SOFTWARE. -->
     
     // Restore opacity after drag
     this.target.setActualAttribute('opacity', this._origOpacity);
-    guides.setAttribute('visible', false);
+    guides.setActualAttribute('visible', false);
   </method>
 
   <method name="_start">
@@ -392,16 +396,17 @@ SOFTWARE. -->
 
   <controlhandle name="resizer" visible="${!selectionmanager.isrootselection}">
     <handler event="onx" args="x">
-      this.parent.setAttribute('width', x + 5);
+      this.parent.setActualAttribute('width', x + 5);
     </handler>
     
     <handler event="ony" args="y">
-      this.parent.setAttribute('height', y + 5);
+      this.parent.setActualAttribute('height', y + 5);
     </handler>
     
     <method name="startDrag" args="event">
-      this._origAspectRatio = this.parent.height / this.parent.width;
-      this.parent._start();
+      var parent = this.parent;
+      this._origAspectRatio = parent.height / parent.width;
+      parent._start();
       this.super();
     </method>
     
@@ -438,8 +443,8 @@ SOFTWARE. -->
         if (target.__layoutDomainInUseForView('width')) x = this.getOriginalLocation().x;
         if (target.__layoutDomainInUseForView('height')) y = this.getOriginalLocation().y;
         
-        this.setAttribute('x', Math.max(-5, x));
-        this.setAttribute('y', Math.max(-5, y));
+        this.setActualAttribute('x', Math.max(-5, x));
+        this.setActualAttribute('y', Math.max(-5, y));
       }
     </method>
     
