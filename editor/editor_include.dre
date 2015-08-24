@@ -963,7 +963,7 @@ SOFTWARE. -->
   </view>
 
   <view id="messages" with="button" ignoreplacement="true" focusembellishment="false"
-    x="center" width="400" height="12"
+    x="center" width="550" height="12"
     bgcolor="#bbbbbb" boxshadow="${config.boxshadow_large}"
     bottomleftcornerradius="12" bottomrightcornerradius="12"
   >
@@ -1048,10 +1048,10 @@ SOFTWARE. -->
       }
     </method>
     
-    <view name="container" width="400" height="${this.parent.innerheight - 12}"
+    <view name="container" width="550" height="${this.parent.innerheight - 12}"
       bgcolor="#cccccc" scrollable="true"
     >
-      <view name="content" x="2" width="396" padding="4" bgcolor="white"
+      <view name="content" x="2" width="546" padding="4" bgcolor="white"
         bottomleftcornerradius="4" bottomrightcornerradius="4" color="#666666"
       >
         <spacedlayout axis="y" spacing="4" updateparent="true" reverse="true" speed="400">
