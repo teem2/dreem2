@@ -71,17 +71,7 @@ SOFTWARE. -->
   <handler event="onselectedview" args="selected" reference="selectionmanager">
     if (this.replicatorchanges && (!saveButton.disabled)) {
       // selection was lost and we have changes that would require a save
-      dialogmanager.showConfirm(
-        'Changes to replicated classes may require a save to show changes accurately. Save now?', null, null, function(dialog, success) {
-          if (success) {
-            editormodel.save();
-            undo.reset();
-          } else {
-            // Save cancelled
-          }
-        }
-      );
-      this.replicatorchanges = false;
+      messages.addMessage('Changes to replicated classes may require a save or preview to show changes accurately.');
     }
   </handler>
   
