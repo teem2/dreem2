@@ -80,6 +80,15 @@ SOFTWARE. -->
           }
         }
       } else if (this.isbehavior) {
+        // Make sure behaviors that make children are not put on leaf nodes
+        if (droptarget.isLeaf() && instance.__behaviorMakesViews()) {
+          instance.destroy();
+          this.destroy();
+          
+          messages.addMessage("The behavior \"" + instance.klass.__displayName.substring(9) + "\" can't be added to leaf boxes.");
+          return;
+        }
+        
         // Make sure behavior domains do not conflict
         var behaviors = droptarget.getBehaviors(), behavior;
         i = behaviors.length;

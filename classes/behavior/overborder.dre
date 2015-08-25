@@ -1,0 +1,62 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<class name="behavior-overborder" extends="node" with="behavior-behavior">
+  <attribute name="thickness" type="number" value="5"/>
+  <attribute name="opacity" type="number" value="1"/>
+  <attribute name="color" type="color" value="#f8f8f8"/>
+  <attribute name="overspeed" type="number" value="400"/>
+  <attribute name="outspeed" type="number" value="400"/>
+  
+  <handler event="onmouseover" reference="this.parent">
+    var speed = this.overspeed,
+      hlt = this.__hlt;
+    if (!hlt) {
+      hlt = this.__hlt = this.parent.createChild({
+        class:'view', ignoreplacement:true, ignorelayout:true, opacity:0,
+        width:'100%', height:'100%', bordercolor:this.color
+      });
+    }
+    
+    hlt.moveToFront();
+    hlt.stopActiveAnimators('border');
+    hlt.stopActiveAnimators('opacity');
+    hlt.animate({attribute:'border', to:this.thickness, duration:speed/2});
+    hlt.animate({attribute:'opacity', to:this.opacity, duration:speed});
+  </handler>
+  <handler event="onmouseout" reference="this.parent">
+    var speed = this.outspeed,
+      hlt = this.__hlt;
+    hlt.stopActiveAnimators('border');
+    hlt.stopActiveAnimators('opacity');
+    hlt.animate({attribute:'border', to:0, duration:speed});
+    hlt.animate({attribute:'opacity', to:0, duration:speed});
+  </handler>
+  
+  <!--// Editor Support //-->
+  <method name="__getBehaviorDomains">
+    return {behavior_overborder:true}; // Don't allow two of this behavior
+  </method>
+  
+  <method name="__behaviorMakesViews">
+    return true;
+  </method>
+</class>
