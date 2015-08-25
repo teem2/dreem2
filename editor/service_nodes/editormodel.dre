@@ -84,14 +84,27 @@ SOFTWARE. -->
   <method name="deleteNode" args="childView, oldParentView">
     var model = this.model;
     if (model) {
-      var childModel = this._findChildById(childView.id, model),
-        parentModel = this._findChildById(this._getId(oldParentView), model);
-      if (childModel && parentModel) {
-        var idx = this._findChildIndex(parentModel, childModel);
-        if (idx >= 0) {
-          childView.__editorModel = parentModel.child[idx];
-          parentModel.child.splice(idx, 1);
-          this.sendEvent('onmodelchange', this);
+      var childModel = this._findChildById(childView.id, model);
+      if (oldParentView.replicator) {
+        // special case for new instance in root of class tag
+        var classModel = this._findClassInModel(oldParentView.replicator.classname);
+        if (childView && classModel) {
+          var idx = this._findChildIndex(classModel, childModel);
+          if (idx >= 0) {
+            childView.__editorModel = classModel.child[idx];
+            classModel.child.splice(idx, 1);
+            this.sendEvent('onmodelchange', this);
+          }
+        }
+      } else {
+        var parentModel = this._findChildById(this._getId(oldParentView), model);
+        if (childModel && parentModel) {
+          var idx = this._findChildIndex(parentModel, childModel);
+          if (idx >= 0) {
+            childView.__editorModel = parentModel.child[idx];
+            parentModel.child.splice(idx, 1);
+            this.sendEvent('onmodelchange', this);
+          }
         }
       }
     }
@@ -239,7 +252,7 @@ SOFTWARE. -->
   <method name="_findChildIndex" args="parentModel, childModel">
     var children = parentModel.child;
     if (children) {
-      var i = children.length, child,
+      var i = children.length,
         searchId = childModel.attr.id,
         searchChildModel;
       while (i) {

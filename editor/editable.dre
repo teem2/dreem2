@@ -296,8 +296,8 @@ SOFTWARE. -->
   </method>
 
   <!--// Model Creation //-->
-  <method name="objectify" args="obj">
-    obj.tag = this.$tagname;
+  <method name="objectify" args="modelObj">
+    modelObj.tag = this.$tagname;
     
     // Store Attributes
     var attrs = {},
@@ -310,10 +310,10 @@ SOFTWARE. -->
       attrName = objectifyAttrsList[--i];
       attrs[attrName] = '' + this['__cfg_' + attrName];
     }
-    obj.attr = attrs;
+    modelObj.attr = attrs;
     
     // Store "new" children
-    var children = obj.child || (obj.child = []),
+    var children = modelObj.child || (modelObj.child = []),
       subnodes = this.getSubnodes(), 
       len = subnodes.length, subnode;
     for (i = 0; len > i; i++) {
@@ -321,7 +321,7 @@ SOFTWARE. -->
       if (subnode.__NEW) children.push(subnode.objectify({}));
     }
     
-    return obj;
+    return modelObj;
   </method>
 
   <!--// Details Panel Support //-->
