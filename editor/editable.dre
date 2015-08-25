@@ -272,7 +272,7 @@ SOFTWARE. -->
         } else {
           // If we're inside a class that's being replicated prompt to save when done editing
           if (this._isInReplicator()) {
-            editormodel.replicatorchanges = true;
+            editormodel.setAttribute('replicatorchanges', true);
           }
           // TODO: this could fail for replicated instances that don't have editor IDs, or subnodes of replicated classes with repeated IDs
           var id = this.id || this.getRoot().id;

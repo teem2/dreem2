@@ -55,6 +55,11 @@ SOFTWARE. -->
   </method>
 
   <attribute name="replicatorchanges" value="false" type="boolean"></attribute>
+  <handler name="_showReplicationWarning" event="onreplicatorchanges">
+    if (preview.visible !== true) {
+      messages.addMessage('Changes to replicated classes may require a save or preview to show changes accurately.');
+    }
+  </handler>
   <method name="_findClassInModel" args="classname">
     var model = this.model;
     if (model) {
@@ -70,14 +75,14 @@ SOFTWARE. -->
     var classmodel = this._findClassInModel(classname);
     if (classmodel) {
       classmodel.attr[name] = value;
-      this.replicatorchanges = true;
+      this.setAttribute('replicatorchanges', true);
       this.sendEvent('onmodelchange', this);
     }
   </method>
   <handler event="onselectedview" args="selected" reference="selectionmanager">
-    if (this.replicatorchanges && (!saveButton.disabled)) {
+    if (this.replicatorchanges && selected) {
       // selection was lost and we have changes that would require a save
-      messages.addMessage('Changes to replicated classes may require a save or preview to show changes accurately.');
+      this._showReplicationWarning();
     }
   </handler>
   
@@ -104,6 +109,7 @@ SOFTWARE. -->
     if (child && parent) {
       if (!parent.child) parent.child = [];
       parent.child.push(child.__editorModel || child.objectify({}));
+      this.setAttribute('replicatorchanges', true);
       this.sendEvent('onmodelchange', this);
     }
   </method>
