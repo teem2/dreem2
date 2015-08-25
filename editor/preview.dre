@@ -26,7 +26,7 @@ SOFTWARE. -->
     
     <node>
       <handler event="oninit">
-        var pkg = window.top.editormodel.getPkg(),
+        var pkg = window.parent.editormodel.getPkg(),
           classmap = pkg.classmap,
           screensNode, 
           compositionChildNodes = pkg.composition.child,
@@ -69,7 +69,7 @@ SOFTWARE. -->
         
         // Modify base href since the preview iframe is not at the same location
         // as the original document.
-        var loc = window.top.location.toString(),
+        var loc = window.parent.location.toString(),
           basePath = loc.substring(0, loc.lastIndexOf('/')) + '/',
           elem = document.createElement('base');
         elem.href = basePath;
