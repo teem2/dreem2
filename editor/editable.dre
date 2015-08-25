@@ -232,7 +232,14 @@ SOFTWARE. -->
         editormodel.moveNode(this, existingParent.id || existingParent.getRoot().id, this.parent.id || this.parent.getRoot().id);
       } else {
         if (hasOld) editormodel.deleteNode(this, existingParent.id || existingParent.getRoot().id);
-        if (hasNew) editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
+        if (hasNew) {
+          if (this.parent.replicator) {
+            // special case for new instance in root of class tag
+            editormodel.createClassNode(this, this.parent.replicator.classname);
+          } else {
+            editormodel.createNode(this, this.parent.id || this.parent.getRoot().id);
+          }
+        }
       }
     }
     
