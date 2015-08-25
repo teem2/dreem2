@@ -25,8 +25,11 @@ SOFTWARE. -->
   <attribute name="color" type="color" value="#f8f8f8"/>
   <attribute name="overspeed" type="number" value="400"/>
   <attribute name="outspeed" type="number" value="400"/>
-  
-  <handler event="onmouseover" reference="this.parent">
+
+  <handler event="onmouseover" reference="this.parent" method="show"></handler>
+  <handler event="onmouseout" reference="this.parent" method="hide"></handler>
+
+  <method name="show">
     var speed = this.overspeed,
       hlt = this.__hlt;
     if (!hlt) {
@@ -41,15 +44,16 @@ SOFTWARE. -->
     hlt.stopActiveAnimators('opacity');
     hlt.animate({attribute:'border', to:this.thickness, duration:speed/2});
     hlt.animate({attribute:'opacity', to:this.opacity, duration:speed});
-  </handler>
-  <handler event="onmouseout" reference="this.parent">
+  </method>
+
+  <method name="hide">
     var speed = this.outspeed,
       hlt = this.__hlt;
     hlt.stopActiveAnimators('border');
     hlt.stopActiveAnimators('opacity');
     hlt.animate({attribute:'border', to:0, duration:speed});
     hlt.animate({attribute:'opacity', to:0, duration:speed});
-  </handler>
+  </method>
   
   <!--// Editor Support //-->
   <method name="__getBehaviorDomains">
