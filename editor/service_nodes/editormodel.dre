@@ -212,6 +212,12 @@ SOFTWARE. -->
     return this._findChildById(this._getId(childView), this.model);
   </method>
 
+  <method name="generateModelId">
+    var id = 'lzeditor_client_' + dr.generateGuid();
+    while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
+    return id;
+  </method>
+
   <!-- @private -->
   <method name="_getId" args="childView">
     return childView.id || childView.getRoot().id;

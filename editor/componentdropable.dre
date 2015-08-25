@@ -41,11 +41,8 @@ SOFTWARE. -->
     this.super();
     
     if (!this.dropfailed) {
-      var id = 'lzeditor_client_' + dr.generateGuid();
-      while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
-      
       var attrs = dr.extend({}, this.instanceattrs);
-      attrs.id = id;
+      attrs.id = editormodel.generateModelId();
       
       if (!this.islayout && !this.isbehavior) {
         var targetPos = this.getAbsolutePosition(editor),
