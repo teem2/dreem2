@@ -84,7 +84,7 @@ define(function(require, exports, module) {
           req.on('data', function(data) {buf += data.toString();});
           req.on('end', function() {
             var comppath = define.expandVariables(this.__getCompositionPath())
-            this.__saveEditableFile(comppath, buf, query.stripeditor === '1');
+            this.__saveEditableFile(query.screen || 'default', comppath, buf, query.stripeditor === '1');
             res.writeHead(200, {"Content-Type":"text/json"});
             res.end();
           }.bind(this));
@@ -95,8 +95,8 @@ define(function(require, exports, module) {
             //add other headers here...
           });
           res.end();
-          var comppath = define.expandVariables(this.__getCompositionPath())
-          this.__makeFileEditable(comppath);
+          var comppath = define.expandVariables(this.__getCompositionPath());
+          this.__makeFileEditable(query.screen || 'default', comppath);
           return;
         }
       }
@@ -695,7 +695,7 @@ define(function(require, exports, module) {
       return data;
     }
 
-    this.__makeFileEditable = function(filepath) {
+    this.__makeFileEditable = function(screenName, filepath) {
       var data, newdata;
       data = this.__readFile(filepath)
 
@@ -705,26 +705,31 @@ define(function(require, exports, module) {
       } else {
         var htmlParser = new HTMLParser(),
         jsobj = htmlParser.parse(data);
-        this.__walkChildren(jsobj)
-        newdata = HTMLParser.reserialize(jsobj, ' ')
+        this.__walkChildren(screenName, jsobj)
+        newdata = HTMLParser.reserialize(jsobj, '  ')
         this.__writeFileIfChanged(filepath, newdata)
       }
 
       return newdata
     }
+
     this.__editableRE = /[,\s]*editable/;
     this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter|attribute/;
-    this.__walkChildren = function(jsobj, stripeditor, insidescreen) {
+    this.__walkChildren = function(screenName, jsobj, stripeditor, insidescreen) {
       var setplacement = false, setwith = false;
-      if (jsobj.tag !== 'screen') {
-        setwith = true;
+      if (jsobj.tag === 'screen') {
+        if (jsobj.attr && jsobj.attr.name === screenName) {
+          // track if we're inside the screen tag
+          insidescreen = true;
+        } else {
+          return;
+        }
       } else {
-        // track if we're inside the screen tag
-        insidescreen = true;
+        setwith = true;
       }
 
       var children = jsobj.child;
-      if (! children.length) return;
+      if (!children.length) return;
 
       // strip out editor include
       for (var i = 0; i < children.length; i++) {
@@ -734,11 +739,12 @@ define(function(require, exports, module) {
           break;
         }
       }
+      
       if (jsobj.tag === 'view' && insidescreen) {
         // only set placement='editor' for tags in the top-level view immediately inside the screen tag
         insidescreen = false;
         setplacement = true;
-        if (! stripeditor) {
+        if (!stripeditor) {
           // add top-level editor include
           jsobj.child.unshift({
             tag: 'include',
@@ -751,49 +757,39 @@ define(function(require, exports, module) {
 
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
-
-        if (! child.tag.match(this.__skiptagsRE)) {
-          if (! child.attr) {
-            child.attr = {};
-          }
+        if (!child.tag.match(this.__skiptagsRE)) {
+          if (!child.attr) child.attr = {};
           var attr = child.attr;
           if (stripeditor) {
-            if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) {
-              delete attr.id;
-            }
+            if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) delete attr.id;
             if ((typeof attr.with === 'string') && attr.with.match(this.__editableRE)) {
               attr.with = attr.with.replace(this.__editableRE, '');
-              if (! attr.with) delete attr.with;
+              if (!attr.with) delete attr.with;
             }
-            if (attr.placement === 'editor') {
-              delete attr.placement;
-            }
+            if (attr.placement === 'editor') delete attr.placement;
           } else {
-            if (! attr.id) {
-              attr.id = 'lzeditor_' + this.__guid++;
-            }
+            if (!attr.id) attr.id = 'lzeditor_' + this.__guid++;
             if (setwith || child.tag === 'dataset') { // Also do dataset children of screen.
-              if (! attr.with) {
+              if (!attr.with) {
                 attr.with = 'editable';
-              } else if (! attr.with.match(this.__editableRE)){
+              } else if (!attr.with.match(this.__editableRE)){
                 attr.with += ',editable';
               }
-              if (setplacement) {
-                attr.placement = 'editor';
-              }
+              if (setplacement) attr.placement = 'editor';
             }
           }
         }
 
         // console.log(stripeditor, JSON.stringify(child));
         if (child.child) {
-          this.__walkChildren(child, stripeditor, insidescreen);
+          this.__walkChildren(screenName, child, stripeditor, insidescreen);
         }
       }
     };
-    this.__saveEditableFile = function(filepath, data, stripeditor) {
+
+    this.__saveEditableFile = function(screenName, filepath, data, stripeditor) {
       var jsobj = JSON.parse(data);
-      this.__walkChildren(jsobj, stripeditor);
+      this.__walkChildren(screenName, jsobj, stripeditor);
       var newdata = HTMLParser.reserialize(jsobj, ' ');
       this.__writeFileIfChanged(filepath, newdata);
       // console.log('saved', filepath, stripeditor);
