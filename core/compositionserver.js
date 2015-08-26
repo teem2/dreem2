@@ -20,6 +20,8 @@ define(function(require, exports, module) {
     DreemError = require('./dreemerror'),
     dreemCompiler = require('./dreemcompiler');
 
+    var UAParser = require('ua-parser-js');
+
   /**
     * @constructor
     * @param {Object} args Process arguments
@@ -147,8 +149,18 @@ define(function(require, exports, module) {
           res.write(JSON.stringify(pkg));
           res.end();
         } else {
-          var screenName = query.screen || 'default',
-            screen = this.screens[screenName];
+          var screenName = query.screen;
+          if (!screenName) {
+            var ua = UAParser(req.headers['user-agent']);
+            if (ua && ua.device && ua.device.type) {
+              screenName = ua.device.type;
+            } else {
+              screenName = 'default';
+            }
+          }
+
+
+          var screen = this.screens[screenName];
           if (screen) {
             var name = this.name;
             if (screenName === 'dali') {
