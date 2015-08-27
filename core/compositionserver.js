@@ -93,15 +93,20 @@ define(function(require, exports, module) {
           return;
         } else {
           res.writeHead(302, {
-            'Location': req.url.substring(0, req.url.indexOf('?'))
+            'Location': url + (query.screen ? '?screen=' + query.screen : '')
             //add other headers here...
           });
           res.end();
-          var comppath = define.expandVariables(this.__getCompositionPath());
-          this.__makeFileEditable(query.screen || 'default', comppath);
+          var comppath = define.expandVariables(this.__getCompositionPath()),
+            data = this.__readFile(comppath),
+            htmlParser = new HTMLParser(),
+            jsobj = htmlParser.parse(data);
+          this.__walkChildren(query.screen || 'default', jsobj, query.stripeditor === '1')
+          this.__writeFileIfChanged(comppath, HTMLParser.reserialize(jsobj, '  '))
           return;
         }
       }
+      
       if (query.raw) {
         var comppath = define.expandVariables(this.__getCompositionPath())
         res.writeHead(200, {"Content-Type":"text/text"});
@@ -707,24 +712,6 @@ define(function(require, exports, module) {
       return data;
     }
 
-    this.__makeFileEditable = function(screenName, filepath) {
-      var data, newdata;
-      data = this.__readFile(filepath)
-
-      if (data.indexOf('lzeditor_') > 0) {
-        // already editable, don't do anything
-        newdata = data
-      } else {
-        var htmlParser = new HTMLParser(),
-        jsobj = htmlParser.parse(data);
-        this.__walkChildren(screenName, jsobj)
-        newdata = HTMLParser.reserialize(jsobj, '  ')
-        this.__writeFileIfChanged(filepath, newdata)
-      }
-
-      return newdata
-    }
-
     this.__editableRE = /[,\s]*editable/;
     this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter|attribute/;
     this.__walkChildren = function(screenName, jsobj, stripeditor, insidescreen) {
@@ -734,7 +721,7 @@ define(function(require, exports, module) {
           // track if we're inside the screen tag
           insidescreen = true;
         } else {
-          return;
+          stripeditor = true;
         }
       } else {
         setwith = true;

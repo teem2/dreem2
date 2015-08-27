@@ -226,7 +226,7 @@ SOFTWARE. -->
     this.actual.syncTo(target, 'on' + name, function(val) {
       if (type === 'number') {
         // Allow at most 2 decimal places to be shown for "actual" numbers.
-        val = +(+(val).toFixed(2));
+        val = +(+(val || 0).toFixed(2));
       }
       this.setActualAttribute('text', val);
       self._checkActualIsDifferent();

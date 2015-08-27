@@ -26,7 +26,8 @@ SOFTWARE. -->
     
     <node>
       <handler event="oninit">
-        var pkg = window.parent.editormodel.getPkg(),
+        var editormodel = window.parent.editormodel,
+          pkg = editormodel.getPkg(),
           classmap = pkg.classmap,
           screensNode, 
           compositionChildNodes = pkg.composition.child,
@@ -40,18 +41,22 @@ SOFTWARE. -->
           }
         }
         
-        // Find first screen
-        var screens = screensNode.child, screen, len = screens.length;
+        // Find screen that matches query
+        var screenname = editormodel.screenname,
+          screens = screensNode.child, 
+          screen, 
+          targetScreen,
+          len = screens.length;
         i = 0;
         for (; len > i; i++) {
           screen = screens[i];
-          if (screen.tag === 'screen') {
-            firstScreen = screen;
+          if (screen.tag === 'screen' && screen.attr.name === screenname) {
+            targetScreen = screen;
             break;
           }
         }
         
-        if (!firstScreen) {
+        if (!targetScreen) {
           console.warn("Could not find a screen node in the package.");
           return;
         }
@@ -60,7 +65,7 @@ SOFTWARE. -->
         define.onMain = function() {
           var compiler = new dr.maker.Compiler();
           dr.ready = false;
-          compiler.execute(firstScreen, classmap, dr.teem, root, true);
+          compiler.execute(targetScreen, classmap, dr.teem, root, true);
         };
         
         for (var key in classmap) {

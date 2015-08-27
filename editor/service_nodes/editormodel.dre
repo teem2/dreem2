@@ -24,6 +24,7 @@ SOFTWARE. -->
        Flag that indicates if changes to a replicated view have 
        occurred or not. -->
   <attribute name="_replicatorchanges" value="false" type="boolean"/>
+  <attribute name="screenname" type="string" value="default"/>
 
   <handler name="_showReplicationWarning" event="on_replicatorchanges">
     if (this.inited && preview.visible !== true) {
@@ -37,9 +38,25 @@ SOFTWARE. -->
   </handler>
 
   <handler event="oninit">
+    // Extract screen from the query and store it.
+    var screenname = 'default',
+      query = window.location.search;
+    if (query) {
+      query = (query.substring(1)).split('&');
+      var i = query.length, entry;
+      while (i) {
+        entry = query[--i].split('=');
+        if (entry[0] === 'screen') {
+          screenname = entry[1];
+          break;
+        }
+      }
+    }
+    this.setAttribute('screenname', screenname);
+    
     var self = this;
     // rewrite the file to be editable, which will reload this page automatically
-    dr.global.requestor.fetch(window.location.toString() + '?raw=1').success(
+    dr.global.requestor.fetch(window.location.pathname + '?raw=1').success(
       function(data, status) {
         var parser = new dr.htmlparser();
         var jsobj = parser.parse(data);
@@ -296,12 +313,18 @@ SOFTWARE. -->
 
   <!-- Save the model changes to the server and reload for editing again. -->
   <method name="save">
-    dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model));
+    var url = window.location.pathname + window.location.search;
+    url += (url.indexOf('?') === -1) ? '?' : '&';
+    url += 'edit=1';
+    dr.global.requestor.send(url, JSON.stringify(this.model));
   </method>
 
   <!-- End the editing process. -->
   <method name="stop">
-    dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model));
+    var url = window.location.pathname + window.location.search;
+    url += (url.indexOf('?') === -1) ? '?' : '&';
+    url += 'edit=1&stripeditor=1';
+    dr.global.requestor.fetch(url);
   </method>
 
   <!-- Used by preview.dre to get the model to instantiate. -->
