@@ -771,6 +771,18 @@ SOFTWARE. -->
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     
+    <view width="${treemodel.width}" height="28" bgcolor="#eeeeee">
+      <listviewbutton id="screennamechooser" floatingpanelid="screenlist" y="6" x="5">
+        <method name="doItemActivated" args="itemview">
+          this.super();
+          actions.changeScreen(itemview.text);
+        </method>
+      </listviewbutton>
+      
+      <view width="100%" y="bottom" height="1" bgcolor="#cccccc"/>
+    </view>
+    
+    
     <include href='./treemodel.dre'/>
   </view>
 
@@ -941,7 +953,7 @@ SOFTWARE. -->
 
   <!--// Dividers //-->
   <view name="divider_left" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
-    x="${config.leftbar_minwidth + 50}" y="${config.topbar_height}"
+    x="${config.leftbar_minwidth + 20}" y="${config.topbar_height}"
     width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
     <method name="updatePosition" args="x, y">

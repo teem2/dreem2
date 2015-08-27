@@ -62,6 +62,17 @@ SOFTWARE. -->
         var jsobj = parser.parse(data);
         self.setAttribute('model', jsobj);
         self.sendEvent('onmodelchange', self);
+        
+        // Update screenname chooser
+        var cfg = [], curName = self.screenname,
+          screennames = self.getScreenNames(), i = screennames.length, screenname;
+        while (i) {
+          screenname = screennames[--i];
+          cfg.unshift({attrs:{name:screenname, text:screenname, disabled:screenname === curName}});
+        }
+        var screennameChooser = dr.sprite.retrieveGlobal('screennamechooser');
+        screennameChooser.setAttribute('itemconfig', cfg);
+        screennameChooser.setAttribute('label', 'current screen: ' + curName);
       }
     );
   </handler>
@@ -325,6 +336,24 @@ SOFTWARE. -->
     url += (url.indexOf('?') === -1) ? '?' : '&';
     url += 'edit=1&stripeditor=1';
     dr.global.requestor.fetch(url);
+  </method>
+
+  <!-- Start editing another screen. -->
+  <method name="changeScreen" args="screenname">
+    console.log(window.location.pathname + '?edit=1&screen=' + screenname);
+    window.location = window.location.pathname + '?edit=1&screen=' + screenname;
+  </method>
+  
+  <method name="getScreenNames">
+    var retval = [], screensModel = this._findChildByTag('screens', this.model);
+    if (screensModel) {
+      var children = screensModel.child, child, i = children.length;
+      while (i) {
+        child = children[--i]
+        if (child.tag === 'screen') retval.push(child.attr.name);
+      }
+    }
+    return retval;
   </method>
 
   <!-- Used by preview.dre to get the model to instantiate. -->

@@ -134,7 +134,7 @@ SOFTWARE. -->
   </method>
   
   <text name="arrow" text="${this.parent.selected ? '▼' : '▶'}" fontsize="${this.parent.fontsize - 2}" y="2"/>
-  <text text="${this.parent.label}" x="${Math.round(this.parent.fontsize / 2) + 5}" fontsize="${this.parent.fontsize}"/>
+  <text text="${this.parent.label}" x="${this.parent.fontsize}" fontsize="${this.parent.fontsize}"/>
 </class>
 
 <class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor"
