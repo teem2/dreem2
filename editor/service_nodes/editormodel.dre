@@ -217,7 +217,7 @@ SOFTWARE. -->
         
         // Insert child
         idx = this._findChildIndex(parentModel, siblingModel);
-        if (idx >= 0) parentModel.child.splice(idx + 1, 0, child);
+        if (idx >= 0) parentModel.child.splice(idx + 1, 0, childModel);
         this.sendEvent('onmodelchange', this);
       }
     }
