@@ -196,7 +196,7 @@ SOFTWARE. -->
             
             if (!newParentModel.child) newParentModel.child = [];
             
-            newParentModel.child.splice(newIdx + 1, 0, child);
+            newParentModel.child.splice(newIdx + 1, 0, childModel);
           }
           this.sendEvent('onmodelchange', this);
         }
