@@ -2,21 +2,14 @@
   y="28" selectcolor="${config.selection_color}"
   disabled="${!editor.editmode}"
 >
-  <handler event="onselected" args="view" reference="selectionmanager">
+  <handler name="updateSelection" event="onselected" args="view" reference="selectionmanager">
     if (view) {
       // Map inner view to root since the inner view is what allows editing of
       // the root view for the screen.
       if (view === editor.content_bg.content.inner) view = view.getRoot();
       
-      this._selectInTree(this._getViewForId(view.id))
-    } else {
-      this.clearSelection();
-    }
-  </handler>
-
-  <method name="_selectInTree" args="view">
-    if (view) {
-      var walk = function(v) {
+      // Select in tree
+      (function walk(v) {
         if (!v.selected && v.data && v.data.id == view.id) {
           v.triggerSelection(true);
           return true;
@@ -25,21 +18,17 @@
           if (walk(v.subviews[i])) return true;
         }
         return false;
-      };
-      
-      return walk(this);
+      })(this);
+    } else {
+      this.clearSelection();
     }
-  </method>
-
-  <method name="_getViewForId" args="viewid">
-    return window[viewid];
-  </method>
+  </handler>
 
   <method name="selectHandler" args="sel, d">
     var viewid = d.id;
     if (viewid) {
       if (sel) {
-        var view = this._getViewForId(viewid);
+        var view = window[viewid];
         if (view !== selectionmanager.selected) selectionmanager.select(view);
       } else {
         selectionmanager.select(null);
@@ -47,105 +36,92 @@
     }
   </method>
 
-  <handler event="oninit" method="reloadTree"></handler>
-
   <handler event="onmodelchange" reference="editormodel">
-    this.reloadTree();
-  </handler>
-
-  <method name="reloadTree">
-    var model = [],
-      d = editormodel.model,
-      screenname = editormodel.screenname;
-
-    var parser = function(m, o) {
-      // if we're at the root node, so parse down through until we find the first screen
-      if (o.tag == '$root') {
-        for (var i=0; o.child.length > i; i++) {
-          var composition = o.child[i];
-          if (composition.tag == 'composition') {
-            for (var j=0; composition.child.length > j; j++) {
-              var screens = composition.child[j];
-              if (screens.tag == 'screens') {
-                o = screens.child;
-                for (var h=0; o.length > h; h++) {
-                  var screen = o[h];
-                  if (screen.tag == 'screen' && screen.attr && screen.attr.name == screenname) {
-                    o = screen.child;
-                    break;
+    // Reload tree
+    var d = editormodel.model;
+    if (d) {
+      var model = [],
+        screenname = editormodel.screenname;
+      
+      (function parser(m, o) {
+        // if we're at the root node, so parse down through until we find the
+        // screen with a matching name
+        if (o.tag == '$root') {
+          for (var i=0; o.child.length > i; i++) {
+            var composition = o.child[i];
+            if (composition.tag == 'composition') {
+              for (var j=0; composition.child.length > j; j++) {
+                var screens = composition.child[j];
+                if (screens.tag == 'screens') {
+                  o = screens.child;
+                  for (var h=0; o.length > h; h++) {
+                    var screen = o[h];
+                    if (screen.tag == 'screen' && screen.attr && screen.attr.name == screenname) {
+                      o = screen.child;
+                      break;
+                    }
                   }
+                  break;
                 }
-                break;
+              }
+              break;
+            }
+          }
+        }
+        
+        // for each child, build a normalized representation of the object 
+        // that looks like { title:'foo', image:imageid, id:'editor_id', items:[child,ren]}
+        for (var s=0; o.length > s; s++) {
+          var scr = o[s],
+            tag = scr.tag;
+          if (tag && tag[0] != '$') {
+            var title, name, id, attr = scr.attr,
+              img = config.img_root;
+            if (["text", "bitmap", "replicator", "dataset"].indexOf(tag) >= 0) {
+              img += tag + '.png';
+            } else {
+              img += 'view.png';
+            }
+            
+            if (attr) {
+              id = attr.id;
+              
+              if (attr.title) {
+                name = attr.title
+              } else if (attr.name) {
+                name = attr.name;
+              } else if (attr.event) {
+                name = attr.event;
+              } else if (attr.text) {
+                name = '"' + attr.text + '"';
               }
             }
-            break;
-          }
-        }
-      }
-
-      //for each child, build a normalized representation of the object that looks like { title:'foo', image:imageid, id:'editor_id', items:[child,ren]}
-      for (var s=0; o.length > s; s++) {
-        var scr = o[s];
-        if (scr.tag && scr.tag[0] != '$') {
-          var title = '';
-          var name = '';
-          var tag = scr.tag;
-          var id = '';
-          var img = config.img_root + 'view.png';
-
-          if (["text", "bitmap", "replicator", "dataset"].indexOf(tag) >= 0) {
-            img = config.img_root + tag + '.png';
-          }
-
-          if (scr.attr) {
-            var attr = scr.attr;
-
-            id = attr.id;
-
-            if (attr.title) {
-              name = attr.title
-            } else if (attr.name) {
-              name = attr.name;
-            } else if (attr.event) {
-              name = attr.event;
-            } else if (attr.text) {
-              name = '"' + attr.text + '"';
+            
+            title = name ? name : tag.charAt(0).toUpperCase() + tag.slice(1);
+            
+            var object = {title:title, image:img};
+            if (id) object.id = id;
+            if (scr.child) {
+              var items = [];
+              parser(items, scr.child);
+              if (items.length) object.items = items;
             }
-          }
-
-          if (name) {
-            title = name;
-          } else {
-            title = tag;
-            title = title.charAt(0).toUpperCase() + title.slice(1);
-          }
-
-
-          var items = [];
-          var object = { title: title, image: img };
-          if (id) {
-            object['id'] = id;
-          }
-          if (scr.child) {
-            parser(items, scr.child);
-            if (items.length) {
-              object['items'] = items;
-            }
-          }
-
-          if (object.id) {
-            var obj = window[object.id];
-            if (obj && !obj.isA(dr.Layout) && !obj.isA(dr.behavior.behavior)) {
-              m.push(object);
+            
+            // Keep all child nodes that are not layouts or behaviors.
+            if (id) {
+              var view = window[id];
+              if (view && !view.isA(dr.Layout) && !view.isA(dr.behavior.behavior)) m.push(object);
             }
           }
         }
-      }
-    };
-    if (d) {
-      parser(model, d);
+      })(model, d);
+      
+      this.setAttribute('data', model);
+      
+      // Update the selection after model changes since the selection will
+      // get cleared.
+      var selected = selectionmanager.selected;
+      if (selected) this.updateSelection(selected);
     }
-
-    this.setAttribute('data', model);
-  </method>
+  </handler>
 </tree>
