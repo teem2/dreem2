@@ -61,6 +61,10 @@ SOFTWARE. -->
           return;
         }
         
+        // Make the parent window dr.teem available in this frame since things
+        // like top level server elements will be missing in preview.dre
+        dr.teem = pkg.teem;
+        
         // Render the first screen into the target view
         define.onMain = function() {
           var compiler = new dr.maker.Compiler();

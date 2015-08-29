@@ -403,7 +403,8 @@ SOFTWARE. -->
     
     return {
       composition:compositionNode,
-      classmap:dr.classmap
+      classmap:dr.classmap,
+      teem:dr.teem
     };
   </method>
 </node>
