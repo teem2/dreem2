@@ -71,12 +71,14 @@
         
         // for each child, build a normalized representation of the object 
         // that looks like { title:'foo', image:imageid, id:'editor_id', items:[child,ren]}
-        for (var s=0; o.length > s; s++) {
-          var scr = o[s],
-            tag = scr.tag;
+        var title, name, id, scr, tag, attr, img, object, s = 0, len = o.length;
+        for (; len > s;) {
+          scr = o[s++];
+          tag = scr.tag;
           if (tag && tag[0] != '$') {
-            var title, name, id, attr = scr.attr,
-              img = config.img_root;
+            title = name = id = '';
+            attr = scr.attr;
+            img = config.img_root;
             if (["text", "bitmap", "replicator", "dataset"].indexOf(tag) >= 0) {
               img += tag + '.png';
             } else {
@@ -99,7 +101,7 @@
             
             title = name ? name : tag.charAt(0).toUpperCase() + tag.slice(1);
             
-            var object = {title:title, image:img};
+            object = {title:title, image:img};
             if (id) object.id = id;
             if (scr.child) {
               var items = [];
