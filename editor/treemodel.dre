@@ -10,12 +10,13 @@
       
       // Select in tree
       (function walk(v) {
-        if (!v.selected && v.data && v.data.id == view.id) {
+        if (!v.selected && v.data && v.data.id === view.id) {
           v.triggerSelection(true);
           return true;
         }
-        for (var i = 0; v.subviews.length > i; i++) {
-          if (walk(v.subviews[i])) return true;
+        var svs = v.subviews, i = svs.length;
+        while (i) {
+          if (walk(svs[--i])) return true;
         }
         return false;
       })(this);
@@ -28,7 +29,7 @@
     var viewid = d.id;
     if (viewid) {
       if (sel) {
-        var view = window[viewid];
+        var view = this._getEditable(viewid);
         if (view !== selectionmanager.selected) selectionmanager.select(view);
       } else {
         selectionmanager.select(null);
@@ -36,12 +37,17 @@
     }
   </method>
 
+  <method name="_getEditable" args="id">
+    return dr.sprite.retrieveGlobal(id);
+  </method>
+
   <handler event="onmodelchange" reference="editormodel">
     // Reload tree
     var d = editormodel.model;
     if (d) {
       var model = [],
-        screenname = editormodel.screenname;
+        screenname = editormodel.screenname,
+        self = this;
       
       (function parser(m, o) {
         // if we're at the root node, so parse down through until we find the
@@ -111,7 +117,7 @@
             
             // Keep all child nodes that are not layouts or behaviors.
             if (id) {
-              var view = window[id];
+              var view = self._getEditable(id);
               if (view && !view.isA(dr.Layout) && !view.isA(dr.behavior.behavior)) m.push(object);
             }
           }

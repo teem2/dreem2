@@ -294,30 +294,30 @@ SOFTWARE. -->
 
   <!-- @private -->
   <method name="_findChildById" args="id, model">
-    if (!id) return null;
-    
-    var children = model.child, child;
-    for (var i = 0; children.length > i; i++) {
-      child = children[i]
-      if (child.attr && child.attr.id === id) {
-        return child;
-      } else if (child.child) {
-        var newchild = this._findChildById(id, child);
-        if (newchild) return newchild;
+    if (id) {
+      var children = model.child, i = children.length, childModel;
+      while (i) {
+        childModel = children[--i]
+        if (childModel.attr && childModel.attr.id === id) {
+          return childModel;
+        } else if (childModel.child) {
+          var newChildModel = this._findChildById(id, childModel);
+          if (newChildModel) return newChildModel;
+        }
       }
     }
   </method>
 
   <!-- @private -->
   <method name="_findChildByTag" args="tagname, model">
-    var children = model.child, child;
-    for (var i = 0; children.length > i; i++) {
-      child = children[i]
-      if (child.tag === tagname) {
-        return child;
-      } else if (child.child) {
-        var newchild = this._findChildByTag(tagname, child);
-        if (newchild) return newchild;
+    var children = model.child, i = children.length, childModel;
+    while (i) {
+      childModel = children[--i]
+      if (childModel.tag === tagname) {
+        return childModel;
+      } else if (childModel.child) {
+        var newChildModel = this._findChildByTag(tagname, childModel);
+        if (newChildModel) return newChildModel;
       }
     }
   </method>
@@ -340,17 +340,16 @@ SOFTWARE. -->
 
   <!-- Start editing another screen. -->
   <method name="changeScreen" args="screenname">
-    console.log(window.location.pathname + '?edit=1&screen=' + screenname);
     window.location = window.location.pathname + '?edit=1&screen=' + screenname;
   </method>
   
   <method name="getScreenNames">
     var retval = [], screensModel = this._findChildByTag('screens', this.model);
     if (screensModel) {
-      var children = screensModel.child, child, i = children.length;
+      var children = screensModel.child, childModel, i = children.length;
       while (i) {
-        child = children[--i]
-        if (child.tag === 'screen') retval.push(child.attr.name);
+        childModel = children[--i]
+        if (childModel.tag === 'screen') retval.push(childModel.attr.name);
       }
     }
     return retval;
