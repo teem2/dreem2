@@ -4,6 +4,7 @@
 
   Micro AMD module loader for browser and node.js
 */
+
 (function(config_define) {
   // the main define function
   function define(factory) {
@@ -54,6 +55,7 @@
   };
 
   define.cleanPath = function(path) {
+
     return path.replace(/^\/+/,'/').replace(/\\/g,'/').replace(/([^:])\/+/g,'$1/');
   };
 
@@ -260,6 +262,7 @@
               var mainModule = define.module[main] = {exports:{}, id:main, filename:main};
               var ret = mainFactory(define.localRequire(define.filePath(main)), mainModule.exports, mainModule);
               if (ret !== undefined) mainModule.exports = ret;
+              define.atMain()
               define.onMain(mainModule.exports);
             } else {
               throw new Error("Cannot find main: " + main);
@@ -274,6 +277,12 @@
         document.getElementsByTagName('head')[0].appendChild(script);
       };
       
+      define.atMain = function(){
+        document.body.addEventListener('mousedown', function(){
+          window.parent.postMessage({type:'closewindow'},'*')
+        })
+      }
+
       // Expose insertScriptTag function so it can be used for late loading
       // of dependencies if necessary.
       define.insertScriptTag = insertScriptTag;
@@ -304,6 +313,9 @@
         this.reload_socket.onmessage = function(event) {
           var msg = JSON.parse(event.data);
           if (msg.type === 'filechange') {
+            if(location.search && location.search.indexOf('noreload') !== -1){
+              return
+            }
             location.href = location.href; // reload on filechange
           } else if (msg.type === 'close') {
             window.close(); // close the window
@@ -319,7 +331,33 @@
     })();
   } else {
     // nodeJS implementation
+	
+            
     (function() {
+		
+		
+		
+	define.startMain = function() {
+        // lets find our main and execute the factory
+        var main_mod = define.expandVariables(define.MAIN).replace(/\\/g,'/');
+        
+        var factory = define.factory[main_mod];
+		
+			
+	
+        if (!factory) throw new Error("Cannot find main: " + main_mod, define.MAIN);
+        
+        // lets boot up
+        var module = {exports:{}, id:main_mod, filename:main_mod};
+        define.module[main_mod] = module;
+        var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module);
+        if (ret !== undefined) module.exports = ret;
+		
+		if (define.onMain) define.onMain(module.exports);
+      }
+
+	  
+	  
       module.exports = global.define = define;
       
       define.ROOT = define.filePath(module.filename.replace(/\\/g,'/'));
@@ -344,20 +382,22 @@
         var module = modules[modules.length - 1] || require.main;
         
         // store module and factory just like in the other envs
-        define.module[module.filename] = module;
-        define.factory[module.filename] = factory;
+        define.module[module.filename.replace(/\\/g,'/')] = module;
+        define.factory[module.filename.replace(/\\/g,'/')] = factory;
         
         function localRequire(name) {
           if (arguments.length != 1) throw new Error("Unsupported require style");
 
           name = define.expandVariables(name);
+		  //console.log("*** name: " , name);
+			//console.log("*** module: ",		  module);
           var full_name = Module._resolveFilename(name, module);
           
           if (full_name instanceof Array) full_name = full_name[0];
           
           if (define.onRequire && (full_name.charAt(0) == '/' || full_name.indexOf(':') != -1)) {
             define.onRequire(full_name);
-          }
+          }	
           
           return require(full_name);
         }
@@ -380,38 +420,10 @@
       define.define(function(require) {
         module.exports = require;
       });
+	  
+	  
+	//  startMain();
     })()
   }
 })(typeof define !== 'undefined' && define);
 
-if (typeof console === 'undefined') {
-  var console = {
-    log: function() {
-      var out = '';
-      for (var i = 0; i < arguments.length; i++) {
-        if (i) out += ', ';
-        out += arguments[i];
-      }
-      out += '\n';
-      log(out);
-    },
-    dir: function() {
-      var out = '';
-      for(var i = 0; i < arguments.length; i++) {
-        if (i) out += ', ';
-        out += arguments[i];
-      }
-      out += '\n';
-      log(out);
-    },
-    warn: function() {
-      var out = '';
-      for(var i = 0; i < arguments.length; i++) {
-        if (i) out += ', ';
-        out += arguments[i];
-      }
-      out += '\n';
-      log(out);
-    }
-  };
-}
