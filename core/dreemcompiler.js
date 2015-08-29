@@ -90,8 +90,10 @@ define(function(require, exports, module) {
     }
     
     // give the method a unique but human readable name
-    var name = node.tag + '_' + (node.attr && node.attr.name) + '_' + node.pos + '_' + language;
+    var name = node.tag + '_' + (node.attr && node.attr.name || node.attr.event) + '_' + node.pos + '_' + language;
     if (parent && (parent.tag == 'class' || parent.tag == 'mixin')) name = (parent.attr && parent.attr.name) + '_' + name;
+    name = name.split(define.SEPARATOR_REGEX).join('_');
+    
     name = exports.classnameToJS(name);
     
     //node.method_id = output.methods.length
