@@ -975,15 +975,16 @@ SOFTWARE. -->
   </view>
 
   <view name="divider_right" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
-    x="${this.parent.innerwidth - config.rightbar_minwidth}" y="${config.topbar_height}"
+    y="${config.topbar_height}"
     width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
-    <handler event="oninnerwidth" reference="parent">
+    <handler event="oninnerwidth" reference="parent" args="innerwidth">
       // Respond to browser window resizing
-      this.updatePosition(this.x, this.y);
+      var x = this.inited ? this.x : innerwidth - config.rightbar_minwidth;
+      this.updatePosition(x, this.y);
     </handler>
     <method name="updatePosition" args="x, y">
-      if (!this.disabled) this.setActualAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
+      if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
     </method>
   </view>
 
