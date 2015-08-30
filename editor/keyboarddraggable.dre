@@ -61,20 +61,20 @@ SOFTWARE. -->
 
   <method name="__doMouseDown" args="event">
     this.super();
-    editor.setAttribute('showlocationmarkers', false);
+    editor.setActualAttribute('showlocationmarkers', false);
     return true;
   </method>
 
   <method name="__doMouseUp" args="event">
     this.super();
-    editor.setAttribute('showlocationmarkers', true);
+    editor.setActualAttribute('showlocationmarkers', true);
     return true;
   </method>
 
   <method name="stopDrag" args="event, isAbort">
     // Needed when aborting a drag to show the location markers
     this.super();
-    if (isAbort) editor.setAttribute('showlocationmarkers', true);
+    if (isAbort) editor.setActualAttribute('showlocationmarkers', true);
   </method>
 
   <method name="willPermitDrop" args="droptarget">

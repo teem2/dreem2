@@ -35,7 +35,8 @@ SOFTWARE. -->
     dropclassattrs.draggroups = {editable:true};
     dropclassattrs.opacity = 0.5;
     
-    this.icon.setAttribute('src', config.img_root + this.iconname + '.png');
+    this.icon.setActualAttribute('src', config.img_root + this.iconname + '.png');
+    this.labelView.setActualAttribute('text', this.label);
   </method>
 
   <method name="startDrag" args="event">
@@ -45,22 +46,22 @@ SOFTWARE. -->
   </method>
 
   <method name="drawDisabledState">
-    this.setAttribute('opacity', 0.5);
-    this.labelView.setAttribute('visible', false);
+    this.setActualAttribute('opacity', 0.5);
+    this.labelView.setActualAttribute('visible', false);
   </method>
   <method name="drawHoverState">
-    this.setAttribute('opacity', 1);
-    this.labelView.setAttribute('visible', true);
+    this.setActualAttribute('opacity', 1);
+    this.labelView.setActualAttribute('visible', true);
   </method>
   <method name="drawActiveState">
-    this.setAttribute('opacity', 1);
-    this.labelView.setAttribute('visible', true);
+    this.setActualAttribute('opacity', 1);
+    this.labelView.setActualAttribute('visible', true);
   </method>
   <method name="drawReadyState">
-    this.setAttribute('opacity', 1);
-    this.labelView.setAttribute('visible', false);
+    this.setActualAttribute('opacity', 1);
+    this.labelView.setActualAttribute('visible', false);
   </method>
   
   <bitmap name="icon" width="30" height="30" x="10" y="10"/>
-  <text name="labelView" width="100" x="-25" y="44" text="${this.parent.label}" textalign="center" fontsize="10" visible="false"/>
+  <text name="labelView" width="100" x="-25" y="44" textalign="center" fontsize="10" visible="false"/>
 </class>

@@ -26,24 +26,19 @@ SOFTWARE. -->
   cornerradius="4" focusembellishment="false"
 >
   <method name="drawDisabledState">
-    this.setAttribute('boxshadow', null);
-    this.setAttribute('bgcolor', '#aaaaaa');
+    this.setActualAttribute('boxshadow', null).setActualAttribute('bgcolor', '#aaaaaa');
   </method>
   <method name="drawFocusedState">
-    this.setAttribute('boxshadow', config.boxshadow_normal);
-    this.setAttribute('bgcolor', '#ffffff');
+    this.setActualAttribute('boxshadow', config.boxshadow_normal).setActualAttribute('bgcolor', '#ffffff');
   </method>
   <method name="drawHoverState">
-    this.setAttribute('boxshadow', null);
-    this.setAttribute('bgcolor', '#ffffff');
+    this.setActualAttribute('boxshadow', null).setActualAttribute('bgcolor', '#ffffff');
   </method>
   <method name="drawActiveState">
-    this.setAttribute('boxshadow', null);
-    this.setAttribute('bgcolor', '#dddddd');
+    this.setActualAttribute('boxshadow', null).setActualAttribute('bgcolor', '#dddddd');
   </method>
   <method name="drawReadyState">
-    this.setAttribute('boxshadow', null);
-    this.setAttribute('bgcolor', '#eeeeee');
+    this.setActualAttribute('boxshadow', null).setActualAttribute('bgcolor', '#eeeeee');
   </method>
 </class>
 
@@ -97,10 +92,10 @@ SOFTWARE. -->
   <handler event="onfocus" method="selectAll"/>
   <method name="showFocusEmbellishment">
     this.sprite.hideFocusEmbellishment();
-    this.setAttribute('boxshadow', config.boxshadow_normal);
+    this.setActualAttribute('boxshadow', config.boxshadow_normal);
   </method>
   <method name="hideFocusEmbellishment">
-    this.setAttribute('boxshadow', null);
+    this.setActualAttribute('boxshadow', null);
   </method>
 </class>
 
@@ -121,16 +116,16 @@ SOFTWARE. -->
   </method>
   
   <method name="drawDisabledState">
-    this.setAttribute('color', '#999999');
+    this.setActualAttribute('color', '#999999');
   </method>
   <method name="drawHoverState">
-    this.setAttribute('color', '#666666');
+    this.setActualAttribute('color', '#666666');
   </method>
   <method name="drawActiveState">
-    this.setAttribute('color', '#333333');
+    this.setActualAttribute('color', '#333333');
   </method>
   <method name="drawReadyState">
-    this.setAttribute('color', '#000000');
+    this.setActualAttribute('color', '#000000');
   </method>
   
   <text name="arrow" text="${this.parent.selected ? '▼' : '▶'}" fontsize="${this.parent.fontsize - 2}" y="2"/>
@@ -141,11 +136,11 @@ SOFTWARE. -->
   floatingvalignoffset="2" 
 >
   <method name="notifyPanelHidden" args="panel">
-    this.setAttribute('selected', false);
+    this.setActualAttribute('selected', false);
   </method>
   
   <method name="notifyPanelShown" args="panel">
-    this.setAttribute('selected', true);
+    this.setActualAttribute('selected', true);
   </method>
 </class>
 
@@ -153,11 +148,11 @@ SOFTWARE. -->
   floatingvalignoffset="2" 
 >
   <method name="notifyPanelHidden" args="panel">
-    this.setAttribute('selected', false);
+    this.setActualAttribute('selected', false);
   </method>
   
   <method name="notifyPanelShown" args="panel">
-    this.setAttribute('selected', true);
+    this.setActualAttribute('selected', true);
   </method>
 </class>
 
@@ -168,7 +163,7 @@ SOFTWARE. -->
   <attribute name="label" type="string" value=""/>
   <attribute name="iconname" type="string" value=""/>
   <setter name="iconname" args="iconname">
-    if (this.inited) this.icon.setAttribute('src', config.img_root + iconname + '.png');
+    if (this.inited) this.icon.setActualAttribute('src', config.img_root + iconname + '.png');
     return iconname;
   </setter>
   
@@ -180,38 +175,28 @@ SOFTWARE. -->
   <method name="initNode" args="parent, attrs">
     this.super();
     
-    this.icon.setAttribute('src', config.img_root + this.iconname + '.png');
+    this.icon.setActualAttribute('src', config.img_root + this.iconname + '.png');
   </method>
 
   <method name="drawDisabledState">
-    this.setAttribute('opacity', 0.5);
-    this.setAttribute('bgcolor', 'transparent');
-    this.labelView.setAttribute('color', 'transparent');
-    this.setAttribute('boxshadow', null);
+    this.setActualAttribute('opacity', 0.5).setActualAttribute('bgcolor', 'transparent').setActualAttribute('boxshadow', null);
+    this.labelView.setActualAttribute('color', 'transparent');
   </method>
   <method name="drawFocusedState">
-    this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#cccccc');
-    this.labelView.setAttribute('color', '#000000');
-    this.setAttribute('boxshadow', [0, 0, 3, 0, '#666666']);
+    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', [0, 0, 3, 0, '#666666']);
+    this.labelView.setActualAttribute('color', '#000000');
   </method>
   <method name="drawHoverState">
-    this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#cccccc');
-    this.labelView.setAttribute('color', '#000000');
-    this.setAttribute('boxshadow', null);
+    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', null);
+    this.labelView.setActualAttribute('color', '#000000');
   </method>
   <method name="drawActiveState">
-    this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', '#aaaaaa');
-    this.labelView.setAttribute('color', '#000000');
-    this.setAttribute('boxshadow', null);
+    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#aaaaaa').setActualAttribute('boxshadow', null);
+    this.labelView.setActualAttribute('color', '#000000');
   </method>
   <method name="drawReadyState">
-    this.setAttribute('opacity', 1);
-    this.setAttribute('bgcolor', 'transparent');
-    this.labelView.setAttribute('color', 'transparent');
-    this.setAttribute('boxshadow', null);
+    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', 'transparent').setActualAttribute('boxshadow', null);
+    this.labelView.setActualAttribute('color', 'transparent');
   </method>
   
   <bitmap name="icon" width="32" height="32"/>
@@ -235,10 +220,8 @@ SOFTWARE. -->
   
   <method name="drawReadyState">
     if (this.selected) {
-      this.setAttribute('opacity', 1);
-      this.setAttribute('bgcolor', '#cccccc');
-      this.labelView.setAttribute('color', '#000000');
-      this.setAttribute('boxshadow', null);
+      this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', null);
+      this.labelView.setActualAttribute('color', '#000000');
     } else {
       this.super();
     }
@@ -249,11 +232,11 @@ SOFTWARE. -->
   floatingvalignoffset="2" activationkeys="[13,32,37,38,39,40]"
 >
   <method name="notifyPanelHidden" args="panel">
-    this.setAttribute('selected', false);
+    this.setActualAttribute('selected', false);
   </method>
   
   <method name="notifyPanelShown" args="panel">
-    this.setAttribute('selected', true);
+    this.setActualAttribute('selected', true);
   </method>
 </class>
 
@@ -261,10 +244,10 @@ SOFTWARE. -->
   floatingvalignoffset="2" 
 >
   <method name="notifyPanelHidden" args="panel">
-    this.setAttribute('selected', false);
+    this.setActualAttribute('selected', false);
   </method>
   
   <method name="notifyPanelShown" args="panel">
-    this.setAttribute('selected', true);
+    this.setActualAttribute('selected', true);
   </method>
 </class>

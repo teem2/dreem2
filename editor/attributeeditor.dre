@@ -102,7 +102,7 @@ SOFTWARE. -->
 
 <class name="booleaneditor" height="20">
   <handler event="onvalue" args="value">
-    this.field.setAttribute('selected', value);
+    this.field.setActualAttribute('selected', value);
   </handler>
   <checkbox name="field" checkcolor="#999999" y="2">
     <handler event="onselected" args="selected">
@@ -125,10 +125,10 @@ SOFTWARE. -->
 >
   <method name="showFocusEmbellishment">
     this.sprite.hideFocusEmbellishment();
-    this.setAttribute('boxshadow', config.boxshadow_normal);
+    this.setActualAttribute('boxshadow', config.boxshadow_normal);
   </method>
   <method name="hideFocusEmbellishment">
-    this.setAttribute('boxshadow', null);
+    this.setActualAttribute('boxshadow', null);
   </method>
   <method name="destroy">
     this.hideFloatingPanel();
@@ -148,7 +148,7 @@ SOFTWARE. -->
   </method>
 
   <handler event="onvalue" args="value">
-    this.setAttribute('bgcolor', value);
+    this.setActualAttribute('bgcolor', value);
     if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value); // No need to update model since notifyPanelHidden does that
   </handler>
 
@@ -232,7 +232,7 @@ SOFTWARE. -->
       self._checkActualIsDifferent();
     });
     
-    this.label.setAttribute('text', targetAttrName);
+    this.label.setActualAttribute('text', targetAttrName);
   </method>
   
   <method name="_checkActualIsDifferent">

@@ -125,13 +125,13 @@ SOFTWARE. -->
           content_bg = this.content_bg,
           content = content_bg.content,
           inner = content.inner;
-        xLoc.setAttribute('visible', true).setAttribute('x', x - 1);
-        xLoc.label.setAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
-        yLoc.setAttribute('visible', true).setAttribute('y', y - 1);
-        yLoc.label.setAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
+        xLoc.setActualAttribute('visible', true).setActualAttribute('x', x - 1);
+        xLoc.label.setActualAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
+        yLoc.setActualAttribute('visible', true).setActualAttribute('y', y - 1);
+        yLoc.label.setActualAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
       } else {
-        if (xLoc.visible) xLoc.setAttribute('visible', false);
-        if (yLoc.visible) yLoc.setAttribute('visible', false);
+        if (xLoc.visible) xLoc.setActualAttribute('visible', false);
+        if (yLoc.visible) yLoc.setActualAttribute('visible', false);
       }
     }
     return true;
@@ -267,20 +267,24 @@ SOFTWARE. -->
       </method>
       
       <method name="drawFocusedState">
-        this.parent.lower.setAttribute('bgcolor', 'black');
-        this.parent.lower.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', 'black');
+        lower.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
       </method>
       <method name="drawHoverState">
-        this.parent.lower.setAttribute('bgcolor', 'black');
-        this.parent.lower.setAttribute('boxshadow', config.boxshadow_normal);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', 'black');
+        lower.setActualAttribute('boxshadow', config.boxshadow_normal);
       </method>
       <method name="drawActiveState">
-        this.parent.lower.setAttribute('bgcolor', config.selection_color);
-        this.parent.lower.setAttribute('boxshadow', null);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', config.selection_color);
+        lower.setActualAttribute('boxshadow', null);
       </method>
       <method name="drawReadyState">
-        this.parent.lower.setAttribute('bgcolor', config.selection_color);
-        this.parent.lower.setAttribute('boxshadow', null);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', config.selection_color);
+        lower.setActualAttribute('boxshadow', null);
       </method>
     </view>
     
@@ -315,20 +319,24 @@ SOFTWARE. -->
       </method>
       
       <method name="drawFocusedState">
-        this.parent.upper.setAttribute('bgcolor', 'black');
-        this.parent.upper.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', 'black');
+        upper.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
       </method>
       <method name="drawHoverState">
-        this.parent.upper.setAttribute('bgcolor', 'black');
-        this.parent.upper.setAttribute('boxshadow', config.boxshadow_normal);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', 'black');
+        upper.setActualAttribute('boxshadow', config.boxshadow_normal);
       </method>
       <method name="drawActiveState">
-        this.parent.upper.setAttribute('bgcolor', config.selection_color);
-        this.parent.upper.setAttribute('boxshadow', null);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', config.selection_color);
+        upper.setActualAttribute('boxshadow', null);
       </method>
       <method name="drawReadyState">
-        this.parent.upper.setAttribute('bgcolor', config.selection_color);
-        this.parent.upper.setAttribute('boxshadow', null);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', config.selection_color);
+        upper.setActualAttribute('boxshadow', null);
       </method>
     </view>
     
@@ -365,13 +373,13 @@ SOFTWARE. -->
     </method>
     
     <method name="drawHoverState">
-      this.fill.setAttribute('opacity', 0.25);
+      this.fill.setActualAttribute('opacity', 0.25);
     </method>
     <method name="drawActiveState">
-      this.fill.setAttribute('opacity', 0.4);
+      this.fill.setActualAttribute('opacity', 0.4);
     </method>
     <method name="drawReadyState">
-      this.fill.setAttribute('opacity', 0.15);
+      this.fill.setActualAttribute('opacity', 0.15);
     </method>
   </view>
   
@@ -430,20 +438,24 @@ SOFTWARE. -->
       </method>
       
       <method name="drawFocusedState">
-        this.parent.lower.setAttribute('bgcolor', 'black');
-        this.parent.lower.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', 'black');
+        lower.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
       </method>
       <method name="drawHoverState">
-        this.parent.lower.setAttribute('bgcolor', 'black');
-        this.parent.lower.setAttribute('boxshadow', config.boxshadow_normal);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', 'black');
+        lower.setActualAttribute('boxshadow', config.boxshadow_normal);
       </method>
       <method name="drawActiveState">
-        this.parent.lower.setAttribute('bgcolor', config.selection_color);
-        this.parent.lower.setAttribute('boxshadow', null);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', config.selection_color);
+        lower.setActualAttribute('boxshadow', null);
       </method>
       <method name="drawReadyState">
-        this.parent.lower.setAttribute('bgcolor', config.selection_color);
-        this.parent.lower.setAttribute('boxshadow', null);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', config.selection_color);
+        lower.setActualAttribute('boxshadow', null);
       </method>
     </view>
     
@@ -478,20 +490,24 @@ SOFTWARE. -->
       </method>
       
       <method name="drawFocusedState">
-        this.parent.upper.setAttribute('bgcolor', 'black');
-        this.parent.upper.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', 'black');
+        upper.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
       </method>
       <method name="drawHoverState">
-        this.parent.upper.setAttribute('bgcolor', 'black');
-        this.parent.upper.setAttribute('boxshadow', config.boxshadow_normal);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', 'black');
+        upper.setActualAttribute('boxshadow', config.boxshadow_normal);
       </method>
       <method name="drawActiveState">
-        this.parent.upper.setAttribute('bgcolor', config.selection_color);
-        this.parent.upper.setAttribute('boxshadow', null);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', config.selection_color);
+        upper.setActualAttribute('boxshadow', null);
       </method>
       <method name="drawReadyState">
-        this.parent.upper.setAttribute('bgcolor', config.selection_color);
-        this.parent.upper.setAttribute('boxshadow', null);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', config.selection_color);
+        upper.setActualAttribute('boxshadow', null);
       </method>
     </view>
     
@@ -522,13 +538,13 @@ SOFTWARE. -->
     </method>
     
     <method name="drawHoverState">
-      this.fill.setAttribute('opacity', 0.25);
+      this.fill.setActualAttribute('opacity', 0.25);
     </method>
     <method name="drawActiveState">
-      this.fill.setAttribute('opacity', 0.4);
+      this.fill.setActualAttribute('opacity', 0.4);
     </method>
     <method name="drawReadyState">
-      this.fill.setAttribute('opacity', 0.15);
+      this.fill.setActualAttribute('opacity', 0.15);
     </method>
   </view>
 
@@ -601,30 +617,30 @@ SOFTWARE. -->
         
         <attribute name="selecteditem" type="expression" value="this.cfg[5].attrs"/>
         <handler event="onselecteditem" args="selecteditem">
-          this.setAttribute('label', selecteditem.text);
+          this.setActualAttribute('label', selecteditem.text);
           
           var isCustom = selecteditem.name === 'custom';
-          this.parent.custom.setAttribute('visible', isCustom);
+          this.parent.custom.setActualAttribute('visible', isCustom);
           if (!isCustom) {
-            screensizew.setAttribute('value', selecteditem.w);
-            screensizeh.setAttribute('value', selecteditem.h);
+            screensizew.setActualAttribute('value', selecteditem.w);
+            screensizeh.setActualAttribute('value', selecteditem.h);
           }
         </handler>
         
         <method name="drawDisabledState">
-          this.setAttribute('color', this.selected ? '#000000' : '#cccccc');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#cccccc');
         </method>
         <method name="drawFocusedState">
-          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#aaaaaa');
         </method>
         <method name="drawHoverState">
-          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#aaaaaa');
         </method>
         <method name="drawActiveState">
-          this.setAttribute('color', this.selected ? '#000000' : '#888888');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#888888');
         </method>
         <method name="drawReadyState">
-          this.setAttribute('color', this.selected ? '#000000' : '#999999');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#999999');
         </method>
         <method name="doActivated">
           var cfg = this.cfg, 
@@ -634,13 +650,13 @@ SOFTWARE. -->
             if (attrs) attrs.disabled = attrs.name === selecteditemname;
           }
           
-          this.setAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
+          this.setActualAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
           
           this.toggleFloatingPanel();
         </method>
         
         <method name="doItemActivated" args="itemview">
-          this.setAttribute('selecteditem', itemview);
+          this.setActualAttribute('selecteditem', itemview);
           this.super();
         </method>
       </listviewbutton>
@@ -648,17 +664,15 @@ SOFTWARE. -->
       <view name="custom" height="18" visible="false">
         <spacedlayout spacing="4" updateparent="true"></spacedlayout>
         <editor_text text="w:" y="2" fontsize="12"/>
-        <editor_inputtext id="screensizew" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+        <editor_inputtext id="screensizew" width="33" allowedchars="0123456789" maxlength="4" fontsize="12">
           <setter name="value" args="v">
-            if (v > 5000) v = 5000;
-            return v;
+            return Math.min(v, 5000);
           </setter>
         </editor_inputtext>
         <editor_text text="h:" y="2" fontsize="12"/>
-        <editor_inputtext id="screensizeh" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+        <editor_inputtext id="screensizeh" width="33" allowedchars="0123456789" maxlength="4" fontsize="12">
           <setter name="value" args="v">
-            if (v > 5000) v = 5000;
-            return v;
+            return Math.min(v, 5000);
           </setter>
         </editor_inputtext>
       </view>
@@ -740,7 +754,7 @@ SOFTWARE. -->
             {klass:dr.listviewseparator},
             {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
           ];
-          this.setAttribute('itemconfig', cfg);
+          this.setActualAttribute('itemconfig', cfg);
           
           this.toggleFloatingPanel();
         </method>
@@ -781,7 +795,6 @@ SOFTWARE. -->
       
       <view width="100%" y="bottom" height="1" bgcolor="#cccccc"/>
     </view>
-    
     
     <include href='./treemodel.dre'/>
   </view>
@@ -831,7 +844,7 @@ SOFTWARE. -->
           <handler event="onselected" args="selected">
             var header = this.header;
             header.updateUI();
-            header.setAttribute('text', (selected ? '▼' : '▶') + " more");
+            header.setActualAttribute('text', (selected ? '▼' : '▶') + " more");
             
             this.updateHeight();
           </handler>
@@ -856,19 +869,19 @@ SOFTWARE. -->
             disabled="${!selectionmanager.selected || this.parent.height === 0}"
           >
             <method name="doActivated">
-              if (!this.disabled) this.parent.setAttribute('selected', !this.parent.selected);
+              if (!this.disabled) this.parent.setActualAttribute('selected', !this.parent.selected);
             </method>
             <method name="drawDisabledState">
-              this.setAttribute('color', '#999999');
+              this.setActualAttribute('color', '#999999');
             </method>
             <method name="drawHoverState">
-              this.setAttribute('color', '#666666');
+              this.setActualAttribute('color', '#666666');
             </method>
             <method name="drawActiveState">
-              this.setAttribute('color', '#333333');
+              this.setActualAttribute('color', '#333333');
             </method>
             <method name="drawReadyState">
-              this.setAttribute('color', '#000000');
+              this.setActualAttribute('color', '#000000');
             </method>
           </text>
           
@@ -900,7 +913,7 @@ SOFTWARE. -->
         </spacedlayout>
         
         <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
-          this.repl.setAttribute('data', selectedview ? selectedview.getLayouts(true) : []);
+          this.repl.setActualAttribute('data', selectedview ? selectedview.getLayouts(true) : []);
         </handler>
         
         <replicator name="repl" classname="subnodeeditor"/>
@@ -912,7 +925,7 @@ SOFTWARE. -->
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
         
         <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
-          this.repl.setAttribute('data', selectedview ? selectedview.getBehaviors() : []);
+          this.repl.setActualAttribute('data', selectedview ? selectedview.getBehaviors() : []);
         </handler>
         
         <replicator name="repl" classname="subnodeeditor"/>
@@ -930,7 +943,7 @@ SOFTWARE. -->
       x="0" y="123" width="100%" height="${config.divider_width}"
     >
       <method name="updatePosition" args="x, y">
-        if (!this.disabled) this.setAttribute('y', Math.max(123, Math.min(290, y)));
+        if (!this.disabled) this.setActualAttribute('y', Math.max(123, Math.min(290, y)));
       </method>
     </view>
   </view>
@@ -957,7 +970,7 @@ SOFTWARE. -->
     width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
     <method name="updatePosition" args="x, y">
-      if (!this.disabled) this.setAttribute('x', Math.max(config.leftbar_minwidth, Math.min(config.leftbar_maxwidth, x)));
+      if (!this.disabled) this.setActualAttribute('x', Math.max(config.leftbar_minwidth, Math.min(config.leftbar_maxwidth, x)));
     </method>
   </view>
 
@@ -970,7 +983,7 @@ SOFTWARE. -->
       this.updatePosition(this.x, this.y);
     </handler>
     <method name="updatePosition" args="x, y">
-      if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
+      if (!this.disabled) this.setActualAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
     </method>
   </view>
 
@@ -994,29 +1007,29 @@ SOFTWARE. -->
         var self = this;
         if (this._timerId) clearTimeout(this._timerId);
         this._timerId = setTimeout(function() {
-          self.setAttribute('selected', false);
+          self.setActualAttribute('selected', false);
         }, 3000);
       }
     </handler>
     <method name="doActivated">
-      this.setAttribute('useropened', true);
-      this.setAttribute('selected', !this.selected);
+      this.setActualAttribute('useropened', true);
+      this.setActualAttribute('selected', !this.selected);
     </method>
     <method name="initNode" args="parent, attrs">
       this.super();
       this.addMessage('No Messages.', true, true);
     </method>
     <method name="drawDisabledState">
-      this.setAttribute('bgcolor', '#bbbbbb');
+      this.setActualAttribute('bgcolor', '#bbbbbb');
     </method>
     <method name="drawHoverState">
-      this.setAttribute('bgcolor', '#cccccc');
+      this.setActualAttribute('bgcolor', '#cccccc');
     </method>
     <method name="drawActiveState">
-      this.setAttribute('bgcolor', '#aaaaaa');
+      this.setActualAttribute('bgcolor', '#aaaaaa');
     </method>
     <method name="drawReadyState">
-      this.setAttribute('bgcolor', '#bbbbbb');
+      this.setActualAttribute('bgcolor', '#bbbbbb');
     </method>
     
     <method name="addMessage" args="msg, noopen, notime">
@@ -1045,16 +1058,16 @@ SOFTWARE. -->
         while (svs.length > 5) svs[0].destroy();
         
         // Dim out all but the most recent message
-        while (svs.length - 1 > i) svs[i++].setAttribute('color', '#aaaaaa');
+        while (svs.length - 1 > i) svs[i++].setActualAttribute('color', '#aaaaaa');
         
         // Open
         if (!noopen) {
           if (this.selected) {
-            this.setAttribute('selected', false); // Force reanimation
-            this.setAttribute('selected', true);
+            this.setActualAttribute('selected', false); // Force reanimation
+            this.setActualAttribute('selected', true);
           } else {
-            this.setAttribute('useropened', false);
-            this.setAttribute('selected', true);
+            this.setActualAttribute('useropened', false);
+            this.setActualAttribute('selected', true);
           }
         }
       }

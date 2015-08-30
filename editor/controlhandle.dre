@@ -23,19 +23,15 @@ SOFTWARE. -->
   border="1" bordercolor="blue" width="9" height="9"
 >
   <method name="drawFocusedState">
-    this.setAttribute('bgcolor', '#ffffff');
-    this.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+    this.setActualAttribute('bgcolor', '#ffffff').setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
   </method>
   <method name="drawHoverState">
-    this.setAttribute('bgcolor', '#ffffff');
-    this.setAttribute('boxshadow', config.boxshadow_normal);
+    this.setActualAttribute('bgcolor', '#ffffff').setActualAttribute('boxshadow', config.boxshadow_normal);
   </method>
   <method name="drawActiveState">
-    this.setAttribute('bgcolor', '#eeeeee');
-    this.setAttribute('boxshadow', null);
+    this.setActualAttribute('bgcolor', '#eeeeee').setActualAttribute('boxshadow', null);
   </method>
   <method name="drawReadyState">
-    this.setAttribute('bgcolor', '#dddddd');
-    this.setAttribute('boxshadow', config.boxshadow_normal);
+    this.setActualAttribute('bgcolor', '#dddddd').setActualAttribute('boxshadow', config.boxshadow_normal);
   </method>
 </class>

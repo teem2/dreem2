@@ -82,7 +82,7 @@ SOFTWARE. -->
     if (model) {
       // Update class if the childView is replicated
       if (childView.replicator) {
-        var classModel = this._findClassInModel(childView.replicator.classname);
+        var classModel = this._findClassInModel(childView.replicator.classname, model);
         if (classModel) {
           classModel.attr[name] = value;
           this.setAttribute('_replicatorchanges', true);
@@ -112,10 +112,11 @@ SOFTWARE. -->
   <method name="deleteNode" args="childView, oldParentView">
     var model = this.model;
     if (model) {
-      var childModel = this._findChildById(childView.id, model);
-      if (oldParentView.replicator) {
+      var childModel = this._findChildById(childView.id, model),
+        isView = childView.isA(dr.View);
+      if (oldParentView.replicator && isView) { // FIXME: need a better way to identify replicated instances since parentView.replicator is catching layouts
         // special case for new instance in root of class tag
-        var classModel = this._findClassInModel(oldParentView.replicator.classname);
+        var classModel = this._findClassInModel(oldParentView.replicator.classname, model);
         if (childView && classModel) {
           var idx = this._findChildIndex(classModel, childModel);
           if (idx >= 0) {
@@ -141,10 +142,11 @@ SOFTWARE. -->
   <method name="createNode" args="childView">
     var model = this.model;
     if (model) {
-      var parentView = childView.parent;
-      if (parentView.replicator) {
+      var parentView = childView.parent,
+        isView = childView.isA(dr.View);
+      if (parentView.replicator && isView) { // FIXME: need a better way to identify replicated instances since parentView.replicator is catching layouts
         // special case for new instance in root of class tag
-        var classModel = this._findClassInModel(parentView.replicator.classname);
+        var classModel = this._findClassInModel(parentView.replicator.classname, model);
         if (childView && classModel) {
           if (!classModel.child) classModel.child = [];
           classModel.child.push(this._objectify(childView));
@@ -156,7 +158,7 @@ SOFTWARE. -->
         if (childView && parentModel) {
           if (!parentModel.child) parentModel.child = [];
           
-          if (childView.isA(dr.View)) {
+          if (isView) {
             var prevSiblingView = childView.getPrevSiblingView(),
               prevSiblingModel = prevSiblingView ? this._findChildById(prevSiblingView.id, model) : null,
               idx = prevSiblingModel ? this._findChildIndex(parentModel, prevSiblingModel) : -1;
@@ -265,13 +267,15 @@ SOFTWARE. -->
   </method>
 
   <!-- @private -->
-  <method name="_findClassInModel" args="classname">
-    var model = this.model;
-    if (model) {
-      var classmodel = this._findChildByTag('class', model);
-      if (classmodel.attr.name === classname) {
-        // console.log('found inline class model', classname, classmodel);
-        return classmodel;
+  <method name="_findClassInModel" args="classname, model">
+    var children = model.child, i = children.length, childModel;
+    while (i) {
+      childModel = children[--i]
+      if (childModel.tag === tagname && classmodel.attr.name === classname) {
+        return childModel;
+      } else if (childModel.child) {
+        var newChildModel = this._findClassInModel(classname, childModel);
+        if (newChildModel) return newChildModel;
       }
     }
   </method>
