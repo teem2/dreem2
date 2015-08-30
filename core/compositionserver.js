@@ -789,7 +789,7 @@ define(function(require, exports, module) {
     this.__saveEditableFile = function(screenName, filepath, data, stripeditor) {
       var jsobj = JSON.parse(data);
       this.__walkChildren(screenName, jsobj, stripeditor);
-      var newdata = HTMLParser.reserialize(jsobj, ' ');
+      var newdata = HTMLParser.reserialize(jsobj, '  ');
       this.__writeFileIfChanged(filepath, newdata);
       // console.log('saved', filepath, stripeditor);
     }
