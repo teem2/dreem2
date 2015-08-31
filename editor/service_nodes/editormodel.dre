@@ -341,7 +341,8 @@ SOFTWARE. -->
     url += 'edit=1&stripeditor=1';
     var loc = window.location.pathname + window.location.search
     dr.global.requestor.fetch(url).success(function(data,status){
-      window.location = loc + &'noreload'
+      window.location = window.location.pathname + '&noreload'
+      console.log(window.location)
       window.parent.postMessage({type:'closewindow'},'*')
     });
   </method>
