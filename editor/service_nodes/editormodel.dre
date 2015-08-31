@@ -339,7 +339,11 @@ SOFTWARE. -->
     var url = window.location.pathname + window.location.search;
     url += (url.indexOf('?') === -1) ? '?' : '&';
     url += 'edit=1&stripeditor=1';
-    dr.global.requestor.fetch(url);
+    var loc = window.location.pathname + window.location.search
+    dr.global.requestor.fetch(url).success(function(data,status){
+      window.location = loc + &'noreload'
+      window.parent.postMessage({type:'closewindow'},'*')
+    });
   </method>
 
   <!-- Start editing another screen. -->
