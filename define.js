@@ -277,12 +277,6 @@
         document.getElementsByTagName('head')[0].appendChild(script);
       };
       
-      define.atMain = function(){
-        document.body.addEventListener('mousedown', function(){
-          window.parent.postMessage({type:'closewindow'},'*')
-        })
-      }
-
       // Expose insertScriptTag function so it can be used for late loading
       // of dependencies if necessary.
       define.insertScriptTag = insertScriptTag;
