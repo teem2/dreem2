@@ -92,17 +92,20 @@ define(function(require, exports, module) {
           }.bind(this));
           return;
         } else {
-          res.writeHead(302, {
-            'Location': url + (query.screen ? '?screen=' + query.screen : '')
-            //add other headers here...
-          });
-          res.end();
           var comppath = define.expandVariables(this.__getCompositionPath()),
             data = this.__readFile(comppath),
             htmlParser = new HTMLParser(),
             jsobj = htmlParser.parse(data);
           this.__walkChildren(query.screen || 'default', jsobj, query.stripeditor === '1')
           this.__writeFileIfChanged(comppath, HTMLParser.reserialize(jsobj, '  '))
+          
+          var redirectUrl = url;
+          redirectUrl += (query.screen ? '?screen=' + query.screen : '');
+          res.writeHead(302, {
+            'Location':redirectUrl
+            //add other headers here...
+          });
+          res.end();
           return;
         }
       }

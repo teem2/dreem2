@@ -313,9 +313,9 @@
         this.reload_socket.onmessage = function(event) {
           var msg = JSON.parse(event.data);
           if (msg.type === 'filechange') {
-            if(location.search && location.search.indexOf('noreload') !== -1){
-              return
-            }
+            // No reloading of screen when not running as a top level window.
+            if (window !== window.top) return
+            
             location.href = location.href; // reload on filechange
           } else if (msg.type === 'close') {
             window.close(); // close the window
