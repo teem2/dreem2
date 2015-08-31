@@ -101,11 +101,13 @@ define(function(require, exports, module) {
           
           var redirectUrl = url;
           redirectUrl += (query.screen ? '?screen=' + query.screen : '');
-          res.writeHead(302, {
-            'Location':redirectUrl
-            //add other headers here...
-          });
-          res.end();
+          setTimeout(function() {
+            res.writeHead(302, {
+              'Location':redirectUrl
+              //add other headers here...
+            });
+            res.end();
+          }, 1000);
           return;
         }
       }
