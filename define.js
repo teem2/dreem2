@@ -49,13 +49,11 @@
       file = file.replace(/\.\//g, '');
       var m = file.match(/([\s\S]*)\/[^\/]*$/);
       return m ? m[1] : '';
-    } else {
-      return '';
     }
+    return '';
   };
 
   define.cleanPath = function(path) {
-
     return path.replace(/^\/+/,'/').replace(/\\/g,'/').replace(/([^:])\/+/g,'$1/');
   };
 
@@ -129,7 +127,7 @@
   };
 
   define.findRequires = function(str) {
-    // bail out if we redefine require
+    // bail out if we redefine require. coffee-script.js does this.
     if (str.match(/function\s+require[\s\(]/) || str.match(/var\s+require\s/)) return [];
     
     var req = [];
@@ -219,6 +217,8 @@
       // the main dependency download queue counter
       var downloads = 0;
       
+      var headElem = document.getElementsByTagName('head')[0];
+      
       // Inserts a required file via a dom script element.
       function insertScriptTag(script_url, from_file) {
         var script = document.createElement('script');
@@ -273,7 +273,7 @@
         script.onreadystatechange = function() {
           if (s.readyState == 'loaded' || s.readyState == 'complete') onLoad();
         };
-        document.getElementsByTagName('head')[0].appendChild(script);
+        headElem.appendChild(script);
       };
       
       // Expose insertScriptTag function so it can be used for late loading
@@ -324,20 +324,13 @@
     })();
   } else {
     // nodeJS implementation
-	
-            
     (function() {
-		
-		
-		
-	define.startMain = function() {
+      define.startMain = function() {
         // lets find our main and execute the factory
         var main_mod = define.expandVariables(define.MAIN).replace(/\\/g,'/');
         
         var factory = define.factory[main_mod];
-		
-			
-	
+        
         if (!factory) throw new Error("Cannot find main: " + main_mod, define.MAIN);
         
         // lets boot up
@@ -345,12 +338,9 @@
         define.module[main_mod] = module;
         var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module);
         if (ret !== undefined) module.exports = ret;
-		
-		if (define.onMain) define.onMain(module.exports);
+        if (define.onMain) define.onMain(module.exports);
       }
-
-	  
-	  
+      
       module.exports = global.define = define;
       
       define.ROOT = define.filePath(module.filename.replace(/\\/g,'/'));
@@ -380,17 +370,17 @@
         
         function localRequire(name) {
           if (arguments.length != 1) throw new Error("Unsupported require style");
-
+          
           name = define.expandVariables(name);
-		  //console.log("*** name: " , name);
-			//console.log("*** module: ",		  module);
+          //console.log("*** name: " , name);
+          //console.log("*** module: ", module);
           var full_name = Module._resolveFilename(name, module);
           
           if (full_name instanceof Array) full_name = full_name[0];
           
           if (define.onRequire && (full_name.charAt(0) == '/' || full_name.indexOf(':') != -1)) {
             define.onRequire(full_name);
-          }	
+          }
           
           return require(full_name);
         }
@@ -413,9 +403,7 @@
       define.define(function(require) {
         module.exports = require;
       });
-	  
-	  
-	//  startMain();
+      //  startMain();
     })()
   }
 })(typeof define !== 'undefined' && define);
