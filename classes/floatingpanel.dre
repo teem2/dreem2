@@ -229,12 +229,15 @@
   <method name="updateLocation" args="panelAnchor">
     this.setAttribute('owner', panelAnchor);
     
+    var anchorLocation = panelAnchor.getAbsolutePosition();
+    this.__updateXLocation(panelAnchor, anchorLocation);
+    this.__updateYLocation(panelAnchor, anchorLocation);
+  </method>
+  
+  <method name="__updateXLocation" args="panelAnchor, anchorLocation">
     var panelId = this.panelid,
       align = panelAnchor.getFloatingAlignForPanelId(panelId),
-      valign = panelAnchor.getFloatingValignForPanelId(panelId),
-      anchorLocation = panelAnchor.getAbsolutePosition(),
-      x = 0, y = 0,
-      type = typeof align;
+      x = 0, type = typeof align;
     
     if (type === 'string') {
       x = anchorLocation.x + panelAnchor.getFloatingAlignOffsetForPanelId(panelId);
@@ -245,6 +248,19 @@
         case 'insideleft': break;
         default: dr.sprite.console.warn("Unexpected align value", type, align);
       }
+      
+      // Flip position if this panel extends beyond the viewport
+      var limit = dr.global.viewportResize.getWidth();
+      if (0 > x || x + this.width > limit) {
+        x = anchorLocation.x - panelAnchor.getFloatingAlignOffsetForPanelId(panelId);
+        switch(align) {
+          case 'outsideright': x -= this.width; break;
+          case 'insideright': break;
+          case 'outsideleft': x += panelAnchor.width; break;
+          case 'insideleft': x += panelAnchor.width - this.width; break;
+          default: dr.sprite.console.warn("Unexpected align value", type, align);
+        }
+      }
     } else if (type === 'number') {
       // Absolute position
       x = align;
@@ -252,9 +268,12 @@
       dr.sprite.console.warn("Unexpected align type", type, align);
     }
     this.setAttribute('x', x);
-    
-    // Vertical positioning
-    type = typeof valign;
+  </method>
+  
+  <method name="__updateYLocation" args="panelAnchor, anchorLocation">
+    var panelId = this.panelid,
+      valign = panelAnchor.getFloatingValignForPanelId(panelId),
+      y = 0, type = typeof valign;
     
     if (type === 'string') {
       y = anchorLocation.y + panelAnchor.getFloatingValignOffsetForPanelId(panelId);
@@ -264,6 +283,19 @@
         case 'outsidetop': y -= this.height; break;
         case 'insidetop': break;
         default: dr.sprite.console.warn("Unexpected valign value", type, valign);
+      }
+      
+      // Flip position if this panel extends beyond the viewport
+      var limit = dr.global.viewportResize.getHeight();
+      if (0 > y || y + this.height > limit) {
+        y = anchorLocation.y - panelAnchor.getFloatingValignOffsetForPanelId(panelId);
+        switch(valign) {
+          case 'outsidebottom': y -= this.height; break;
+          case 'insidebottom': break;
+          case 'outsidetop': y += panelAnchor.height; break;
+          case 'insidetop': y += panelAnchor.height - this.height; break;
+          default: dr.sprite.console.warn("Unexpected valign value", type, valign);
+        }
       }
     } else if (type === 'number') {
       // Absolute position
