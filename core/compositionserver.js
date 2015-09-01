@@ -87,6 +87,10 @@ define(function(require, exports, module) {
           req.on('end', function() {
             var comppath = define.expandVariables(this.__getCompositionPath())
             this.__saveEditableFile(query.screen || 'default', comppath, buf, query.stripeditor === '1');
+            
+            // Force a reload since we know we just changed the file.
+            this.__reloadComposition();
+            
             res.writeHead(200, {"Content-Type":"text/json"});
             res.end();
           }.bind(this));
@@ -97,17 +101,19 @@ define(function(require, exports, module) {
             htmlParser = new HTMLParser(),
             jsobj = htmlParser.parse(data);
           this.__walkChildren(query.screen || 'default', jsobj, query.stripeditor === '1')
-          this.__writeFileIfChanged(comppath, HTMLParser.reserialize(jsobj, '  '))
+          this.__writeFileIfChanged(comppath, HTMLParser.reserialize(jsobj, '  '));
           
+          // Force a reload since we know we just changed the file.
+          this.__reloadComposition();
+          
+          // Send a redirect to the client.
           var redirectUrl = url;
           redirectUrl += (query.screen ? '?screen=' + query.screen : '');
-          setTimeout(function() {
-            res.writeHead(302, {
-              'Location':redirectUrl
-              //add other headers here...
-            });
-            res.end();
-          }, 1000);
+          res.writeHead(302, {
+            'Location':redirectUrl
+            //add other headers here...
+          });
+          res.end();
           return;
         }
       }

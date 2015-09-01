@@ -108,16 +108,11 @@ SOFTWARE. -->
   </method>
   
   <method name="save">
-    dialogmanager.showConfirm(
-      'Are you sure you want to save your changes?', null, null, function(dialog, success) {
-        if (success) {
-          editormodel.save();
-          undo.reset();
-        } else {
-          // Save cancelled
-        }
-      }
-    );
+    editormodel.save();
+    undo.reset();
+    var msgRef = dialogmanager.showMessage(
+      'Saving changes to screen "' + editormodel.screenname + '" of the composition...'
+    ); // FIXME: message only dialog
   </method>
 
   <method name="stop">
