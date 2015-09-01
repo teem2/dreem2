@@ -348,7 +348,7 @@ SOFTWARE. -->
           window.parent.postMessage({type:'closewindow'}, '*');
           window.location = baseUrl;
         }
-      }, 1000)
+      }, 2000)
     });
   </method>
 
