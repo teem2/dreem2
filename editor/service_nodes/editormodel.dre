@@ -328,10 +328,15 @@ SOFTWARE. -->
 
   <!-- Save the model changes to the server and reload for editing again. -->
   <method name="save">
-    var url = window.location.pathname + window.location.search;
+    var loc = window.location,
+      baseUrl = loc.pathname + loc.search;
+      url = baseUrl;
     url += (url.indexOf('?') === -1) ? '?' : '&';
     url += 'edit=1';
-    dr.global.requestor.send(url, JSON.stringify(this.model));
+    
+    dr.global.requestor.send(url, JSON.stringify(this.model)).success(function(data, status) {
+      window.location = baseUrl;
+    });
   </method>
 
   <!-- End the editing process. -->
@@ -341,12 +346,13 @@ SOFTWARE. -->
       url = baseUrl;
     url += (url.indexOf('?') === -1) ? '?' : '&';
     url += 'edit=1&stripeditor=1';
+    
     dr.global.requestor.fetch(url).success(function(data, status) {
       if (window.parent !== window) { // Only do this when embedded in the flowgraph
         console.log("POSTING CLOSE WINDOW")
         window.parent.postMessage({type:'closewindow'}, '*');
-        window.location = baseUrl;
       }
+      window.location = baseUrl;
     });
   </method>
 

@@ -81,6 +81,7 @@ define(function(require, exports, module) {
       
       // handle editor requests
       if (query.edit) {
+        // Editor Handling for "save"
         if (req.method == 'POST') {
           var buf = ''
           req.on('data', function(data) {buf += data.toString();});
@@ -96,24 +97,32 @@ define(function(require, exports, module) {
           }.bind(this));
           return;
         } else {
+          // Editor Handling for "enter" and "exit"
+          
+          // Read the composition from the filesystem and convert it to/from
+          // edit mode.
           var comppath = define.expandVariables(this.__getCompositionPath()),
             data = this.__readFile(comppath),
             htmlParser = new HTMLParser(),
-            jsobj = htmlParser.parse(data);
-          this.__walkChildren(query.screen || 'default', jsobj, query.stripeditor === '1')
+            jsobj = htmlParser.parse(data),
+            isExitAction = query.stripeditor === '1';
+          this.__walkChildren(query.screen || 'default', jsobj, isExitAction)
           this.__writeFileIfChanged(comppath, HTMLParser.reserialize(jsobj, '  '));
           
           // Force a reload since we know we just changed the file.
           this.__reloadComposition();
           
-          // Send a redirect to the client.
-          var redirectUrl = url;
-          redirectUrl += (query.screen ? '?screen=' + query.screen : '');
-          res.writeHead(302, {
-            'Location':redirectUrl
-            //add other headers here...
-          });
-          res.end();
+          if (isExitAction) {
+            // The client handles the redirect for exit
+            res.writeHead(200, {"Content-Type":"text/json"});
+            res.end();
+          } else {
+            // We need to redirect the client so it will refresh and show the editor.
+            var redirectUrl = url;
+            redirectUrl += (query.screen ? '?screen=' + query.screen : '');
+            res.writeHead(302, {'Location':redirectUrl});
+            res.end();
+          }
           return;
         }
       }
