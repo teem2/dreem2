@@ -344,10 +344,11 @@ SOFTWARE. -->
     dr.global.requestor.fetch(url).success(function(data, status) {
       setTimeout(function() {
         if (window.parent !== window) { // Only do this when embedded in the flowgraph
+          console.log("POSTING CLOSE WINDOW")
           window.parent.postMessage({type:'closewindow'}, '*');
           window.location = baseUrl;
         }
-      }, 100)
+      }, 500)
     });
   </method>
 
