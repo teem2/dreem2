@@ -43,7 +43,6 @@ SOFTWARE. -->
       </labelbutton>
       
       <bitmap id="b1" src="/img/largeimage.jpg" width="500" height="250">
-        <text bold="true" text="${this.parent.stretches}"></text>
         
         <handler event="onmousemove" reference="dr.mouse" args="obj">
           // Mouse moves over this bitmap shows a region of image in zoom bitmap.
@@ -62,6 +61,8 @@ SOFTWARE. -->
           }
         </handler>
       </bitmap>
+      
+      <text bold="true" ignorelayout="true" x="5" y="${b1.y + 5}" text="${b1.stretches}" color="white"/>
       
       <bitmap id="zoom" src="/img/largeimage.jpg" width="75" height="75" window="0,0,75,75"></bitmap>
     </view>

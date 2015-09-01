@@ -1,0 +1,47 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.deletelayoutundoable {UI Components}
+  * @extends dr.editor.undoable
+  * An undoable that deletes a layout from a parent node.
+  */-->
+<class name="editor-deletelayoutundoable" extends="editor-deleteundoable"
+  undodescription='Undo delete layout.'
+  redodescription='Redo delete layout.'
+>
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method undo
+    * @overrides
+    * Re-inserts the target layout into its parent.
+    */-->
+  <method name="undo" args="callback">
+    var retval = this.super();
+    
+    // Only do this if undeletion succeeded
+    if (!this.done) {
+      dr.editor.createlayoutundoable.refresh(this._targetParent);
+      this.target.update();
+    }
+    
+    return retval;
+  </method>
+
+  <!--/**
+    * @method redo
+    * @overrides
+    * Removes the target layout from the target parent.
+    */-->
+  <method name="redo" args="callback">
+    var retval = this.super();
+    
+    // Only do this if undeletion succeeded
+    if (this.done) {
+      var CLU = dr.editor.createlayoutundoable;
+      CLU.restoreManagedViewState(this);
+      CLU.refresh(this._targetParent);
+    }
+    
+    return retval;
+  </method>
+</class>

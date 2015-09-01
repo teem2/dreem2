@@ -1,0 +1,33 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.simplebutton {UI Component}
+   * An extension of dr.text that provides basic button functionality.
+   */-->
+<class name="simplebutton" extends="text" with="button"
+  border="1" bordercolor="#666666"
+  toppadding="3" bottompadding="3" leftpadding="6" rightpadding="6"
+  fontsize="14"
+  cornerradius="4" focusembellishment="false"
+>
+  <method name="drawDisabledState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', '#aaaaaa');
+  </method>
+  <method name="drawFocusedState">
+    this.setAttribute('boxshadow', [0, 0, 6, 0, '#666666']);
+    this.setAttribute('bgcolor', '#ffffff');
+  </method>
+  <method name="drawHoverState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', '#ffffff');
+  </method>
+  <method name="drawActiveState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', '#dddddd');
+  </method>
+  <method name="drawReadyState">
+    this.setAttribute('boxshadow', null);
+    this.setAttribute('bgcolor', '#eeeeee');
+  </method>
+</class>

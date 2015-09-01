@@ -20,6 +20,19 @@
       */-->
 <class name="alignlayout" extends="variablelayout" type="coffee">
   <!--/**
+    * @attribute {String} [axis='']
+    * The orientation of the layout. Supported values are 'x' and 'y' and ''.
+    * A value of 'x' will restrict align values to 'left', 'center' and 'right'.
+    * A value of 'y' will restrict align values to 'top', 'middle' and 'bottom'.
+    * An empty/null value will not restrict the align values.
+    */-->
+  <attribute name="axis" type="string" value=""></attribute>
+  <setter name="axis" args="axis">
+    @setActual('axis', axis, 'string', '')
+    @setAttribute('align', @align)
+  </setter>
+
+  <!--/**
     * @attribute {String} [align='middle']
     * Determines which way the views are aligned. Supported values are 
     * 'left', 'center', 'right' for horizontal alignment and 'top', 'middle' 
@@ -32,6 +45,16 @@
       # be done before the new align value is set since stopMonitoringSubview
       # needs to know the old values.
       @stopMonitoringAllSubviews()
+      
+      switch @axis
+        when 'x'
+          if align is 'top' then align = 'left'
+          else if align is 'middle' then align = 'center'
+          else if align is 'bottom' then align = 'right'
+        when 'y'
+          if align is 'left' then align = 'top'
+          else if align is 'center' then align = 'middle'
+          else if align is 'right' then align = 'bottom'
       
       # Setup private attributes based on axis
       switch align
@@ -187,4 +210,22 @@
     parent = @parent
     @__positionView(parent, @__parentAttrName, value + parent[@__parentAttrName] - parent[@__innerAttrName])
   </method>
+  
+  <!--// Editor //-->
+  <method name="__getLayoutDomains">
+    retval = {}
+    retval[@axis] = true
+    return retval
+  </method>
+  <method name="__getLayoutParentDomains">
+    retval = {}
+    retval[@__parentAttrName] = true
+    return retval
+  </method>
+  
+  <attribute name="hiddenattrs" type="expression" value="{attribute:true, value:true, reverse:true}" allocation="class"/>
+  <attribute name="readonlyattrs" type="expression" value="{axis:true}" allocation="class"/>
+  <attribute name="attrimportance" type="expression" allocation="class"
+    value="{axis:-2, name:-1, align:1, updateparent:2, speed:3}"
+  />
 </class>

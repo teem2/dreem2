@@ -1,0 +1,95 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.editorattrundoable {UI Components}
+  * @extends dr.editor.attrundoable
+  * A specialized attribute undoable implementation for the editor.
+  */-->
+<class name="editor-editorattrundoable" extends="editor-attrundoable">
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method undo
+    * @overrides
+    */-->
+  <method name="undo" args="callback">
+    var target = this.target,
+      attr = this.attribute, 
+      isView = target.isA(dr.View),
+      isLayout = target.isA(dr.Layout), 
+      isBehavior = target.isA(dr.behavior.behavior);
+    
+    var layouts, len, i;
+    if (isView) {
+      layouts = target.parent.getLayouts();
+      len = layouts.length;
+      i = len;
+      while (i) layouts[--i].setActualAttribute('locked', true);
+    }
+    
+    if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
+      dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
+    }
+    
+    var retval = this.super();
+    
+    if (attr === 'updateparent' && isLayout && !target.getActualAttribute('updateparent')) {
+      dr.editor.createlayoutundoable.restoreManagedParentState(this);
+    }
+    
+    if (attr === 'layouthint') {
+      dr.editor.createlayoutundoable.restoreForLayoutHint(target, this.newvalue, this.oldvalue);
+    }
+    
+    if (len > 0) {
+      i = len;
+      while (i) layouts[--i].setActualAttribute('locked', false);
+    }
+    
+    if (isLayout || isBehavior) selectionmanager.select(target.parent);
+    
+    return retval;
+  </method>
+
+  <!--/**
+    * @method redo
+    * @overrides
+    */-->
+  <method name="redo" args="callback">
+    var target = this.target,
+      attr = this.attribute, 
+      isView = target.isA(dr.View),
+      isLayout = target.isA(dr.Layout), 
+      isBehavior = target.isA(dr.behavior.behavior);
+    
+    var layouts, len, i;
+    if (isView) {
+      layouts = target.parent.getLayouts();
+      len = layouts.length;
+      i = len;
+      while (i) layouts[--i].setActualAttribute('locked', true);
+    }
+    
+    if (attr === 'ignorelayout' && !target.getActualAttribute('ignorelayout')) {
+      dr.editor.createlayoutundoable.restoreSingleManagedViewState(target);
+    }
+    
+    var retval = this.super();
+    
+    if (attr === 'updateparent' && isLayout && !target.getActualAttribute('updateparent')) {
+      dr.editor.createlayoutundoable.restoreManagedParentState(this);
+    }
+    
+    if (attr === 'layouthint') {
+      dr.editor.createlayoutundoable.restoreForLayoutHint(target, this.oldvalue, this.newvalue);
+    }
+    
+    if (len > 0) {
+      i = len;
+      while (i) layouts[--i].setActualAttribute('locked', false);
+    }
+    
+    if (isLayout || isBehavior) selectionmanager.select(target.parent);
+    
+    return retval;
+  </method>
+</class>

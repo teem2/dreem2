@@ -306,6 +306,9 @@
         this.reload_socket.onmessage = function(event) {
           var msg = JSON.parse(event.data);
           if (msg.type === 'filechange') {
+            if(location.search && location.search.indexOf('noreload') !== -1){
+              return
+            }
             location.href = location.href; // reload on filechange
           } else if (msg.type === 'close') {
             window.close(); // close the window

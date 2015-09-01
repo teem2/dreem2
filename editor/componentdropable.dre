@@ -1,0 +1,112 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<mixin name="componentdropable" with="button, dropable"
+  focusable="false" allowabort="true"
+>
+  <attribute name="instanceattrs" type="expression" value="null"/>
+  
+  <method name="notifyDropAborted">
+    this.notifyDropFailed();
+  </method>
+  
+  <method name="notifyDropFailed">
+    var self = this;
+    this.setAttribute('disabled', true);
+    this.stopActiveAnimators('opacity');
+    this.animate({attribute:'opacity', to:0, from:this.opacity, duration:500}).next(
+      function(success) {self.destroy();}
+    );
+  </method>
+  
+  <method name="notifyDrop" args="droptarget, isAbort">
+    this.super();
+    
+    if (!this.dropfailed) {
+      var id = 'lzeditor_client_' + dr.generateGuid();
+      while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
+      
+      var attrs = dr.extend({}, this.instanceattrs);
+      attrs.id = id;
+      
+      if (!this.islayout && !this.isbehavior) {
+        var targetPos = this.getAbsolutePosition(editor),
+          newParentPos = droptarget.getAbsolutePosition(editor);
+        if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
+        if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
+      }
+      
+      // Remember which attrs to objectify for the model
+      var objectifyAttrs = dr.extend({}, attrs);
+      delete objectifyAttrs.class;
+      if (this.islayout) delete objectifyAttrs.locked;
+      attrs.__objectify_attrs_list = Object.keys(objectifyAttrs);
+      
+      attrs.with = 'editable';
+      var instance = droptarget.createChild(attrs);
+      
+      var i;
+      if (this.islayout) {
+        // Make sure layout domains do not conflict
+        var layouts = droptarget.getLayouts(), layout;
+        i = layouts.length;
+        while (i) {
+          layout = layouts[--i];
+          if (layout !== instance && (layout.__hasCommonLayoutDomain(instance) || layout.__hasCommonLayoutParentDomain(instance))) {
+            instance.destroy();
+            this.destroy();
+            
+            dialogmanager.showAlert('The layout you are trying to add conflicts with an existing layout.');
+            return;
+          }
+        }
+      } else if (this.isbehavior) {
+        // Make sure behavior domains do not conflict
+        var behaviors = droptarget.getBehaviors(), behavior;
+        i = behaviors.length;
+        while (i) {
+          behavior = behaviors[--i];
+          if (behavior !== instance && behavior.__hasCommonBehaviorDomain(instance)) {
+            instance.destroy();
+            this.destroy();
+            
+            dialogmanager.showAlert('The behavior you are trying to add conflicts with an existing behavior.');
+            return;
+          }
+        }
+      }
+      
+      // Mark an instance as "new" so we know it needs serialization.
+      instance.__NEW = true;
+      
+      if (this.islayout) {
+        actions.do(new dr.editor.createlayoutundoable({target:instance}));
+      } else if (this.isbehavior) {
+        actions.do(new dr.editor.createbehaviorundoable({target:instance}));
+      } else {
+        actions.do(new dr.editor.createundoable({target:instance}));
+        selectionmanager.select(instance);
+      }
+      
+      this.destroy();
+    }
+  </method>
+</mixin>

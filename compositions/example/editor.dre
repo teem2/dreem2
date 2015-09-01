@@ -20,70 +20,117 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <composition>
- <screens>
-  <screen type='browser' name='default' title='Editor'>
-   <view width='100%' height='100%' bgcolor='#f4b8ee' scrollable='true'>
-    <view with='button' x='0' y='0' bgcolor='purple' width='${this.parent.blue.x}' height='105' opacity='1' visible='true'>
-     <view x='${this.parent.innerwidth - this.boundswidth + this.boundsxdiff}' y='${this.parent.innerheight - this.boundsheight + this.boundsydiff}' width='50' height='50' bgcolor='#999999' opacity='1' visible='true'/>
-     <handler event='onmousedown' args='event'>
-        console.log('playing mousedown');
-     </handler>
-     <handler event='onmouseup'>
-        console.log('playing mouseup');
-     </handler>
-     <handler event='onclick'>
-        console.log('playing click');
-     </handler>
-     <handler event='onactivated'>
-       this.parent.createChild({width:100, height:100, x:100, y:100, bgcolor:'#99cc55', clickable:true, focusable:true, class:'view', with:'draggable'});
-     </handler>
-     <method name='drawHoverState'>
-        this.setAttribute('bgcolor', 'pink');
-     </method>
-     <method name='drawActiveState'>
-        this.setAttribute('bgcolor', 'blue');
-     </method>
-     <method name='drawReadyState'>
-        this.setAttribute('bgcolor', 'purple');
-     </method>
-    </view>
-    <view with='button' x='23' y='119' scrollable='true' bgcolor='red' width='${this.parent.blue.x - this.x - 5}' height='89' opacity='1' visible='true'>
-     <text text='hello world.' height='auto' opacity='1' visible='true' width='auto' x='0' y='0'/>
-     <view x='60' y='60' width='106' height='129' bgcolor='#0082ff' opacity='1' visible='true'/>
-     <handler event='onmousedown' args='event'>
-        console.log('playing mousedown');
-     </handler>
-     <handler event='onmouseup'>
-        console.log('playing mouseup');
-     </handler>
-     <handler event='onclick'>
-        console.log('playing click');
-     </handler>
-     <handler event='onactivated'>
-        this.destroy();
-     </handler>
-     <method name='drawHoverState'>
-        this.setAttribute('bgcolor', 'pink');
-     </method>
-     <method name='drawActiveState'>
-        this.setAttribute('bgcolor', 'blue');
-     </method>
-     <method name='drawReadyState'>
-        this.setAttribute('bgcolor', 'red');
-     </method>
-    </view>
-    <view x='168' y='46' bgcolor='#1600ff' width='120' height='144' opacity='1' visible='true' name='blue'>
-     <view x='89' y='${this.boundsydiff}' width='1' height='${this.parent.innerheight * 1}' bgcolor='#000000'/>
-     <view x='${this.boundsxdiff}' y='55' width='${this.parent.innerwidth * 1}' height='1' bgcolor='#000000'/>
-    </view>
-    <view with='draggable' x='96' y='270' bgcolor='orange' width='211' height='147' opacity='1' visible='true'>
-     <view x='2' y='16' width='46' height='50' bgcolor='#fff700' opacity='1' visible='true' scrollable='true'/>
-     <bitmap x='49' y='16' width='56' height='57' bgcolor='transparent' visible='true' src='/img/shoarma.jpg' naturalsize='false'/>
-     <view x='106' y='13' width='50' height='50' bgcolor='#cccccc' visible='true'/>
-     <view x='157' y='16' width='50' height='50' bgcolor='#cccccc' visible='true'/>
-     <spacedlayout axis='x' spacing='1' inset='2' outset='4' updateparent='true'/>
-    </view>
-   </view>
-  </screen>
- </screens>
+	<screens>
+		<screen type='browser' name='default' title='Editor' basecolor='#60ff60'>
+			<view width='100%' height='100%' bgcolor='#f4b8ee' scrollable='true' id='lzeditor_1'>
+				<attribute name='Input_A' type='string' input='true' value='${dr.teem.flowserver.screens_default_Input_A}'/>
+				<attribute name='Input_B' type='string' input='true' value='${dr.teem.flowserver.screens_default_Input_B}'/>
+				<attribute name='Output_A' type='string' input='false'/>
+				<attribute name='Output_B' type='string' input='false'/>
+				<include href='/editor/editor_include.dre'/>
+				<view with='button,editable' x='-1' y='2' bgcolor='purple' width='${this.parent.blue.x}' height='105' opacity='1' visible='true' id='lzeditor_2' placement='editor'>
+					<view x='${this.parent.innerwidth - this.boundswidth + this.boundsxdiff}' y='${this.parent.innerheight - this.boundsheight + this.boundsydiff}' width='50' height='50' bgcolor='#999999' opacity='1' visible='true' id='lzeditor_3' with='editable'/>
+					<handler event='onmousedown' args='event'>
+						console.log('playing mousedown!');
+					</handler>
+					<handler event='onmouseup'>
+						console.log('playing mouseup');
+					</handler>
+					<handler event='onclick'>
+						console.log('playing click');
+					</handler>
+					<handler event='onactivated'>
+						this.parent.createChild({width:100, height:100, x:100, y:100, bgcolor:'#99cc55', clickable:true, focusable:true, class:'view', with:'draggable'});
+					</handler>
+					<method name='drawHoverState'>
+						this.setAttribute('bgcolor', 'pink');
+					</method>
+					<method name='drawActiveState'>
+						this.setAttribute('bgcolor', 'blue');
+					</method>
+					<method name='drawReadyState'>
+						this.setAttribute('bgcolor', 'purple');
+					</method>
+				</view>
+				<view with='button,editable' x='23' y='119' scrollable='true' bgcolor='red' width='${this.parent.blue.x - this.x - 5}' height='89' opacity='1' visible='true' id='lzeditor_11' placement='editor'>
+					<text text='hello world.' height='auto' opacity='1' visible='true' width='auto' x='0' y='0' id='lzeditor_12' with='editable'/>
+					<view x='60' y='60' width='106' height='129' bgcolor='#0082ff' opacity='1' visible='true' id='lzeditor_13' with='editable'/>
+					<handler event='onmousedown' args='event'>
+						console.log('playing mousedown');
+					</handler>
+					<handler event='onmouseup'>
+						console.log('playing mouseup');
+					</handler>
+					<handler event='onclick'>
+						console.log('playing click');
+					</handler>
+					<handler event='onactivated'>
+						this.destroy();
+					</handler>
+					<method name='drawHoverState'>
+						this.setAttribute('bgcolor', 'pink');
+					</method>
+					<method name='drawActiveState'>
+						this.setAttribute('bgcolor', 'blue');
+					</method>
+					<method name='drawReadyState'>
+						this.setAttribute('bgcolor', 'red');
+					</method>
+				</view>
+				<view x='177' y='63' bgcolor='#1600ff' width='120' height='144' opacity='1' visible='true' name='blue' id='lzeditor_21' with='editable' placement='editor'>
+					<view x='89' y='${this.boundsydiff}' width='1' height='${this.parent.innerheight * 1}' bgcolor='#000000' id='lzeditor_22' with='editable'/>
+					<view x='${this.boundsxdiff}' y='55' width='${this.parent.innerwidth * 1}' height='1' bgcolor='#000000' id='lzeditor_23' with='editable'/>
+					<view with='draggable,editable' x='-123' y='90' bgcolor='orange' width='211' height='147' opacity='1' visible='true' id='lzeditor_24'>
+						<view x='2' y='16' width='46' height='50' bgcolor='#fff700' opacity='1' visible='true' scrollable='true' id='lzeditor_25' with='editable'/>
+						<bitmap x='49' y='16' width='56' height='57' bgcolor='transparent' visible='true' src='/img/shoarma.jpg' naturalsize='false' id='lzeditor_26' with='editable'/>
+						<view x='106' y='13' width='50' height='50' bgcolor='#cccccc' visible='true' id='lzeditor_27' with='editable'/>
+						<view x='157' y='16' width='50' height='50' bgcolor='#cccccc' visible='true' id='lzeditor_28' with='editable'/>
+						<spacedlayout axis='x' spacing='1' inset='2' outset='4' updateparent='true' id='lzeditor_29' with='editable'/>
+					</view>
+				</view>
+				<handler event='onOutput_A'>
+					dr.teem.flowserver.screens_mobile_Input_A = this.Output_A
+				</handler>
+				<handler event='onOutput_B'>
+					dr.teem.flowserver.screens_remote_Input_B = this.Output_B
+				</handler>
+			</view>
+		</screen>
+		<screen type='mobile' name='mobile' basecolor='#ff6060'>
+			<view>
+				<attribute name='Input_A' type='string' input='true'/>
+				<attribute name='Input_B' type='string' input='true'/>
+				<attribute name='Output_A' type='string' input='false'/>
+				<attribute name='Output_B' type='string' input='false'/>
+				<handler event='onOutput_B'>
+					dr.teem.flowserver.screens_remote_Input_B = this.Output_B
+				</handler>
+				<handler event='onOutput_A'>
+					dr.teem.flowserver.screens_remote_Input_A = this.Output_A
+				</handler>
+			</view>
+		</screen>
+		<screen type='browser' name='remote' basecolor='#ffff60'>
+			<view>
+				<attribute name='Input_A' type='string' input='true' value='${dr.teem.flowserver.screens_remote_Input_A}'/>
+				<attribute name='Input_B' type='string' input='true'/>
+				<attribute name='Output_A' type='string' input='false'/>
+				<attribute name='Output_B' type='string' input='false'/>
+				<handler event='onOutput_A'>
+					dr.teem.flowserver.screens_mobile_Input_B = this.Output_A
+				</handler>
+				<handler event='onOutput_B'>
+					dr.teem.flowserver.screens_remote_Input_A = this.Output_B
+				</handler>
+			</view>
+		</screen>
+	</screens>
+	<server name='myserver'>
+		<attribute name='myoutput' type='string' input='false'/>
+	</server>
+	<flowserver>
+		<attribute name='screens_remote_Input_A' to='screens_default_Output_A' type='string'/>
+		<attribute name='screens_default_Input_B' to='screens_remote_Output_B' type='string'/>
+		<attribute name='screens_default_Input_A' to='screens_mobile_Output_A' type='string'/>
+	</flowserver>
 </composition>

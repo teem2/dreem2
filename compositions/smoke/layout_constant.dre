@@ -128,6 +128,11 @@ SOFTWARE. -->
           assert.equal(2, this.layoutX.subviews.length, '2 subview are managed for layoutX.');
           assert.equal(3, this.layoutY.subviews.length, '3 subview are managed for layoutY.');
           assert.equal(3, this.layoutBgcolor.subviews.length, '3 subview are managed for layoutBgcolor.');
+          
+          this.v4.setAttribute('ignorelayout', '{"*":true, "layoutY":false, "layoutX":true}');
+          assert.equal(2, this.layoutX.subviews.length, 'Expect no change in layoutX.');
+          assert.equal(3, this.layoutY.subviews.length, 'Expect no change in layoutY.');
+          assert.equal(3, this.layoutBgcolor.subviews.length, 'Expect no change in layoutBgcolor.');
         </handler>
       </view>
       

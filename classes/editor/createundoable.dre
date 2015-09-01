@@ -3,7 +3,7 @@
 <!--/**
   * @class dr.editor.createundoable {UI Components}
   * @extends dr.editor.undoable
-  * An undoable that Inserts a new node into a parent node.
+  * An undoable that inserts a new node into a parent node.
   */-->
 <class name="editor-createundoable" extends="editor-undoable"
   undodescription='Undo create.'
@@ -39,10 +39,12 @@
       var target = this.target;
       if (target) {
         this._notFirstTime = true;
-        this._targetWasVisible = target.visible;
-        this._prevSibling = target.getPrevSiblingView();
         this._targetParent = target.parent;
-        target.setAttribute('visible', false);
+        if (target.isA(dr.View)) {
+          this._targetWasVisible = target.visible;
+          this._prevSibling = target.getPrevSiblingView();
+          target.setAttribute('visible', false);
+        }
         target.setAttribute('parent', null);
         target.pauseConstraints();
         return this.super();
@@ -68,11 +70,13 @@
       if (target) {
         if (this._notFirstTime) {
           target.setAttribute('parent', this._targetParent);
-          if (this._targetWasVisible === true) target.setAttribute('visible', true);
-          if (this._prevSibling) {
-            target.moveInFrontOf(this._prevSibling);
-          } else {
-            target.moveToBack();
+          if (target.isA(dr.View)) {
+            if (this._targetWasVisible === true) target.setAttribute('visible', true);
+            if (this._prevSibling) {
+              target.moveInFrontOf(this._prevSibling);
+            } else {
+              target.moveToBack();
+            }
           }
           target.resumeConstraints();
         }

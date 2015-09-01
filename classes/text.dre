@@ -68,7 +68,7 @@
         * @attribute {Number} [fontsize]
         * The size of the font in pixels.
         */-->
-  <attribute name="fontsize" type="number" value=""></attribute>
+  <attribute name="fontsize" type="number" value=""/>
   <setter name="fontsize" args="v">
     if @setActual('fontsize', v, 'number', '')
       if @inited then @sizeToPlatform()
@@ -78,7 +78,7 @@
         * @attribute {Number} [fontfamily=""]
         * The name of the font family to use, e.g. "Helvetica"  Include multiple fonts on a line, separated by commas.
         */-->
-  <attribute name="fontfamily" type="string" value=""></attribute>
+  <attribute name="fontfamily" type="string" value=""/>
   <setter name="fontfamily" args="v">
     if @setActual('fontfamily', v, 'string', '')
       if @inited then @sizeToPlatform()
@@ -89,7 +89,7 @@
         * Align text within its bounds. Supported values are 
         * 'left', 'right', 'center' and 'inherit'.
         */-->
-  <attribute name="textalign" type="string" value=""></attribute>
+  <attribute name="textalign" type="string" value=""/>
   <setter name="textalign" args="v">
     if @setActual('textalign', v, 'string', '')
       if @inited then @sizeToPlatform()
@@ -99,7 +99,7 @@
         * @attribute {Boolean} [bold=false]
         * Use bold text.
         */-->
-  <attribute name="bold" type="boolean" value="false"></attribute>
+  <attribute name="bold" type="boolean" value="false"/>
   <setter name="bold" args="v">
     if @setActual('bold', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -109,7 +109,7 @@
         * @attribute {Boolean} [italic=false]
         * Use italic text.
         */-->
-  <attribute name="italic" type="boolean" value="false"></attribute>
+  <attribute name="italic" type="boolean" value="false"/>
   <setter name="italic" args="v">
     if @setActual('italic', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -119,7 +119,7 @@
         * @attribute {Boolean} [smallcaps=false]
         * Use small caps style.
         */-->
-  <attribute name="smallcaps" type="boolean" value="false"></attribute>
+  <attribute name="smallcaps" type="boolean" value="false"/>
   <setter name="smallcaps" args="v">
     if @setActual('smallcaps', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -129,7 +129,7 @@
         * @attribute {Boolean} [underline=false]
         * Draw and underline under text (note, is incompatible with dr.text#strike)
         */-->
-  <attribute name="underline" type="boolean" value="false"></attribute>
+  <attribute name="underline" type="boolean" value="false"/>
   <setter name="underline" args="v">
     if @setActual('underline', v, 'boolean', false)
       if @underline and @strike then @setSimpleActual('strike', false, true)
@@ -140,7 +140,7 @@
         * @attribute {Boolean} [strike=false]
         * Draw and strike-through the text (note, is incompatible with dr.text#underline)
         */-->
-  <attribute name="strike" type="boolean" value="false"></attribute>
+  <attribute name="strike" type="boolean" value="false"/>
   <setter name="strike" args="v">
     if @setActual('strike', v, 'boolean', false)
       if @strike and @underline then @setSimpleActual('underline', false, true)
@@ -151,7 +151,7 @@
         * @attribute {Boolean} [multiline=false]
         * Determines how line breaks within the text are handled.
         */-->
-  <attribute name="multiline" type="boolean" value="false"></attribute>
+  <attribute name="multiline" type="boolean" value="false"/>
   <setter name="multiline" args="v">
     if @setActual('multiline', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -162,7 +162,7 @@
         * Determines if ellipsis shouls be shown or not. Only works when
         * multiline is false.
         */-->
-  <attribute name="ellipsis" type="boolean" value="false"></attribute>
+  <attribute name="ellipsis" type="boolean" value="false"/>
   <setter name="ellipsis" args="v">
     if @setActual('ellipsis', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -172,11 +172,24 @@
         * @attribute {String} [text=""]
         * The contents of this input text field
         */-->
-  <attribute name="text" type="string" value=""></attribute>
+  <attribute name="text" type="string" value=""/>
   <setter name="text" args="v">
     if @setActual('text', @format(v), 'string', '')
       if @inited then @sizeToPlatform()
   </setter>
+
+  <attribute name="editable" type="boolean" value="false"/>
+  <setter name="editable" args="v">
+    if @setActual('editable', v, 'boolean', false)
+      if @editable
+        @listenToPlatform(@, 'onkeydown', @__cleanInput)
+      else
+        @stopListeningToPlatform(@, 'onkeydown', @__cleanInput)
+  </setter>
+  
+  <method name="__cleanInput" args="event">
+    @sprite.cleanInput(event)
+  </method>
 
   <setter name="data" args="v">
     @setActualAttribute('text', v)
@@ -186,6 +199,17 @@
     @setActualAttribute('text', v)
   </setter>
 
+  <handler event="oninput" args="event">
+    if @editable
+      @setAttribute('text', @sprite.getText(true));
+  </handler>
+
+  <method name="isPlatformEvent" args="eventType">
+    if dr.sprite.InputObservable.EVENT_TYPES[eventType]
+      return true
+    return @super()
+  </method>
+  
   <method name="createSprite" args="attrs">
     return new dr.sprite.Text(this, attrs);
   </method>
@@ -224,4 +248,9 @@
   <method name="format" args="str">
     return str
   </method>
+  
+  <!--// Editor //-->
+  <attribute name="attrimportance" type="expression" allocation="class"
+    value="{name:-1, text:50, color:51, fontfamily:52, fontsize:53, bold:54, italic:55, multiline:200, ellipsis:201, smallcaps:210, underline:211, strike:212}"
+  />
 </class>

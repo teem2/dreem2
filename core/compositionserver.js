@@ -577,7 +577,7 @@ define(function(require, exports, module) {
         this.__packageDali(screenPath, screenPath.slice(0, -3) + ".dali.js");
         define.SPRITE = '$LIB/dr/sprite_browser';
       }
-      
+      console.log("MAKING SCREEN "+screenJson.name)
       this.screens[screenJson.name] = screenNode;
     };
     
@@ -729,7 +729,7 @@ define(function(require, exports, module) {
       // strip out editor include
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
-        if (child.tag === 'include' && child.attr.href === '/compositions/example/editor/editor_include.dre') {
+        if (child.tag === 'include' && child.attr.href === '/editor/editor_include.dre') {
           children.splice(i, 1);
           break;
         }
@@ -743,7 +743,7 @@ define(function(require, exports, module) {
           jsobj.child.unshift({
             tag: 'include',
             attr: {
-              href: '/compositions/example/editor/editor_include.dre'
+              href: '/editor/editor_include.dre'
             }
           });
         }
@@ -772,7 +772,7 @@ define(function(require, exports, module) {
             if (! attr.id) {
               attr.id = 'lzeditor_' + this.__guid++;
             }
-            if (setwith) {
+            if (setwith || child.tag === 'dataset') { // Also do dataset children of screen.
               if (! attr.with) {
                 attr.with = 'editable';
               } else if (! attr.with.match(this.__editableRE)){

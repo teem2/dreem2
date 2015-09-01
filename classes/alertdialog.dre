@@ -1,0 +1,36 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.alertdialog {UI Component}
+   * A dialog that displays an alert.
+   */-->
+<class name="alertdialog" extends="dialog" padding="20" width="auto" height="auto">
+  <attribute name="msg" type="string" value=""/>
+  <attribute name="btnlabel" type="string" value=""/>
+  
+  <method name="setInitialFocus">
+    this.confirmButton.focus();
+  </method>
+  
+  <text name="msgView" text="${this.parent.msg}" multiline="true" fontsize="14">
+    <setter name="text" args="text">
+      // Scale the width within a min/max based on number of characters.
+      this.setAttribute('width', text ? Math.min(600, Math.max(100, text.length * 5)) : 0);
+      return this.super();
+    </setter>
+  </text>
+  
+  <simplebutton name="confirmButton" x="center" y="${this.parent.msgView.y + this.parent.msgView.height + 10}"
+    text="${this.parent.btnlabel}"
+  >
+    <method name="doActivated">
+      var dialog = this.classroot,
+        callback = dialog.callback;
+      if (callback) {
+        var shouldNotClose = callback(this, true);
+        if (shouldNotClose) return;
+      }
+      dialog.dialogmanager.closeDialog(this);
+    </method>
+  </simplebutton>
+</class>

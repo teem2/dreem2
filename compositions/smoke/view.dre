@@ -134,7 +134,6 @@ SOFTWARE. -->
         <method name="get_transform" args="style, setting">
           // Retrieve a transform from either css, webkit, or moz
           var transform = style[setting] || style['-webkit-' + setting] || style['-moz-' + setting];
-
           return transform;
         </method>
 
@@ -143,9 +142,11 @@ SOFTWARE. -->
           if (!str1 || !str2) return false;
 
           return str1.replace(/\s/g, '') == str2.replace(/\s/g, '');
-	</method>
+        </method>
     
         <handler event="oninit">
+          assert.testCaseLabel = 'Z, Rotation and Scale';
+          
           // Check both generic and vendor syntax so that the tests will pass in firefox. This includes removing spaces when comparing strings.
           var transform = this.get_transform(this.topView.sprite.platformObject.style, 'transform');
           assert.equal(this.compare_ws(transform, 'translate3d(0, 0, 1px)') || this.compare_ws(transform, 'translate3d(0px, 0px, 1px)'), true, 'Verify translate.')

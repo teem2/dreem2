@@ -29,7 +29,7 @@ define(function(require, exports, module){
     };
     
     // this method is used serverside to compute the rpc interface
-    this.screenJoin = function(socket) {
+    this.screenJoin = function(socket, attribute_sets) {
       var url = socket.url;
       
       // Extract Query
@@ -67,7 +67,12 @@ define(function(require, exports, module){
             rpcid:orpcid
           });
         }
-      }      
+      }
+
+      // now lets send all attribute sets that have have happened
+      for(var key in attribute_sets){
+        socket.send(attribute_sets[key])
+      }
 
       multi._addNewProxy(index, rpcid, socket.rpcpromise);
       
