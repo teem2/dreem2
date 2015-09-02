@@ -29,6 +29,15 @@ SOFTWARE. -->
   <handler event="onmouseover" reference="this.parent" method="show"></handler>
   <handler event="onmouseout" reference="this.parent" method="hide"></handler>
 
+  <handler event="onselected" reference="this.parent" args="sel">
+    if (sel) {
+      this.show();
+    } else {
+      this.hide();
+    }
+  </handler>
+
+
   <method name="show">
     var speed = this.overspeed,
       hlt = this.__hlt;

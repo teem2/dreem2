@@ -21,23 +21,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="behavior-scale" extends="node" with="behavior-behavior">
   <attribute name="magnitude" type="number" value="2"/>
-  
-  <handler event="onmouseover" reference="this.parent">
+
+  <handler event="onmouseover" reference="this.parent" method="show"></handler>
+  <handler event="onmouseout" reference="this.parent" method="hide"></handler>
+
+  <handler event="onselected" reference="this.parent" args="sel">
+    if (sel) {
+      this.show();
+    } else {
+      this.hide();
+    }
+  </handler>
+
+  <method name="show">
     var parent = this.parent,
       magnitude = this.magnitude;
     parent.stopActiveAnimators('xscale');
     parent.stopActiveAnimators('yscale');
     parent.animate({attribute:'xscale', to:magnitude, duration:800});
     parent.animate({attribute:'yscale', to:magnitude, duration:800});
-  </handler>
-  <handler event="onmouseout" reference="this.parent">
+  </method>
+
+  <method name="hide">
     var parent = this.parent;
     parent.stopActiveAnimators('xscale');
     parent.stopActiveAnimators('yscale');
     parent.animate({attribute:'xscale', to:1, duration:400});
     parent.animate({attribute:'yscale', to:1, duration:400});
-  </handler>
-  
+  </method>
+
   <!--// Editor Support //-->
   <method name="__getBehaviorDomains">
     return {behavior_scale:true}; // Don't allow two of this behavior
