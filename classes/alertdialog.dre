@@ -2,23 +2,14 @@
      Copyright (C) 2014-2015 Teem2 LLC -->
 <!--/**
    * @class dr.alertdialog {UI Component}
-   * A dialog that displays an alert.
+   * A dialog that displays a message with a confirmation button.
    */-->
-<class name="alertdialog" extends="dialog" padding="20" width="auto" height="auto">
-  <attribute name="msg" type="string" value=""/>
+<class name="alertdialog" extends="messagedialog">
   <attribute name="btnlabel" type="string" value=""/>
   
   <method name="setInitialFocus">
     this.confirmButton.focus();
   </method>
-  
-  <text name="msgView" text="${this.parent.msg}" multiline="true" fontsize="14">
-    <setter name="text" args="text">
-      // Scale the width within a min/max based on number of characters.
-      this.setAttribute('width', text ? Math.min(600, Math.max(100, text.length * 5)) : 0);
-      return this.super();
-    </setter>
-  </text>
   
   <simplebutton name="confirmButton" x="center" y="${this.parent.msgView.y + this.parent.msgView.height + 10}"
     text="${this.parent.btnlabel}"

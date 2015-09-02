@@ -46,10 +46,23 @@
     
     dialog.setInitialFocus();
     this.setAttribute('activedialog', dialog);
+    
+    return dialog;
+  </method>
+  
+  <method name="showMessage" args="msg, callback">
+    return this.showDialog({
+      class:dr.messagedialog, msg:msg,
+      callback:callback
+    });
+  </method>
+  
+  <method name="hideMessage" args="dialog">
+    this.closeDialog(dialog);
   </method>
   
   <method name="showAlert" args="msg, btnlabel, callback">
-    this.showDialog({
+    return this.showDialog({
       class:dr.alertdialog, msg:msg, 
       btnlabel:btnlabel ? btnlabel : 'OK', 
       callback:callback
@@ -57,7 +70,7 @@
   </method>
   
   <method name="showConfirm" args="msg, btnlabel, cancelbtnlabel, callback">
-    this.showDialog({
+    return this.showDialog({
       class:dr.confirmdialog, msg:msg, 
       btnlabel:btnlabel ? btnlabel : 'Confirm', 
       cancelbtnlabel:cancelbtnlabel ? cancelbtnlabel : 'Cancel', 
