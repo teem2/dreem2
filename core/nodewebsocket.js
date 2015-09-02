@@ -289,8 +289,14 @@ define(function(require, exports, module){
 		this.len8 = function(){
 			if(this.head()) return false
 			this.paylen = this.header.readUInt32BE(this.written - 4)
-			this.expected = 4
-			this.state = this.mask
+			if(this.masked){
+				this.expected = 4
+				this.state = this.mask
+			}
+			else{
+				this.expected = this.paylen
+				this.state = this.data
+			}
 			return true
 		}
 
@@ -298,29 +304,39 @@ define(function(require, exports, module){
 		this.len2 = function(){
 			if(this.head()) return 
 			this.paylen = this.header.readUInt16BE(this.written - 2)
-			this.expected = 4
-			this.state = this.mask
+			if(this.masked){
+				this.expected = 4
+				this.state = this.mask
+			}
+			else{
+				this.expected = this.paylen
+				this.state = this.data
+			}
 			return true
 		}
 
 		/* Internal len1 state*/
 		this.len1 = function(){
 			if(this.head()) return false
-			// we get plain data back
+			// set masked flag
 			if(!(this.header[this.written  - 1] & 128)){
 				this.masked = false
-				this.state = this.data
-				this.expected = this.header[this.written  - 1]
-				return true
 			}
 			else{
 				this.masked = true
 			}
+
 			var type = this.header[this.written - 1] & 127
 			if(type < 126){
 				this.paylen = type
 				this.expected = 4
-				this.state = this.mask
+				if(!this.masked){
+					this.state = this.data
+					this.expected = this.header[this.written  - 1]
+				}
+				else{
+					this.state = this.mask
+				}
 			}
 			else if(type == 126){
 				this.expected = 2
