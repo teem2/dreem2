@@ -59,4 +59,9 @@ SOFTWARE. -->
       }
     }
   </handler>
+
+  <!--// Editor Support //-->
+  <method name="__getBehaviorDomains">
+    return {behavior_shift:true}; // Don't allow two of this behavior
+  </method>
 </class>

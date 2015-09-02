@@ -22,12 +22,8 @@ SOFTWARE. -->
 <node id="selectionmanager">
   <attribute name="selected" type="expression" value="${null}"/>
   <setter name="selected" args="v">
-    if (editor.inited) this.setAttribute('isrootselection', v === editor.content_bg.content.inner);
-    if (v && v.isA(dr.View)) {
-      this.setAttribute('selectedview', v);
-    } else {
-      this.setAttribute('selectedview', null);
-    }
+    if (editor.inited) this.setActualAttribute('isrootselection', v === editor.content_bg.content.inner);
+    this.setActualAttribute('selectedview', v && v.isA(dr.View) ? v : null);
     return v;
   </setter>
 
@@ -53,7 +49,7 @@ SOFTWARE. -->
     
     if (newSelection !== curSelection) {
       if (curSelection) curSelection.notifyDeselected();
-      this.setAttribute('selected', newSelection);
+      this.setActualAttribute('selected', newSelection);
     }
   </method>
 </node>

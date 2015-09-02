@@ -22,7 +22,7 @@ SOFTWARE. -->
 <class name="subnodeeditor" width="100%">
   <method name="initNode" args="parent, attrs">
     this.super();
-    this.label.setAttribute('text', this.data.klass.__displayName);
+    this.label.setActualAttribute('text', this.data.klass.__displayName);
   </method>
 
   <spacedlayout axis="y" spacing="5" outset="5" updateparent="true"/>

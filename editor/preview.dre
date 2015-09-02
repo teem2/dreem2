@@ -26,7 +26,8 @@ SOFTWARE. -->
     
     <node>
       <handler event="oninit">
-        var pkg = window.top.editormodel.getPkg(),
+        var editormodel = window.parent.editormodel,
+          pkg = editormodel.getPkg(),
           classmap = pkg.classmap,
           screensNode, 
           compositionChildNodes = pkg.composition.child,
@@ -40,27 +41,35 @@ SOFTWARE. -->
           }
         }
         
-        // Find first screen
-        var screens = screensNode.child, screen;
-        i = screens.length;
-        while (i) {
-          screen = screens[--i];
-          if (screen.tag === 'screen') {
-            firstScreen = screen;
+        // Find screen that matches query
+        var screenname = editormodel.screenname,
+          screens = screensNode.child, 
+          screen, 
+          targetScreen,
+          len = screens.length;
+        i = 0;
+        for (; len > i; i++) {
+          screen = screens[i];
+          if (screen.tag === 'screen' && screen.attr.name === screenname) {
+            targetScreen = screen;
             break;
           }
         }
         
-        if (!firstScreen) {
+        if (!targetScreen) {
           console.warn("Could not find a screen node in the package.");
           return;
         }
+        
+        // Make the parent window dr.teem available in this frame since things
+        // like top level server elements will be missing in preview.dre
+        dr.teem = pkg.teem;
         
         // Render the first screen into the target view
         define.onMain = function() {
           var compiler = new dr.maker.Compiler();
           dr.ready = false;
-          compiler.execute(firstScreen, classmap, dr.teem, root, true);
+          compiler.execute(targetScreen, classmap, dr.teem, root, true);
         };
         
         for (var key in classmap) {
@@ -69,7 +78,7 @@ SOFTWARE. -->
         
         // Modify base href since the preview iframe is not at the same location
         // as the original document.
-        var loc = window.top.location.toString(),
+        var loc = window.parent.location.toString(),
           basePath = loc.substring(0, loc.lastIndexOf('/')) + '/',
           elem = document.createElement('base');
         elem.href = basePath;

@@ -282,7 +282,8 @@ SOFTWARE. -->
     @sendEvent('onreplicated', @)
   </handler>
   <method name="_createChild" args="data">
-    attrs = {class: @classname, data: data, parent: @parent, replicator: @}
+    attrs = {class: @classname, data: data, parent: @parent, __replicator: @}
+    
     # add stuff required by the editor unless it's a class used by the editor itself!
     shouldedit = this.searchAncestors((node) ->
       return node.isA(dr.editable)

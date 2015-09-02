@@ -1,0 +1,17 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @class dr.messagedialog {UI Component}
+   * A dialog that displays a message.
+   */-->
+<class name="messagedialog" extends="dialog" padding="20" width="auto" height="auto">
+  <attribute name="msg" type="string" value=""/>
+  
+  <text name="msgView" text="${this.parent.msg}" multiline="true" fontsize="14">
+    <setter name="text" args="text">
+      // Scale the width within a min/max based on number of characters.
+      this.setAttribute('width', text ? Math.min(600, Math.max(100, text.length * 5)) : 0);
+      return this.super();
+    </setter>
+  </text>
+</class>

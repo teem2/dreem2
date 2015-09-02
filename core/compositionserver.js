@@ -20,6 +20,8 @@ define(function(require, exports, module) {
     DreemError = require('./dreemerror'),
     dreemCompiler = require('./dreemcompiler');
 
+    var UAParser = require('ua-parser-js');
+
   /**
     * @constructor
     * @param {Object} args Process arguments
@@ -79,27 +81,52 @@ define(function(require, exports, module) {
       
       // handle editor requests
       if (query.edit) {
+        // Editor Handling for "save"
         if (req.method == 'POST') {
           var buf = ''
           req.on('data', function(data) {buf += data.toString();});
           req.on('end', function() {
             var comppath = define.expandVariables(this.__getCompositionPath())
-            this.__saveEditableFile(comppath, buf, query.stripeditor === '1');
+            this.__saveEditableFile(query.screen || 'default', comppath, buf, query.stripeditor === '1');
+            
+            // Force a reload since we know we just changed the file.
+            this.__reloadComposition();
+            
             res.writeHead(200, {"Content-Type":"text/json"});
             res.end();
           }.bind(this));
           return;
         } else {
-          res.writeHead(302, {
-            'Location': req.url.substring(0, req.url.indexOf('?'))
-            //add other headers here...
-          });
-          res.end();
-          var comppath = define.expandVariables(this.__getCompositionPath())
-          this.__makeFileEditable(comppath);
+          // Editor Handling for "enter" and "exit"
+          
+          // Read the composition from the filesystem and convert it to/from
+          // edit mode.
+          var comppath = define.expandVariables(this.__getCompositionPath()),
+            data = this.__readFile(comppath),
+            htmlParser = new HTMLParser(),
+            jsobj = htmlParser.parse(data),
+            isExitAction = query.stripeditor === '1';
+          this.__walkChildren(query.screen || 'default', jsobj, isExitAction)
+          this.__writeFileIfChanged(comppath, HTMLParser.reserialize(jsobj, '  '));
+          
+          // Force a reload since we know we just changed the file.
+          this.__reloadComposition();
+          
+          if (isExitAction) {
+            // The client handles the redirect for exit
+            res.writeHead(200, {"Content-Type":"text/json"});
+            res.end();
+          } else {
+            // We need to redirect the client so it will refresh and show the editor.
+            var redirectUrl = url;
+            redirectUrl += (query.screen ? '?screen=' + query.screen : '');
+            res.writeHead(302, {'Location':redirectUrl});
+            res.end();
+          }
           return;
         }
       }
+      
       if (query.raw) {
         var comppath = define.expandVariables(this.__getCompositionPath())
         res.writeHead(200, {"Content-Type":"text/text"});
@@ -147,8 +174,18 @@ define(function(require, exports, module) {
           res.write(JSON.stringify(pkg));
           res.end();
         } else {
-          var screenName = query.screen || 'default',
-            screen = this.screens[screenName];
+          var screenName = query.screen;
+          if (!screenName) {
+            var ua = UAParser(req.headers['user-agent']);
+            if (ua && ua.device && ua.device.type) {
+              screenName = ua.device.type;
+            } else {
+              screenName = 'default';
+            }
+          }
+
+
+          var screen = this.screens[screenName];
           if (screen) {
             var name = this.name;
             if (screenName === 'dali') {
@@ -695,36 +732,23 @@ define(function(require, exports, module) {
       return data;
     }
 
-    this.__makeFileEditable = function(filepath) {
-      var data, newdata;
-      data = this.__readFile(filepath)
-
-      if (data.indexOf('lzeditor_') > 0) {
-        // already editable, don't do anything
-        newdata = data
-      } else {
-        var htmlParser = new HTMLParser(),
-        jsobj = htmlParser.parse(data);
-        this.__walkChildren(jsobj)
-        newdata = HTMLParser.reserialize(jsobj, ' ')
-        this.__writeFileIfChanged(filepath, newdata)
-      }
-
-      return newdata
-    }
     this.__editableRE = /[,\s]*editable/;
-    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter/;
-    this.__walkChildren = function(jsobj, stripeditor, insidescreen) {
+    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter|attribute/;
+    this.__walkChildren = function(screenName, jsobj, stripeditor, insidescreen) {
       var setplacement = false, setwith = false;
-      if (jsobj.tag !== 'screen') {
-        setwith = true;
+      if (jsobj.tag === 'screen') {
+        if (jsobj.attr && jsobj.attr.name === screenName) {
+          // track if we're inside the screen tag
+          insidescreen = true;
+        } else {
+          stripeditor = true;
+        }
       } else {
-        // track if we're inside the screen tag
-        insidescreen = true;
+        setwith = true;
       }
 
       var children = jsobj.child;
-      if (! children.length) return;
+      if (!children.length) return;
 
       // strip out editor include
       for (var i = 0; i < children.length; i++) {
@@ -734,11 +758,12 @@ define(function(require, exports, module) {
           break;
         }
       }
+      
       if (jsobj.tag === 'view' && insidescreen) {
         // only set placement='editor' for tags in the top-level view immediately inside the screen tag
         insidescreen = false;
         setplacement = true;
-        if (! stripeditor) {
+        if (!stripeditor) {
           // add top-level editor include
           jsobj.child.unshift({
             tag: 'include',
@@ -751,50 +776,40 @@ define(function(require, exports, module) {
 
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
-
-        if (! child.tag.match(this.__skiptagsRE)) {
-          if (! child.attr) {
-            child.attr = {};
-          }
+        if (!child.tag.match(this.__skiptagsRE)) {
+          if (!child.attr) child.attr = {};
           var attr = child.attr;
           if (stripeditor) {
-            if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) {
-              delete attr.id;
-            }
+            if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) delete attr.id;
             if ((typeof attr.with === 'string') && attr.with.match(this.__editableRE)) {
               attr.with = attr.with.replace(this.__editableRE, '');
-              if (! attr.with) delete attr.with;
+              if (!attr.with) delete attr.with;
             }
-            if (attr.placement === 'editor') {
-              delete attr.placement;
-            }
+            if (attr.placement === 'editor') delete attr.placement;
           } else {
-            if (! attr.id) {
-              attr.id = 'lzeditor_' + this.__guid++;
-            }
+            if (!attr.id) attr.id = 'lzeditor_' + this.__guid++;
             if (setwith || child.tag === 'dataset') { // Also do dataset children of screen.
-              if (! attr.with) {
+              if (!attr.with) {
                 attr.with = 'editable';
-              } else if (! attr.with.match(this.__editableRE)){
+              } else if (!attr.with.match(this.__editableRE)){
                 attr.with += ',editable';
               }
-              if (setplacement) {
-                attr.placement = 'editor';
-              }
+              if (setplacement) attr.placement = 'editor';
             }
           }
         }
 
         // console.log(stripeditor, JSON.stringify(child));
         if (child.child) {
-          this.__walkChildren(child, stripeditor, insidescreen);
+          this.__walkChildren(screenName, child, stripeditor, insidescreen);
         }
       }
     };
-    this.__saveEditableFile = function(filepath, data, stripeditor) {
+
+    this.__saveEditableFile = function(screenName, filepath, data, stripeditor) {
       var jsobj = JSON.parse(data);
-      this.__walkChildren(jsobj, stripeditor);
-      var newdata = HTMLParser.reserialize(jsobj, ' ');
+      this.__walkChildren(screenName, jsobj, stripeditor);
+      var newdata = HTMLParser.reserialize(jsobj, '  ');
       this.__writeFileIfChanged(filepath, newdata);
       // console.log('saved', filepath, stripeditor);
     }

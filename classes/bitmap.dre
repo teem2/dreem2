@@ -110,8 +110,12 @@ SOFTWARE. -->
         * Bitmap views do not support subviews.
         */-->
   <method name="isLeaf" args="subnode">
-    if subnode and subnode.isA(dr.View) then return true
-    @super()
+    if subnode
+      if subnode.isA(dr.View)
+        return true
+      else
+        return @super()
+    return true
   </method>
   
   <!--// Editor //-->

@@ -116,30 +116,34 @@ SOFTWARE. -->
       event = this._lastMouseEvent;
     }
     
-    var rootSprite = editor.parent.sprite,
-      x = event.x + rootSprite.getScrollX(), 
-      y = event.y + rootSprite.getScrollY(),
-      xLoc = xLocation,
-      yLoc = yLocation,
-      content_bg = this.content_bg,
-      content = content_bg.content,
-      inner = content.inner;
-    
-    xLoc.setAttribute('visible', this.showlocationmarkers);
-    xLoc.setAttribute('x', x - 1);
-    xLoc.label.setAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
-    
-    yLoc.setAttribute('visible', this.showlocationmarkers);
-    yLoc.setAttribute('y', y - 1);
-    yLoc.label.setAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
-    
+    if (event) {
+      var xLoc = xLocation, yLoc = yLocation;
+      if (this.showlocationmarkers) {
+        var rootSprite = editor.parent.sprite,
+          x = event.x + rootSprite.getScrollX(), 
+          y = event.y + rootSprite.getScrollY(),
+          content_bg = this.content_bg,
+          content = content_bg.content,
+          inner = content.inner;
+        xLoc.setActualAttribute('visible', true).setActualAttribute('x', x - 1);
+        xLoc.label.setActualAttribute('text', x - content.x - content_bg.x + content_bg.scrollx + inner.scrollx);
+        yLoc.setActualAttribute('visible', true).setActualAttribute('y', y - 1);
+        yLoc.label.setActualAttribute('text', y - content.y - content_bg.y + content_bg.scrolly + inner.scrolly);
+      } else {
+        if (xLoc.visible) xLoc.setActualAttribute('visible', false);
+        if (yLoc.visible) yLoc.setActualAttribute('visible', false);
+      }
+    }
     return true;
   </handler>
+  <handler event="onshowlocationmarkers">
+    this.updateLocationMarkers(); // Do not pass event
+  </handler>
   <handler event="onscrollx, onscrolly" reference="this.content_bg">
-    this.updateLocationMarkers();
+    this.updateLocationMarkers(); // Do not pass event
   </handler>
   <handler event="onscrollx, onscrolly" reference="editor.parent">
-    this.updateLocationMarkers();
+    this.updateLocationMarkers(); // Do not pass event
   </handler>
 
   <!-- Eat attempts to open the context menu since this typically messes up
@@ -189,7 +193,7 @@ SOFTWARE. -->
     x="${this.parent.divider_left.x}"
     y="${this.parent.ruler_corner.y + this.parent.ruler_corner.height}"
     width="${config.ruler_thickness}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    height="${this.parent.innerheight - this.y}"
     scrolly="${this.parent.content_bg.scrolly + this.parent.content_bg.content.inner.scrolly + 100 - config.content_inset}"
   >
     <spacedlayout axis="y" spacing="100" inset="97"/>
@@ -263,20 +267,24 @@ SOFTWARE. -->
       </method>
       
       <method name="drawFocusedState">
-        this.parent.lower.setAttribute('bgcolor', 'black');
-        this.parent.lower.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', 'black');
+        lower.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
       </method>
       <method name="drawHoverState">
-        this.parent.lower.setAttribute('bgcolor', 'black');
-        this.parent.lower.setAttribute('boxshadow', config.boxshadow_normal);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', 'black');
+        lower.setActualAttribute('boxshadow', config.boxshadow_normal);
       </method>
       <method name="drawActiveState">
-        this.parent.lower.setAttribute('bgcolor', config.selection_color);
-        this.parent.lower.setAttribute('boxshadow', null);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', config.selection_color);
+        lower.setActualAttribute('boxshadow', null);
       </method>
       <method name="drawReadyState">
-        this.parent.lower.setAttribute('bgcolor', config.selection_color);
-        this.parent.lower.setAttribute('boxshadow', null);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', config.selection_color);
+        lower.setActualAttribute('boxshadow', null);
       </method>
     </view>
     
@@ -311,20 +319,24 @@ SOFTWARE. -->
       </method>
       
       <method name="drawFocusedState">
-        this.parent.upper.setAttribute('bgcolor', 'black');
-        this.parent.upper.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', 'black');
+        upper.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
       </method>
       <method name="drawHoverState">
-        this.parent.upper.setAttribute('bgcolor', 'black');
-        this.parent.upper.setAttribute('boxshadow', config.boxshadow_normal);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', 'black');
+        upper.setActualAttribute('boxshadow', config.boxshadow_normal);
       </method>
       <method name="drawActiveState">
-        this.parent.upper.setAttribute('bgcolor', config.selection_color);
-        this.parent.upper.setAttribute('boxshadow', null);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', config.selection_color);
+        upper.setActualAttribute('boxshadow', null);
       </method>
       <method name="drawReadyState">
-        this.parent.upper.setAttribute('bgcolor', config.selection_color);
-        this.parent.upper.setAttribute('boxshadow', null);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', config.selection_color);
+        upper.setActualAttribute('boxshadow', null);
       </method>
     </view>
     
@@ -361,13 +373,13 @@ SOFTWARE. -->
     </method>
     
     <method name="drawHoverState">
-      this.fill.setAttribute('opacity', 0.25);
+      this.fill.setActualAttribute('opacity', 0.25);
     </method>
     <method name="drawActiveState">
-      this.fill.setAttribute('opacity', 0.4);
+      this.fill.setActualAttribute('opacity', 0.4);
     </method>
     <method name="drawReadyState">
-      this.fill.setAttribute('opacity', 0.15);
+      this.fill.setActualAttribute('opacity', 0.15);
     </method>
   </view>
   
@@ -426,20 +438,24 @@ SOFTWARE. -->
       </method>
       
       <method name="drawFocusedState">
-        this.parent.lower.setAttribute('bgcolor', 'black');
-        this.parent.lower.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', 'black');
+        lower.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
       </method>
       <method name="drawHoverState">
-        this.parent.lower.setAttribute('bgcolor', 'black');
-        this.parent.lower.setAttribute('boxshadow', config.boxshadow_normal);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', 'black');
+        lower.setActualAttribute('boxshadow', config.boxshadow_normal);
       </method>
       <method name="drawActiveState">
-        this.parent.lower.setAttribute('bgcolor', config.selection_color);
-        this.parent.lower.setAttribute('boxshadow', null);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', config.selection_color);
+        lower.setActualAttribute('boxshadow', null);
       </method>
       <method name="drawReadyState">
-        this.parent.lower.setAttribute('bgcolor', config.selection_color);
-        this.parent.lower.setAttribute('boxshadow', null);
+        var lower = this.parent.lower;
+        lower.setActualAttribute('bgcolor', config.selection_color);
+        lower.setActualAttribute('boxshadow', null);
       </method>
     </view>
     
@@ -474,20 +490,24 @@ SOFTWARE. -->
       </method>
       
       <method name="drawFocusedState">
-        this.parent.upper.setAttribute('bgcolor', 'black');
-        this.parent.upper.setAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', 'black');
+        upper.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
       </method>
       <method name="drawHoverState">
-        this.parent.upper.setAttribute('bgcolor', 'black');
-        this.parent.upper.setAttribute('boxshadow', config.boxshadow_normal);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', 'black');
+        upper.setActualAttribute('boxshadow', config.boxshadow_normal);
       </method>
       <method name="drawActiveState">
-        this.parent.upper.setAttribute('bgcolor', config.selection_color);
-        this.parent.upper.setAttribute('boxshadow', null);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', config.selection_color);
+        upper.setActualAttribute('boxshadow', null);
       </method>
       <method name="drawReadyState">
-        this.parent.upper.setAttribute('bgcolor', config.selection_color);
-        this.parent.upper.setAttribute('boxshadow', null);
+        var upper = this.parent.upper;
+        upper.setActualAttribute('bgcolor', config.selection_color);
+        upper.setActualAttribute('boxshadow', null);
       </method>
     </view>
     
@@ -518,13 +538,13 @@ SOFTWARE. -->
     </method>
     
     <method name="drawHoverState">
-      this.fill.setAttribute('opacity', 0.25);
+      this.fill.setActualAttribute('opacity', 0.25);
     </method>
     <method name="drawActiveState">
-      this.fill.setAttribute('opacity', 0.4);
+      this.fill.setActualAttribute('opacity', 0.4);
     </method>
     <method name="drawReadyState">
-      this.fill.setAttribute('opacity', 0.15);
+      this.fill.setActualAttribute('opacity', 0.15);
     </method>
   </view>
 
@@ -541,7 +561,7 @@ SOFTWARE. -->
   <view name="content_bg" ignoreplacement="true" bgcolor="${config.content_color}"
     x="${ruler_horizontal.x}" y="${ruler_vertical.y}"
     width="${this.parent.divider_right.x - this.x}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    height="${this.parent.innerheight - this.y}"
     scrollable="true"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
@@ -597,30 +617,30 @@ SOFTWARE. -->
         
         <attribute name="selecteditem" type="expression" value="this.cfg[5].attrs"/>
         <handler event="onselecteditem" args="selecteditem">
-          this.setAttribute('label', selecteditem.text);
+          this.setActualAttribute('label', selecteditem.text);
           
           var isCustom = selecteditem.name === 'custom';
-          this.parent.custom.setAttribute('visible', isCustom);
+          this.parent.custom.setActualAttribute('visible', isCustom);
           if (!isCustom) {
-            screensizew.setAttribute('value', selecteditem.w);
-            screensizeh.setAttribute('value', selecteditem.h);
+            screensizew.setActualAttribute('value', selecteditem.w);
+            screensizeh.setActualAttribute('value', selecteditem.h);
           }
         </handler>
         
         <method name="drawDisabledState">
-          this.setAttribute('color', this.selected ? '#000000' : '#cccccc');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#cccccc');
         </method>
         <method name="drawFocusedState">
-          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#aaaaaa');
         </method>
         <method name="drawHoverState">
-          this.setAttribute('color', this.selected ? '#000000' : '#aaaaaa');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#aaaaaa');
         </method>
         <method name="drawActiveState">
-          this.setAttribute('color', this.selected ? '#000000' : '#888888');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#888888');
         </method>
         <method name="drawReadyState">
-          this.setAttribute('color', this.selected ? '#000000' : '#999999');
+          this.setActualAttribute('color', this.selected ? '#000000' : '#999999');
         </method>
         <method name="doActivated">
           var cfg = this.cfg, 
@@ -630,13 +650,13 @@ SOFTWARE. -->
             if (attrs) attrs.disabled = attrs.name === selecteditemname;
           }
           
-          this.setAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
+          this.setActualAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
           
           this.toggleFloatingPanel();
         </method>
         
         <method name="doItemActivated" args="itemview">
-          this.setAttribute('selecteditem', itemview);
+          this.setActualAttribute('selecteditem', itemview);
           this.super();
         </method>
       </listviewbutton>
@@ -644,17 +664,15 @@ SOFTWARE. -->
       <view name="custom" height="18" visible="false">
         <spacedlayout spacing="4" updateparent="true"></spacedlayout>
         <editor_text text="w:" y="2" fontsize="12"/>
-        <editor_inputtext id="screensizew" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+        <editor_inputtext id="screensizew" width="33" allowedchars="0123456789" maxlength="4" fontsize="12">
           <setter name="value" args="v">
-            if (v > 5000) v = 5000;
-            return v;
+            return Math.min(v, 5000);
           </setter>
         </editor_inputtext>
         <editor_text text="h:" y="2" fontsize="12"/>
-        <editor_inputtext id="screensizeh" width="32" allowedchars="0123456789" maxlength="4" fontsize="12">
+        <editor_inputtext id="screensizeh" width="33" allowedchars="0123456789" maxlength="4" fontsize="12">
           <setter name="value" args="v">
-            if (v > 5000) v = 5000;
-            return v;
+            return Math.min(v, 5000);
           </setter>
         </editor_inputtext>
       </view>
@@ -736,7 +754,7 @@ SOFTWARE. -->
             {klass:dr.listviewseparator},
             {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
           ];
-          this.setAttribute('itemconfig', cfg);
+          this.setActualAttribute('itemconfig', cfg);
           
           this.toggleFloatingPanel();
         </method>
@@ -748,10 +766,6 @@ SOFTWARE. -->
       </listviewiconbutton>
       <floatingpaneliconbutton floatingpanelid="settings" label="settings" iconname="settings"/>
     </view>
-    
-    <view name="center" padding="2" x="${this.parent.left.width}"
-      width="${this.parent.right.x - this.x}" height="${config.topbar_height}"
-    />
     
     <view name="right" padding="2" x="right" height="${config.topbar_height}">
       <spacedlayout spacing="3" inset="3" outset="9" updateparent="true"/>
@@ -767,9 +781,20 @@ SOFTWARE. -->
   <view name="leftbar" ignoreplacement="true" bgcolor="white" scrollable="true"
     y="${config.topbar_height}"
     width="${this.parent.divider_left.x}"
-    height="${this.parent.innerheight - this.y - config.bottombar_height}"
+    height="${this.parent.innerheight - this.y}"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
+    
+    <view width="${treemodel.width}" height="28" bgcolor="#eeeeee">
+      <listviewbutton id="screennamechooser" floatingpanelid="screenlist" y="6" x="5">
+        <method name="doItemActivated" args="itemview">
+          this.super();
+          actions.changeScreen(itemview.text);
+        </method>
+      </listviewbutton>
+      
+      <view width="100%" y="bottom" height="1" bgcolor="#cccccc"/>
+    </view>
     
     <include href='./treemodel.dre'/>
   </view>
@@ -819,7 +844,7 @@ SOFTWARE. -->
           <handler event="onselected" args="selected">
             var header = this.header;
             header.updateUI();
-            header.setAttribute('text', (selected ? '▼' : '▶') + " more");
+            header.setActualAttribute('text', (selected ? '▼' : '▶') + " more");
             
             this.updateHeight();
           </handler>
@@ -830,7 +855,7 @@ SOFTWARE. -->
               var svs = this.content.getSubviews();
               if (this.selected) {
                 var lastChild = svs[svs.length - 1];
-                animAttrs.to = lastChild ? lastChild.y + lastChild.height + 5 : 0;
+                animAttrs.to = lastChild ? lastChild.y + lastChild.height + this.header.height + 5 : 0;
               } else {
                 animAttrs.to = svs.length > 0 ? this.header.height : 0;
               }
@@ -844,19 +869,19 @@ SOFTWARE. -->
             disabled="${!selectionmanager.selected || this.parent.height === 0}"
           >
             <method name="doActivated">
-              if (!this.disabled) this.parent.setAttribute('selected', !this.parent.selected);
+              if (!this.disabled) this.parent.setActualAttribute('selected', !this.parent.selected);
             </method>
             <method name="drawDisabledState">
-              this.setAttribute('color', '#999999');
+              this.setActualAttribute('color', '#999999');
             </method>
             <method name="drawHoverState">
-              this.setAttribute('color', '#666666');
+              this.setActualAttribute('color', '#666666');
             </method>
             <method name="drawActiveState">
-              this.setAttribute('color', '#333333');
+              this.setActualAttribute('color', '#333333');
             </method>
             <method name="drawReadyState">
-              this.setAttribute('color', '#000000');
+              this.setActualAttribute('color', '#000000');
             </method>
           </text>
           
@@ -888,7 +913,7 @@ SOFTWARE. -->
         </spacedlayout>
         
         <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
-          this.repl.setAttribute('data', selectedview ? selectedview.getLayouts(true) : []);
+          this.repl.setActualAttribute('data', selectedview ? selectedview.getLayouts(true) : []);
         </handler>
         
         <replicator name="repl" classname="subnodeeditor"/>
@@ -900,7 +925,7 @@ SOFTWARE. -->
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
         
         <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
-          this.repl.setAttribute('data', selectedview ? selectedview.getBehaviors() : []);
+          this.repl.setActualAttribute('data', selectedview ? selectedview.getBehaviors() : []);
         </handler>
         
         <replicator name="repl" classname="subnodeeditor"/>
@@ -918,16 +943,10 @@ SOFTWARE. -->
       x="0" y="123" width="100%" height="${config.divider_width}"
     >
       <method name="updatePosition" args="x, y">
-        if (!this.disabled) this.setAttribute('y', Math.max(123, Math.min(290, y)));
+        if (!this.disabled) this.setActualAttribute('y', Math.max(123, Math.min(290, y)));
       </method>
     </view>
   </view>
-
-
-  <!--// Bottom Panel //-->
-  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
-    y="bottom" width="100%" height="${config.bottombar_height}"
-  />
 
 
   <!--// Misc Lines //-->
@@ -947,50 +966,157 @@ SOFTWARE. -->
 
   <!--// Dividers //-->
   <view name="divider_left" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
-    x="${config.leftbar_minwidth + 50}" y="${config.topbar_height}"
+    x="${config.leftbar_minwidth + 20}" y="${config.topbar_height}"
     width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
     <method name="updatePosition" args="x, y">
-      if (!this.disabled) this.setAttribute('x', Math.max(config.leftbar_minwidth, Math.min(config.leftbar_maxwidth, x)));
+      if (!this.disabled) this.setActualAttribute('x', Math.max(config.leftbar_minwidth, Math.min(config.leftbar_maxwidth, x)));
     </method>
   </view>
 
   <view name="divider_right" with="keyboarddraggable" ignoreplacement="true" cursor="col-resize"
-    x="${this.parent.innerwidth - config.rightbar_minwidth}" y="${config.topbar_height}"
+    y="${config.topbar_height}"
     width="${config.divider_width}" height="${this.parent.leftbar.height}"
   >
-    <handler event="oninnerwidth" reference="parent">
+    <handler event="oninnerwidth" reference="parent" args="innerwidth">
       // Respond to browser window resizing
-      this.updatePosition(this.x, this.y);
+      var x = this.inited ? this.x : innerwidth - config.rightbar_minwidth;
+      this.updatePosition(x, this.y);
     </handler>
     <method name="updatePosition" args="x, y">
       if (!this.disabled) this.setAttribute('x', Math.max(config.rightbar_minx, Math.min(this.parent.innerwidth - config.rightbar_minwidth, x)));
     </method>
   </view>
+
+  <view id="messages" with="button" ignoreplacement="true" focusembellishment="false"
+    x="center" width="550" height="12"
+    bgcolor="#bbbbbb" boxshadow="${config.boxshadow_large}"
+    bottomleftcornerradius="12" bottomrightcornerradius="12"
+  >
+    <attribute name="selected" type="boolean" value="false"/>
+    <attribute name="useropened" type="boolean" value="false"/>
+    <handler event="onselected" args="selected">
+      this.stopActiveAnimators('height');
+      this.animate({
+        attribute:'height',
+        to: 12 + (selected ? this.container.content.height : 0),
+        duration:selected || this.useropened ? 400 : 1000
+      });
+      
+      // Animate closed after a delay
+      if (selected && !this.useropened) {
+        var self = this;
+        if (this._timerId) clearTimeout(this._timerId);
+        this._timerId = setTimeout(function() {
+          self.setActualAttribute('selected', false);
+        }, 3000);
+      }
+    </handler>
+    <method name="doActivated">
+      this.setActualAttribute('useropened', true);
+      this.setActualAttribute('selected', !this.selected);
+    </method>
+    <method name="initNode" args="parent, attrs">
+      this.super();
+      this.addMessage('No Messages.', true, true);
+    </method>
+    <method name="drawDisabledState">
+      this.setActualAttribute('bgcolor', '#bbbbbb');
+    </method>
+    <method name="drawHoverState">
+      this.setActualAttribute('bgcolor', '#cccccc');
+    </method>
+    <method name="drawActiveState">
+      this.setActualAttribute('bgcolor', '#aaaaaa');
+    </method>
+    <method name="drawReadyState">
+      this.setActualAttribute('bgcolor', '#bbbbbb');
+    </method>
+    
+    <method name="addMessage" args="msg, noopen, notime">
+      if (msg) {
+        var content = this.container.content;
+        
+        // Remove and existing children that have the exact same message.
+        var svs = content.getSubviews(), i = svs.length, sv;
+        while (i) {
+          sv = svs[--i];
+          if (sv.msg === msg || sv.msg === 'No Messages.') sv.destroy();
+        }
+        
+        // Create a new message.
+        var child = content.createChild({
+          class:'text',
+          text:'${this.time + this.msg}',
+          width:content.innerwidth,
+          fontsize:14, multiline:true, opacity:0,
+          msg:msg,
+          time:notime ? '' : ((new Date()).toLocaleTimeString() + ' - ')
+        });
+        child.animate({attribute:'opacity', to:1, duration:600});
+        
+        // Only retain 5 most recent messages
+        while (svs.length > 5) svs[0].destroy();
+        
+        // Dim out all but the most recent message
+        while (svs.length - 1 > i) svs[i++].setActualAttribute('color', '#aaaaaa');
+        
+        // Open
+        if (!noopen) {
+          if (this.selected) {
+            this.setActualAttribute('selected', false); // Force reanimation
+            this.setActualAttribute('selected', true);
+          } else {
+            this.setActualAttribute('useropened', false);
+            this.setActualAttribute('selected', true);
+          }
+        }
+      }
+    </method>
+    
+    <view name="container" width="550" height="${this.parent.innerheight - 12}"
+      bgcolor="#cccccc" scrollable="true"
+    >
+      <view name="content" x="2" width="546" padding="4" bgcolor="white"
+        bottomleftcornerradius="4" bottomrightcornerradius="4" color="#666666"
+      >
+        <spacedlayout axis="y" spacing="4" updateparent="true" reverse="true" speed="400">
+          <method name="__positionView" args="view, attrName, value">
+            if (view === this.parent) {
+              // Make parent updates happen immediately
+              this.speed = 0;
+              this.super();
+              this.speed = 400;
+            } else {
+              this.super();
+            }
+          </method>
+        </spacedlayout>
+      </view>
+    </view>
+  </view>
 </view>
 
 <!--// FLOATING PANEL VIEWS //-->
-<basefloatingpanel panelid="settings" width="auto" height="auto" padding="4">
+<basefloatingpanel panelid="settings" width="auto" height="auto" padding="8" clickable="true" cornerradius="4">
   <method name="getFirstFocusableDescendant">
     return gridsizex;
   </method>
   
-  <spacedlayout axis="y" spacing="4" updateparent="true"/>
+  <spacedlayout axis="y" spacing="8" updateparent="true"/>
   
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"/>
     <editor_text text="grid x:" y="2"/>
-    <editor_inputtext id="gridsizex" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+    <editor_inputtext id="gridsizex" width="30" allowedchars="0123456789" maxlength="3" text="0"/>
     <editor_text text="y:" y="2"/>
-    <editor_inputtext id="gridsizey" width="26" allowedchars="0123456789" maxlength="3" text="0"/>
+    <editor_inputtext id="gridsizey" width="30" allowedchars="0123456789" maxlength="3" text="0"/>
   </view>
   
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"/>
-    <editor_text text="snap to guides:" y="2"/>
-    <view with="checkbutton" id="snaptoguides" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20"
-      selected="true"
-    />
+    <checkbox id="snaptoguides" selected="true" checkcolor="#999999"/>
+    <editor_text text="snap to guides"/>
   </view>
 </basefloatingpanel>
 

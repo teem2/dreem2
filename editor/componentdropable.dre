@@ -30,7 +30,7 @@ SOFTWARE. -->
   
   <method name="notifyDropFailed">
     var self = this;
-    this.setAttribute('disabled', true);
+    this.setActualAttribute('disabled', true);
     this.stopActiveAnimators('opacity');
     this.animate({attribute:'opacity', to:0, from:this.opacity, duration:500}).next(
       function(success) {self.destroy();}
@@ -41,17 +41,15 @@ SOFTWARE. -->
     this.super();
     
     if (!this.dropfailed) {
-      var id = 'lzeditor_client_' + dr.generateGuid();
-      while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
-      
       var attrs = dr.extend({}, this.instanceattrs);
-      attrs.id = id;
+      attrs.id = editormodel.generateModelId();
       
       if (!this.islayout && !this.isbehavior) {
         var targetPos = this.getAbsolutePosition(editor),
-          newParentPos = droptarget.getAbsolutePosition(editor);
-        if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x + droptarget.sprite.getScrollX();
-        if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y + droptarget.sprite.getScrollY();
+          newParentPos = droptarget.getAbsolutePosition(editor),
+          sprite = droptarget.sprite;
+        if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x - droptarget.leftborder + sprite.getScrollX();
+        if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y - droptarget.topborder + sprite.getScrollY();
       }
       
       // Remember which attrs to objectify for the model
@@ -74,11 +72,20 @@ SOFTWARE. -->
             instance.destroy();
             this.destroy();
             
-            dialogmanager.showAlert('The layout you are trying to add conflicts with an existing layout.');
+            messages.addMessage('The layout you are trying to add conflicts with an existing layout.');
             return;
           }
         }
       } else if (this.isbehavior) {
+        // Make sure behaviors that make children are not put on leaf nodes
+        if (droptarget.isLeaf() && instance.__behaviorMakesViews()) {
+          instance.destroy();
+          this.destroy();
+          
+          messages.addMessage("The behavior \"" + instance.klass.__displayName.substring(9) + "\" can't be added to leaf boxes.");
+          return;
+        }
+        
         // Make sure behavior domains do not conflict
         var behaviors = droptarget.getBehaviors(), behavior;
         i = behaviors.length;
@@ -88,7 +95,7 @@ SOFTWARE. -->
             instance.destroy();
             this.destroy();
             
-            dialogmanager.showAlert('The behavior you are trying to add conflicts with an existing behavior.');
+            messages.addMessage('The behavior you are trying to add conflicts with an existing behavior.');
             return;
           }
         }

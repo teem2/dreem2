@@ -53,34 +53,38 @@ define(function(require, exports, module){
       
       // so how are we going to send this out. ok so how do we do this
       var multi = this[screenName];
-      var index = multi.length++;
-      var rpcid = this.name + '.' + screenName;
-      
-      // send the joins on all previous screens to the new screen
-      for(var otherScreen in this.rpcdefs){
-        var oindex = this[otherScreen].length
-        var orpcid = this.name + '.' + otherScreen;
-        for (var i = 0; i < oindex; i++) {
-          socket.send({
-            index:i,
-            type:'join',
-            rpcid:orpcid
-          });
+      if (multi) {
+        var index = multi.length++;
+        var rpcid = this.name + '.' + screenName;
+
+        // send the joins on all previous screens to the new screen
+        for(var otherScreen in this.rpcdefs){
+          var oindex = this[otherScreen].length
+          var orpcid = this.name + '.' + otherScreen;
+          for (var i = 0; i < oindex; i++) {
+            socket.send({
+              index:i,
+              type:'join',
+              rpcid:orpcid
+            });
+          }
         }
-      }
 
-      // now lets send all attribute sets that have have happened
-      for(var key in attribute_sets){
-        socket.send(attribute_sets[key])
-      }
+        // now lets send all attribute sets that have have happened
+        for(var key in attribute_sets){
+          socket.send(attribute_sets[key])
+        }
 
-      multi._addNewProxy(index, rpcid, socket.rpcpromise);
-      
-      teem.bus.broadcast({
-        index:index,
-        type:'join',
-        rpcid:rpcid
-      });
+        multi._addNewProxy(index, rpcid, socket.rpcpromise);
+
+        teem.bus.broadcast({
+          index:index,
+          type:'join',
+          rpcid:rpcid
+        });
+      } else {
+        console.log('Screen not found:', screenName);
+      }
     };
   });
-})
+});

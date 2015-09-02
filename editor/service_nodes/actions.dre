@@ -108,22 +108,17 @@ SOFTWARE. -->
   </method>
   
   <method name="save">
-    dialogmanager.showConfirm(
-      'Are you sure you want to save your changes?', null, null, function(dialog, success) {
-        if (success) {
-          editormodel.save();
-          undo.reset();
-        } else {
-          // Save cancelled
-        }
-      }
-    );
+    editormodel.save();
+    undo.reset();
+    var msgRef = dialogmanager.showMessage(
+      'Saving changes to screen "' + editormodel.screenname + '" of the composition...'
+    ); // FIXME: message only dialog
   </method>
 
   <method name="stop">
     if (!saveButton.disabled) {
       dialogmanager.showConfirm(
-        'You have unsaved changes. Are you sure you want to exit the editor?', null, null, function(dialog, success) {
+        'You have unsaved changes. Are you sure you want to exit the editor and discard your changes?', null, null, function(dialog, success) {
           if (success) {
             editormodel.stop();
           } else {
@@ -133,6 +128,22 @@ SOFTWARE. -->
       );
     } else {
       editormodel.stop();
+    }
+  </method>
+
+  <method name="changeScreen" args="screenname">
+    if (!saveButton.disabled) {
+      dialogmanager.showConfirm(
+        'You have unsaved changes. Are you sure you want to change screens and discard your changes?', null, null, function(dialog, success) {
+          if (success) {
+            editormodel.changeScreen(screenname);
+          } else {
+            // Exit cancelled
+          }
+        }
+      );
+    } else {
+      editormodel.changeScreen(screenname);
     }
   </method>
   

@@ -19,7 +19,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="texteditor" extends="editor_inputtext">
+<class name="texteditor" extends="editor_inputtext" height="20">
   <setter name="value" args="v">
     // Clean up some common constraint patterns
     switch (this.targetattr) {
@@ -79,22 +79,22 @@ SOFTWARE. -->
   <handler name="_applyChange" event="onblur">
     if (!this.isBeingDestroyed) {
       var oldvalue = this.oldvalue, 
-        newvalue = this.value,
-        target = this.target,
-        targetAttr = this.targetattr;
-      
-      // If attribute is layout locked then revert
-      if (target.isA(dr.View) && target.__layoutDomainInUseForView(targetAttr)) {
-        this.setAttribute('value', oldvalue);
-        // FIXME: Alert dialog saying why we're rolling back the change.
-        return;
-      }
+        newvalue = this.value;
       
       if (oldvalue !== newvalue) {
-        actions.do(new dr.editor.editorattrundoable({
-          target:target, attribute:targetAttr, oldvalue:oldvalue, newvalue:newvalue
-        }));
-        this.oldvalue = newvalue;
+        var target = this.target,
+          targetAttr = this.targetattr;
+        
+        // If attribute is layout locked then revert
+        if (target.isA(dr.View) && target.__layoutDomainInUseForView(targetAttr)) {
+          this.setActualAttribute('value', oldvalue);
+          messages.addMessage('Your change to attribute "' + targetAttr + '" was reverted because a layout is already managing it.');
+        } else {
+          actions.do(new dr.editor.editorattrundoable({
+            target:target, attribute:targetAttr, oldvalue:oldvalue, newvalue:newvalue
+          }));
+          this.oldvalue = newvalue;
+        }
       }
     }
   </handler>
@@ -102,12 +102,9 @@ SOFTWARE. -->
 
 <class name="booleaneditor" height="20">
   <handler event="onvalue" args="value">
-    this.field.setAttribute('value', value);
+    this.field.setActualAttribute('selected', value);
   </handler>
-  <view name="field" with="checkbutton" border="1" selectcolor="#aaa" bordercolor="#eee" width="20" height="20">
-    <handler event="onvalue" args="value">
-      this.setAttribute('selected', value);
-    </handler>
+  <checkbox name="field" checkcolor="#999999" y="2">
     <handler event="onselected" args="selected">
       var parent = this.parent,
         targetattr = parent.targetattr,
@@ -118,14 +115,21 @@ SOFTWARE. -->
         }));
       }
     </handler>
-  </view>
+  </checkbox>
 </class>
 
 <class name="coloreditor" with="floatingpanelanchor, button"
   floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
-  border="1" bordercolor="#eeeeee" width="100" height="20"
+  border="1" bordercolor="#eeeeee" height="20" cornerradius="3"
   floatingpanelid="colorpicker"
 >
+  <method name="showFocusEmbellishment">
+    this.sprite.hideFocusEmbellishment();
+    this.setActualAttribute('boxshadow', config.boxshadow_normal);
+  </method>
+  <method name="hideFocusEmbellishment">
+    this.setActualAttribute('boxshadow', null);
+  </method>
   <method name="destroy">
     this.hideFloatingPanel();
     this.super();
@@ -144,7 +148,7 @@ SOFTWARE. -->
   </method>
 
   <handler event="onvalue" args="value">
-    this.setAttribute('bgcolor', value);
+    this.setActualAttribute('bgcolor', value);
     if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value); // No need to update model since notifyPanelHidden does that
   </handler>
 
@@ -168,7 +172,7 @@ SOFTWARE. -->
     
     var self = this,
       data = this.data,
-      name = data.name,
+      targetAttrName = data.name,
       type = data.type,
       target = data.target,
       readonly = data.readonly,
@@ -176,7 +180,7 @@ SOFTWARE. -->
         name:'field',
         x:config.attribute_label_width + 4, // 4 pixel spacing
         target:target, 
-        targetattr:name,
+        targetattr:targetAttrName,
         disabled:readonly
       };
     
@@ -188,10 +192,12 @@ SOFTWARE. -->
         attrs.class = 'booleaneditor';
         break;
       case 'string':
-        if (name === 'text') {
+        if (targetAttrName === 'text') {
           attrs.multiline = true;
           attrs.wrap = false;
+          attrs.height = 'auto';
         }
+        // Fall through to default
       default:
         attrs.class = 'texteditor';
         if (readonly) {
@@ -205,10 +211,10 @@ SOFTWARE. -->
     
     // Text may look like a constraint so call setActualAttribute rather than
     // setAttribute to work around constraint binding.
-    child.setActualAttribute('value', target.getAttribute(name));
+    child.setActualAttribute('value', target.getAttribute(targetAttrName));
     
     // update when selected item's value changes
-    child.listenTo(target, 'on__cfg_' + name, function(val) {
+    child.listenTo(target, 'on__cfg_' + targetAttrName, function(val) {
       this._isSync = true;
       this.setActualAttribute('value', val);
       self._checkActualIsDifferent();
@@ -216,26 +222,24 @@ SOFTWARE. -->
     });
     
     child.syncTo(this, 'oninnerwidth', function(w) {
-      this.setAttribute('width', w - this.x - self.actual.width - 8); // 8 is 4 pixel spacing before and after
+      this.setActualAttribute('width', w - this.x - self.actual.width - 8); // 8 is 4 pixel spacing before and after
     });
     
-    this.actual.syncTo(target, 'on' + name, function(val) {
-      if (type === 'number') {
-        // Allow at most 2 decimal places to be shown for "actual" numbers.
-        val = +(+(val).toFixed(2));
-      }
+    this.actual.syncTo(target, 'on' + targetAttrName, function(val) {
+      // Allow at most 2 decimal places to be shown for "actual" numbers.
+      if (type === 'number') val = +(+(val || 0).toFixed(2));
       this.setActualAttribute('text', val);
       self._checkActualIsDifferent();
     });
     
-    this.label.setAttribute('text', name);
+    this.label.setActualAttribute('text', targetAttrName);
   </method>
   
   <method name="_checkActualIsDifferent">
     var actual = this.actual;
-    actual.setAttribute('visible', '' + this.field.value !== actual.text);
+    actual.setActualAttribute('visible', '' + this.field.value !== actual.text);
   </method>
 
-  <editor_text name="label" x="${config.attribute_label_width - this.width}" y="2"/>
-  <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="2" width="60"/><!-- 4 pixel spacing -->
+  <editor_text name="label" width="${config.attribute_label_width}" y="3" textalign="right"/>
+  <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="3" width="60"/><!-- 4 pixel spacing -->
 </class>

@@ -19,8 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<class name="behavior-scale" extends="node" with="behavior-behavior">
-  <attribute name="magnitude" type="number" value="2"/>
+<class name="behavior-overborder" extends="node" with="behavior-behavior">
+  <attribute name="thickness" type="number" value="5"/>
+  <attribute name="opacity" type="number" value="1"/>
+  <attribute name="color" type="color" value="#f8f8f8"/>
+  <attribute name="overspeed" type="number" value="400"/>
+  <attribute name="outspeed" type="number" value="400"/>
 
   <handler event="onmouseover" reference="this.parent" method="show"></handler>
   <handler event="onmouseout" reference="this.parent" method="hide"></handler>
@@ -33,25 +37,39 @@ SOFTWARE. -->
     }
   </handler>
 
+
   <method name="show">
-    var parent = this.parent,
-      magnitude = this.magnitude;
-    parent.stopActiveAnimators('xscale');
-    parent.stopActiveAnimators('yscale');
-    parent.animate({attribute:'xscale', to:magnitude, duration:800});
-    parent.animate({attribute:'yscale', to:magnitude, duration:800});
+    var speed = this.overspeed,
+      hlt = this.__hlt;
+    if (!hlt) {
+      hlt = this.__hlt = this.parent.createChild({
+        class:'view', ignoreplacement:true, ignorelayout:true, opacity:0,
+        width:'100%', height:'100%', bordercolor:this.color
+      });
+    }
+    
+    hlt.moveToFront();
+    hlt.stopActiveAnimators('border');
+    hlt.stopActiveAnimators('opacity');
+    hlt.animate({attribute:'border', to:this.thickness, duration:speed/2});
+    hlt.animate({attribute:'opacity', to:this.opacity, duration:speed});
   </method>
 
   <method name="hide">
-    var parent = this.parent;
-    parent.stopActiveAnimators('xscale');
-    parent.stopActiveAnimators('yscale');
-    parent.animate({attribute:'xscale', to:1, duration:400});
-    parent.animate({attribute:'yscale', to:1, duration:400});
+    var speed = this.outspeed,
+      hlt = this.__hlt;
+    hlt.stopActiveAnimators('border');
+    hlt.stopActiveAnimators('opacity');
+    hlt.animate({attribute:'border', to:0, duration:speed});
+    hlt.animate({attribute:'opacity', to:0, duration:speed});
   </method>
-
+  
   <!--// Editor Support //-->
   <method name="__getBehaviorDomains">
-    return {behavior_scale:true}; // Don't allow two of this behavior
+    return {behavior_overborder:true}; // Don't allow two of this behavior
+  </method>
+  
+  <method name="__behaviorMakesViews">
+    return true;
   </method>
 </class>

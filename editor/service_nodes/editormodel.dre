@@ -20,182 +20,226 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <node id="editormodel">
+  <!-- @private
+       Flag that indicates if changes to a replicated view have 
+       occurred or not. -->
+  <attribute name="_replicatorchanges" value="false" type="boolean"/>
+  <attribute name="screenname" type="string" value="default"/>
+
+  <handler name="_showReplicationWarning" event="on_replicatorchanges">
+    if (this.inited && preview.visible !== true) {
+      messages.addMessage('Changes to replicated classes may require a save or preview to show changes accurately.');
+    }
+  </handler>
+
+  <handler event="onselectedview" args="selected" reference="selectionmanager">
+    // selection was lost and we have changes that would require a save
+    if (this._replicatorchanges && selected) this._showReplicationWarning();
+  </handler>
+
   <handler event="oninit">
-    var _this = this;
+    // Extract screen from the query and store it.
+    var screenname = 'default',
+      query = window.location.search;
+    if (query) {
+      query = (query.substring(1)).split('&');
+      var i = query.length, entry;
+      while (i) {
+        entry = query[--i].split('=');
+        if (entry[0] === 'screen') {
+          screenname = entry[1];
+          break;
+        }
+      }
+    }
+    this.setAttribute('screenname', screenname);
+    
+    var self = this;
     // rewrite the file to be editable, which will reload this page automatically
-    dr.global.requestor.fetch(window.location.toString() + '?raw=1').success(
+    dr.global.requestor.fetch(window.location.pathname + '?raw=1').success(
       function(data, status) {
         var parser = new dr.htmlparser();
-        var jsobj = parser.parse(data)
-        _this.setAttribute('model', jsobj);
-        _this.sendEvent('onmodelchange', _this)
-        //console.log('loaded model', jsobj)
+        var jsobj = parser.parse(data);
+        self.setAttribute('model', jsobj);
+        self.sendEvent('onmodelchange', self);
+        
+        // Update screenname chooser
+        var cfg = [], curName = self.screenname,
+          screennames = self.getScreenNames(), i = screennames.length, screenname;
+        while (i) {
+          screenname = screennames[--i];
+          cfg.unshift({attrs:{name:screenname, text:screenname, disabled:screenname === curName}});
+        }
+        var screennameChooser = dr.sprite.retrieveGlobal('screennamechooser');
+        screennameChooser.setAttribute('itemconfig', cfg);
+        screennameChooser.setAttribute('label', 'current screen: ' + curName);
       }
     );
   </handler>
 
-  <attribute name="ready" value="false" type="boolean"></attribute>
-  
-  <method name="updateAttr" args="id, name, value">
-    //console.log('updateAttr', id, name, value);
+  <method name="updateAttr" args="childView, name, value">
     var model = this.model;
     if (model) {
-      var child = this._findChild(id, model);
-      if (child) {
-        if (value == null) {
-          delete child.attr[name];
-        } else {
-          child.attr[name] = value;
-        }
-        if (['name', 'title', 'tag', 'text'].indexOf(name) >= 0) {
+      // Update class if the childView is replicated
+      if (childView.__replicator) {
+        var classModel = this._findClassInModel(childView.__replicator.classname, model);
+        if (classModel) {
+          classModel.attr[name] = value;
+          this.setAttribute('_replicatorchanges', true);
           this.sendEvent('onmodelchange', this);
         }
-      }
-    }
-  </method>
-
-  <attribute name="replicatorchanges" value="false" type="boolean"></attribute>
-  <method name="updateClassAttr" args="classname, name, value">
-    //console.log('updateAttr', id, name, value);
-    var model = this.model;
-    if (model) {
-      var classmodel = this._findChildByTag('class', model);
-      if (classmodel.attr.name === classname) {
-        // console.log('found inline class model', classname, classmodel);
-        classmodel.attr[name] = value;
-        this.replicatorchanges = true;
-        this.sendEvent('onmodelchange', this);
-      }
-    }
-  </method>
-  <handler event="onselectedview" args="selected" reference="selectionmanager">
-    if (this.replicatorchanges && (!saveButton.disabled)) {
-      // selection was lost and we have changes that would require a save
-      dialogmanager.showConfirm(
-        'Changes to replicated classes may require a save to show changes accurately. Save now?', null, null, function(dialog, success) {
-          if (success) {
-            editormodel.save();
-            undo.reset();
-          } else {
-            // Save cancelled
-          }
-        }
-      );
-      this.replicatorchanges = false;
-    }
-  </handler>
-  
-  <method name="deleteNode" args="child, oldParentId">
-    var id = child.id,
-      model = this.model;
-    //console.log('delete', id, oldParentId);
-    if (model) {
-      var childModel = this._findChild(id, model),
-        parentModel = this._findChild(oldParentId, model);
-      if (childModel && parentModel) {
-        var idx = this._findChildIndex(parentModel, childModel);
-        if (idx >= 0) {
-          child.__editorModel = parentModel.child[idx];
-          parentModel.child.splice(idx, 1);
-          this.sendEvent('onmodelchange', this);
-        }
-      }
-    }
-  </method>
-  
-  <method name="createNode" args="child, newParentId">
-    //console.log('create', newParentId, child);
-    var model = this.model;
-    if (model) {
-      var parent = this._findChild(newParentId, model);
-      if (child && parent) {
-        if (!parent.child) parent.child = [];
+      } else {
+        // If we're inside a class that's being replicated prompt to save when done editing
+        if (childView._isInReplicator()) this.setAttribute('_replicatorchanges', true);
         
-        if (child.isA(dr.View)) {
-          var prevSiblingView = child.getPrevSiblingView(),
-            prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
-            idx = prevSibling ? this._findChildIndex(parent, prevSibling) : -1;
-          
-          // Convert child (and tree) to object structure and insert
-          parent.child.splice(idx + 1, 0, child.__editorModel || child.objectify({}));
-          this.sendEvent('onmodelchange', this);
-
-        } else {
-
-          parent.child.push(child.__editorModel || child.objectify({}));
-          this.sendEvent('onmodelchange', this);
-
+        // TODO: this could fail for replicated instances that don't have editor 
+        // IDs, or subnodes of replicated classes with repeated IDs
+        var childModel = this._findChildById(this._getId(childView), model);
+        if (childModel) {
+          if (value == null) {
+            delete childModel.attr[name];
+          } else {
+            childModel.attr[name] = value;
+          }
+          if (['name', 'title', 'tag', 'text'].indexOf(name) >= 0) {
+            this.sendEvent('onmodelchange', this);
+          }
         }
       }
     }
   </method>
-  
-  <method name="moveNode" args="childView, oldParentId, newParentId">
+
+  <method name="deleteNode" args="childView, oldParentView">
     var model = this.model;
     if (model) {
-      var id = childView.id,
-        child = this._findChild(id, model),
-        parent = this._findChild(oldParentId, model);
-      if (child && parent) {
-        var idx = this._findChildIndex(parent, child);
-        if (idx >= 0) {
-          parent.child.splice(idx, 1);
+      var childModel = this._findChildById(childView.id, model);
+      if (oldParentView.__replicator) {
+        // special case for new instance in root of class tag
+        var classModel = this._findClassInModel(oldParentView.__replicator.classname, model);
+        if (childView && classModel) {
+          var idx = this._findChildIndex(classModel, childModel);
+          if (idx >= 0) {
+            childView.__editorModel = classModel.child[idx];
+            classModel.child.splice(idx, 1);
+            this.sendEvent('onmodelchange', this);
+          }
+        }
+      } else {
+        var parentModel = this._findChildById(this._getId(oldParentView), model);
+        if (childModel && parentModel) {
+          var idx = this._findChildIndex(parentModel, childModel);
+          if (idx >= 0) {
+            childView.__editorModel = parentModel.child[idx];
+            parentModel.child.splice(idx, 1);
+            this.sendEvent('onmodelchange', this);
+          }
+        }
+      }
+    }
+  </method>
+
+  <method name="createNode" args="childView">
+    var model = this.model;
+    if (model) {
+      var parentView = childView.parent;
+      if (parentView.__replicator) {
+        // special case for new instance in root of class tag
+        var classModel = this._findClassInModel(parentView.__replicator.classname, model);
+        if (childView && classModel) {
+          if (!classModel.child) classModel.child = [];
+          classModel.child.push(this._objectify(childView));
+          this.setAttribute('_replicatorchanges', true);
+          this.sendEvent('onmodelchange', this);
+        }
+      } else {
+        var parentModel = this._findChildById(this._getId(parentView), model);
+        if (childView && parentModel) {
+          if (!parentModel.child) parentModel.child = [];
           
-          var newParent = this._findChild(newParentId, model);
-          if (newParent) {
+          if (childView.isA(dr.View)) {
             var prevSiblingView = childView.getPrevSiblingView(),
-              prevSibling = prevSiblingView ? this._findChild(prevSiblingView.id, model) : null,
-              newIdx = prevSibling ? this._findChildIndex(newParent, prevSibling) : -1;
+              prevSiblingModel = prevSiblingView ? this._findChildById(prevSiblingView.id, model) : null,
+              idx = prevSiblingModel ? this._findChildIndex(parentModel, prevSiblingModel) : -1;
             
-            if (!newParent.child) newParent.child = [];
+            // Convert childView (and tree) to object structure and insert
+            parentModel.child.splice(idx + 1, 0, this._objectify(childView));
+            this.sendEvent('onmodelchange', this);
+          } else {
+            parentModel.child.push(this._objectify(childView));
+            this.sendEvent('onmodelchange', this);
+          }
+        }
+      }
+    }
+  </method>
+
+  <!-- @private -->
+  <method name="_objectify" args="childView">
+    return childView.__editorModel || childView.objectify({});
+  </method>
+
+  <method name="moveNode" args="childView, oldParentView">
+    var model = this.model;
+    if (model) {
+      var childModel = this._findChildById(childView.id, model),
+        oldParentModel = this._findChildById(this._getId(oldParentView), model);
+      if (childModel && oldParentModel) {
+        var idx = this._findChildIndex(oldParentModel, childModel);
+        if (idx >= 0) {
+          oldParentModel.child.splice(idx, 1);
+          
+          var newParentModel = this._findChildById(this._getId(childView.parent), model);
+          if (newParentModel) {
+            var prevSiblingView = childView.getPrevSiblingView(),
+              prevSiblingModel = prevSiblingView ? this._findChildById(prevSiblingView.id, model) : null,
+              newIdx = prevSiblingModel ? this._findChildIndex(newParentModel, prevSiblingModel) : -1;
             
-            newParent.child.splice(newIdx + 1, 0, child);
+            if (!newParentModel.child) newParentModel.child = [];
+            
+            newParentModel.child.splice(newIdx + 1, 0, childModel);
           }
           this.sendEvent('onmodelchange', this);
-
         }
       }
     }
   </method>
-  
-  <method name="moveInFrontOf" args="id, siblingId, parentId">
-    //console.log('moveInFrontOf', id, siblingId, parentId);
+
+  <method name="moveInFrontOf" args="childView, siblingView">
     var model = this.model;
     if (model) {
-      var child = this._findChild(id, model),
-        sibling = this._findChild(siblingId, model),
-        parent = this._findChild(parentId, model);
-      if (child && sibling && parent) {
+      var childModel = this._findChildById(childView.id, model),
+        siblingModel = this._findChildById(siblingView.id, model),
+        parentModel = this._findChildById(this._getId(childView.parent), model);
+      if (childModel && siblingModel && parentModel) {
         // Remove child
-        var idx = this._findChildIndex(parent, child);
-        if (idx >= 0) parent.child.splice(idx, 1);
+        var idx = this._findChildIndex(parentModel, childModel);
+        if (idx >= 0) parentModel.child.splice(idx, 1);
         
         // Insert child
-        idx = this._findChildIndex(parent, sibling);
-        if (idx >= 0) parent.child.splice(idx + 1, 0, child);
+        idx = this._findChildIndex(parentModel, siblingModel);
+        if (idx >= 0) parentModel.child.splice(idx + 1, 0, childModel);
         this.sendEvent('onmodelchange', this);
       }
     }
   </method>
-  
-  <method name="moveToBack" args="id, parentId">
-    //console.log('moveToBack', id, parentId);
+
+  <method name="moveToBack" args="childView">
     var model = this.model;
     if (model) {
-      var child = this._findChild(id, model),
-        parent = this._findChild(parentId, model);
-      if (child && parent) {
-        var idx = this._findChildIndex(parent, child);
+      var childModel = this._findChildById(childView.id, model),
+        parentModel = this._findChildById(this._getId(childView.parent), model);
+      if (childModel && parentModel) {
+        var idx = this._findChildIndex(parentModel, childModel);
         if (idx > 0) {
-          parent.child.splice(idx, 1);
+          parentModel.child.splice(idx, 1);
           
           // HACK: if the parent is the root then the first child must continue
           // to be the editor include tag.
-          var searchChild;
-          for (var i = 0, len = parent.child.length; len > i; i++) {
-            searchChild = parent.child[i];
-            if (searchChild.tag !== 'include') {
-              parent.child.splice(i, 0, child);
+          var searchChildModel;
+          for (var i = 0, len = parentModel.child.length; len > i; i++) {
+            searchChildModel = parentModel.child[i];
+            if (searchChildModel.tag !== 'include') {
+              parentModel.child.splice(i, 0, childModel);
               break;
             }
           }
@@ -204,15 +248,130 @@ SOFTWARE. -->
       }
     }
   </method>
-  
-  <method name="save">
-    dr.global.requestor.send(window.location.toString() + '?edit=1', JSON.stringify(this.model));
+
+  <method name="getModelNode" args="childView">
+    return this._findChildById(this._getId(childView), this.model);
   </method>
 
+  <method name="generateModelId">
+    var id = 'lzeditor_client_' + dr.generateGuid();
+    while (dr.sprite.retrieveGlobal(id)) id = 'lzeditor_client_' + dr.generateGuid();
+    return id;
+  </method>
+
+  <!-- @private -->
+  <method name="_getId" args="childView">
+    return childView.id || childView.getRoot().id;
+  </method>
+
+  <!-- @private -->
+  <method name="_findClassInModel" args="classname, model">
+    var children = model.child, i = children.length, childModel;
+    while (i) {
+      childModel = children[--i]
+      if (childModel.tag === 'class' && childModel.attr.name === classname) {
+        return childModel;
+      } else if (childModel.child) {
+        var newChildModel = this._findClassInModel(classname, childModel);
+        if (newChildModel) return newChildModel;
+      }
+    }
+  </method>
+
+  <!-- @private -->
+  <method name="_findChildIndex" args="parentModel, childModel">
+    var children = parentModel.child;
+    if (children) {
+      var i = children.length,
+        searchId = childModel.attr.id,
+        searchChildModel;
+      while (i) {
+        searchChildModel = children[--i];
+        if (searchChildModel.attr && searchChildModel.attr.id === searchId) return i;
+      }
+    } else {
+      return -1;
+    }
+  </method>
+
+  <!-- @private -->
+  <method name="_findChildById" args="id, model">
+    if (id) {
+      var children = model.child, i = children.length, childModel;
+      while (i) {
+        childModel = children[--i]
+        if (childModel.attr && childModel.attr.id === id) {
+          return childModel;
+        } else if (childModel.child) {
+          var newChildModel = this._findChildById(id, childModel);
+          if (newChildModel) return newChildModel;
+        }
+      }
+    }
+  </method>
+
+  <!-- @private -->
+  <method name="_findChildByTag" args="tagname, model">
+    var children = model.child, i = children.length, childModel;
+    while (i) {
+      childModel = children[--i]
+      if (childModel.tag === tagname) {
+        return childModel;
+      } else if (childModel.child) {
+        var newChildModel = this._findChildByTag(tagname, childModel);
+        if (newChildModel) return newChildModel;
+      }
+    }
+  </method>
+
+  <!-- Save the model changes to the server and reload for editing again. -->
+  <method name="save">
+    var loc = window.location,
+      baseUrl = loc.pathname + loc.search;
+      url = baseUrl;
+    url += (url.indexOf('?') === -1) ? '?' : '&';
+    url += 'edit=1';
+    
+    dr.global.requestor.send(url, JSON.stringify(this.model)).success(function(data, status) {
+      window.location = baseUrl;
+    });
+  </method>
+
+  <!-- End the editing process. -->
   <method name="stop">
-    dr.global.requestor.send(window.location.toString() + '?edit=1&stripeditor=1', JSON.stringify(this.model));
+    var loc = window.location,
+      baseUrl = loc.pathname + loc.search;
+      url = baseUrl;
+    url += (url.indexOf('?') === -1) ? '?' : '&';
+    url += 'edit=1&stripeditor=1';
+    
+    dr.global.requestor.fetch(url).success(function(data, status) {
+      if (window.parent !== window) { // Only do this when embedded in the flowgraph
+        console.log("POSTING CLOSE WINDOW")
+        window.parent.postMessage({type:'closewindow'}, '*');
+      }
+      window.location = baseUrl;
+    });
+  </method>
+
+  <!-- Start editing another screen. -->
+  <method name="changeScreen" args="screenname">
+    window.location = window.location.pathname + '?edit=1&screen=' + screenname;
   </method>
   
+  <method name="getScreenNames">
+    var retval = [], screensModel = this._findChildByTag('screens', this.model);
+    if (screensModel) {
+      var children = screensModel.child, childModel, i = children.length;
+      while (i) {
+        childModel = children[--i]
+        if (childModel.tag === 'screen') retval.push(childModel.attr.name);
+      }
+    }
+    return retval;
+  </method>
+
+  <!-- Used by preview.dre to get the model to instantiate. -->
   <method name="getPkg">
     var compositionNode = this._findChildByTag('composition', this.model);
     
@@ -260,59 +419,8 @@ SOFTWARE. -->
     
     return {
       composition:compositionNode,
-      classmap:dr.classmap
+      classmap:dr.classmap,
+      teem:dr.teem
     };
-  </method>
-  
-  <method name="_findChildIndex" args="parent, child">
-    var children = parent.child;
-    if (children) {
-      var i = children.length, child,
-        searchId = child.attr.id;
-      while (i) {
-        child = children[--i];
-        if (child.attr && child.attr.id === searchId) return i;
-      }
-    } else {
-      return -1;
-    }
-  </method>
-  
-  <method name="_findChild" args="id, jsobj">
-    if (!id) return null;
-    
-    var children = jsobj.child, child;
-    for (var i = 0; children.length > i; i++) {
-      child = children[i]
-      if (child.attr && child.attr.id === id) {
-        return child;
-      } else if (child.child) {
-        var newchild = this._findChild(id, child);
-        if (newchild) return newchild;
-      }
-    }
-  </method>
-  
-  <method name="_findChildByTag" args="tagname, jsobj">
-    var children = jsobj.child, child;
-    for (var i = 0; children.length > i; i++) {
-      child = children[i]
-      if (child.tag === tagname) {
-        return child;
-      } else if (child.child) {
-        var newchild = this._findChildByTag(tagname, child);
-        if (newchild) return newchild;
-      }
-    }
-  </method>
-  
-  <method name="getModelNode" args="child">
-    return this._findChild(child.id || child.getRoot().id, this.model);
-  </method>
-  
-  <method name="getAttrValue" args="child, attrName">
-    var modelNode = this.getModelNode(child);
-    if (modelNode) return modelNode.attr[attrName];
-    return undefined;
   </method>
 </node>

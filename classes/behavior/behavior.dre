@@ -40,4 +40,11 @@ SOFTWARE. -->
     for (var domain in selfDomains) if (otherDomains[domain]) return true;
     return false;
   </method>
+  
+  <!--/** 
+      @private
+      Determines if this behavior makes views on its parent. */-->
+  <method name="__behaviorMakesViews">
+    return false;
+  </method>
 </mixin>
