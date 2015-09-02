@@ -89,6 +89,7 @@
     function startMain() {
         Unload();
         define.ROOTSERVER = server;
+        define.COMPOSITIONROOT = "./compositions/"+ define.filePath(composition) +"/";
         define.ROOTURL = "compositions/"+ composition + ".dre";
         define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
         define.BUILD = "$ROOT/dalicache";
