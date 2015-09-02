@@ -1,5 +1,7 @@
     var require = require('./define.js');
     var NodeWebSocket = require('./core/nodewebsocket');
+
+    global.WebSocket = NodeWebSocket;
     // Create a colorization function (ANSI output) use ~rb~ to set color in string
     // and ~~ to end colorization.
     console.color = (function colorize() {

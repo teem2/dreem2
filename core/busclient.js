@@ -33,14 +33,13 @@ define(function(require, exports, module) {
       
       if (!this.queue) this.queue = [];
 
-      if (typeof(WebSocket) === "undefined"){
-        console.log("no websocket available, starting NodeWebSocket using " + this.targetserver + " and " + this.url);
-         var NodeWebSocket = require('./nodewebsocket');
-         var socketurl = this.targetserver +'/'+ this.url;
-        this.socket = new NodeWebSocket(socketurl);
-      } else {
-        this.socket = new WebSocket('ws://' + window.location.host + this.url);
-      }
+        if (typeof(window) !== "undefined" ){
+          this.socket = new WebSocket('ws://' + window.location.host + this.url);
+        }else{
+             var socketurl = this.targetserver +'/'+ this.url;
+          this.socket = new WebSocket(socketurl);
+        }
+
 
       this.socket.onConnect = 
       this.socket.onopen = function() {
