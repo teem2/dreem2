@@ -294,6 +294,7 @@ define(function(require, exports, module){
 				this.state = this.mask
 			}
 			else{
+				this.mask_correct = 8
 				this.expected = this.paylen
 				this.state = this.data
 			}
@@ -309,6 +310,7 @@ define(function(require, exports, module){
 				this.state = this.mask
 			}
 			else{
+				this.mask_correct = 4
 				this.expected = this.paylen
 				this.state = this.data
 			}
@@ -321,6 +323,7 @@ define(function(require, exports, module){
 			// set masked flag
 			if(!(this.header[this.written  - 1] & 128)){
 				this.masked = false
+				this.mask_correct = 2
 			}
 			else{
 				this.masked = true
