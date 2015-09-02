@@ -260,7 +260,7 @@ define(function(require, exports, module){
 			
 			if(this.expected) return false
 //			console.log("masked:", this.masked, "output:", this.output.toString('utf8'));
-			this.onMessage(this.output.toString('utf8', this.masked?0:2, this.written))
+			this.onMessage(this.output.toString('utf8', this.masked?0:this.mask_correct, this.written))
 			this.expected = 1
 			this.written = 0
 			this.state = this.opcode

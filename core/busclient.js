@@ -37,7 +37,6 @@ define(function(require, exports, module) {
         console.log("no websocket available, starting NodeWebSocket using " + this.targetserver + " and " + this.url);
          var NodeWebSocket = require('./nodewebsocket');
          var socketurl = this.targetserver +'/'+ this.url;
-         console.log("server address for socket:", socketurl)
         this.socket = new NodeWebSocket(socketurl);
       } else {
         this.socket = new WebSocket('ws://' + window.location.host + this.url);
@@ -46,7 +45,6 @@ define(function(require, exports, module) {
       this.socket.onConnect = 
       this.socket.onopen = function() {
         this.backoff = 1;
-        console.log("WebSocket: opening!");
         for (var i = 0; i < this.queue.length; i++) {
           this.socket.send(this.queue[i]);
         }
@@ -55,12 +53,12 @@ define(function(require, exports, module) {
       this.socket.onError = 
       this.socket.onerror = function() {
         //this.__reconnect()
-        console.log("WebSocket: error!");
+        
       }.bind(this);
       
       this.socket.onClose = 
       this.socket.onclose = function() {
-        console.log("WebSocket: close!");
+        
         this.backoff = Math.min(1000, 2 * this.backoff);
         setTimeout(function() {this.__reconnect();}.bind(this), this.backoff);
       }.bind(this);
@@ -69,7 +67,6 @@ define(function(require, exports, module) {
       this.socket.onmessage = function(event) {
           if (typeof(event)==="string"){
             var msgdata = event;
-            console.log("WebSocket: message", msgdata);          
             this.onMessage(JSON.parse(msgdata));
           }else{
             this.onMessage(JSON.parse(event.data));
