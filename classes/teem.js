@@ -108,6 +108,8 @@ define(function(require, exports, module) {
       
       bus.onConnect = function(socket) {
         console.log("sending sessioncheck")
+        
+
         socket.send({type:'sessionCheck', session:teem.session});
       }
       
@@ -225,7 +227,6 @@ define(function(require, exports, module) {
     // Called from define.js
     define.onMain = function(mainModuleExports) {
       teem.bus.onMessage = function(msg) {
-        console.log(msg)
         switch (msg.type) {
           case 'sessionCheck':
             if (teem.session != msg.session) {

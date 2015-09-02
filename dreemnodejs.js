@@ -89,7 +89,7 @@
     function startMain() {
         Unload();
         define.ROOTSERVER = server;
-        define.COMPOSITIONROOT = "./compositions/"+ define.filePath(composition) +"/";
+        define.COMPOSITIONROOT = "./compositions/";
         define.ROOTURL = "compositions/"+ composition + ".dre";
         define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
         define.BUILD = "$ROOT/dalicache";
@@ -224,10 +224,10 @@
     var RootActor;
     if (args["-dali"]) {
         var window = {
-            x: 100,
+            x: 0,
             y: 0,
-            width: 600,
-            height: 508,
+            width: 1500,
+            height: 1008,
             transparent: false,
             name: 'Dreem Dali Runtime: ' + composition
         };
