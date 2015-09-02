@@ -257,7 +257,7 @@ define(function(require, exports, module){
 			}
 
 			if(this.expected) return false
-			this.onMessage(this.output.toString('utf8', this.masked?0:2, this.written))
+			this.onMessage(this.output.toString('utf8', this.masked?0:this.mask_correct, this.written))
 			this.expected = 1
 			this.written = 0
 			this.state = this.opcode
@@ -291,6 +291,7 @@ define(function(require, exports, module){
 				this.state = this.mask
 			}
 			else{
+				this.mask_correct = 8
 				this.expected = this.paylen
 				this.state = this.data
 			}
@@ -306,6 +307,7 @@ define(function(require, exports, module){
 				this.state = this.mask
 			}
 			else{
+				this.mask_correct = 4
 				this.expected = this.paylen
 				this.state = this.data
 			}
@@ -318,6 +320,7 @@ define(function(require, exports, module){
 			// set masked flag
 			if(!(this.header[this.written  - 1] & 128)){
 				this.masked = false
+				this.mask_correct = 2
 			}
 			else{
 				this.masked = true
