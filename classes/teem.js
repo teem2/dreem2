@@ -107,6 +107,7 @@ define(function(require, exports, module) {
       bus.broadcast({type:'sessionCheck', session:teem.session});
       
       bus.onConnect = function(socket) {
+        console.log("sending sessioncheck")
         socket.send({type:'sessionCheck', session:teem.session});
       }
       
@@ -212,14 +213,80 @@ define(function(require, exports, module) {
       }
     }
   } else if (define.env == 'v8') {
-    // dali environment
-//	var BusClient = require('$CORE/busclient');
-    
-//	teem.bus = new BusClient();
-  //  var rpcpromise = new RpcPromise(teem.bus);
 
+    console.log("Setting up V8 teem client...")
+
+    // dali environment
+    var BusClient = require('$CORE/busclient');
+    
+    teem.bus = new BusClient(define.ROOTURL, define.ROOTSERVER);
+    var rpcpromise = new RpcPromise(teem.bus);
+    
+    // Called from define.js
+    define.onMain = function(mainModuleExports) {
+      teem.bus.onMessage = function(msg) {
+        console.log(msg)
+        switch (msg.type) {
+          case 'sessionCheck':
+            if (teem.session != msg.session) {
+              teem.session = msg.session;
+              teem.bus.send({type:'connectBrowser'});
+            }
+            break;
+            
+          case 'join':
+            var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
+            if (obj) obj._addNewProxy(msg.index, msg.rpcid, rpcpromise);
+            break;
+            
+          case 'attribute':
+            var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
+            if (obj){
+              var old = obj._onAttributeSet
+              obj._onAttributeSet = undefined
+              obj[msg.attribute] = msg.value;
+              obj._onAttributeSet = old
+            }
+            break;
+            
+          case 'method':
+            // lets call our method on root.
+            if (!teem.root[msg.method]) {
+              return console.log('Rpc call received on nonexisting method ' + msg.method);
+            }
+            RpcProxy.handleCall(teem.root, msg, teem.bus);
+            break;
+            
+          case 'return':
+            rpcpromise.resolveResult(msg);
+            break;
+            
+          case 'connectBrowserOK':
+            // lets set up our teem.bla base RPC layer (nonmultiples)
+            for (var key in msg.rpcdef) {
+              var def = msg.rpcdef[key];
+              
+              if (key.indexOf('.') !== -1) { // its a sub object property
+                var parts = key.split('.');
+                teem[parts[0]][parts[1]] = RpcMulti.createFromDef(def, key, rpcpromise);
+              } else{
+                teem[key] = RpcProxy.createFromDef(def, key, rpcpromise);
+              }
+            }
+
+            teem.root = mainModuleExports();
+            break
+          case 'joinComplete':            
+            teem.__startup(mainModuleExports);
+            break;
+            
+          default:
+            console.log('Unexpected message type: ', msg);
+        }
+      }
+    }
 	
-    define.onMain = teem.__startup;
+  //  define.onMain = teem.__startup;
   }
 
 

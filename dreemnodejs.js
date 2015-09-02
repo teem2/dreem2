@@ -45,13 +45,16 @@
     var composition = "example_spirallayout";
     var screen = "default";
     if (args["-server"]) server = args["-server"];
+    
     if (args["-composition"]) {
         composition = args["-composition"];
     } else {
         console.log("not starting without composition! use \"-composition composition\" to load composition.dre from the server!");
         process.exit();
     }
+    
     if (args["-screen"]) screen = args["-screen"];
+
     if (args["-dali"]) {
         define.SPRITE = "$ROOT/lib/dr/sprite_daliruntime";
         console.color("*** ~bw~D~bb~r~bg~e~by~e~br~m ~bw~Dali Runtime~~ ***");
@@ -59,6 +62,7 @@
         define.SPRITE = "$ROOT/lib/dr/sprite_headless";
         console.color("*** ~bw~D~bb~r~bg~e~by~e~br~m ~bw~Headless Runtime~~ ***");
     }
+    
     console.color("** using server: ~by~" + server + "~~");
     console.color("** using composition: ~by~" + composition + "~~");
     console.color("** using screen: ~by~" + screen + "~~");
@@ -84,6 +88,8 @@
 
     function startMain() {
         Unload();
+        define.ROOTSERVER = server;
+        define.ROOTURL = "compositions/"+ composition + ".dre";
         define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
         define.BUILD = "$ROOT/dalicache";
         define.MAIN = "$BUILD/compositions/" + composition + ".dre.screens." + screen + ".js";

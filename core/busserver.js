@@ -33,7 +33,8 @@ define(function(require, exports, module) {
         this.onMessage(JSON.parse(message), sock);
       }.bind(this);
       
-      this.onConnect(sock);
+      console.log("delaying connect")
+      setTimeout(function(){console.log("delayed connect firing!");console.log(this.onConnect.toString()); this.onConnect(sock)}.bind(this), 1000);
     };
     
     /**
@@ -50,7 +51,7 @@ define(function(require, exports, module) {
      * @param {Object} message
      * @param {WebSocket} socket
      */
-    this.onConnect = function( socket) {};
+    this.onConnect = function( socket) {console.log("empty sock? ")};
     
     /** 
       * @method broadcast

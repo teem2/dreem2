@@ -9,8 +9,9 @@
 define(function(require, exports, module) {
   module.exports = BusClient;
 
-  function BusClient(url) {
+  function BusClient(url, server) {
     this.url = url || '';
+    this.targetserver = server || '';
     this.backoff = 1;
     this.__reconnect();
   }
@@ -31,28 +32,49 @@ define(function(require, exports, module) {
       }
       
       if (!this.queue) this.queue = [];
-      
-      this.socket = new WebSocket('ws://' + window.location.host + this.url);
-      
+
+      if (typeof(WebSocket) === "undefined"){
+        console.log("no websocket available, starting NodeWebSocket using " + this.targetserver + " and " + this.url);
+         var NodeWebSocket = require('./nodewebsocket');
+         var socketurl = this.targetserver +'/'+ this.url;
+         console.log("server address for socket:", socketurl)
+        this.socket = new NodeWebSocket(socketurl);
+      } else {
+        this.socket = new WebSocket('ws://' + window.location.host + this.url);
+      }
+
+      this.socket.onConnect = 
       this.socket.onopen = function() {
         this.backoff = 1;
+        console.log("WebSocket: opening!");
         for (var i = 0; i < this.queue.length; i++) {
           this.socket.send(this.queue[i]);
         }
         this.queue = undefined;
       }.bind(this);
-      
+      this.socket.onError = 
       this.socket.onerror = function() {
         //this.__reconnect()
+        console.log("WebSocket: error!");
       }.bind(this);
       
+      this.socket.onClose = 
       this.socket.onclose = function() {
+        console.log("WebSocket: close!");
         this.backoff = Math.min(1000, 2 * this.backoff);
         setTimeout(function() {this.__reconnect();}.bind(this), this.backoff);
       }.bind(this);
       
+      this.socket.onMessage = 
       this.socket.onmessage = function(event) {
-        this.onMessage(JSON.parse(event.data));
+          if (typeof(event)==="string"){
+            var msgdata = event;
+            console.log("WebSocket: message", msgdata);          
+            this.onMessage(JSON.parse(msgdata));
+          }else{
+            this.onMessage(JSON.parse(event.data));
+          }
+
       }.bind(this);
     };
     

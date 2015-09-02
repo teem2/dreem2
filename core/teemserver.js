@@ -160,11 +160,13 @@ define(function(require, exports, module) {
       */
     this.__upgrade = function(req, sock, head) {
       // lets connect the sockets to the app
+
+      console.log(req.url);
       var sock = new NodeWebSocket(req, sock, head);
       sock.url = req.url;
       var composition = this.__getComposition(req.url);
       if (composition) {
-		composition.busserver.addWebSocket(sock);
+		    composition.busserver.addWebSocket(sock);
       } else {
         this.busserver.addWebSocket(sock);
       }

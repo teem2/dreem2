@@ -22,6 +22,7 @@ define(function(require, exports, module){
 	function NodeWebSocket(req, socket){
 		if(typeof req == 'string'){
 			this.initClient(req)
+			console.log("starting websocket client!");
 		}
 		else{
 			this.initServer(req, socket)
@@ -58,8 +59,9 @@ define(function(require, exports, module){
 					'sec-websocket-key': key,
 				}
 			}
+			
 			var req = http.request(opt)
-
+			
 			req.on('error', function(err){
 				console.log("WebSocket client " + err)
 				if(this.onError) this.onError(err)
@@ -75,7 +77,7 @@ define(function(require, exports, module){
 				}
 				this.socket = socket
 				this.initState()
-				if(this.onConnect) this.onConnect()
+				if(this.onConnect) setTimeout(this.onConnect.bind(this), 50)
 			}.bind(this))
 
 			req.end()
@@ -257,6 +259,7 @@ define(function(require, exports, module){
 			}
 			
 			if(this.expected) return false
+//			console.log("masked:", this.masked, "output:", this.output.toString('utf8'));
 			this.onMessage(this.output.toString('utf8', this.masked?0:2, this.written))
 			this.expected = 1
 			this.written = 0

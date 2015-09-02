@@ -310,7 +310,6 @@
             if(location.search && location.search.indexOf('noreload') !== -1){
               return
             }
-
             location.href = location.href; // reload on filechange
           } else if (msg.type === 'close') {
             window.close(); // close the window
@@ -329,14 +328,13 @@
 	
             
     (function() {
-		
-		
-		
-	define.startMain = function() {
+
+      define.startMain = function() {
         // lets find our main and execute the factory
         var main_mod = define.expandVariables(define.MAIN).replace(/\\/g,'/');
         
         var factory = define.factory[main_mod];
+
         if (!factory) throw new Error("Cannot find main: " + main_mod, define.MAIN);
         
         // lets boot up
@@ -344,12 +342,10 @@
         define.module[main_mod] = module;
         var ret = factory(define.localRequire(define.filePath(main_mod)), module.exports, module);
         if (ret !== undefined) module.exports = ret;
-		
-    		if (define.onMain) define.onMain(module.exports);
+        console.log("onmain from define.js");
+        if (define.onMain) define.onMain(module.exports);
       }
-
-	  
-	  
+      
       module.exports = global.define = define;
       
       define.ROOT = define.filePath(module.filename.replace(/\\/g,'/'));
