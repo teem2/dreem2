@@ -225,7 +225,7 @@ SOFTWARE. -->
     var existingParent = this.parent;
     var retval = this.super(parent);
     
-    if (editor.editmode && !this.isBeingDestroyed && ! this.replicator) {
+    if (editor.editmode && !this.isBeingDestroyed && !this.__replicator) {
       var hasOld = existingParent && this.inited,
         hasNew = this.parent && this.parent.inited;
       if (hasOld && hasNew) {
@@ -241,7 +241,7 @@ SOFTWARE. -->
 
   <method name="_isInReplicator">
     return this.searchAncestors(function(node) {
-      return node.replicator;
+      return node.__replicator;
     });
   </method>
 
