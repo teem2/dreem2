@@ -44,6 +44,7 @@
     var server = "http://localhost:8080";
     var composition = "example_spirallayout";
     var screen = "default";
+    var reload = false;
     if (args["-server"]) server = args["-server"];
     
     if (args["-composition"]) {
@@ -54,6 +55,7 @@
     }
     
     if (args["-screen"]) screen = args["-screen"];
+    if (args["-reload"]) reload = process.argv.join(' ');
 
     if (args["-dali"]) {
         define.SPRITE = "$ROOT/lib/dr/sprite_daliruntime";
@@ -102,6 +104,16 @@
     function Unload() {
         if (loaded == false) return;
         console.color("~~** ~rb~Unloading!~~");
+    }
+
+    function Reload() {
+        // Reload the application (by replacing the running program with another
+	// instance of ourself) if reload is set.
+	if (reload) {
+            console.log('Reloading application: ' + reload);
+            var kexec = require('kexec');
+	    kexec(reload);
+	}
     }
 
     function CreateNeededFoldersForFilePath(path) {
@@ -206,7 +218,12 @@
             } catch (e) {}
             if (msg.type == "sessionCheck") {
                 console.color('~~** ~by~Files updated on server: downloading~~.');
-                LoadAll();
+		if (loaded) {
+		    Reload();
+		}
+		else {
+                    LoadAll();
+		}
             }
         }.bind(this);
         sock.onConnect = function() {
@@ -226,8 +243,8 @@
         var window = {
             x: 0,
             y: 0,
-            width: 1500,
-            height: 1008,
+            width: 1920,
+            height: 1080,
             transparent: false,
             name: 'Dreem Dali Runtime: ' + composition
         };
