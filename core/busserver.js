@@ -33,8 +33,8 @@ define(function(require, exports, module) {
         this.onMessage(JSON.parse(message), sock);
       }.bind(this);
       
-      console.log("delaying connect")
-      setTimeout(function(){console.log("delayed connect firing!");console.log(this.onConnect.toString()); this.onConnect(sock)}.bind(this), 1000);
+      // delaying connect a bit.
+      setTimeout(function(){this.onConnect(sock)}.bind(this), 10);
     };
     
     /**

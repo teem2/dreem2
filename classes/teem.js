@@ -212,10 +212,7 @@ define(function(require, exports, module) {
       }
     }
   } else if (define.env == 'v8') {
-<<<<<<< HEAD
-=======
     console.log("Setting up V8 teem client...")
->>>>>>> 10a83a97e5c730cf262825bc359416bfdaca6ab0
 
     // dali environment
     var BusClient = require('$CORE/busclient');
