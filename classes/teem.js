@@ -106,10 +106,7 @@ define(function(require, exports, module) {
       
       bus.broadcast({type:'sessionCheck', session:teem.session});
       
-      bus.onConnect = function(socket) {
-        console.log("sending sessioncheck")
-        
-
+      bus.onConnect = function(socket) {        
         socket.send({type:'sessionCheck', session:teem.session});
       }
       
@@ -215,8 +212,6 @@ define(function(require, exports, module) {
       }
     }
   } else if (define.env == 'v8') {
-
-    console.log("Setting up V8 teem client...")
 
     // dali environment
     var BusClient = require('$CORE/busclient');
