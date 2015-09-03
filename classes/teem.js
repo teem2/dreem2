@@ -37,7 +37,7 @@ define(function(require, exports, module) {
     }
   };
 
-    teem.__startup = function(mainModuleExports) {
+  teem.__startup = function(mainModuleExports) {
     var dreemMaker = require('$LIB/dr/dreemMaker.js'),
       compiler = new dreemMaker.Compiler();
     compiler.execute(mainModuleExports.dre, mainModuleExports.classmap, teem);
@@ -109,7 +109,6 @@ define(function(require, exports, module) {
       bus.onConnect = function(socket) {
         console.log("sending sessioncheck")
         
-
         socket.send({type:'sessionCheck', session:teem.session});
       }
       
@@ -215,7 +214,6 @@ define(function(require, exports, module) {
       }
     }
   } else if (define.env == 'v8') {
-
     console.log("Setting up V8 teem client...")
 
     // dali environment
@@ -277,7 +275,7 @@ define(function(require, exports, module) {
 
             teem.root = mainModuleExports();
             break
-          case 'joinComplete':            
+          case 'joinComplete':
             teem.__startup(mainModuleExports);
             break;
             
@@ -286,10 +284,8 @@ define(function(require, exports, module) {
         }
       }
     }
-	
   //  define.onMain = teem.__startup;
   }
-
 
   return teem;
 })

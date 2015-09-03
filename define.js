@@ -325,10 +325,8 @@
     })();
   } else {
     // nodeJS implementation
-	
-            
-    (function() {
 
+    (function() {
       define.startMain = function() {
         // lets find our main and execute the factory
         var main_mod = define.expandVariables(define.MAIN).replace(/\\/g,'/');
@@ -384,7 +382,7 @@
           
           if (define.onRequire && (full_name.charAt(0) == '/' || full_name.indexOf(':') != -1)) {
             define.onRequire(full_name);
-          }	
+          }
           
           return require(full_name);
         }
@@ -407,7 +405,6 @@
       define.define(function(require) {
         module.exports = require;
       });
-
     })()
   }
 })(typeof define !== 'undefined' && define);
