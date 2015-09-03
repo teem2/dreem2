@@ -220,11 +220,10 @@
             } catch (e) {}
             if (msg.type == "sessionCheck") {
                 console.color('~~** ~by~Files updated on server: downloading~~.');
-		if (loaded) {
+		      if (loaded) {
 		    Reload();
-		}
-		else {
-                    LoadAll();
+		} else {
+            LoadAll();
 		}
             }
         }.bind(this);
