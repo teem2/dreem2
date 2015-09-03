@@ -685,11 +685,19 @@ SOFTWARE. -->
       height="${screensizeh.value}"
       boxshadow="[0,0,16,4,'#cccccc']"
     >
+      <!-- Background that shows through when the root bgcolor is transparent. -->
+      <bitmap
+        width="${screensizew.value}"
+        height="${screensizeh.value}"
+        repeat="repeat" stretches="none" src="/editor/img/transparent_pattern.png"
+      />
+      
       <!-- Use an additional inner view so that scrollbars show up inside the
            "page" rather than over the boxshadow. -->
-      <view name="inner" with="editable" width="100%" height="100%" scrollable="true"
-        maskfocus="${editor.editmode}" focuscage="true"
-        cursor="pointer"
+      <view name="inner" with="editable"
+        width="${screensizew.value}"
+        height="${screensizeh.value}"
+        scrollable="true" maskfocus="${editor.editmode}" focuscage="true" cursor="pointer"
       >
         <method name="initNode" args="parent, attrs">
           this.super();

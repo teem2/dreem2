@@ -46,31 +46,35 @@ SOFTWARE. -->
       * @event onerror 
       * Fired when there is an error loading the bitmap
       */-->
-  <attribute name="src" type="string" value=""></attribute>
+  <attribute name="src" type="string" value=""/>
 
   <!--/**
       * @attribute {String} [stretches=false]
       * How the image is scaled to the size of the view.
-      * Supported values are 'true', 'false', 'scale'.
-      * false will scale the image to completely fill the view, but may obscure parts of the image.
-      * true will stretch the image to fit the view.
-      * scale will scale the image so it visible within the view, but the image may not fill the entire view.
+      * Supported values are 'true', 'false', 'scale' and 'none'.
+      * "false" will scale the image to completely fill the view, but may 
+      * obscure parts of the image.
+      * "true" will stretch the image to fit the view.
+      * "scale" will scale the image so it visible within the view, but the 
+      * image may not fill the entire view.
+      * "none" will display the image at its natural size but without resizing 
+      * the view as the naturalsize attribute does.
       */-->
-  <attribute name="stretches" type="string" value="false"></attribute>
+  <attribute name="stretches" type="string" value="false"/>
 
   <!--/**
       * @attribute {Boolean} [naturalsize=false]
       * If set to true the bitmap will be sized to the width/height of the
       * bitmap data in pixels.
       */-->
-  <attribute name="naturalsize" type="boolean" value="false"></attribute>
+  <attribute name="naturalsize" type="boolean" value="false"/>
 
   <!--/**
       * @attribute {String} [repeat='no-repeat']
       * Determines if the image will be repeated within the bounds.
       * Supported values are 'no-repeat', 'repeat', 'repeat-x' and 'repeat-y'.
       */-->
-  <attribute name="repeat" type="string" value="no-repeat"></attribute>
+  <attribute name="repeat" type="string" value="no-repeat"/>
 
   <!--/**
     * @attribute {String} [window='']
@@ -79,7 +83,7 @@ SOFTWARE. -->
     *   x,y  The coordinates of the upper-left hand corner of the image
     *   w,h  The width and height of the window to display.
     */-->
-  <attribute name="window" type="string" value=""></attribute>
+  <attribute name="window" type="string" value=""/>
 
   <method name="createSprite" args="attrs">
     return new dr.sprite.Bitmap(this, attrs);
