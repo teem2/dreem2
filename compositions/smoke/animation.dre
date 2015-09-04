@@ -389,7 +389,25 @@ SOFTWARE. -->
             </handler>
           </animator>
         </view>
-  
+        
+        <!-- Use a custom motion function -->
+        <view name="customMotionTest" width="20" height="20" bgcolor="pink" x="110" y="100">
+          <animator attribute="x" to="150" duration="200"
+            motion="${this.customEasing}"
+          >
+            <method name="customEasing" args="t">
+              return -t;
+            </method>
+            
+            <handler event='oninit'>
+              var self = this;
+              setTimeout(function() {
+                assert.isTrue(self.getActualAttribute('target').x === 70, '');
+              }, 350)
+            </handler>
+          </animator>
+        </view>
+        
         <handler event="oninit" type="coffee">
           # Verify animations ran
           setTimeout(() =>
