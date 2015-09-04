@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="behavior-scale" extends="node" with="behavior-behavior">
   <attribute name="magnitude" type="number" value="2"/>
+  <attribute name="bringtofront" type="boolean" value="true"/>
 
   <handler event="onmouseover" reference="this.parent" method="show"></handler>
   <handler event="onmouseout" reference="this.parent" method="hide"></handler>
@@ -40,6 +41,8 @@ SOFTWARE. -->
     parent.stopActiveAnimators('yscale');
     parent.animate({attribute:'xscale', to:magnitude, duration:800});
     parent.animate({attribute:'yscale', to:magnitude, duration:800});
+    
+    if (this.bringtofront) parent.moveToFront();
   </method>
 
   <method name="hide">
