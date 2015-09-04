@@ -92,8 +92,12 @@
 
     function startMain() {
         Unload();
+
+        //the next line is a hack... but we need it for now..
+        global.JsonPath = require("./lib/json-path+json-ptr-0.1.3.min.js");
+        
         define.ROOTSERVER = server;
-        define.COMPOSITIONROOT = "./compositions/";
+        define.COMPOSITIONROOT = "./compositions/" +define.filePath( composition )+ "/";
         define.ROOTURL = "compositions/"+ composition + ".dre";
         define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
         define.BUILD = "$ROOT/dalicache";
