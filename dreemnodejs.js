@@ -122,6 +122,41 @@
 	}
     }
 
+    // Retrieve the main application file from the server to detect if the file
+    // is in edit mode. A reload is invoked ONLY if the file is not in edit
+    // mode. No changes to the server are required because this is only needed
+    // in the short term.
+    function selectiveReload() {
+        script_url = server + "/build/compositions/" + composition + ".dre.screens." + screen + ".js";
+
+        var script = {}
+        var scripturl = url.parse(script_url);
+        var base_path = define.filePath(script_url);
+        script.src = script_url;
+        script_tags[script_url] = script;
+
+        http.get({
+            host: scripturl.hostname,
+            port: scripturl.port,
+            path: scripturl.path
+        }, function(res) {
+            res.src = script_url;
+            res.data = "";
+            res.on('data', function(buf) {
+                this.data += buf;
+            });
+            res.on('end', function() {
+                var editable = this.data.indexOf('editable');
+                //console.log('*****onend. File loaded', editable);
+	        if (editable == -1) {
+		    // Reload because the application is not in edit mode
+		    Reload();
+		}
+            });
+        }.bind(this));
+    }
+
+
     function CreateNeededFoldersForFilePath(path) {
         console.log(path);
         var S = path.split('/');
@@ -224,10 +259,12 @@
             } catch (e) {}
             if (msg.type == "sessionCheck") {
                 console.color('~~** ~by~Files updated on server: downloading~~.');
-		      if (loaded) {
-		    Reload();
+		if (loaded) {
+		    // selectiveReload only loads the file when not in edit mode
+		    selectiveReload();
+		    //Reload();
 		} else {
-            LoadAll();
+		    LoadAll();
 		}
             }
         }.bind(this);
