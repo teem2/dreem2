@@ -94,7 +94,8 @@
         Unload();
 
         //the next line is a hack... but we need it for now..
-        global.JsonPath = require("./lib/json-path+json-ptr-0.1.3.min.js");
+        var JP = require("json-path");
+        global.JsonPath = JP;
         
         define.ROOTSERVER = server;
         define.COMPOSITIONROOT = "./compositions/" +define.filePath( composition )+ "/";
@@ -123,7 +124,7 @@
     }
 
     function CreateNeededFoldersForFilePath(path) {
-        console.log(path);
+        //console.log(path);
         var S = path.split('/');
         var pathsofar = '';
         if (path[0] == '/') pathsofar = '/';
