@@ -74,15 +74,18 @@
     var http = require('http');
     var url = require('url');
     var fs = require('fs');
-    if (fs.existsSync("./dalicache") == false) {
-        fs.mkdir("./dalicache");
+
+    // Some directories must be manually created
+    // (ex: /dalicache is removed)
+    var dirs = ["./dalicache", "./dalicache/classes", "./dalicache/classes/behavior", "./dalicache/compositions"];
+    for (var i in dirs) {
+        var dir = dirs[i];
+	console.log('dir', dir, fs.existsSync(dir));
+	if (fs.existsSync(dir) == false) {
+            fs.mkdir(dir);
+	}
     }
-    if (fs.existsSync("./dalicache/classes") == false) {
-        fs.mkdir("./dalicache/classes");
-    }
-    if (fs.existsSync("./dalicache/compositions") == false) {
-        fs.mkdir("./dalicache/compositions");
-    }
+
     define.MAIN = '';
     var loadedscripts = [];
     // the main dependency download queue counter
