@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 <class name="behavior-scale" extends="node" with="behavior-behavior">
   <attribute name="magnitude" type="number" value="2"/>
+  <attribute name="scaleinduration" type="number" value="800"/>
+  <attribute name="scaleoutduration" type="number" value="400"/>
   <attribute name="bringtofront" type="boolean" value="true"/>
 
   <handler event="onmouseover" reference="this.parent" method="show"></handler>
@@ -39,8 +41,8 @@ SOFTWARE. -->
       magnitude = this.magnitude;
     parent.stopActiveAnimators('xscale');
     parent.stopActiveAnimators('yscale');
-    parent.animate({attribute:'xscale', to:magnitude, duration:800});
-    parent.animate({attribute:'yscale', to:magnitude, duration:800});
+    parent.animate({attribute:'xscale', to:magnitude, duration:this.scaleinduration});
+    parent.animate({attribute:'yscale', to:magnitude, duration:this.scaleinduration});
     
     if (this.bringtofront) parent.moveToFront();
   </method>
@@ -49,8 +51,8 @@ SOFTWARE. -->
     var parent = this.parent;
     parent.stopActiveAnimators('xscale');
     parent.stopActiveAnimators('yscale');
-    parent.animate({attribute:'xscale', to:1, duration:400});
-    parent.animate({attribute:'yscale', to:1, duration:400});
+    parent.animate({attribute:'xscale', to:1, duration:this.scaleoutduration});
+    parent.animate({attribute:'yscale', to:1, duration:this.scaleoutduration});
   </method>
 
   <!--// Editor Support //-->
