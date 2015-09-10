@@ -9,20 +9,23 @@
       if (view === editor.content_bg.content.inner) view = view.getRoot();
       
       // Select in tree
-      (function walk(v) {
-        if (!v.selected && v.data && v.data.id === view.id) {
-          v.triggerSelection(true);
-          return true;
-        }
-        var svs = v.subviews, i = svs.length;
-        while (i) {
-          if (walk(svs[--i])) return true;
-        }
-        return false;
-      })(this);
-    } else {
-      this.clearSelection();
+      var viewId = view.id;
+      if (viewId) {
+        if ((function walk(v) {
+          if (v.data && v.data.id === viewId) {
+            if (!v.selected) v.triggerSelection(true);
+            return true;
+          }
+          var svs = v.subviews, i = svs.length;
+          while (i) {
+            if (walk(svs[--i])) return true;
+          }
+          return false;
+        })(this)) return;
+      }
     }
+    
+    this.clearSelection();
   </handler>
 
   <method name="selectHandler" args="sel, d">
