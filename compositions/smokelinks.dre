@@ -177,6 +177,7 @@ SOFTWARE. -->
           <subhead>Editor Components</subhead>
           <link url="./smoke/undo">Undo/Redo Basic</link>
           <link url="./smoke/undo_compound">Undo/Redo Compound</link>
+          <link url="./smoke/editor">Editor</link>
         </block>
       </view>
     </view>

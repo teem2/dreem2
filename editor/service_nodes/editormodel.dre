@@ -40,7 +40,7 @@ SOFTWARE. -->
   <handler event="oninit">
     // Extract screen from the query and store it.
     var screenname = 'default',
-      query = window.location.search;
+      query = this._getSearch();
     if (query) {
       query = (query.substring(1)).split('&');
       var i = query.length, entry;
@@ -56,7 +56,7 @@ SOFTWARE. -->
     
     var self = this;
     // rewrite the file to be editable, which will reload this page automatically
-    dr.global.requestor.fetch(window.location.pathname + '?raw=1').success(
+    dr.global.requestor.fetch(this._getPath() + '?raw=1').success(
       function(data, status) {
         var parser = new dr.htmlparser();
         var jsobj = parser.parse(data);
@@ -76,6 +76,26 @@ SOFTWARE. -->
       }
     );
   </handler>
+
+  <method name="_setLocation" args="url">
+    window.location = url;
+  </method>
+
+  <method name="_getPath">
+    var pathname = window.location.pathname;
+    
+    // WORKAROUND: PhantomJS prepends an extra '/' character. This prevents
+    // the requestors from working correctly, so look for it and remove it.
+    return pathname.startsWith('//') ? pathname.substring(1) : pathname;
+  </method>
+
+  <method name="_getSearch">
+    return window.location.search;
+  </method>
+
+  <method name="_getBaseUrl">
+    return this._getPath() + this._getSearch();
+  </method>
 
   <method name="updateAttr" args="childView, name, value">
     var model = this.model;
@@ -326,37 +346,35 @@ SOFTWARE. -->
 
   <!-- Save the model changes to the server and reload for editing again. -->
   <method name="save">
-    var loc = window.location,
-      baseUrl = loc.pathname + loc.search;
-      url = baseUrl;
-    url += (url.indexOf('?') === -1) ? '?' : '&';
+    var baseUrl = this._getBaseUrl(),
+      url = baseUrl + (url.indexOf('?') === -1) ? '?' : '&';
     url += 'edit=1';
     
+    var self = this;
     dr.global.requestor.send(url, JSON.stringify(this.model)).success(function(data, status) {
-      window.location = baseUrl;
+      self._setLocation(baseUrl);
     });
   </method>
 
   <!-- End the editing process. -->
   <method name="stop">
-    var loc = window.location,
-      baseUrl = loc.pathname + loc.search;
-      url = baseUrl;
-    url += (url.indexOf('?') === -1) ? '?' : '&';
+    var baseUrl = this._getBaseUrl(),
+      url = baseUrl + (url.indexOf('?') === -1) ? '?' : '&';
     url += 'edit=1&stripeditor=1';
     
+    var self = this;
     dr.global.requestor.fetch(url).success(function(data, status) {
       if (window.parent !== window) { // Only do this when embedded in the flowgraph
         console.log("POSTING CLOSE WINDOW")
         window.parent.postMessage({type:'closewindow'}, '*');
       }
-      window.location = baseUrl;
+      self._setLocation(baseUrl);
     });
   </method>
 
   <!-- Start editing another screen. -->
   <method name="changeScreen" args="screenname">
-    window.location = window.location.pathname + '?edit=1&screen=' + screenname;
+    this._setLocation(this._getPath() + '?edit=1&screen=' + screenname);
   </method>
   
   <method name="getScreenNames">

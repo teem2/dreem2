@@ -1,0 +1,133 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+  <screens>
+    <screen type='browser' name='default' title='Smoke Test - Editor'>
+      <include href='./includes/boilerplate.dre'/>
+      <view width='100%' height='100%' scrolling='true'>
+        <testingtimer>1000</testingtimer>
+        
+        <!-- Directly include the editor so we can test it. This is not exactly
+             the same as loading the composition in edit mode since nodes will
+             not be rewritten with IDs and placement. -->
+        <include href='/editor/editor_include.dre'/>
+        
+        <handler event="oninit">
+          var S = dr.sprite;
+          
+          // Verify editor related things exist
+          var editor = S.retrieveGlobal('editor');
+          assert.isDefined(editor, 'The editor should exist.');
+          assert.isTrue(editor.editmode, 'The editor should be in edit mode.');
+          
+          // Verify screen name chooser related things exist
+          var screennamechooser = S.retrieveGlobal('screennamechooser');
+          assert.isDefined(screennamechooser, 'The screen name chooser should be stored under a global.');
+          
+          // Verify editor preview button related things exist
+          var editPreviewButton = S.retrieveGlobal('editPreviewButton');
+          assert.isDefined(editPreviewButton, 'The edit preview button should be stored under a global.');
+          assert.isFalse(editPreviewButton.disabled, 'The edit preview button should not be disabled.');
+          assert.equal(editPreviewButton.iconname, 'preview', 'The edit preview button should be configured for preview.');
+          
+          // Verify editor model related things exist
+          var editormodel = S.retrieveGlobal('editormodel');
+          assert.isDefined(editormodel, 'The editor model should exist.');
+          assert.equal(editormodel.screenname, 'default', 'The screen name should be "default".');
+          
+          this._verifyModelWasLoaded(editormodel);
+        </handler>
+        
+        <expectedoutput>Editormodel loaded.</expectedoutput>
+        <method name="_verifyModelWasLoaded" args="editormodel">
+          assert.isUndefined(editormodel.model, 'The model should initially be undefined.');
+          this.listenTo(editormodel, 'onmodelchange', '_handleModelChange');
+        </method>
+        <method name="_handleModelChange" args="editormodel">
+          var model = editormodel.model;
+          
+          assert.isDefined(model, 'The model should now exist.');
+          console.log('Editormodel loaded.');
+          
+          // Verify some of the structure of the model
+          assert.equal(model.tag, '$root', 'The root of the model is the $root.');
+          assert.isUndefined(model.attr, 'No attrs for the root.');
+          
+          var children = model.child;
+          assert.isArray(children, 'The child is an array');
+          assert.lengthOf(children, 2, 'The child is an array of length 2.');
+          
+          var child = children[0];
+          assert.equal(child.tag, '$comment', 'The first child is a $comment.');
+          assert.isUndefined(child.child, 'Comments do not have children.');
+          assert.isUndefined(child.attr, 'No attrs for the comment.');
+          assert.isTrue(child.value.startsWith('&lt;!-- The MIT License (MIT)'), 'Comment starts with an opening &lt;!--.');
+          assert.isTrue(child.value.endsWith('SOFTWARE. '), 'Comment ends without a closing -->.');
+          
+          child = children[1];
+          assert.equal(child.tag, 'composition', 'The second child is a composition.');
+          assert.isUndefined(child.attr, 'No attrs for the composition.');
+          
+          children = child.child;
+          assert.isArray(children, 'The child is an array');
+          assert.lengthOf(children, 1, 'The child is an array of length 1.');
+          
+          child = children[0];
+          assert.equal(child.tag, 'screens', 'The first grandchild is a screens.');
+          assert.isUndefined(child.attr, 'No attrs for the screens.');
+          
+          children = child.child;
+          assert.isArray(children, 'The child is an array');
+          assert.lengthOf(children, 1, 'The child is an array of length 1.');
+          
+          child = children[0];
+          assert.equal(child.tag, 'screen', 'The first greatgrandchild is a screen.');
+          var attrs = child.attr;
+          assert.equal(attrs.name, 'default', 'The name attr is "default".');
+          assert.equal(attrs.title, 'Smoke Test - Editor', 'The title attr is "Smoke Test - Editor".');
+          assert.equal(attrs.type, 'browser', 'The type attr is "browser".');
+          
+          children = child.child;
+          assert.isArray(children, 'The child is an array');
+          assert.lengthOf(children, 2, 'The child is an array of length 2.');
+          
+          child = children[0];
+          assert.equal(child.tag, 'include', 'The tag is an include.');
+          attrs = child.attr;
+          assert.equal(attrs.href, './includes/boilerplate.dre', 'The href attr is "./includes/boilerplate.dre".');
+          assert.isUndefined(child.child, 'No children of include.');
+          
+          child = children[1];
+          assert.equal(child.tag, 'view', 'The tag is a view.');
+          attrs = child.attr;
+          assert.equal(attrs.height, '100%', 'The height attr is "100%".');
+          assert.equal(attrs.scrolling, 'true', 'The scrolling attr is "true".');
+          assert.equal(attrs.width, '100%', 'The width attr is "100%".');
+          
+          children = child.child;
+          assert.isArray(children, 'The child is an array');
+          // This is enough model verification!
+        </method>
+      </view>
+    </screen>
+  </screens>
+</composition>
