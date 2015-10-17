@@ -134,7 +134,7 @@ timeout ran</expectedoutput>
           var self = this;
           
           setTimeout(function(){
-            // console.log('timeout ran');
+            console.log('timeout ran');
             assert.equal(2, self.onreplicated, 'There should be a second onreplicated event');
           }.bind(this), 750)
           
