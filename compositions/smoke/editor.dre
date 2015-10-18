@@ -23,13 +23,17 @@ SOFTWARE. -->
   <screens>
     <screen type='browser' name='default' title='Smoke Test - Editor'>
       <include href='./includes/boilerplate.dre'/>
-      <view width='100%' height='100%' scrolling='true'>
+      <view width='100%' height='100%' minwidth='1000' minheight='800' scrolling='true' id="lzeditor_0">
         <testingtimer>1000</testingtimer>
         
         <!-- Directly include the editor so we can test it. This is not exactly
              the same as loading the composition in edit mode since nodes will
              not be rewritten with IDs and placement. -->
         <include href='/editor/editor_include.dre'/>
+        
+        <view x="10" y="0" name="foo" width="100" height="50" bgcolor="red" placement="editor" with="editable" id="lzeditor_1"/>
+        <view x="100" y="50" width="100" height="50" bgcolor="green" placement="editor" with="editable" id="lzeditor_2"/>
+        <view x="0" y="100" width="100" height="50" bgcolor="blue" placement="editor" with="editable" id="lzeditor_3"/>
         
         <handler event="oninit">
           var S = dr.sprite;
@@ -38,6 +42,16 @@ SOFTWARE. -->
           var editor = S.retrieveGlobal('editor');
           assert.isDefined(editor, 'The editor should exist.');
           assert.isTrue(editor.editmode, 'The editor should be in edit mode.');
+          
+          // Verify undo queue exists
+          var undo = S.retrieveGlobal('undo');
+          assert.isDefined(undo, 'The undo queue should exist.');
+          assert.isFalse(undo.isundoable, 'The undo queue should not be undoable yet.');
+          assert.isFalse(undo.isredoable, 'The undo queue should not be redoable yet.');
+          
+          // Verify actions object exists
+          var actions = S.retrieveGlobal('actions');
+          assert.isDefined(actions, 'The actions object should exist.');
           
           // Verify screen name chooser related things exist
           var screennamechooser = S.retrieveGlobal('screennamechooser');
@@ -60,12 +74,14 @@ SOFTWARE. -->
         <expectedoutput>Editormodel loaded.</expectedoutput>
         <method name="_verifyModelWasLoaded" args="editormodel">
           assert.isUndefined(editormodel.model, 'The model should initially be undefined.');
-          this.listenTo(editormodel, 'onmodelchange', '_handleModelChange');
+          this.listenTo(editormodel, 'onmodel', '_handleModelLoaded');
         </method>
-        <method name="_handleModelChange" args="editormodel">
-          var model = editormodel.model;
+        <method name="_handleModelLoaded" args="model">
+          var S = dr.sprite;
+          var editormodel = S.retrieveGlobal('editormodel');
           
-          assert.isDefined(model, 'The model should now exist.');
+          assert.isDefined(editormodel.model, 'The model should now exist.');
+          assert.strictEqual(editormodel.model, model, 'The model from the event must be the model on editormodel.');
           console.log('Editormodel loaded.');
           
           // Verify some of the structure of the model
@@ -125,7 +141,85 @@ SOFTWARE. -->
           
           children = child.child;
           assert.isArray(children, 'The child is an array');
+          
+          // Get at an editable child
+          child = children[3];
+          assert.equal(child.tag, 'view', 'The tag is a view.');
+          attrs = child.attr;
+          assert.equal(attrs.bgcolor, 'red');
+          assert.equal(attrs.height, '50');
+          assert.equal(attrs.id, 'lzeditor_1');
+          assert.equal(attrs.name, 'foo');
+          assert.equal(attrs.placement, 'editor');
+          assert.equal(attrs.width, '100');
+          assert.equal(attrs.with, 'editable');
+          assert.equal(attrs.x, '10');
+          assert.equal(attrs.y, '0');
+          
           // This is enough model verification!
+          
+          
+          // Make a minor change to an editable view and see it reflected in the
+          // undo queue and the model
+          var editableView = S.retrieveGlobal('lzeditor_1');
+          assert.isDefined(editableView);
+          assert.equal(editableView.x, 10);
+          assert.equal(editableView.y, 0);
+          
+          // Emulate a drag on the view
+          var mouse = dr.global.mouse;
+          editableView.trigger('mousedown', {pointerX:350, pointerY:200});
+          mouse.trigger('mousemove', {pointerX:460, pointerY:350});
+          editableView.trigger('mouseup');
+          
+          assert.equal(editableView.x, 120, 'Editable view was updated.');
+          assert.equal(editableView.y, 150, 'Editable view was updated.');
+          assert.equal(attrs.x, '120', 'Editable view model was updated.');
+          assert.equal(attrs.y, '150', 'Editable view model was updated.');
+          
+          var undo = S.retrieveGlobal('undo');
+          assert.isTrue(undo.isundoable, 'The undo queue should now be undoable.');
+          assert.isFalse(undo.isredoable, 'The undo queue should not be redoable yet.');
+          
+          undo.undo();
+          
+          assert.equal(editableView.x, 10, 'Editable view was updated.');
+          assert.equal(editableView.y, 0, 'Editable view was updated.');
+          assert.equal(attrs.x, '10', 'Editable view model was updated.');
+          assert.equal(attrs.y, '0', 'Editable view model was updated.');
+          assert.isFalse(undo.isundoable, 'The undo queue should not be undoable yet.');
+          assert.isTrue(undo.isredoable, 'The undo queue should now be redoable.');
+          
+          undo.redo();
+          
+          assert.equal(editableView.x, 120, 'Editable view was updated.');
+          assert.equal(editableView.y, 150, 'Editable view was updated.');
+          assert.equal(attrs.x, '120', 'Editable view model was updated.');
+          assert.equal(attrs.y, '150', 'Editable view model was updated.');
+          assert.isTrue(undo.isundoable, 'The undo queue should now be undoable.');
+          assert.isFalse(undo.isredoable, 'The undo queue should not be redoable yet.');
+          
+          // Change opacity via "actions" so it will be undoable
+          assert.equal(editableView.opacity, 1, 'Editable view was updated.');
+          assert.isUndefined(attrs.opacity, 'Opacity has not been set yet.');
+          
+          var actions = S.retrieveGlobal('actions');
+          actions.do(new dr.editor.editorattrundoable({
+            target:editableView, attribute:'opacity', oldvalue:editableView.opacity, newvalue:0.5
+          }));
+          
+          assert.equal(editableView.opacity, 0.5, 'Editable view was updated.');
+          assert.equal(attrs.opacity, '0.5', 'Opacity was updated on the view model.');
+          
+          undo.undo();
+          
+          assert.equal(editableView.opacity, 1, 'Editable view was updated.');
+          assert.equal(attrs.opacity, '1', 'Opacity was put back to 1 since that is the "oldvalue" in the action.');
+          
+          undo.redo();
+          
+          assert.equal(editableView.opacity, 0.5, 'Editable view was updated.');
+          assert.equal(attrs.opacity, '0.5', 'Opacity was updated on the view model.');
         </method>
       </view>
     </screen>

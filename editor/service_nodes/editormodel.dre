@@ -86,7 +86,7 @@ SOFTWARE. -->
     
     // WORKAROUND: PhantomJS prepends an extra '/' character. This prevents
     // the requestors from working correctly, so look for it and remove it.
-    return pathname.startsWith('//') ? pathname.substring(1) : pathname;
+    return (pathname.startsWith('//') && dr.sprite.platform.browser === 'PhantomJS') ? pathname.substring(1) : pathname;
   </method>
 
   <method name="_getSearch">
