@@ -347,7 +347,7 @@ SOFTWARE. -->
   <!-- Save the model changes to the server and reload for editing again. -->
   <method name="save">
     var baseUrl = this._getBaseUrl(),
-      url = baseUrl + (url.indexOf('?') === -1) ? '?' : '&';
+      url = baseUrl + (baseUrl.indexOf('?') === -1) ? '?' : '&';
     url += 'edit=1';
     
     var self = this;
@@ -359,7 +359,7 @@ SOFTWARE. -->
   <!-- End the editing process. -->
   <method name="stop">
     var baseUrl = this._getBaseUrl(),
-      url = baseUrl + (url.indexOf('?') === -1) ? '?' : '&';
+      url = baseUrl + (baseUrl.indexOf('?') === -1) ? '?' : '&';
     url += 'edit=1&stripeditor=1';
     
     var self = this;
