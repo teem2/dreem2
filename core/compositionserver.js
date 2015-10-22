@@ -29,9 +29,9 @@ define(function(require, exports, module) {
     * @param {String} name Name of the composition .dre
     */
   function CompositionServer(args, name, teemserver) {
-    this.teemserver = teemserver;
     this.args = args;
     this.name = name;
+    this.teemserver = teemserver;
 
     this.busserver = new BusServer();
     this.watcher = new FileWatcher();
@@ -39,16 +39,19 @@ define(function(require, exports, module) {
       this.__reloadComposition();
       
       // Tell the client to refresh itself.
+      var prefix = define.expandVariables('$ROOT');
+      if (file.startsWith(prefix)) file = file.substring(prefix.length);
+      
       teemserver.broadcast({type:'filechange', file:file});
     }.bind(this);
     
-    // lets compile and run the dreem composition
-    define.onRequire = function(filename) {
+    /*define.onRequire = function(filename) {
       // lets output to the main watcher
       process.stderr.write('\x0F!' + filename + '\n', function() {});
       this.watcher.watch(filename);
-    }.bind(this);
+    }.bind(this);*/
     
+    // lets compile and run the dreem composition
     this.__reloadComposition();
   };
 
@@ -79,22 +82,63 @@ define(function(require, exports, module) {
         }
       }
       
+      // Redirect preview query to preview URL
+      if (query.preview === '1') {
+          delete query.preview;
+          url = '/preview' + url;
+          var isFirst = true, name;
+          for (name in query) {
+              if (isFirst) {
+                  url += '?';
+                  isFirst = false;
+              } else {
+                  url += '&';
+              }
+              url += name + '=' + query[name];
+          }
+          // We need to redirect the client so it will refresh and show the editor.
+          res.writeHead(302, {'Location':url});
+          res.end();
+          return;
+      }
+      
       // handle editor requests
       if (query.edit) {
-        // Editor Handling for "save"
+        // Editor Handling for "save" and "notifyPreviewers"
         if (req.method == 'POST') {
-          var buf = ''
-          req.on('data', function(data) {buf += data.toString();});
-          req.on('end', function() {
-            var comppath = define.expandVariables(this.__getCompositionPath())
-            this.__saveEditableFile(query.screen || 'default', comppath, buf, query.stripeditor === '1');
-            
-            // Force a reload since we know we just changed the file.
-            this.__reloadComposition();
-            
-            res.writeHead(200, {"Content-Type":"text/json"});
-            res.end();
-          }.bind(this));
+          if (query.notifyPreviewers === '1') {
+            var buf = ''
+            req.on('data', function(data) {buf += data.toString();});
+            req.on('end', function() {
+              var screenName = query.screen || 'default',
+                comppath = define.expandVariables(this.__getCompositionPath(true)),
+                jsobj = JSON.parse(buf);
+              this.__walkChildren(screenName, jsobj, true);
+              var newdata = HTMLParser.reserialize(jsobj, '  ');
+              this.__writeFileIfChanged(comppath, newdata);
+              
+              res.writeHead(200, {"Content-Type":"text/json"});
+              res.end();
+            }.bind(this));
+          } else {
+            // Save the composition
+            var buf = '';
+            req.on('data', function(data) {buf += data.toString();});
+            req.on('end', function() {
+              var screenName = query.screen || 'default',
+                comppath = define.expandVariables(this.__getCompositionPath()),
+                jsobj = JSON.parse(buf);
+              this.__walkChildren(screenName, jsobj, query.stripeditor === '1');
+              var newdata = HTMLParser.reserialize(jsobj, '  ');
+              this.__writeFileIfChanged(comppath, newdata);
+              
+              // Force a reload since we know we just changed the file.
+              this.__reloadComposition();
+              
+              res.writeHead(200, {"Content-Type":"text/json"});
+              res.end();
+            }.bind(this));
+          }
           return;
         } else {
           // Editor Handling for "enter" and "exit"
@@ -184,7 +228,6 @@ define(function(require, exports, module) {
             }
           }
 
-
           var screen = this.screens[screenName];
           if (screen) {
             var name = this.name;
@@ -197,10 +240,30 @@ define(function(require, exports, module) {
                 "Cache-control":"max-age=0",
                 "Content-Type":"text/html;charset=utf-8"
               });
-              res.write(this.__renderHTMLTemplate(
-                screen.attr && screen.attr.title || name, 
-                this.__buildScreenPath(screenName)
-              ));
+              var title = screen.attr && screen.attr.title || name,
+                boot = this.__buildScreenPath(screenName);
+              res.write(
+                '<html lang="en">\n'+
+                '  <head>\n'+
+                '    <title>' + title + '</title>\n'+
+                '    <script type="text/javascript">window.define = {MAIN:"' + boot + '"}</script>\n'+
+                '    <script type="text/javascript" src="/define.js"></script>\n'+
+                '    <style type="text/css">\n'+
+                '      html,body {\n'+
+                '        height:100%;\n'+
+                '        margin:0px;\n'+
+                '        padding:0px;\n'+
+                '        border:0px none;\n'+
+                '      }\n'+
+                '      body {\n'+
+                '        font-family:Arial, Helvetica, sans-serif;\n'+
+                '        font-size:14px;\n'+
+                '      }\n'+
+                '    </style>'+
+                '  </head>\n'+
+                '  <body></body>\n'+
+                '</html>\n'
+              );
               res.end();
             }
           } else {
@@ -220,7 +283,7 @@ define(function(require, exports, module) {
     
     /** @private */
     this.__buildScreenPath = function(screenName) {
-      return this.__buildPath(this.name, 'screens.' + screenName);
+        return this.__buildPath(this.name, 'screens.' + screenName);
     };
     
     /** @private */
@@ -424,9 +487,9 @@ define(function(require, exports, module) {
     };
     
     /** @private */
-    this.__getCompositionPath = function() {
+    this.__getCompositionPath = function(isPreviewPath) {
       var compositionName = this.name;
-      var filepath = '$ROOT/' + compositionName + define.DREEM_EXTENSION;
+      var filepath = '$ROOT/' + (isPreviewPath ? 'preview/' : '') + compositionName + define.DREEM_EXTENSION;
 
       var match = /^plugins\/([^\/]+)\/examples\/([^\/]+)$/.exec(compositionName)
       if (match) {
@@ -454,8 +517,7 @@ define(function(require, exports, module) {
     
     /** @private */
     this.__reloadComposition = function() {
-      var errors = [],
-        compositionPath = this.__getCompositionPath();
+      var errors = [], compositionPath = this.__getCompositionPath();
       
       console.color("~bg~Reloading~~ composition: " + this.name + "\n");
       
@@ -663,31 +725,6 @@ define(function(require, exports, module) {
       this.__writeFileIfChanged(output, out);
     };
     
-    /** The html response template for browser composition requests.
-        @private */
-    this.__renderHTMLTemplate = function(title, boot) {
-      return '<html lang="en">\n'+
-        '  <head>\n'+
-        '    <title>' + title + '</title>\n'+
-        '    <script type="text/javascript">window.define = {MAIN:"' + boot + '"}</script>\n'+
-        '    <script type="text/javascript" src="/define.js"></script>\n'+
-        '    <style type="text/css">\n'+
-        '      html,body {\n'+
-        '        height:100%;\n'+
-        '        margin:0px;\n'+
-        '        padding:0px;\n'+
-        '        border:0px none;\n'+
-        '      }\n'+
-        '      body {\n'+
-        '        font-family:Arial, Helvetica, sans-serif;\n'+
-        '        font-size:14px;\n'+
-        '      }\n'+
-        '    </style>'+
-        '  </head>\n'+
-        '  <body></body>\n'+
-        '</html>\n';
-    };
-    
     /** Recursively makes directories for a path.
         @private */
     this.__mkdirParent = function(dirPath) {
@@ -805,13 +842,5 @@ define(function(require, exports, module) {
         }
       }
     };
-
-    this.__saveEditableFile = function(screenName, filepath, data, stripeditor) {
-      var jsobj = JSON.parse(data);
-      this.__walkChildren(screenName, jsobj, stripeditor);
-      var newdata = HTMLParser.reserialize(jsobj, '  ');
-      this.__writeFileIfChanged(filepath, newdata);
-      // console.log('saved', filepath, stripeditor);
-    }
   };
 })

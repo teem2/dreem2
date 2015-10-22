@@ -23,7 +23,7 @@ SOFTWARE. -->
   <screens>
     <screen type='browser' name='default' title='Smoke Test - Editor'>
       <include href='./includes/boilerplate.dre'/>
-      <view width='100%' height='100%' minwidth='1000' minheight='800' scrolling='true' id="lzeditor_0">
+      <view width='100%' height='100%' minwidth='1000' minheight='700' scrolling='true' id="lzeditor_0">
         <testingtimer>1000</testingtimer>
         
         <!-- Directly include the editor so we can test it. This is not exactly

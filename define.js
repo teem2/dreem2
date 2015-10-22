@@ -44,6 +44,9 @@
     for (var key in config_define) define[key] = config_define[key];
   }
 
+  /* Extracts the "path" portion of a provided file path. For example:
+     /build/compositions/foo.dre.screens.default.js will return
+     /build/compositions */
   define.filePath = function(file) {
     if (file) {
       file = file.replace(/\.\//g, '');
@@ -53,23 +56,36 @@
     return '';
   };
 
+  /* Normalizes redundant / and \ characters from a path. */
   define.cleanPath = function(path) {
-
-    return path.replace(/^\/+/,'/').replace(/\\/g,'/').replace(/([^:])\/+/g,'$1/');
+    // Handle a very common client side case, approx 25% of cleanPath calls.
+    if (path === '/') return path;
+    
+    // First condense leading / character runs into a single /
+    // Second, replace all \ with /
+    // Third, replace all / character runs with / unless preceeded by a : character.
+    // Forth, replace all instances of /./ with / since /./ is useless.
+    return path.replace(/^\/+/,'/').replace(/\\/g,'/').replace(/([^:])\/+/g,'$1/').replace(/\/\.\//g, '/');
   };
 
+  /* Creates a path from the provided base path and relative path. */
   define.joinPath = function(base, relative) {
-    if (relative.charAt(0) != '.') { // relative is already absolute
-      if (relative.charAt(0) == '/' || relative.indexOf(':') != -1) {
-        return relative
-      }
-      return define.cleanPath(base + '/' + relative);
+    var firstRelativeChar = relative.charAt(0);
+    if (firstRelativeChar === '.') {
+      base = base.split(/\//);
+      // First remove 1 base path part per instance of ../ in relative.
+      // Second remove all instances of ./ from the relative path since they are meaningless.
+      relative = relative.replace(/\.\.\//g, function(){base.pop(); return '';}).replace(/\.\//g, '');
+      base = base.join('/');
+    } else if (firstRelativeChar === '/' || relative.indexOf(':') !== -1) {
+      // Relative path is already absolute or fully qualified
+      return relative
     }
-    base = base.split(/\//);
-    relative = relative.replace(/\.\.\//g,function(){ base.pop(); return ''}).replace(/\.\//g, '');
-    return define.cleanPath(base.join('/') + '/' + relative);
+    
+    return define.cleanPath(base + '/' + relative);
   };
-  
+
+  /* Determines if a URL looks fully qualified or not. */
   define.isFullyQualifiedURL = function(url) {
     if (url.indexOf('//') === 0) {
       // Looks like a protocol agnostic URL (Typically a CDN URL)
@@ -81,35 +97,31 @@
     return false;
   };
 
-  // expand define variables
+  /* Replaces $ variables in paths with the matching value from the define
+     object. For example $foo will get expaned into the value stored in
+     define.foo */
   define.expandVariables = function(str) {
     return define.cleanPath(
       str.replace(
         /\$([^\/$]*)/g,
         function(all, lut) {
           if (lut in define) {
-            if (lut == 'PLUGIN') {
-
+            if (lut === 'PLUGIN') {
               //FIXME: there is probably a better way to do this but by this point
               // there's no information as to where the str came from, so we can't
-              // tell which plugin is asking for it's library.  So just iterate
+              // tell which plugin is asking for it's library. So just iterate
               // through all the plugin directories and use the first match.
               // This will cause problems someday.
-
-              if (!define.__FS) {
-                define.__FS = require('fs');
-              }
+              if (!define.__FS) define.__FS = require('fs');
               var lib = /\$PLUGIN(.*)/.exec(str)[1];
               var paths = define[lut];
-              for (var i=0;i<paths.length;i++) {
+              for (var i = 0; i < paths.length; i++) {
                 var path = paths[i];
-                if (define.__FS.existsSync(path + '/' + lib)) {
-                  return define.expandVariables(path);
-                }
+                if (define.__FS.existsSync(path + '/' + lib)) return define.expandVariables(path);
               }
-
               throw new Error("Cannot find $PLUGIN lib " + lib + " used in require paths: " + paths);
             } else {
+              // Keep expanding until no replacement patterns match
               return define.expandVariables(define[lut]);
             }
           } else {
@@ -287,6 +299,15 @@
       // boot up using the MAIN property
       if (define.MAIN) insertScriptTag(define.MAIN, window.location.href);
       
+      // reload the composition unless specifically configured not to.
+      define._reload = function(file) {
+        if (location.search && location.search.indexOf('noreload') !== -1) return;
+        
+        // Only reload if one of the files we loaded changed
+        if (define.script_tags[file] || file === '/define.js') location.href = location.href;
+      };
+      
+      // Open a websocket to listen for refresh messages from the server.
       var backoff = 1;
       define.autoreloadConnect = function() {
         if (this.reload_socket) {
@@ -305,19 +326,14 @@
           setTimeout(function() {define.autoreloadConnect();}, backoff);
         };
         this.reload_socket.onmessage = function(event) {
-          var msg = JSON.parse(event.data);
-          if (msg.type === 'filechange') {
-            if(location.search && location.search.indexOf('noreload') !== -1){
-              return
-            }
-            location.href = location.href; // reload on filechange
-          } else if (msg.type === 'close') {
-            window.close(); // close the window
-          } else if (msg.type === 'delay') { // a delay refresh message
+          var msg = JSON.parse(event.data), type = msg.type;
+          if (type === 'filechange') {
+            define._reload(msg.file);
+          } else if (type === 'close') {
+            window.close();
+          } else if (type === 'delay') {
             console.log('Got delay refresh from server!');
-            setTimeout(function() {
-              location.href = location.href
-            }, 1500);
+            setTimeout(define._reload, 1500);
           }
         };
       };
@@ -325,7 +341,6 @@
     })();
   } else {
     // nodeJS implementation
-
     (function() {
       define.startMain = function() {
         // lets find our main and execute the factory

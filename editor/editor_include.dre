@@ -55,7 +55,28 @@ SOFTWARE. -->
   <include href='./service_nodes/actions.dre'/>
   <include href='./service_nodes/editormodel.dre'/>
 
-  <editor-undostack id="undo"/>
+  <editor-undostack id="undo">
+    <handler event="onstackchange" args="newIdx">
+      // Send a notification to "previewer" clients once the user stops
+      // making changes.
+      if (this._locked) {
+        this._changeWhileLocked = true;
+      } else {
+        if (this._timerId) clearTimeout(this._timerId);
+        this._timerId = setTimeout(function() {editormodel.notifyPreviewers();}, 2500);
+      }
+    </handler>
+    <method name="lock">
+      this._locked = true;
+    </method>
+    <method name="unlock">
+      this._locked = false;
+      if (this._changeWhileLocked) {
+        this._changeWhileLocked = false;
+        editormodel.notifyPreviewers();
+      }
+    </method>
+  </editor-undostack>
 
 
   <!--// HANDLERS ///////////////////////////////////////////////////////////-->

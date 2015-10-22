@@ -88,10 +88,12 @@ define(function(require, exports, module) {
       if (!args['-nodreem'] && file.indexOf('dreem.js') !== -1) {
         return this.broadcast({type:'delay'});
       }
-      this.broadcast({
-        type:'filechange',
-        file:file
-      })
+      
+      // Tell the client to refresh itself.
+      var prefix = define.expandVariables('$ROOT');
+      if (file.startsWith(prefix)) file = file.substring(prefix.length);
+      
+      this.broadcast({type:'filechange',file:file});
     }.bind(this);
     
     this.busserver = new BusServer();
@@ -160,12 +162,11 @@ define(function(require, exports, module) {
       */
     this.__upgrade = function(req, sock, head) {
       // lets connect the sockets to the app
-
       var sock = new NodeWebSocket(req, sock, head);
       sock.url = req.url;
       var composition = this.__getComposition(req.url);
       if (composition) {
-		    composition.busserver.addWebSocket(sock);
+        composition.busserver.addWebSocket(sock);
       } else {
         this.busserver.addWebSocket(sock);
       }

@@ -97,6 +97,10 @@ SOFTWARE. -->
     return this._getPath() + this._getSearch();
   </method>
 
+  <method name="getPreviewerUrl">
+    return '/preview' + this._getPath();
+  </method>
+
   <method name="updateAttr" args="childView, name, value">
     var model = this.model;
     if (model) {
@@ -342,6 +346,20 @@ SOFTWARE. -->
         if (newChildModel) return newChildModel;
       }
     }
+  </method>
+
+  <!-- Send the current state of the composition to the server so any
+       clients in "preview" mode can be notified. -->
+  <method name="notifyPreviewers">
+    var baseUrl = this._getBaseUrl(),
+      url = baseUrl + (baseUrl.indexOf('?') === -1) ? '?' : '&';
+    url += 'edit=1&notifyPreviewers=1';
+    
+    var self = this;
+    undo.lock();
+    dr.global.requestor.send(url, JSON.stringify(this.model)).always(
+      function(data, status) {undo.unlock();}
+    );
   </method>
 
   <!-- Save the model changes to the server and reload for editing again. -->

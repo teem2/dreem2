@@ -106,7 +106,7 @@ define(function(require, exports, module) {
       
       bus.broadcast({type:'sessionCheck', session:teem.session});
       
-      bus.onConnect = function(socket) {        
+      bus.onConnect = function(socket) {
         socket.send({type:'sessionCheck', session:teem.session});
       }
       
@@ -202,10 +202,13 @@ define(function(require, exports, module) {
 
             teem.root = mainModuleExports();
             break
-          case 'joinComplete':            
+          case 'joinComplete':
             teem.__startup(mainModuleExports);
             break;
-            
+          
+          case 'filechange':
+            // ignore
+            break;
           default:
             console.log('Unexpected message type: ', msg);
         }

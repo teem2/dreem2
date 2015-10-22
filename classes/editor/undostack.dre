@@ -40,10 +40,18 @@
     var stack = this.__stack || (this.__stack = []);
     while (stack.length) stack.pop().destroy();
     this.__stackLoc = -1;
-    
     this.__syncUndoabilityAttrs();
-    
+    this.__fireStackChangeEvent();
     return this;
+  </method>
+
+  <!--/**
+    * Fires an onstackchange event whenever the location in the stack changes.
+    * @method __fireStackChangeEvent
+    * @private
+    */-->
+  <method name="__fireStackChangeEvent">
+    this.sendEvent('onstackchange', this.__stackLoc);
   </method>
 
   <!--/**
@@ -151,6 +159,7 @@
         while (stack.length > loc) stack.pop().destroy();
         stack.push(undoable);
         this.__syncUndoabilityAttrs();
+        this.__fireStackChangeEvent();
         return true;
       }
     }
@@ -186,6 +195,7 @@
         if (errorHandler && typeof errorHandler === 'function') errorHandler(error);
       } else {
         this.__syncUndoabilityAttrs();
+        this.__fireStackChangeEvent();
         return true;
       }
     }
@@ -220,6 +230,7 @@
         if (errorHandler && typeof errorHandler === 'function') errorHandler(error);
       } else {
         this.__syncUndoabilityAttrs();
+        this.__fireStackChangeEvent();
         return true;
       }
     }

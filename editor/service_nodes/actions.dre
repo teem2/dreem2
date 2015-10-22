@@ -148,19 +148,26 @@ SOFTWARE. -->
   </method>
   
   <method name="editPreview">
-    editor.setAttribute('editmode', !editor.editmode);
     if (editor.editmode) {
+      if (dr.keyboard.isAltKeyDown()) { // Use alt since shift forces a new window in chrome
+        var win = window.open(editormodel.getPreviewerUrl(), '_blank');
+        win.blur();
+        window.focus();
+      } else {
+        editor.setAttribute('editmode', false);
+        selectionmanager.clear(true);
+        editPreviewButton.setAttribute('label', 'edit');
+        editPreviewButton.setAttribute('iconname', 'edit');
+        preview.setAttribute('visible', true);
+        preview.setAttribute('src', '/editor/preview.dre');
+      }
+    } else {
+      editor.setAttribute('editmode', true);
       selectionmanager.restore();
       editPreviewButton.setAttribute('label', 'preview');
       editPreviewButton.setAttribute('iconname', 'preview');
       preview.setAttribute('visible', false);
       preview.setAttribute('src', '/iframe_stub.html');
-    } else {
-      selectionmanager.clear(true);
-      editPreviewButton.setAttribute('label', 'edit');
-      editPreviewButton.setAttribute('iconname', 'edit');
-      preview.setAttribute('visible', true);
-      preview.setAttribute('src', '/editor/preview.dre');
     }
   </method>
   
