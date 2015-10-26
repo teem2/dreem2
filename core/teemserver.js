@@ -85,15 +85,8 @@ define(function(require, exports, module) {
     
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
-      if (!args['-nodreem'] && file.indexOf('dreem.js') !== -1) {
-        return this.broadcast({type:'delay'});
-      }
-      
-      // Tell the client to refresh itself.
-      var prefix = define.expandVariables('$ROOT');
-      if (file.startsWith(prefix)) file = file.substring(prefix.length);
-      
-      this.broadcast({type:'filechange',file:file});
+      if (!args['-nodreem'] && file.indexOf('dreem.js') !== -1) return this.broadcast({type:'delay'});
+      this.broadcastFileChange(file);
     }.bind(this);
     
     this.busserver = new BusServer();
@@ -120,10 +113,21 @@ define(function(require, exports, module) {
       */
     this.broadcast = function(msg) {
       this.busserver.broadcast(msg);
-      for (var k in this.compositions) {
-        this.compositions[k].busserver.broadcast(msg);
-      }
-    }
+      var key, compositions = this.compositions;
+      for (key in compositions) compositions[key].busserver.broadcast(msg);
+    };
+
+    /** 
+      * @method broadcastFileChange
+      * Send a message to all my connected websockets and those on the 
+      * compositions that the provided file has changed.
+      * @param {Object} file String The path to the file that changed.
+      */
+    this.broadcastFileChange = function(file) {
+      var prefix = define.expandVariables('$ROOT');
+      if (file.startsWith(prefix)) file = file.substring(prefix.length);
+      this.broadcast({type:'filechange', file:file});
+    };
 
     /**
       * Find composition object by url 

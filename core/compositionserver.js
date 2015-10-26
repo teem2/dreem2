@@ -37,12 +37,7 @@ define(function(require, exports, module) {
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
       this.__reloadComposition();
-      
-      // Tell the client to refresh itself.
-      var prefix = define.expandVariables('$ROOT');
-      if (file.startsWith(prefix)) file = file.substring(prefix.length);
-      
-      teemserver.broadcast({type:'filechange', file:file});
+      teemserver.broadcastFileChange(file);
     }.bind(this);
     
     /*define.onRequire = function(filename) {
@@ -318,14 +313,39 @@ define(function(require, exports, module) {
       }
     };
     
+    this.__isPreviewPath = function(file) {
+      var prefix = define.expandVariables('$ROOT');
+      if (file.startsWith(prefix)) {
+        file = file.substring(prefix.length);
+        if (file.startsWith('/preview/')) return true;
+      }
+      return false;
+    };
+    
     /** @private */
     this.__parseDreSync = function(drefile, errors) {
       // read our composition file
+      var data, expandedPath = define.expandVariables(drefile);
       try {
-        var data = fs.readFileSync(define.expandVariables(drefile));
+        data = fs.readFileSync(expandedPath);
       } catch(e) {
-        errors.push(new DreemError("Error during readFileSync in __parseDreSync: " + e.toString()));
-        return;
+        // Generate a placeholder composition if this is a "preview" request.
+        // This allows previewer clients to listen for a composition to start
+        // being edited.
+        if (e.code === 'ENOENT' && this.__isPreviewPath(expandedPath)) {
+          data = "<composition><screens><screen type='browser' name='default' title='Waiting for edits'><text>Waiting for edits</text></screen></screens></composition>";
+          try {
+            var dirPath = path.dirname(expandedPath);
+            if (!fs.existsSync(dirPath)) this.__mkdirParent(dirPath);
+            fs.writeFileSync(expandedPath, data);
+          } catch(ex) {
+            errors.push(new DreemError("Error in writeFilSync: " + ex.toString()));
+            return;
+          }
+        } else {
+          errors.push(new DreemError("Error during readFileSync in __parseDreSync: " + e.toString()));
+          return;
+        }
       }
       
       // watch it
@@ -337,10 +357,9 @@ define(function(require, exports, module) {
         jsobj = htmlParser.parse(source);
 
       if (jsobj.tag == '$root' && jsobj.child) {
-
         var children = jsobj.child;
         var composition;
-        for (var i=0;i<children.length;i++) {
+        for (var i = 0; i < children.length; i++) {
           var child = children[i];
           if (child.tag == 'composition') {
             this.teemserver.pluginLoader.inject(child);
