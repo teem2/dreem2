@@ -141,8 +141,22 @@ define(function(require, exports, module) {
           // Read the composition from the filesystem and convert it to/from
           // edit mode.
           var comppath = define.expandVariables(this.__getCompositionPath()),
-            data = this.__readFile(comppath),
-            htmlParser = new HTMLParser(),
+            data = this.__readFile(comppath);
+          
+          if (data == null) {
+            console.log('composition does not exist so create a placeholder: ' + comppath);
+            data = "<composition><screens><screen type='browser' name='default' title='New File'><view width='100%' height='100%'/></screen></screens></composition>";
+            try {
+              var dirPath = path.dirname(comppath);
+              if (!fs.existsSync(dirPath)) this.__mkdirParent(dirPath);
+              fs.writeFileSync(comppath, data);
+            } catch(ex) {
+              errors.push(new DreemError("Error in writeFilSync: " + ex.toString()));
+              return;
+            }
+          }
+          
+          var htmlParser = new HTMLParser(),
             jsobj = htmlParser.parse(data),
             isExitAction = query.stripeditor === '1';
           this.__walkChildren(query.screen || 'default', jsobj, isExitAction)
@@ -804,14 +818,15 @@ define(function(require, exports, module) {
       }
 
       var children = jsobj.child;
-      if (!children.length) return;
 
       // strip out editor include
-      for (var i = 0; i < children.length; i++) {
-        var child = children[i]
-        if (child.tag === 'include' && child.attr.href === '/editor/editor_include.dre') {
-          children.splice(i, 1);
-          break;
+      if (children) {
+        for (var i = 0; i < children.length; i++) {
+          var child = children[i]
+          if (child.tag === 'include' && child.attr.href === '/editor/editor_include.dre') {
+            children.splice(i, 1);
+            break;
+          }
         }
       }
       
@@ -821,6 +836,7 @@ define(function(require, exports, module) {
         setplacement = true;
         if (!stripeditor) {
           // add top-level editor include
+          if (!jsobj.child) jsobj.child = [];
           jsobj.child.unshift({
             tag: 'include',
             attr: {
@@ -829,6 +845,8 @@ define(function(require, exports, module) {
           });
         }
       }
+      
+      if (!children) return;
 
       for (var i = 0; i < children.length; i++) {
         var child = children[i]
@@ -856,9 +874,7 @@ define(function(require, exports, module) {
         }
 
         // console.log(stripeditor, JSON.stringify(child));
-        if (child.child) {
-          this.__walkChildren(screenName, child, stripeditor, insidescreen);
-        }
+        this.__walkChildren(screenName, child, stripeditor, insidescreen);
       }
     };
   };
