@@ -83,13 +83,13 @@ define(function(require, exports, module) {
           url = '/preview' + url;
           var isFirst = true, name;
           for (name in query) {
-              if (isFirst) {
-                  url += '?';
-                  isFirst = false;
-              } else {
-                  url += '&';
-              }
-              url += name + '=' + query[name];
+            if (isFirst) {
+              url += '?';
+              isFirst = false;
+            } else {
+              url += '&';
+            }
+            url += name + '=' + query[name];
           }
           // We need to redirect the client so it will refresh and show the editor.
           res.writeHead(302, {'Location':url});
@@ -138,7 +138,6 @@ define(function(require, exports, module) {
               res.end();
             }.bind(this));
           }
-          return;
         } else {
           // Editor Handling for "enter" and "exit"
           
@@ -185,8 +184,8 @@ define(function(require, exports, module) {
             res.writeHead(302, {'Location':redirectUrl});
             res.end();
           }
-          return;
         }
+        return;
       }
       
       if (query.raw) {
@@ -801,9 +800,8 @@ define(function(require, exports, module) {
       }
     };
 
-    this.__guid = 0;
     this.__readFile = function(filepath) {
-      var data, newdata;
+      var data;
       try {
         data = fs.readFileSync(filepath);
         if (data) data = data.toString();
@@ -813,7 +811,8 @@ define(function(require, exports, module) {
 
     this.__editableRE = /[,\s]*editable/;
     this.__skiptagsRE = /$comment|handler|method|include|setter|attribute/;
-    
+    this.__guid = 0;
+
     this.__transformToEditMode = function(screenName, jsobj, depth) {
       var attr = jsobj.attr, tag = jsobj.tag;
       
