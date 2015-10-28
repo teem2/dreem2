@@ -25,24 +25,34 @@ SOFTWARE. -->
     <include href="./includes/boilerplate.dre"></include>
     
     <view width="auto" height="auto" bgcolor="#cccccc" padding="5">
-      <expectedoutput>Name in use:basic</expectedoutput>
-    
       <class name="block" x="10" y="5" width="100" height="50" bgcolor="#999999"></class>
       <class name="item" width="20" height="20" bgcolor="#666666"></class>
       
       <!-- Absolute Positioning -->
-      <block name="basic">
+      <block name="basic1">
         <handler event="oninit">
           assert.equal(this.x, 10);
           assert.equal(this.y, 5);
         </handler>
       </block>
       
-      <block name="basic" x="foo" y="bar">
+      <block name="basic2" x="foo" y="bar">
         <handler event="oninit">
           // Invalid declarative values become 0.
           assert.equal(this.x, 0);
           assert.equal(this.y, 0);
+        </handler>
+      </block>
+      
+      <!-- Fractional Pixel Positioning -->
+      <block name="fractional" x="200.5" y="22.75">
+        <handler event="oninit">
+          assert.equal(this.x, 200.5);
+          assert.equal(this.y, 22.75);
+          
+          var pos = this.getAbsolutePosition();
+          assert.equal(pos.x, 5 + 200.5);
+          assert.equal(pos.y, 5 + 22.75);
         </handler>
       </block>
       
@@ -140,7 +150,7 @@ SOFTWARE. -->
       
       <handler event="oninit">
         //// Verify Basic Positioning ////
-        var block = this.basic, v1, v2, v3, v4, layout1, layout2;
+        var block = this.basic2, v1, v2, v3, v4, layout1, layout2;
         
         // Set x to a valid value
         block.setAttribute('x', 1);
