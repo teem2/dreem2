@@ -108,7 +108,7 @@ define(function(require, exports, module) {
               var screenName = query.screen || 'default',
                 comppath = define.expandVariables(this.__getCompositionPath(true)),
                 jsobj = JSON.parse(buf);
-              this.__walkChildren(screenName, jsobj, true);
+              this.__transformToNormalMode(jsobj);
               var newdata = HTMLParser.reserialize(jsobj, '  ');
               this.__writeFileIfChanged(comppath, newdata);
               
@@ -123,7 +123,11 @@ define(function(require, exports, module) {
               var screenName = query.screen || 'default',
                 comppath = define.expandVariables(this.__getCompositionPath()),
                 jsobj = JSON.parse(buf);
-              this.__walkChildren(screenName, jsobj, query.stripeditor === '1');
+              if (query.stripeditor === '1') {
+                this.__transformToNormalMode(jsobj);
+              } else {
+                this.__transformToEditMode(screenName, jsobj);
+              }
               var newdata = HTMLParser.reserialize(jsobj, '  ');
               this.__writeFileIfChanged(comppath, newdata);
               
@@ -159,7 +163,12 @@ define(function(require, exports, module) {
           var htmlParser = new HTMLParser(),
             jsobj = htmlParser.parse(data),
             isExitAction = query.stripeditor === '1';
-          this.__walkChildren(query.screen || 'default', jsobj, isExitAction)
+          if (isExitAction) {
+            this.__transformToNormalMode(jsobj);
+          } else {
+            this.__transformToEditMode(query.screen || 'default', jsobj);
+          }
+          
           this.__writeFileIfChanged(comppath, HTMLParser.reserialize(jsobj, '  '));
           
           // Force a reload since we know we just changed the file.
@@ -803,78 +812,97 @@ define(function(require, exports, module) {
     }
 
     this.__editableRE = /[,\s]*editable/;
-    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter|attribute/;
-    this.__walkChildren = function(screenName, jsobj, stripeditor, insidescreen) {
-      var setplacement = false, setwith = false;
-      if (jsobj.tag === 'screen') {
-        if (jsobj.attr && jsobj.attr.name === screenName) {
-          // track if we're inside the screen tag
-          insidescreen = true;
+    this.__skiptagsRE = /$comment|handler|method|include|setter|attribute/;
+    
+    this.__transformToEditMode = function(screenName, jsobj, depth) {
+      var attr = jsobj.attr, tag = jsobj.tag;
+      
+      // Remove all existing editor includes just in case.
+      if (tag === 'include' && attr && attr.href === '/editor/editor_include.dre') return true;
+      
+      if (!tag.match(this.__skiptagsRE)) {
+        var i, children = jsobj.child;
+        if (depth >= 0) {
+          // Process descendant of the matching screen
+          if (!attr) attr = jsobj.attr = {};
+          
+          // Add lzeditor ids
+          if (!attr.id) attr.id = 'lzeditor_' + this.__guid++;
+          
+          // Add placement to top level views and datasets
+          if (depth === 1) attr.placement = 'editor';
+          
+          // Add mixin
+          if (depth >= 1) {
+            if (!attr.with) {
+              attr.with = 'editable';
+            } else if (!attr.with.match(this.__editableRE)){
+              attr.with += ',editable';
+            }
+          }
+          
+          // Recurse
+          if (children) {
+            i = children.length;
+            while (i) if (this.__transformToEditMode(screenName, children[--i], depth + 1)) children.splice(i, 1);
+          }
+          
+          // Insert editor include as the first child of the first view of the
+          // selected screen. Must come after recursion so it doesn't get removed.
+          if (depth === 0 & tag === 'view') {
+            if (!children) children = jsobj.child = [];
+            children.unshift({tag:'include', attr:{href:'/editor/editor_include.dre'}});
+          }
         } else {
-          stripeditor = true;
-        }
-      } else {
-        setwith = true;
-      }
-
-      var children = jsobj.child;
-
-      // strip out editor include
-      if (children) {
-        for (var i = 0; i < children.length; i++) {
-          var child = children[i]
-          if (child.tag === 'include' && child.attr.href === '/editor/editor_include.dre') {
-            children.splice(i, 1);
-            break;
-          }
-        }
-      }
-      
-      if (jsobj.tag === 'view' && insidescreen) {
-        // only set placement='editor' for tags in the top-level view immediately inside the screen tag
-        insidescreen = false;
-        setplacement = true;
-        if (!stripeditor) {
-          // add top-level editor include
-          if (!jsobj.child) jsobj.child = [];
-          jsobj.child.unshift({
-            tag: 'include',
-            attr: {
-              href: '/editor/editor_include.dre'
-            }
-          });
-        }
-      }
-      
-      if (!children) return;
-
-      for (var i = 0; i < children.length; i++) {
-        var child = children[i]
-        if (!child.tag.match(this.__skiptagsRE)) {
-          if (!child.attr) child.attr = {};
-          var attr = child.attr;
-          if (stripeditor) {
-            if ((typeof attr.id === 'string') && (attr.id.indexOf('lzeditor_') > -1)) delete attr.id;
-            if ((typeof attr.with === 'string') && attr.with.match(this.__editableRE)) {
-              attr.with = attr.with.replace(this.__editableRE, '');
-              if (!attr.with) delete attr.with;
-            }
-            if (attr.placement === 'editor') delete attr.placement;
-          } else {
-            if (!attr.id) attr.id = 'lzeditor_' + this.__guid++;
-            if (setwith || child.tag === 'dataset') { // Also do dataset children of screen.
-              if (!attr.with) {
-                attr.with = 'editable';
-              } else if (!attr.with.match(this.__editableRE)){
-                attr.with += ',editable';
+          // Process composition, screens and non-matching screen trees.
+          if (children) {
+            i = children.length;
+            if (tag === 'screen') {
+              if (attr && attr.name === screenName) {
+                // Begin processing matching screen at depth 0.
+                while (i) if (this.__transformToEditMode(screenName, children[--i], 0)) children.splice(i, 1);
+              } else {
+                // Transform non-matching scrrens to normal
+                while (i) if (this.__transformToNormalMode(children[--i])) children.splice(i, 1);
               }
-              if (setplacement) attr.placement = 'editor';
+            } else {
+              // Should process composition and screens or any other elements above
+              // and/or outside the matching screen.
+              while (i) if (this.__transformToEditMode(screenName, children[--i])) children.splice(i, 1);
             }
           }
         }
-
-        // console.log(stripeditor, JSON.stringify(child));
-        this.__walkChildren(screenName, child, stripeditor, insidescreen);
+      }
+      return false;
+    };
+    
+    this.__transformToNormalMode = function(jsobj) {
+      var attr = jsobj.attr, tag = jsobj.tag;
+      
+      // Strip out editor include by returning true.
+      if (tag === 'include' && attr && attr.href === '/editor/editor_include.dre') return true;
+      
+      if (!tag.match(this.__skiptagsRE)) {
+        if (attr) {
+          // Remove lzeditor ids
+          if (typeof attr.id === 'string' && attr.id.indexOf('lzeditor_') > -1) delete attr.id;
+          
+          // Remove editor placement
+          if (attr.placement === 'editor') delete attr.placement;
+          
+          // Remove editor mixin
+          if (typeof attr.with === 'string' && attr.with.match(this.__editableRE)) {
+            attr.with = attr.with.replace(this.__editableRE, '');
+            if (!attr.with) delete attr.with;
+          }
+        }
+        
+        // Recurse over children
+        var children = jsobj.child;
+        if (children) {
+          var i = children.length;
+          while (i) if (this.__transformToNormalMode(children[--i])) children.splice(i, 1);
+        }
       }
     };
   };
