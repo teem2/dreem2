@@ -43,6 +43,9 @@ SOFTWARE. -->
     }
   </handler>
 
+  <!-- Syncs the position and size of this reticle to the position and
+       size of the target view. Also updates the vertical and horizontal
+       selection bars found within the rulers. -->
   <method name="_syncPosition">
     var target = this.target;
     if (target.destroyed) {
@@ -102,7 +105,9 @@ SOFTWARE. -->
       }
     }
   </method>
-  
+
+  <!-- Formats the numbers displayed in the vertical and horizontal selections
+       bars to at most two decimal places. -->
   <method name="_formatNumber" args="v">
     // Allow at most 2 decimal places to be shown.
     return +(v.toFixed(2));
@@ -120,7 +125,8 @@ SOFTWARE. -->
   <method name="drawReadyState">
     this.fill.setActualAttribute('boxshadow', config.boxshadow_normal);
   </method>
-
+  
+  <!-- Syncs an attribute on the target to one on the reticle. -->
   <method name="_updateTarget" args="attr, value">
     if (!this._isSync) {
       var target = this.target;
@@ -166,10 +172,9 @@ SOFTWARE. -->
         noYAdj = target.__layoutDomainInUseForView('y');
       
       if (!this._isArrowAdj && snaptoguides.selected) {
-        var pos = this._updateGuides(x, y, noXAdj, noYAdj);
+        var pos = this.__lastGuidePos = this._updateGuides(x, y, noXAdj, noYAdj);
         x = pos.x;
         y = pos.y;
-        this.__lastGuidePos = pos;
         guides.setActualAttribute('visible', true);
       } else {
         delete this.__lastGuidePos;
@@ -198,86 +203,146 @@ SOFTWARE. -->
       foundX = false,
       foundY = false;
     
-    svs = [parent].concat(parent.getSubviews()); // Also snap to parent boundary
+    // Match against parent first
+    if (!noXAdj && !foundX) {
+      abs = parent.getAbsolutePosition(editor);
+      sx = abs.x + parent.leftpadding;
+      
+      // Left Guides
+      foundX = this._createHGuide(newpos, sx, x, 'lower_lower', 0);
+      if (!foundX) foundX = this._createHGuide(newpos, sx + parent.innerwidth / 2, x, 'lower_middle', 0);
+      if (!foundX) foundX = this._createHGuide(newpos, sx + parent.innerwidth, x, 'lower_upper', 0);
+      
+      // Right Guides
+      if (!foundX) foundX = this._createHGuide(newpos, sx, x, 'upper_lower', w);
+      if (!foundX) foundX = this._createHGuide(newpos, sx + parent.innerwidth / 2, x, 'upper_middle', w);
+      if (!foundX) foundX = this._createHGuide(newpos, sx + parent.innerwidth, x, 'upper_upper', w);
+      
+      // Center Guides
+      if (!foundX) foundX = this._createHGuide(newpos, sx, x, 'middle_lower', halfW);
+      if (!foundX) foundX = this._createHGuide(newpos, sx + parent.innerwidth / 2, x, 'middle_middle', halfW);
+      if (!foundX) foundX = this._createHGuide(newpos, sx + parent.innerwidth, x, 'middle_upper', halfW);
+      
+      if (foundX) {
+        newpos.xTarget = parent;
+        this._createTargetOutline(parent, abs);
+      }
+    }
+    if (!noYAdj && !foundY) {
+      if (!abs) abs = parent.getAbsolutePosition(editor);
+      sy = abs.y + parent.toppadding;
+      
+      // Top Guides
+      foundY = this._createVGuide(newpos, sy, y, 'lower_lower', 0);
+      if (!foundY) foundY = this._createVGuide(newpos, sy + parent.innerheight / 2, y, 'lower_middle', 0);
+      if (!foundY) foundY = this._createVGuide(newpos, sy + parent.innerheight, y, 'lower_upper', 0);
+      
+      // Bottom Guides
+      if (!foundY) foundY = this._createVGuide(newpos, sy, y, 'upper_lower', h);
+      if (!foundY) foundY = this._createVGuide(newpos, sy + parent.innerheight / 2, y, 'upper_middle', h);
+      if (!foundY) foundY = this._createVGuide(newpos, sy + parent.innerheight, y, 'upper_upper', h);
+      
+      // Middle Guides
+      if (!foundY) foundY = this._createVGuide(newpos, sy, y, 'middle_lower', halfH);
+      if (!foundY) foundY = this._createVGuide(newpos, sy + parent.innerheight / 2, y, 'middle_middle', halfH);
+      if (!foundY) foundY = this._createVGuide(newpos, sy + parent.innerheight, y, 'middle_upper', halfH);
+      
+      if (foundY) {
+        newpos.yTarget = parent;
+        this._createTargetOutline(parent, abs);
+      }
+    }
+    abs = null;
+    
+    svs = parent.getSubviews();
     i = svs.length;
     while (i) {
       sibling = svs[--i];
       
       if (sibling !== target) {
-        abs = sibling.getAbsolutePosition(editor);
-        
         if (!noXAdj && !foundX) {
+          abs = sibling.getAbsolutePosition(editor);
           sx = abs.x;
           
           // Left Guides
-          foundX = this._createGuide(newpos, sx, x, false, sibling, abs, 'lower_lower', 0);
-          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x, false, sibling, abs, 'lower_middle', 0);
-          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x, false, sibling, abs, 'lower_upper', 0);
+          foundX = this._createHGuide(newpos, sx, x, 'lower_lower', 0);
+          if (!foundX) foundX = this._createHGuide(newpos, sx + sibling.width / 2, x, 'lower_middle', 0);
+          if (!foundX) foundX = this._createHGuide(newpos, sx + sibling.width, x, 'lower_upper', 0);
           
           // Right Guides
-          if (!foundX) foundX = this._createGuide(newpos, sx, x + w, false, sibling, abs, 'upper_lower', w);
-          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x + w, false, sibling, abs, 'upper_middle', w);
-          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x + w, false, sibling, abs, 'upper_upper', w);
+          if (!foundX) foundX = this._createHGuide(newpos, sx, x, 'upper_lower', w);
+          if (!foundX) foundX = this._createHGuide(newpos, sx + sibling.width / 2, x, 'upper_middle', w);
+          if (!foundX) foundX = this._createHGuide(newpos, sx + sibling.width, x, 'upper_upper', w);
           
           // Center Guides
-          if (!foundX) foundX = this._createGuide(newpos, sx, x + halfW, false, sibling, abs, 'middle_lower', halfW);
-          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x + halfW, false, sibling, abs, 'middle_middle', halfW);
-          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x + halfW, false, sibling, abs, 'middle_upper', halfW);
+          if (!foundX) foundX = this._createHGuide(newpos, sx, x, 'middle_lower', halfW);
+          if (!foundX) foundX = this._createHGuide(newpos, sx + sibling.width / 2, x, 'middle_middle', halfW);
+          if (!foundX) foundX = this._createHGuide(newpos, sx + sibling.width, x, 'middle_upper', halfW);
+          
+          if (foundX) {
+            newpos.xTarget = sibling;
+            this._createTargetOutline(sibling, abs);
+          }
         }
         
         if (!noYAdj && !foundY) {
+          if (!abs) abs = sibling.getAbsolutePosition(editor);
           sy = abs.y;
           
           // Top Guides
-          foundY = this._createGuide(newpos, sy, y, true, sibling, abs, 'lower_lower', 0);
-          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y, true, sibling, abs, 'lower_middle', 0);
-          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y, true, sibling, abs, 'lower_upper', 0);
+          foundY = this._createVGuide(newpos, sy, y, 'lower_lower', 0);
+          if (!foundY) foundY = this._createVGuide(newpos, sy + sibling.height / 2, y, 'lower_middle', 0);
+          if (!foundY) foundY = this._createVGuide(newpos, sy + sibling.height, y, 'lower_upper', 0);
           
           // Bottom Guides
-          if (!foundY) foundY = this._createGuide(newpos, sy, y + h, true, sibling, abs, 'upper_lower', h);
-          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y + h, true, sibling, abs, 'upper_middle', h);
-          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y + h, true, sibling, abs, 'upper_upper', h);
+          if (!foundY) foundY = this._createVGuide(newpos, sy, y, 'upper_lower', h);
+          if (!foundY) foundY = this._createVGuide(newpos, sy + sibling.height / 2, y, 'upper_middle', h);
+          if (!foundY) foundY = this._createVGuide(newpos, sy + sibling.height, y, 'upper_upper', h);
           
           // Middle Guides
-          if (!foundY) foundY = this._createGuide(newpos, sy, y + halfH, true, sibling, abs, 'middle_lower', halfH);
-          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y + halfH, true, sibling, abs, 'middle_middle', halfH);
-          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y + halfH, true, sibling, abs, 'middle_upper', halfH);
+          if (!foundY) foundY = this._createVGuide(newpos, sy, y, 'middle_lower', halfH);
+          if (!foundY) foundY = this._createVGuide(newpos, sy + sibling.height / 2, y, 'middle_middle', halfH);
+          if (!foundY) foundY = this._createVGuide(newpos, sy + sibling.height, y, 'middle_upper', halfH);
+          
+          if (foundY) {
+            newpos.yTarget = sibling;
+            this._createTargetOutline(sibling, abs);
+          }
         }
+        
+        abs = null;
       }
     }
     
     return newpos;
   </method>
   
-  <method name="_createGuide" args="newpos, gv, v, isVertical, sibling, abs, type, adj">
+  <method name="_createHGuide" args="newpos, gv, v, type, adj">
+    v += adj;
     if (5 > Math.abs(gv - v)) {
-      // Guide line
-      guides.createChild({
-        class:'view', 
-        x:isVertical ? 0 : gv, 
-        y:isVertical ? gv : 0, 
-        width:isVertical ? 5000 : 1, 
-        height:isVertical ? 1 : 5000, 
-        bgcolor:'cyan'
-      });
-      
-      // Guide target view outline
-      guides.createChild({
-        class:'view', 
-        x:abs.x, 
-        y:abs.y, 
-        width:sibling.width, 
-        height:sibling.height,
-        border:1,
-        bordercolor:'cyan'
-      });
-      
-      newpos[isVertical ? 'y' : 'x'] = gv - adj;
-      newpos[isVertical ? 'yTarget' : 'xTarget'] = sibling;
-      newpos[isVertical ? 'yType' : 'xType'] = type;
+      guides.createChild({class:'view', x:gv, y:0, width:1, height:5000, bgcolor:'cyan'});
+      newpos.x = gv - adj;
+      newpos.xType = type;
       return true;
     }
-    return false;
+  </method>
+  
+  <method name="_createVGuide" args="newpos, gv, v, type, adj">
+    v += adj;
+    if (5 > Math.abs(gv - v)) {
+      guides.createChild({class:'view', x:0, y:gv, width:5000, height:1, bgcolor:'cyan'});
+      newpos.y = gv - adj;
+      newpos.yType = type;
+      return true;
+    }
+  </method>
+  
+  <method name="_createTargetOutline" args="sibling, abs">
+    guides.createChild({
+      class:'view', x:abs.x, y:abs.y, 
+      width:sibling.width, height:sibling.height,
+      border:1, bordercolor:'cyan'
+    });
   </method>
 
   <method name="willPermitDrop" args="droptarget">
@@ -328,7 +393,7 @@ SOFTWARE. -->
   <method name="_start">
     this.isStarted = true;
     
-    delete this.__lastGuidePos; 
+    delete this.__lastGuidePos;
     
     var target = this.target,
       pos = target.getAbsolutePosition(editor);
