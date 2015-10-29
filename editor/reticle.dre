@@ -162,11 +162,13 @@ SOFTWARE. -->
         }
       }
       
+      // Snap to grid
       var gx = Number(gridsizex.value),
         gy = Number(gridsizey.value);
       if (gx > 0) x = (gx * Math.round((x + this.dx) / gx)) - this.dx;
       if (gy > 0) y = (gy * Math.round((y + this.dy) / gy)) - this.dy;
       
+      // Snap to guides
       var target = this.target,
         noXAdj = target.__layoutDomainInUseForView('x'),
         noYAdj = target.__layoutDomainInUseForView('y');
@@ -394,6 +396,7 @@ SOFTWARE. -->
     this.isStarted = true;
     
     delete this.__lastGuidePos;
+    delete this.resizer.__lastGuidePos;
     
     var target = this.target,
       pos = target.getAbsolutePosition(editor);
@@ -446,8 +449,74 @@ SOFTWARE. -->
         }
       }
       
-      // Setup constraints for guides
-      var guidePos = this.__lastGuidePos;
+      // Setup constraints for resize guides
+      var guidePos = this.resizer.__lastGuidePos;
+      if (guidePos && dr.keyboard.isAltKeyDown()) {
+        var xType = guidePos.xType;
+        if (xType) {
+          var xConstraint,
+            gxTarget = guidePos.xTarget,
+            guideTargetXName = gxTarget.name;
+          
+          if ((gxTarget === target.parent && !isNewParent)) {
+            if (xType === 'lower') {
+              xConstraint = '0';
+            } else if (xType === 'middle') {
+              xConstraint = '${this.parent.innerwidth / 2 - this.x}';
+            } else {
+              xConstraint = '${this.parent.innerwidth - this.x}';
+            }
+          } else if (!isNewParent) {
+            if (!guideTargetXName) {
+              guideTargetXName = this._generateUniqueName(gxTarget);
+              compound.add(new E.editorattrundoable({target:gxTarget, attribute:'name', oldvalue:'', newvalue:guideTargetXName}));
+            }
+            
+            if (xType === 'lower') {
+              xConstraint = '${this.parent.' + guideTargetXName + '.x - this.x}';
+            } else if (xType === 'middle') {
+              xConstraint = '${this.parent.' + guideTargetXName + '.x + this.parent.' + guideTargetXName + '.boundswidth / 2 - this.x}';
+            } else {
+              xConstraint = '${this.parent.' + guideTargetXName + '.x + this.parent.' + guideTargetXName + '.boundswidth - this.x}';
+            }
+          }
+          undoW.newvalue = xConstraint;
+        }
+        
+        var yType = guidePos.yType;
+        if (yType) {
+          var yConstraint,
+            gyTarget = guidePos.yTarget,
+            guideTargetXName = gyTarget.name;
+          
+          if ((gyTarget === target.parent && !isNewParent)) {
+            if (yType === 'lower') {
+              yConstraint = '0';
+            } else if (yType === 'middle') {
+              yConstraint = '${this.parent.innerheight / 2 - this.y}';
+            } else {
+              yConstraint = '${this.parent.innerheight - this.y}';
+            }
+          } else if (!isNewParent) {
+            if (!guideTargetXName) {
+              guideTargetXName = this._generateUniqueName(gyTarget);
+              compound.add(new E.editorattrundoable({target:gyTarget, attribute:'name', oldvalue:'', newvalue:guideTargetXName}));
+            }
+            
+            if (yType === 'lower') {
+              yConstraint = '${this.parent.' + guideTargetXName + '.y - this.y}';
+            } else if (yType === 'middle') {
+              yConstraint = '${this.parent.' + guideTargetXName + '.y + this.parent.' + guideTargetXName + '.boundsheight / 2 - this.y}';
+            } else {
+              yConstraint = '${this.parent.' + guideTargetXName + '.y + this.parent.' + guideTargetXName + '.boundsheight - this.y}';
+            }
+          }
+          undoH.newvalue = yConstraint;
+        }
+      }
+      
+      // Setup constraints for reposition guides
+      guidePos = this.__lastGuidePos;
       if (guidePos && dr.keyboard.isAltKeyDown()) {
         var xType = guidePos.xType;
         if (xType) {
@@ -656,7 +725,7 @@ SOFTWARE. -->
       } else if (this.resizer.focused) {
         this.resizer.__requestDragPosition();
       }
-    } else if (keyCode === GK.KEYCODE_ALT) {
+    } else if (keyCode === GK.KEYCODE_CONTROL) {
       if (this.resizer.focused) {
         this.resizer.__requestDragPosition();
       }
@@ -702,7 +771,7 @@ SOFTWARE. -->
               x = Math.round(closestPoint.x - 5);
               y = Math.round(closestPoint.y - 5);
             }
-          } else if (dr.keyboard.isAltKeyDown()) {
+          } else if (dr.keyboard.isControlKeyDown()) {
             // If alt key down make square
             var closestPoint = dr.getClosestPointOnALineToAPoint(0, 0, 1, 1, x + 5, y + 5);
             x = Math.round(closestPoint.x - 5);
@@ -710,22 +779,145 @@ SOFTWARE. -->
           }
         }
         
+        // Snap to grid
         var gx = Number(gridsizex.value),
           gy = Number(gridsizey.value);
         if (gx > 0) x = (gx * Math.round((x + 5) / gx)) - 5;
         if (gy > 0) y = (gy * Math.round((y + 5) / gy)) - 5;
         
+        // Snap to guides
+        var target = this.parent.target,
+          noXAdj = target.__layoutDomainInUseForView('width'),
+          noYAdj = target.__layoutDomainInUseForView('height');
+        
+        if (!this._isArrowAdj && snaptoguides.selected) {
+          var pos = this.__lastGuidePos = this._updateGuides(x, y, noXAdj, noYAdj);
+          x = pos.x;
+          y = pos.y;
+          guides.setActualAttribute('visible', true);
+        } else {
+          delete this.__lastGuidePos;
+        }
+        
         // If a layout in parent is managing x/y position then don't allow drag.
-        var target = this.parent.target;
-        if (target.__layoutDomainInUseForView('width')) x = this.getOriginalLocation().x;
-        if (target.__layoutDomainInUseForView('height')) y = this.getOriginalLocation().y;
+        if (noXAdj) x = this.getOriginalLocation().x;
+        if (noYAdj) y = this.getOriginalLocation().y;
         
         this.setActualAttribute('x', Math.max(-5, x));
         this.setActualAttribute('y', Math.max(-5, y));
       }
     </method>
     
+    <method name="_updateGuides" args="x, y, noXAdj, noYAdj">
+      var reticle = this.parent;
+      x += 5 + reticle.x;
+      y += 5 + reticle.y;
+      
+      var svs = guides.getSubviews(), i = svs.length;
+      while (i) svs[--i].destroy();
+      
+      var target = reticle.target,
+        w = target.width,
+        h = target.height,
+        parent = target.parent,
+        newpos = {x:x, y:y},
+        sibling, abs, sx, sy,
+        foundX = false,
+        foundY = false;
+      
+      // Match against parent first
+      if (!noXAdj && !foundX) {
+        abs = parent.getAbsolutePosition(editor);
+        sx = abs.x + parent.leftpadding;
+        
+        if (!foundX) foundX = this._createHGuide(newpos, sx, x, 'lower');
+        if (!foundX) foundX = this._createHGuide(newpos, sx + parent.innerwidth / 2, x, 'middle');
+        if (!foundX) foundX = this._createHGuide(newpos, sx + parent.innerwidth, x, 'upper');
+        
+        if (foundX) {
+          newpos.xTarget = parent;
+          reticle._createTargetOutline(parent, abs);
+        }
+      }
+      if (!noYAdj && !foundY) {
+        if (!abs) abs = parent.getAbsolutePosition(editor);
+        sy = abs.y + parent.toppadding;
+        
+        if (!foundY) foundY = this._createVGuide(newpos, sy, y, 'lower');
+        if (!foundY) foundY = this._createVGuide(newpos, sy + parent.innerheight / 2, y, 'middle');
+        if (!foundY) foundY = this._createVGuide(newpos, sy + parent.innerheight, y, 'upper');
+        
+        if (foundY) {
+          newpos.yTarget = parent;
+          reticle._createTargetOutline(parent, abs);
+        }
+      }
+      abs = null;
+      
+      svs = parent.getSubviews();
+      i = svs.length;
+      while (i) {
+        sibling = svs[--i];
+        
+        if (sibling !== target) {
+          if (!noXAdj && !foundX) {
+            abs = sibling.getAbsolutePosition(editor);
+            sx = abs.x;
+            
+            if (!foundX) foundX = this._createHGuide(newpos, sx, x, 'lower');
+            if (!foundX) foundX = this._createHGuide(newpos, sx + sibling.width / 2, x, 'middle');
+            if (!foundX) foundX = this._createHGuide(newpos, sx + sibling.width, x, 'upper');
+            
+            if (foundX) {
+              newpos.xTarget = sibling;
+              reticle._createTargetOutline(sibling, abs);
+            }
+          }
+          
+          if (!noYAdj && !foundY) {
+            if (!abs) abs = sibling.getAbsolutePosition(editor);
+            sy = abs.y;
+            
+            if (!foundY) foundY = this._createVGuide(newpos, sy, y, 'lower');
+            if (!foundY) foundY = this._createVGuide(newpos, sy + sibling.height / 2, y, 'middle');
+            if (!foundY) foundY = this._createVGuide(newpos, sy + sibling.height, y, 'upper');
+            
+            if (foundY) {
+              newpos.yTarget = sibling;
+              reticle._createTargetOutline(sibling, abs);
+            }
+          }
+          
+          abs = null;
+        }
+      }
+      
+      newpos.x -= 5 + reticle.x;
+      newpos.y -= 5 + reticle.y;
+      return newpos;
+    </method>
+    
+    <method name="_createHGuide" args="newpos, gv, v, type">
+      if (5 > Math.abs(gv - v)) {
+        guides.createChild({class:'view', x:gv, y:0, width:1, height:5000, bgcolor:'cyan'});
+        newpos.x = gv;
+        newpos.xType = type;
+        return true;
+      }
+    </method>
+    
+    <method name="_createVGuide" args="newpos, gv, v, type">
+      if (5 > Math.abs(gv - v)) {
+        guides.createChild({class:'view', x:0, y:gv, width:5000, height:1, bgcolor:'cyan'});
+        newpos.y = gv;
+        newpos.yType = type;
+        return true;
+      }
+    </method>
+    
     <method name="stopDrag" args="event, isAbort">
+      guides.setActualAttribute('visible', false);
+      
       if (isAbort) {
         this.parent._abort();
       } else {
