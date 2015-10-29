@@ -169,7 +169,10 @@ SOFTWARE. -->
         var pos = this._updateGuides(x, y, noXAdj, noYAdj);
         x = pos.x;
         y = pos.y;
+        this.__lastGuidePos = pos;
         guides.setActualAttribute('visible', true);
+      } else {
+        delete this.__lastGuidePos;
       }
       
       // If a layout in parent is managing x/y position then don't allow drag.
@@ -207,38 +210,38 @@ SOFTWARE. -->
           sx = abs.x;
           
           // Left Guides
-          foundX = this._createGuide(newpos, sx, x, false, sibling, abs, 'lower', 0);
-          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x, false, sibling, abs, 'lower', 0);
-          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x, false, sibling, abs, 'lower', 0);
+          foundX = this._createGuide(newpos, sx, x, false, sibling, abs, 'lower_lower', 0);
+          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x, false, sibling, abs, 'lower_middle', 0);
+          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x, false, sibling, abs, 'lower_upper', 0);
           
           // Right Guides
-          if (!foundX) foundX = this._createGuide(newpos, sx, x + w, false, sibling, abs, 'upper', w);
-          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x + w, false, sibling, abs, 'upper', w);
-          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x + w, false, sibling, abs, 'upper', w);
+          if (!foundX) foundX = this._createGuide(newpos, sx, x + w, false, sibling, abs, 'upper_lower', w);
+          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x + w, false, sibling, abs, 'upper_middle', w);
+          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x + w, false, sibling, abs, 'upper_upper', w);
           
           // Center Guides
-          if (!foundX) foundX = this._createGuide(newpos, sx, x + halfW, false, sibling, abs, 'middle', halfW);
-          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x + halfW, false, sibling, abs, 'middle', halfW);
-          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x + halfW, false, sibling, abs, 'middle', halfW);
+          if (!foundX) foundX = this._createGuide(newpos, sx, x + halfW, false, sibling, abs, 'middle_lower', halfW);
+          if (!foundX) foundX = this._createGuide(newpos, (sibling.width / 2) + sx, x + halfW, false, sibling, abs, 'middle_middle', halfW);
+          if (!foundX) foundX = this._createGuide(newpos, sibling.width + sx, x + halfW, false, sibling, abs, 'middle_upper', halfW);
         }
         
         if (!noYAdj && !foundY) {
           sy = abs.y;
           
           // Top Guides
-          foundY = this._createGuide(newpos, sy, y, true, sibling, abs, 'lower', 0);
-          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y, true, sibling, abs, 'lower', 0);
-          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y, true, sibling, abs, 'lower', 0);
+          foundY = this._createGuide(newpos, sy, y, true, sibling, abs, 'lower_lower', 0);
+          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y, true, sibling, abs, 'lower_middle', 0);
+          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y, true, sibling, abs, 'lower_upper', 0);
           
           // Bottom Guides
-          if (!foundY) foundY = this._createGuide(newpos, sy, y + h, true, sibling, abs, 'lower', h);
-          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y + h, true, sibling, abs, 'lower', h);
-          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y + h, true, sibling, abs, 'lower', h);
+          if (!foundY) foundY = this._createGuide(newpos, sy, y + h, true, sibling, abs, 'upper_lower', h);
+          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y + h, true, sibling, abs, 'upper_middle', h);
+          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y + h, true, sibling, abs, 'upper_upper', h);
           
           // Middle Guides
-          if (!foundY) foundY = this._createGuide(newpos, sy, y + halfH, true, sibling, abs, 'middle', halfH);
-          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y + halfH, true, sibling, abs, 'middle', halfH);
-          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y + halfH, true, sibling, abs, 'middle', halfH);
+          if (!foundY) foundY = this._createGuide(newpos, sy, y + halfH, true, sibling, abs, 'middle_lower', halfH);
+          if (!foundY) foundY = this._createGuide(newpos, (sibling.height / 2) + sy, y + halfH, true, sibling, abs, 'middle_middle', halfH);
+          if (!foundY) foundY = this._createGuide(newpos, sibling.height + sy, y + halfH, true, sibling, abs, 'middle_upper', halfH);
         }
       }
     }
@@ -270,6 +273,8 @@ SOFTWARE. -->
       });
       
       newpos[isVertical ? 'y' : 'x'] = gv - adj;
+      newpos[isVertical ? 'yTarget' : 'xTarget'] = sibling;
+      newpos[isVertical ? 'yType' : 'xType'] = type;
       return true;
     }
     return false;
@@ -323,6 +328,8 @@ SOFTWARE. -->
   <method name="_start">
     this.isStarted = true;
     
+    delete this.__lastGuidePos; 
+    
     var target = this.target,
       pos = target.getAbsolutePosition(editor);
     this.dx = target.x - pos.x;
@@ -350,7 +357,7 @@ SOFTWARE. -->
         undoH = this._undoableh,
         undoX = this._undoablex,
         undoY = this._undoabley,
-        undoP, undoO,
+        undoP, undoO, undoExtraX, undoExtraY,
         isNewParent = false;
       
       undoW.newvalue = '' + target.getAttribute('width'); // Coerce to string for consistent comparison
@@ -358,7 +365,8 @@ SOFTWARE. -->
       undoX.newvalue = '' + target.getAttribute('x'); // Coerce to string for consistent comparison
       undoY.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
      
-      // TODO: remove check for _isInReplicator() when we have a true class editor. For now, it prevents attempts to reparent child views inside replicated classes. 
+      // TODO: remove check for _isInReplicator() when we have a true class editor. For 
+      // now, it prevents attempts to reparent child views inside replicated classes. 
       if (!this._isArrowAdj && !this.target._isInReplicator()) {
         isNewParent = droptarget && (droptarget !== target.parent);
         if (isNewParent) {
@@ -373,11 +381,176 @@ SOFTWARE. -->
         }
       }
       
+      // Setup constraints for guides
+      var guidePos = this.__lastGuidePos;
+      if (guidePos && dr.keyboard.isAltKeyDown()) {
+        var xType = guidePos.xType;
+        if (xType) {
+          var xConstraint,
+            parts = xType.split('_'),
+            sourceGuide = parts[0],
+            targetGuide = parts[1],
+            gxTarget = guidePos.xTarget,
+            guideTargetXName = gxTarget.name;
+          
+          if ((gxTarget === target.parent && !isNewParent) || droptarget.parent === target.parent) {
+            if (targetGuide === 'lower') {
+              if (sourceGuide === 'lower') {
+                xConstraint = 'left';
+              } else if (sourceGuide === 'middle') {
+                xConstraint = '${-(this.boundswidth / 2) + this.boundsxdiff}';
+              } else {
+                xConstraint = '${-this.boundswidth + this.boundsxdiff}';
+              }
+            } else if (targetGuide === 'middle') {
+              if (sourceGuide === 'lower') {
+                xConstraint = '${this.parent.innerwidth / 2 + this.boundsxdiff}';
+              } else if (sourceGuide === 'middle') {
+                xConstraint = 'center';
+              } else {
+                xConstraint = '${this.parent.innerwidth / 2  - this.boundswidth + this.boundsxdiff}';
+              }
+            } else {
+              if (sourceGuide === 'lower') {
+                xConstraint = '${this.parent.innerwidth + this.boundsxdiff}';
+              } else if (sourceGuide === 'middle') {
+                xConstraint = '${this.parent.innerwidth - (this.boundswidth / 2) + this.boundsxdiff}';
+              } else {
+                xConstraint = 'right';
+              }
+            }
+            undoX.newvalue = xConstraint;
+          } else if (!isNewParent || gxTarget === target.parent) {
+            if (!guideTargetXName) {
+              guideTargetXName = this._generateUniqueName(gxTarget);
+              compound.add(new E.editorattrundoable({target:gxTarget, attribute:'name', oldvalue:'', newvalue:guideTargetXName}));
+            }
+            
+            if (targetGuide === 'lower') {
+              if (sourceGuide === 'lower') {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x + this.boundsxdiff}';
+              } else if (sourceGuide === 'middle') {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x - (this.boundswidth / 2) + this.boundsxdiff}';
+              } else {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x - this.boundswidth + this.boundsxdiff}';
+              }
+            } else if (targetGuide === 'middle') {
+              if (sourceGuide === 'lower') {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x + this.parent.' + guideTargetXName + '.boundswidth / 2 + this.boundsxdiff}';
+              } else if (sourceGuide === 'middle') {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x + this.parent.' + guideTargetXName + '.boundswidth / 2  - (this.boundswidth / 2) + this.boundsxdiff}';
+              } else {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x + this.parent.' + guideTargetXName + '.boundswidth / 2  - this.boundswidth + this.boundsxdiff}';
+              }
+            } else {
+              if (sourceGuide === 'lower') {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x + this.parent.' + guideTargetXName + '.boundswidth + this.boundsxdiff}';
+              } else if (sourceGuide === 'middle') {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x + this.parent.' + guideTargetXName + '.boundswidth - (this.boundswidth / 2) + this.boundsxdiff}';
+              } else {
+                xConstraint = '${this.parent.' + guideTargetXName + '.x + this.parent.' + guideTargetXName + '.boundswidth - this.boundswidth + this.boundsxdiff}';
+              }
+            }
+            
+            if (gxTarget === target.parent) {
+              undoExtraX = new dr.editor.editorattrundoable({target:undoX.target, attribute:'x', oldvalue:undoX.newvalue, newvalue:xConstraint});
+            } else {
+              undoX.newvalue = xConstraint;
+            }
+          }
+        }
+        
+        var yType = guidePos.yType;
+        if (yType) {
+          var yConstraint,
+            parts = yType.split('_'),
+            sourceGuide = parts[0],
+            targetGuide = parts[1],
+            gyTarget = guidePos.yTarget,
+            guideTargetYName = gyTarget.name;
+          
+          if ((gyTarget === target.parent && !isNewParent) || droptarget.parent === target.parent) {
+            if (targetGuide === 'lower') {
+              if (sourceGuide === 'lower') {
+                yConstraint = 'top';
+              } else if (sourceGuide === 'middle') {
+                yConstraint = '${-(this.boundsheight / 2) + this.boundsydiff}';
+              } else {
+                yConstraint = '${-this.boundsheight + this.boundsydiff}';
+              }
+            } else if (targetGuide === 'middle') {
+              if (sourceGuide === 'lower') {
+                yConstraint = '${this.parent.innerheight / 2 + this.boundsydiff}';
+              } else if (sourceGuide === 'middle') {
+                yConstraint = 'middle';
+              } else {
+                yConstraint = '${this.parent.innerheight / 2  - this.boundsheight + this.boundsydiff}';
+              }
+            } else {
+              if (sourceGuide === 'lower') {
+                yConstraint = '${this.parent.innerheight + this.boundsydiff}';
+              } else if (sourceGuide === 'middle') {
+                yConstraint = '${this.parent.innerheight - (this.boundsheight / 2) + this.boundsydiff}';
+              } else {
+                yConstraint = 'bottom';
+              }
+            }
+            undoY.newvalue = yConstraint;
+          } else if (!isNewParent || gyTarget === target.parent) {
+            if (!guideTargetYName) {
+              guideTargetYName = this._generateUniqueName(gyTarget);
+              compound.add(new E.editorattrundoable({target:gyTarget, attribute:'name', oldvalue:'', newvalue:guideTargetYName}));
+            }
+            
+            if (targetGuide === 'lower') {
+              if (sourceGuide === 'lower') {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y + this.boundsydiff}';
+              } else if (sourceGuide === 'middle') {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y - (this.boundsheight / 2) + this.boundsydiff}';
+              } else {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y - this.boundsheight + this.boundsydiff}';
+              }
+            } else if (targetGuide === 'middle') {
+              if (sourceGuide === 'lower') {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y + this.parent.' + guideTargetYName + '.boundsheight / 2 + this.boundsydiff}';
+              } else if (sourceGuide === 'middle') {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y + this.parent.' + guideTargetYName + '.boundsheight / 2  - (this.boundsheight / 2) + this.boundsydiff}';
+              } else {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y + this.parent.' + guideTargetYName + '.boundsheight / 2  - this.boundsheight + this.boundsydiff}';
+              }
+            } else {
+              if (sourceGuide === 'lower') {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y + this.parent.' + guideTargetYName + '.boundsheight + this.boundsydiff}';
+              } else if (sourceGuide === 'middle') {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y + this.parent.' + guideTargetYName + '.boundsheight - (this.boundsheight / 2) + this.boundsydiff}';
+              } else {
+                yConstraint = '${this.parent.' + guideTargetYName + '.y + this.parent.' + guideTargetYName + '.boundsheight - this.boundsheight + this.boundsydiff}';
+              }
+            }
+            
+            if (gyTarget === target.parent) {
+              undoExtraY = new dr.editor.editorattrundoable({target:undoY.target, attribute:'y', oldvalue:undoY.newvalue, newvalue:yConstraint});
+            } else {
+              undoY.newvalue = yConstraint;
+            }
+          }
+        }
+      }
+      
       if (isNewParent || undoW.newvalue !== undoW.oldvalue && !target.__layoutDomainInUseForView('width')) compound.add(undoW);
       if (isNewParent || undoH.newvalue !== undoH.oldvalue && !target.__layoutDomainInUseForView('height')) compound.add(undoH);
       if (isNewParent || undoX.newvalue !== undoX.oldvalue && !target.__layoutDomainInUseForView('x')) compound.add(undoX);
       if (isNewParent || undoY.newvalue !== undoY.oldvalue && !target.__layoutDomainInUseForView('y')) compound.add(undoY);
-      if (isNewParent) compound.add(undoO).add(undoP); // Must be last so that dragging into a parent that already has a layout works as expected.
+      
+      // Must be last so that dragging into a parent that already has a layout works as expected. To repro,
+      // but a view at x=10, drag it into a view with only an x-spacedlayout, undo the drag and then
+      // notice the view did not get put back at 10, but instead at 0.
+      if (isNewParent) compound.add(undoO).add(undoP);
+      
+      // Must come after setting the parent so that named based constraints won't get applied against 
+      // an invalid set of parent names.
+      if (undoExtraX && undoExtraX.newvalue !== undoExtraX.oldvalue && !target.__layoutDomainInUseForView('x')) compound.add(undoExtraX);
+      if (undoExtraY && undoExtraY.newvalue !== undoExtraY.oldvalue && !target.__layoutDomainInUseForView('y')) compound.add(undoExtraY);
       
       // Only do it if something changed.
       if (compound.getUndoableCount() > 0) actions.do(compound);
@@ -385,6 +558,14 @@ SOFTWARE. -->
     
     this.stopListening(dr.keyboard, 'onkeydown, onkeyup', this._handleKeyChange);
     this.isStarted = false;
+  </method>
+
+  <method name="_generateUniqueName" args="target">
+    var count = 0,
+      name = 'layer_' + count++,
+      parent = target.parent;
+    while (parent[name]) name = 'layer_' + count++;
+    return name;
   </method>
 
   <method name="_abort">
