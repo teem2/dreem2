@@ -441,11 +441,9 @@ SOFTWARE. -->
           undoP = new E.editorattrundoable({target:target, attribute:'parent', oldvalue:target.parent, newvalue:droptarget});
           undoO = new E.orderundoable({target:target, oldprevsibling:target.getPrevSiblingView()});
           
-          var targetPos = target.getAbsolutePosition(editor),
-            newParentPos = droptarget.getAbsolutePosition(editor),
-            sprite = droptarget.sprite;
-          undoX.newvalue = '' + (targetPos.x - newParentPos.x - droptarget.leftborder + sprite.getScrollX());
-          undoY.newvalue = '' + (targetPos.y - newParentPos.y - droptarget.topborder + sprite.getScrollY());
+          var loc = dr.componentdropable.calculateDropLocation(target, droptarget);
+          undoX.newvalue = '' + loc.x;
+          undoY.newvalue = '' + loc.y;
         }
       }
       

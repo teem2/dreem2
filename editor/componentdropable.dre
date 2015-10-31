@@ -22,6 +22,19 @@ SOFTWARE. -->
 <mixin name="componentdropable" with="button, dropable"
   focusable="false" allowabort="true"
 >
+  <!--// Class Methods //////////////////////////////////////////////////////-->
+  <method name="calculateDropLocation" args="target, droptarget" allocation="class">
+    var targetPos = target.getAbsolutePosition(editor),
+      newParentPos = droptarget.getAbsolutePosition(editor),
+      sprite = droptarget.sprite;
+    return {
+      x:targetPos.x - newParentPos.x - droptarget.leftpadding - droptarget.leftborder + sprite.getScrollX(),
+      y:targetPos.y - newParentPos.y - droptarget.toppadding - droptarget.topborder + sprite.getScrollY()
+    };
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="instanceattrs" type="expression" value="null"/>
   
   <method name="notifyDropAborted">
@@ -45,11 +58,11 @@ SOFTWARE. -->
       attrs.id = editormodel.generateModelId();
       
       if (!this.islayout && !this.isbehavior) {
-        var targetPos = this.getAbsolutePosition(editor),
-          newParentPos = droptarget.getAbsolutePosition(editor),
-          sprite = droptarget.sprite;
-        if (attrs.x == null) attrs.x = targetPos.x - newParentPos.x - droptarget.leftborder + sprite.getScrollX();
-        if (attrs.y == null) attrs.y = targetPos.y - newParentPos.y - droptarget.topborder + sprite.getScrollY();
+        if (attrs.x == null || attrs.y == null) {
+          var loc = dr.componentdropable.calculateDropLocation(this, droptarget);
+          if (attrs.x == null) attrs.x = loc.x;
+          if (attrs.y == null) attrs.y = loc.y;
+        }
       }
       
       // Remember which attrs to objectify for the model
