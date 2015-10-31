@@ -634,19 +634,37 @@ SOFTWARE. -->
           ];
           
           this.super();
+          
+          // Set initial value
+          var cfgKey = dr.global.clientstorage.getItem('_editor_screensize') || 'hdtv';
+          this.setAttribute('selecteditem', this._getConfigAttrsByName(cfgKey));
         </method>
         
-        <attribute name="selecteditem" type="expression" value="this.cfg[5].attrs"/>
+        <attribute name="selecteditem" type="expression" value="null"/>
         <handler event="onselecteditem" args="selecteditem">
-          this.setActualAttribute('label', selecteditem.text);
-          
-          var isCustom = selecteditem.name === 'custom';
-          this.parent.custom.setActualAttribute('visible', isCustom);
-          if (!isCustom) {
-            screensizew.setActualAttribute('value', selecteditem.w);
-            screensizeh.setActualAttribute('value', selecteditem.h);
+          if (selecteditem) {
+            this.setActualAttribute('label', selecteditem.text);
+            
+            var isCustom = selecteditem.name === 'custom';
+            this.parent.custom.setActualAttribute('visible', isCustom);
+            if (!isCustom) {
+              screensizew.setActualAttribute('value', selecteditem.w);
+              screensizeh.setActualAttribute('value', selecteditem.h);
+            }
+            
+            dr.global.clientstorage.setItem('_editor_screensize', selecteditem.name);
           }
         </handler>
+        
+        <method name="_getConfigAttrsByName" args="name">
+          if (name) {
+            var cfg = this.cfg, i = cfg.length, attrs;
+            while (i) {
+              attrs = cfg[--i].attrs;
+              if (attrs && attrs.name === name) return attrs;
+            }
+          }
+        </method>
         
         <method name="drawDisabledState">
           this.setActualAttribute('color', this.selected ? '#000000' : '#cccccc');
@@ -686,15 +704,29 @@ SOFTWARE. -->
         <spacedlayout spacing="4" updateparent="true"></spacedlayout>
         <editor_text text="w:" y="2" fontsize="12"/>
         <editor_inputtext id="screensizew" width="33" allowedchars="0123456789" maxlength="4" fontsize="12">
+          <method name="initNode" args="parent, attrs">
+            attrs.value = dr.global.clientstorage.getItem('_editor_screensizew');
+            this.super();
+          </method>
           <setter name="value" args="v">
             return Math.min(v, 5000);
           </setter>
+          <handler event="onvalue" args="v">
+            dr.global.clientstorage.setItem('_editor_screensizew', v);
+          </handler>
         </editor_inputtext>
         <editor_text text="h:" y="2" fontsize="12"/>
         <editor_inputtext id="screensizeh" width="33" allowedchars="0123456789" maxlength="4" fontsize="12">
+          <method name="initNode" args="parent, attrs">
+            attrs.value = dr.global.clientstorage.getItem('_editor_screensizeh');
+            this.super();
+          </method>
           <setter name="value" args="v">
             return Math.min(v, 5000);
           </setter>
+          <handler event="onvalue" args="v">
+            dr.global.clientstorage.setItem('_editor_screensizeh', v);
+          </handler>
         </editor_inputtext>
       </view>
     </view>
@@ -1137,14 +1169,41 @@ SOFTWARE. -->
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"/>
     <editor_text text="grid x:" y="2"/>
-    <editor_inputtext id="gridsizex" width="30" allowedchars="0123456789" maxlength="3" text="0"/>
+    <editor_inputtext id="gridsizex" width="30" allowedchars="0123456789" maxlength="3">
+      <method name="initNode" args="parent, attrs">
+        attrs.text = dr.global.clientstorage.getItem('_editor_gridsizex');
+        if (attrs.text === null) attrs.text = '0';
+        this.super();
+      </method>
+      <handler event="ontext" args="text">
+        dr.global.clientstorage.setItem('_editor_gridsizex', text);
+      </handler>
+    </editor_inputtext>
     <editor_text text="y:" y="2"/>
-    <editor_inputtext id="gridsizey" width="30" allowedchars="0123456789" maxlength="3" text="0"/>
+    <editor_inputtext id="gridsizey" width="30" allowedchars="0123456789" maxlength="3" text="0">
+      <method name="initNode" args="parent, attrs">
+        attrs.text = dr.global.clientstorage.getItem('_editor_gridsizey');
+        if (attrs.text === null) attrs.text = '0';
+        this.super();
+      </method>
+      <handler event="ontext" args="text">
+        dr.global.clientstorage.setItem('_editor_gridsizey', text);
+      </handler>
+    </editor_inputtext>
   </view>
   
   <view height="auto">
     <spacedlayout spacing="4" updateparent="true"/>
-    <checkbox id="snaptoguides" selected="true" checkcolor="#999999"/>
+    <checkbox id="snaptoguides" checkcolor="#999999">
+      <method name="initNode" args="parent, attrs">
+        attrs.selected = dr.global.clientstorage.getItem('_editor_snaptoguides');
+        if (attrs.selected === null) attrs.selected = true;
+        this.super();
+      </method>
+      <handler event="onselected" args="selected">
+        dr.global.clientstorage.setItem('_editor_snaptoguides', selected);
+      </handler>
+    </checkbox>
     <editor_text text="snap to guides"/>
   </view>
 </basefloatingpanel>
