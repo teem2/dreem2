@@ -105,6 +105,7 @@ SOFTWARE. -->
           <link url="./smoke/circularevent">Circular Event</link>
           <link url="./smoke/class">Class</link>
           <link url="./smoke/classroot">Classroot</link>
+          <link url="./smoke/client_storage">Client Storage</link>
           <link url="./smoke/datapath">Datapath</link>
           <link url="./smoke/dataset">Dataset</link>
           <link url="./smoke/dre_parser">Dre Parser</link>

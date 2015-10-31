@@ -1,0 +1,49 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014-2015 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Attributes'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <view id="all" width="100%" height="100%">
+      <handler event="oninit">
+        var cs = dr.global.clientstorage;
+        assert.isObject(cs, "The global client storage service should exist.");
+        
+        // Store and retrieve an entry
+        var key = '' + Date.now(), value = 'value' + key;
+        cs.setItem(key, value);
+        assert.equal(cs.getItem(key), value, 'Value should exist.');
+        
+        // Change an entry
+        value = 'hello';
+        cs.setItem(key, value);
+        assert.equal(cs.getItem(key), value, 'Value should have been updated.');
+        
+        // Remove an entry
+        cs.removeItem(key);
+        assert.isNull(cs.getItem(key), 'Value should no longer exist.');
+      </handler>
+    </view>
+  </screen>
+</screens>
+</composition>
