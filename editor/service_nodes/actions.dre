@@ -158,6 +158,7 @@ SOFTWARE. -->
         selectionmanager.clear(true);
         editPreviewButton.setAttribute('label', 'edit');
         editPreviewButton.setAttribute('iconname', 'edit');
+        editPreviewButton.setAttribute('tooltip', 'Stop previewing and change back to edit mode.');
         preview.setAttribute('visible', true);
         preview.setAttribute('src', '/editor/preview.dre');
       }
@@ -166,6 +167,7 @@ SOFTWARE. -->
       selectionmanager.restore();
       editPreviewButton.setAttribute('label', 'preview');
       editPreviewButton.setAttribute('iconname', 'preview');
+      editPreviewButton.setAttribute('tooltip', 'Change the editing area to a preview of the screen.\nOpt-click to open a new live preview.');
       preview.setAttribute('visible', false);
       preview.setAttribute('src', '/iframe_stub.html');
     }

@@ -1,0 +1,61 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+      * @class dr.simpletooltip {UI Components}
+      * @extends dr.view
+      * A simple tooltip implementation.
+      */-->
+<class name="simpletooltip" extends="basetooltip"
+  width="auto" height="auto"
+  leftpadding="4" rightpadding="4" toppadding="1" bottompadding="1"
+  cornerradius="2" bgcolor="#eeeeee" boxshadow="[0, 0, 1, 0, '#666666']"
+>
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="showTip" args="config">
+    var config = this.config,
+      txt = config.text,
+      ttp = config.tiptarget,
+      tipText = this.tipTextView
+      tipYOffset = 4;
+    
+    // Set tip text
+    if (tipText.text !== txt) tipText.setAttribute('text', txt);
+    
+    // Get Floating Boundary
+    var vpr = dr.global.viewportResize,
+      bounds = {x:0, y:0, width:vpr.getWidth(), height:vpr.getHeight()};
+    
+    // Get position of parent
+    var abs = ttp.getAbsolutePosition();
+    
+    // Get X Position
+    var tipX = abs.x;
+    if (config.tipalign === 'right') tipX = abs.x + ttp.width;
+    
+    // Prevent out-of-bounds to the left
+    if (0 > tipX) tipX = 0;
+    
+    // Prevent out-of-bounds to the right
+    if (tipX + this.width > bounds.width) tipX = bounds.width - this.width;
+    
+    // Get Y Position
+    var tipY = abs.y - this.height - tipYOffset;
+    if (config.tipvalign === 'below') tipY = abs.y + ttp.height + tipYOffset;
+    
+    // Prevent out-of-bounds above
+    if (0 > tipY) tipY = 0;
+    
+    // Prevent out-of-bounds below
+    if (tipY + this.height > bounds.height) tipY = bounds.height - this.height;
+    
+    // Set Position
+    this.setAttribute('x', Math.round(tipX));
+    this.setAttribute('y', Math.round(tipY));
+    
+    this.super();
+  </method>
+
+
+  <!--// Views //////////////////////////////////////////////////////////////-->
+  <text name="tipTextView" fontsize="11px" color="#666666" multiline="true"/>
+</class>

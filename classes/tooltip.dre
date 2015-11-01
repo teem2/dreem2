@@ -1,0 +1,65 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+   * @mixin dr.tooltip {UI Behavior}
+   * Provides tooltip behavior for a view when moused over. Must have the
+   * mouseover mixin as well to function.
+   */-->
+<mixin name="tooltip" requires="mouseover, simpletooltip">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {String} tooltip
+    * The tip text to display on mouseover.
+    */-->
+  <attribute name="tooltip" type="string" value=""/>
+
+  <!--/**
+    * @attribute {String} tipalign
+    * he horizontal alignment of the tooltip relative to the view the tip is 
+    * being shown for. Supported values are 'left' and 'right'.
+    */-->
+  <attribute name="tipalign" type="string" value="left"/>
+
+  <!--/**
+    * @attribute {String} tipvalign
+    * The vertical alignment of the tooltip relative to the view the tip is 
+    * being shown for. Supported values are 'above' and 'below'.
+    */-->
+  <attribute name="tipvalign" type="string" value="above"/>
+
+  <!--/**
+    * @attribute {String} tipclassname
+    * The name of the class to use to instantiate the tooltip.
+    */-->
+  <attribute name="tipclassname" type="string" value="dr.simpletooltip"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="doSmoothMouseOver" args="isOver">
+    this.super();
+    
+    if (isOver && this.tooltip) {
+      var tipClass = dr.resolveName(this.tipclassname),
+        g = dr.global, 
+        ttv = g.tooltipView;
+      
+      // Destroy tip if it's not the correct class.
+      if (ttv && !(ttv.isA(tipClass))) {
+        g.unregister('tooltipView');
+        ttv.destroy();
+        ttv = null;
+      }
+      
+      // Create new instance.
+      if (!ttv) {
+        var rootView = this.getRoot();
+        ttv = new tipClass(rootView);
+        g.register('tooltipView', ttv);
+      }
+      
+      ttv.configure({
+        tiptarget:this, text:this.tooltip, tipalign:this.tipalign, tipvalign:this.tipvalign
+      });
+    }
+  </method>
+</mixin>

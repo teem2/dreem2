@@ -13,9 +13,6 @@
     __lastOverIdleValue:boolean Used by the code that smoothes out
       mouseover events. Stores the last mouseover value.
 -->
-    Attributes:
-        ismouseover:boolean Indicates if the mouse is over this view or not.
-    
 <mixin name="mouseover" requires="disableable">
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">

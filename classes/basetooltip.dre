@@ -1,0 +1,106 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+      * @class dr.basetooltip {UI Components}
+      * @extends dr.view
+      * A base class for tooltip instances.
+      */-->
+<class name="basetooltip" visible="false" ignoreplacement="true" ignorelayout="true">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <!--/**
+    * @attribute {Number} tipdelay
+    * The time in millis to wait before showing the tooltip.
+    */-->
+  <attribute name="tipdelay" type="number" value="500"/>
+
+  <!--/**
+    * @attribute {Number} tipdelay
+    * The time in millis to wait before hiding the tooltip.
+    */-->
+  <attribute name="tiphidedelay" type="number" value="100"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * Sets the tooltip info that will be displayed. 
+    * @param v:object with the following keys:
+    *   tiptarget:dr.View The view to show the tip for.
+    *   text:string The tip text.
+    *   tipalign:string Tip alignment, 'left' or 'right'.
+    *   tipvalign:string Tip vertical alignment, 'above' or 'below'. */
+    */-->
+  <method name="configure" args="config">
+    if (this.inited) {
+      this.config = config;
+      if (config) {
+        this.listenToPlatform(dr.global.mouse, 'onmousemove', '__checkMouseMovement', true);
+        
+        var ttp = config.tiptarget;
+        this.listenToPlatform(ttp, 'onmousedown', 'hideTip', true);
+        this.listenToPlatform(ttp, 'onmouseup', 'hideTip', true);
+      }
+    }
+  </method>
+  
+  <method name="__checkMouseMovement" args="event">
+    this._lastPos = {x:event.x, y:event.y};
+    if (this.__checkIn()) this.__tipTimerId = setTimeout(this.__checkTip.bind(this), this.nextTipDelay);
+  </method>
+  
+  <!--/**
+    * If the mouse rests in the tip's tiptarget then show the tip.
+    */-->
+  <method name="__checkTip">
+    if (this.__checkIn()) this.showTip();
+  </method>
+  
+  <!--/**
+    * Checks if the last mouse position is inside the tip's tiptarget.
+    * If not inside the tip will also get hidden.
+    * @private
+    * @returns boolean: false if the tip got hidden, true otherwise.
+    */-->
+  <method name="__checkIn">
+    if (this.config) {
+      var pos = this._lastPos;
+      if (this.config.tiptarget.containsPoint(pos.x, pos.y)) return true;
+    }
+    this.hideTip();
+    return false;
+  </method>
+  
+  <!--/**
+    * Called when the tip will be hidden.
+    * @returns boolean
+    */-->
+  <method name="hideTip" args="event">
+    clearTimeout(this.__tipTimerId);
+    
+    var ttp = this.config.tiptarget;
+    this.stopListeningToPlatform(ttp, 'onmousedown', 'hideTip', true);
+    this.stopListeningToPlatform(ttp, 'onmouseup', 'hideTip', true);
+    this.stopListeningToPlatform(dr.global.mouse, 'onmousemove', '__checkMouseMovement', true);
+    
+    this.nextTipDelay = this.tipdelay;
+    this.setAttribute('visible', false);
+    
+    // Don't consume mouse event since we just want to close the tip as a side 
+    // effect of the user action. The typical case for this is the user 
+    // clicking on a button while the tooltip for that button is shown.
+    return true;
+  </method>
+  
+  <!--/**
+    * Called when the tip will be shown.
+    * @returns void
+    */-->
+  <method name="showTip">
+    // Don't show tooltips while doing drag and drop since they're
+    // distracting while this is going on.
+    if (!dr.global.dragManager.dragview) {
+      this.nextTipDelay = this.tiphidedelay;
+      this.moveToFront();
+      this.setAttribute('visible', true);
+    }
+  </method>
+</class>

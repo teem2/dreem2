@@ -591,8 +591,9 @@ SOFTWARE. -->
       <spacedlayout spacing="8"/>
       <constantlayout attribute="y" value="'middle'"/>
       
-      <listviewbutton floatingpanelid="screensizes" fontsize="12"
+      <listviewbutton with="tooltip" floatingpanelid="screensizes" fontsize="12"
         listviewattrs="{maxheight:340}"
+        tooltip="Change the viewport size. This allows you to emulate different screen sizes during editing."
       >
         <method name="initNode" args="parent, attrs">
           this.cfg = [
@@ -831,7 +832,9 @@ SOFTWARE. -->
     <view name="right" padding="2" x="right" height="${config.topbar_height}">
       <spacedlayout spacing="3" inset="3" outset="9" updateparent="true"/>
       <constantlayout attribute="y" value="'middle'"/>
-      <toolbariconbutton id="editPreviewButton" action="editPreview" label="preview" iconname="preview" width="54"/>
+      <toolbariconbutton with="tooltip" id="editPreviewButton" action="editPreview" label="preview" iconname="preview" width="54"
+        tooltip="${'Change the editing area to a preview of the screen.\nOpt-click to open a new live preview.'}" tipvalign="below"
+      />
       <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
       <toolbariconbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}" label="save" iconname="save"/>
       <toolbariconbutton id="stopButton" action="stop" disabled="${!editor.editmode}" label="exit" iconname="exit"/>
@@ -847,7 +850,9 @@ SOFTWARE. -->
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     
     <view width="${treemodel.width}" height="28" bgcolor="#eeeeee">
-      <listviewbutton id="screennamechooser" floatingpanelid="screenlist" y="6" x="5">
+      <listviewbutton with="tooltip" id="screennamechooser" floatingpanelid="screenlist" y="6" x="5"
+        tooltip="Select a different screen to edit."
+      >
         <method name="doItemActivated" args="itemview">
           this.super();
           actions.changeScreen(itemview.text);
