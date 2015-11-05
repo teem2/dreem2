@@ -37,7 +37,9 @@ SOFTWARE. -->
     if (this._replicatorchanges && selected) this._showReplicationWarning();
   </handler>
 
-  <handler event="oninit">
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
     // Extract screen from the query and store it.
     var screenname = 'default',
       query = this._getSearch();
@@ -54,13 +56,13 @@ SOFTWARE. -->
     }
     this.setAttribute('screenname', screenname);
     
+    // Fetch the composition model from the server since that is what we will
+    // be editing.
     var self = this;
-    // rewrite the file to be editable, which will reload this page automatically
     dr.global.requestor.fetch(this._getPath() + '?raw=1').success(
       function(data, status) {
         var parser = new dr.htmlparser();
-        var jsobj = parser.parse(data);
-        self.setAttribute('model', jsobj);
+        self.setAttribute('model', parser.parse(data));
         self.sendEvent('onmodelchange', self);
         
         // Update screenname chooser
@@ -73,14 +75,25 @@ SOFTWARE. -->
         var screennameChooser = dr.sprite.retrieveGlobal('screennamechooser');
         screennameChooser.setAttribute('itemconfig', cfg);
         screennameChooser.setAttribute('label', 'current screen: ' + curName);
+        
+        // Refresh previewer clients
+        // Send the current state of the composition to the server so the previewer clients will refresh
+        if (self.model) {
+          var baseUrl = self._getBaseUrl(),
+            url = baseUrl + (baseUrl.indexOf('?') === -1) ? '?' : '&';
+          url += 'edit=1&notifyPreviewers=1';
+          dr.global.requestor.send(url, JSON.stringify(self.model));
+        }
       }
     );
-  </handler>
+  </method>
 
+  <!-- @private -->
   <method name="_setLocation" args="url">
     window.location = url;
   </method>
 
+  <!-- @private -->
   <method name="_getPath">
     var pathname = window.location.pathname;
     
@@ -89,10 +102,12 @@ SOFTWARE. -->
     return (pathname.startsWith('//') && dr.sprite.platform.browser === 'PhantomJS') ? pathname.substring(1) : pathname;
   </method>
 
+  <!-- @private -->
   <method name="_getSearch">
     return window.location.search;
   </method>
 
+  <!-- @private -->
   <method name="_getBaseUrl">
     return this._getPath() + this._getSearch();
   </method>
@@ -346,20 +361,6 @@ SOFTWARE. -->
         if (newChildModel) return newChildModel;
       }
     }
-  </method>
-
-  <!-- Send the current state of the composition to the server so any
-       clients in "preview" mode can be notified. -->
-  <method name="notifyPreviewers">
-    var baseUrl = this._getBaseUrl(),
-      url = baseUrl + (baseUrl.indexOf('?') === -1) ? '?' : '&';
-    url += 'edit=1&notifyPreviewers=1';
-    
-    var self = this;
-    undo.lock();
-    dr.global.requestor.send(url, JSON.stringify(this.model)).always(
-      function(data, status) {undo.unlock();}
-    );
   </method>
 
   <!-- Save the model changes to the server and reload for editing again. -->

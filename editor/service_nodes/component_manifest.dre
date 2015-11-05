@@ -19,40 +19,42 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
-<node requires="resizelayout, alignlayout, behavior-scale, behavior-shift, behavior-overborder">
+<node>
+  <!-- Important: add required classes to the previewable mixin since the
+       previewer clients will also need access to the components. -->
   <method name="initNode" args="parent, attrs">
     this.super();
     
     // Views
-    this.addComponent({
+    this._addComponent({
       label:'image',
       iconname:'bitmap',
       dropclass:'view',
       dropclassattrs:{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'bitmap', width:50, height:50}}
     });
     
-    this.addComponent({
+    this._addComponent({
       label:'text',
       iconname:'text',
       dropclass:'text',
       dropclassattrs:{text:'text', instanceattrs:{class:'text', text:'text', multiline:true}}
     });
     
-    this.addComponent({
+    this._addComponent({
       label:'rectange',
       iconname:'view',
       dropclass:'view',
       dropclassattrs:{width:50, height:50, bgcolor:'#cccccc', instanceattrs:{class:'view', width:50, height:50, bgcolor:'#cccccc'}}
     });
     
-    this.addComponent({
+    this._addComponent({
       label:'vertical line',
       iconname:'verticalline',
       dropclass:'view',
       dropclassattrs:{width:1, height:'50', bgcolor:'#000000', instanceattrs:{class:'view', width:1, height:'100%', y:'top', bgcolor:'#000000'}}
     });
     
-    this.addComponent({
+    this._addComponent({
       label:'horizontal line',
       iconname:'horizontalline',
       dropclass:'view',
@@ -60,24 +62,25 @@ SOFTWARE. -->
     });
     
     // Layouts
-    this.addLayout('spacedlayout_x', {label:'x layout'}, {class:'spacedlayout', axis:'x'}, true);
-    this.addLayout('spacedlayout_y', {label:'y layout'}, {class:'spacedlayout', axis:'y'});
-    this.addLayout('wrappinglayout_x', {label:'wrap-x layout'}, {class:'wrappinglayout', axis:'x'});
-    this.addLayout('wrappinglayout_y', {label:'wrap-y layout'}, {class:'wrappinglayout', axis:'y'});
-    this.addLayout('resizelayout_x', {label:'resize-x layout'}, {class:'resizelayout', axis:'x'});
-    this.addLayout('resizelayout_y', {label:'resize-y layout'}, {class:'resizelayout', axis:'y'});
-    this.addLayout('alignlayout_x', {label:'align-x layout'}, {class:'alignlayout', align:'center', axis:'x'});
-    this.addLayout('alignlayout_y', {label:'align-y layout'}, {class:'alignlayout', align:'middle', axis:'y'});
-    //this.addLayout('variablelayout', {label:'variable layout'}, {class:'variablelayout'});
-    //this.addLayout('constantlayout', {label:'constant layout'}, {class:'constantlayout'});
+    this._addLayout('spacedlayout_x', {label:'x layout'}, {class:'spacedlayout', axis:'x'}, true);
+    this._addLayout('spacedlayout_y', {label:'y layout'}, {class:'spacedlayout', axis:'y'});
+    this._addLayout('wrappinglayout_x', {label:'wrap-x layout'}, {class:'wrappinglayout', axis:'x'});
+    this._addLayout('wrappinglayout_y', {label:'wrap-y layout'}, {class:'wrappinglayout', axis:'y'});
+    this._addLayout('resizelayout_x', {label:'resize-x layout'}, {class:'resizelayout', axis:'x'});
+    this._addLayout('resizelayout_y', {label:'resize-y layout'}, {class:'resizelayout', axis:'y'});
+    this._addLayout('alignlayout_x', {label:'align-x layout'}, {class:'alignlayout', align:'center', axis:'x'});
+    this._addLayout('alignlayout_y', {label:'align-y layout'}, {class:'alignlayout', align:'middle', axis:'y'});
+    //this._addLayout('variablelayout', {label:'variable layout'}, {class:'variablelayout'});
+    //this._addLayout('constantlayout', {label:'constant layout'}, {class:'constantlayout'});
     
     // Behaviors
-    this.addBehavior('scale', true);
-    this.addBehavior('shift');
-    this.addBehavior('overborder');
+    this._addBehavior('scale', true);
+    this._addBehavior('shift');
+    this._addBehavior('overborder');
   </method>
-  
-  <method name="addLayout" args="key, attrs, instanceAttrs, isNewLine">
+
+  <!-- @private -->
+  <method name="_addLayout" args="key, attrs, instanceAttrs, isNewLine">
     attrs.dropclass = 'bitmap';
     attrs.iconname = key;
     
@@ -91,10 +94,11 @@ SOFTWARE. -->
       instanceattrs:instanceAttrs
     };
     
-    this.addComponent(attrs, isNewLine);
+    this._addComponent(attrs, isNewLine);
   </method>
-  
-  <method name="addBehavior" args="key, isNewLine">
+
+  <!-- @private -->
+  <method name="_addBehavior" args="key, isNewLine">
     var attrs = {
       dropclass: 'bitmap',
       label:key + ' Behavior',
@@ -102,10 +106,11 @@ SOFTWARE. -->
       dropclassattrs:{width:30, height:30, isbehavior:true, src:config.img_root + 'behavior_' + key + '.png', instanceattrs:{class:'behavior-' + key}}
     };
     
-    this.addComponent(attrs, isNewLine);
+    this._addComponent(attrs, isNewLine);
   </method>
   
-  <method name="addComponent" args="attrs, isNewLine">
+  <!-- @private -->
+  <method name="_addComponent" args="attrs, isNewLine">
     attrs.class = 'componentsource';
     if (isNewLine) attrs.layouthint = '{"break":true}';
     this.parent.createChild(attrs);

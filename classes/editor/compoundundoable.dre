@@ -100,4 +100,34 @@
       return this;
     }
   </method>
+
+  <!--/**
+    * @method serialize
+    * Builds a serialized object from each of the child undoables.
+    * @overrides
+    */-->
+  <method name="serialize" args="obj">
+    if (!obj) obj = {};
+    var objUndoables = obj.undoables = [],
+      undoables = this.__undoables, 
+      len = undoables.length, i = 0;
+    for (; len > i;) objUndoables.push(undoables[i++].serialize());
+    return this.super(obj);
+  </method>
+
+  <!--/**
+    * @method deserialize
+    * Deserializes each child undoable to rebuild this compound undoable.
+    * @overrides
+    */-->
+  <method name="deserialize" args="data">
+    var undoables = data.undoables;
+    if (undoables) {
+      var i = undoables.length;
+      while (i) undoables[--i] = dr.deserialize(undoables[i]);
+      data.__undoables = undoables;
+      delete data.undoables;
+    }
+    return this.super(data);
+  </method>
 </class>

@@ -65,6 +65,15 @@ SOFTWARE. -->
         }
       }
       
+      // Make a copy of the attrs needed to instantiate this view in a previewer
+      var previewerAttrs = dr.extend({}, attrs);
+      // Push on previewable since all nodes/views in a previewer must be previewable.
+      if (previewerAttrs.with) {
+        previewerAttrs.with += ' previewable';
+      } else {
+        previewerAttrs.with = 'previewable';
+      }
+      
       // Remember which attrs to objectify for the model
       var objectifyAttrs = dr.extend({}, attrs);
       delete objectifyAttrs.class;
@@ -117,12 +126,14 @@ SOFTWARE. -->
       // Mark an instance as "new" so we know it needs serialization.
       instance.__NEW = true;
       
+      // Create undoable and "do" it. The previewinfo is also provided so
+      // previewers receiving messages can instantiate the new node/view.
       if (this.islayout) {
-        actions.do(new dr.editor.createlayoutundoable({target:instance}));
+        actions.do(new dr.editor.createlayoutundoable({target:instance, previewinfo:previewerAttrs}));
       } else if (this.isbehavior) {
-        actions.do(new dr.editor.createbehaviorundoable({target:instance}));
+        actions.do(new dr.editor.createbehaviorundoable({target:instance, previewinfo:previewerAttrs}));
       } else {
-        actions.do(new dr.editor.createundoable({target:instance}));
+        actions.do(new dr.editor.createundoable({target:instance, previewinfo:previewerAttrs}));
         selectionmanager.select(instance);
       }
       

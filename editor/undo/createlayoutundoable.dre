@@ -44,6 +44,16 @@
         CLU.refresh(this._targetParent);
         target.update();
       } else {
+        // Remember initial state of all views effected by the layout so we
+        // can restore them during undo.
+        if (dr.sprite.retrieveGlobal('previewer_undostack')) {
+          var parent = target.parent, 
+            svs = parent.getSubviews(),
+            i = svs.length;
+          CLU._storeModel(parent);
+          while (i) CLU._storeModel(svs[--i]);
+        }
+        
         CLU.refresh(target.parent);
         target.setAttribute('locked', false);
       }
@@ -51,16 +61,22 @@
     
     return retval;
   </method>
-  
+
+
   <!--// Class Methods //////////////////////////////////////////////////////-->
   <method name="refresh" args="targetParent" allocation="class">
-    if (selectionmanager.selectedview === targetParent) {
-      layouts_panel.refresh(targetParent);
+    if (dr.sprite.retrieveGlobal('previewer_undostack')) {
+      // Previewer only case
     } else {
-      selectionmanager.select(targetParent);
+      // Editor only case
+      if (selectionmanager.selectedview === targetParent) {
+        layouts_panel.refresh(targetParent);
+      } else {
+        selectionmanager.select(targetParent);
+      }
     }
   </method>
-  
+
   <method name="restoreManagedViewState" args="undoable" allocation="class">
     var layout = undoable.target,
       svs = layout.getSubviews(),
@@ -70,15 +86,16 @@
       isDomainY = domains.y,
       isDomainW = domains.width,
       isDomainH = domains.height,
-      layouthint;
+      layouthint, model;
     layout.setAttribute('locked', true);
     while (i) {
       sv = svs[--i];
       layouthint = sv.getActualAttribute('layouthint');
-      if (isDomainX || layout.__shouldRestoreForLayoutHint('x', layouthint, null)) sv.restoreAttrToModel('x');
-      if (isDomainW || layout.__shouldRestoreForLayoutHint('width', layouthint, null)) sv.restoreAttrToModel('width');
-      if (isDomainY || layout.__shouldRestoreForLayoutHint('y', layouthint, null)) sv.restoreAttrToModel('y');
-      if (isDomainH || layout.__shouldRestoreForLayoutHint('height', layouthint, null)) sv.restoreAttrToModel('height');
+      model = this._getModel(sv);
+      if (isDomainX || layout.__shouldRestoreForLayoutHint('x', layouthint, null)) sv.restoreAttrToModel('x', model);
+      if (isDomainW || layout.__shouldRestoreForLayoutHint('width', layouthint, null)) sv.restoreAttrToModel('width', model);
+      if (isDomainY || layout.__shouldRestoreForLayoutHint('y', layouthint, null)) sv.restoreAttrToModel('y', model);
+      if (isDomainH || layout.__shouldRestoreForLayoutHint('height', layouthint, null)) sv.restoreAttrToModel('height', model);
     }
     this._restoreManagedParentState(undoable);
     layout.setAttribute('locked', false);
@@ -94,28 +111,56 @@
   <method name="_restoreManagedParentState" args="undoable" allocation="class">
     var layout = undoable.target,
       domains = layout.__getLayoutDomains(),
-      parent = undoable._targetParent || layout.parent;
-    if (domains.x) parent.restoreAttrToModel('width');
-    if (domains.y) parent.restoreAttrToModel('height');
+      parent = undoable._targetParent || layout.parent,
+      model = this._getModel(parent);
+    if (domains.x) parent.restoreAttrToModel('width', model);
+    if (domains.y) parent.restoreAttrToModel('height', model);
   </method>
-  
+
   <method name="restoreSingleManagedViewState" args="view" allocation="class">
-    var layouthint = view.getActualAttribute('layouthint');
+    var layouthint = view.getActualAttribute('layouthint'),
+      model = this._getModel(view);
     
-    if (view.__layoutDomainInUseForView('x') || view.__shouldRestoreForLayoutHint('x', layouthint, null)) view.restoreAttrToModel('x');
-    if (view.__layoutDomainInUseForView('y') || view.__shouldRestoreForLayoutHint('y', layouthint, null)) view.restoreAttrToModel('y');
-    if (view.__layoutDomainInUseForView('width') || view.__shouldRestoreForLayoutHint('width', layouthint, null)) view.restoreAttrToModel('width');
-    if (view.__layoutDomainInUseForView('height') || view.__shouldRestoreForLayoutHint('height', layouthint, null)) view.restoreAttrToModel('height');
+    if (view.__layoutDomainInUseForView('x') || view.__shouldRestoreForLayoutHint('x', layouthint, null)) view.restoreAttrToModel('x', model);
+    if (view.__layoutDomainInUseForView('y') || view.__shouldRestoreForLayoutHint('y', layouthint, null)) view.restoreAttrToModel('y', model);
+    if (view.__layoutDomainInUseForView('width') || view.__shouldRestoreForLayoutHint('width', layouthint, null)) view.restoreAttrToModel('width', model);
+    if (view.__layoutDomainInUseForView('height') || view.__shouldRestoreForLayoutHint('height', layouthint, null)) view.restoreAttrToModel('height', model);
   </method>
-  
+
   <method name="restoreForLayoutHint" args="view, from, to" allocation="class">
-    var AS = dr.AccessorSupport;
+    var AS = dr.AccessorSupport,
+      model = this._getModel(view);
     from = AS.coerce('layouthint', from, 'json');
     to = AS.coerce('layouthint', to, 'json');
     
-    if (view.__shouldRestoreForLayoutHint('x', from, to)) view.restoreAttrToModel('x');
-    if (view.__shouldRestoreForLayoutHint('y', from, to)) view.restoreAttrToModel('y');
-    if (view.__shouldRestoreForLayoutHint('width', from, to)) view.restoreAttrToModel('width');
-    if (view.__shouldRestoreForLayoutHint('height', from, to)) view.restoreAttrToModel('height');
+    if (view.__shouldRestoreForLayoutHint('x', from, to)) view.restoreAttrToModel('x', model);
+    if (view.__shouldRestoreForLayoutHint('y', from, to)) view.restoreAttrToModel('y', model);
+    if (view.__shouldRestoreForLayoutHint('width', from, to)) view.restoreAttrToModel('width', model);
+    if (view.__shouldRestoreForLayoutHint('height', from, to)) view.restoreAttrToModel('height', model);
+  </method>
+
+  <!-- Get the model to use for attribute restoration.
+       @private -->
+  <method name="_getModel" args="view" allocation="class">
+    var editormodel = dr.sprite.retrieveGlobal('editormodel');
+    if (editormodel) {
+      // The editor uses the editor model
+      return editormodel.getModelNode(view);
+    } else {
+      // The previewer uses the restore model stored on each view.
+      return view.__restoreModel;
+    }
+  </method>
+
+  <!-- Store the model to use for attribute restoration. This model must match
+       the JSON model uses in the editormodel.
+       @private -->
+  <method name="_storeModel" args="view" allocation="class">
+    view.__restoreModel = {attr:{
+      x:view.__cfg_x,
+      y:view.__cfg_y,
+      width:view.__cfg_width,
+      height:view.__cfg_height
+    }};
   </method>
 </class>

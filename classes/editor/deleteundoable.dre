@@ -25,7 +25,7 @@
     * @attribute {dr.AccessorSupport} [target]
     * The node/view to remove.
     */-->
-  <attribute name="target" type="expression" value=""></attribute>
+  <attribute name="target" type="expression" value=""/>
 
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->
@@ -79,9 +79,38 @@
         target.pauseConstraints();
         return this.super();
       } else {
-        dr.global.error.notifyWarn('invalidUndo', "No target provided to deleteundoable.");
+        dr.global.error.notifyWarn('invalidRedo', "No target provided to deleteundoable.");
       }
     }
     return this;
+  </method>
+
+  <!--/**
+    * @method serialize
+    * @overrides
+    */-->
+  <method name="serialize" args="obj">
+    if (!obj) obj = {};
+    
+    // Use IDs for node/view references since we just want to retrieve the 
+    // objects from the composition during deserialization not 
+    // serialize/deserialize entire view/node objects.
+    obj.target = this.target.id || null;
+    
+    return this.super(obj);
+  </method>
+
+  <!--/**
+    * @method deserialize
+    * @overrides
+    */-->
+  <method name="deserialize" args="data">
+    // Retrieve objects via the serialized IDs. Also, note that unlike
+    // createundoable, previewinfo is not necessary since we begin by
+    // deleting an existing node/view and thus never need to create anything
+    // from scratch.
+    if (data.target) data.target = dr.sprite.retrieveGlobal(data.target);
+    
+    return this.super(data);
   </method>
 </class>

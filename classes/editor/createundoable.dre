@@ -25,7 +25,15 @@
     * @attribute {dr.AccessorSupport} [target]
     * The new node/view to add.
     */-->
-  <attribute name="target" type="expression" value=""></attribute>
+  <attribute name="target" type="expression" value=""/>
+
+  <!--/** Holds attribute values needed by previewer clients to create the new 
+    * node/view. In the editor new node/views are created first and then an
+    * undoable is created for them. In a previewer we actually have to create
+    * the object so we need to know what attrs to use during instantiation.
+    * This previewinfo object is what contains that information.
+    */-->
+  <attribute name="previewinfo" type="expression" value=""/>
 
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->
@@ -86,5 +94,45 @@
       }
     }
     return this;
+  </method>
+
+  <!--/**
+    * @method serialize
+    * @overrides
+    */-->
+  <method name="serialize" args="obj">
+    if (!obj) obj = {};
+    
+    // We need to know which parent to create the new object on.
+    obj.parent = this.target.parent.id || null;
+    
+    // Store the attrs used for instantiation.
+    obj.target = this.previewinfo || null;
+    
+    return this.super(obj);
+  </method>
+
+  <!--/**
+    * @method deserialize
+    * @overrides
+    */-->
+  <method name="deserialize" args="data">
+    // Get parent to create new object on.
+    var parent;
+    if (data.parent) parent = dr.sprite.retrieveGlobal(data.parent);
+    if (!parent) {
+      dr.global.error.notifyWarn('deserialization', "Parent could not be found for createundoable: " + data.parent);
+      return null;
+    }
+    
+    // Create new instance on the parent using the previeinfo which was 
+    // stored on data.target.
+    var instance = parent.createChild(data.target);
+    if (!instance) {
+      dr.global.error.notifyWarn('deserialization', "Instance could not be found for createundoable: " + data.target);
+      return null;
+    }
+    
+    return this.super({target:instance});
   </method>
 </class>

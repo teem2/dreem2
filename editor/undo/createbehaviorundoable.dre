@@ -11,10 +11,19 @@
 >
   <!--// Class Methods //////////////////////////////////////////////////////-->
   <method name="refresh" args="targetParent" allocation="class">
-    if (selectionmanager.selectedview === targetParent) {
-      behaviors_panel.refresh(targetParent);
+    // When in the previewer we will need to recheck clickability since
+    // a behavior may have added a mouse handler at runtime and the target
+    // view may not already be clickable.
+    if (dr.sprite.retrieveGlobal('previewer_undostack')) {
+      // Previewer only case
+      targetParent.__checkClickability();
     } else {
-      selectionmanager.select(targetParent);
+      // Editor only case
+      if (selectionmanager.selectedview === targetParent) {
+        behaviors_panel.refresh(targetParent);
+      } else {
+        selectionmanager.select(targetParent);
+      }
     }
   </method>
 
