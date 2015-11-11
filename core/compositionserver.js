@@ -841,7 +841,7 @@ define(function(require, exports, module) {
           if (depth === 1) attr.placement = 'editor';
           
           // Add mixin
-          if (depth >= 1) {
+          if (depth > 0 || tag === 'dataset') {
             if (!attr.with) {
               attr.with = 'editable';
             } else if (!attr.with.match(this.__editableRE)){
