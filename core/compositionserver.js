@@ -34,6 +34,7 @@ define(function(require, exports, module) {
     this.teemserver = teemserver;
 
     this.busserver = new BusServer();
+    this.busserver.compositionserver = this;
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
       this.__reloadComposition();
@@ -108,7 +109,10 @@ define(function(require, exports, module) {
               var screenName = query.screen || 'default',
                 comppath = define.expandVariables(this.__getCompositionPath(true)),
                 jsobj = JSON.parse(buf);
-              this.__transformToNormalMode(jsobj);
+              // Transform to normal mode to clean out editor mode modifications.
+              this.__transformToNormalMode(jsobj, true);
+              // Then transform from normal mode to preview mode
+              this.__transformToPreviewMode(screenName, jsobj);
               var newdata = HTMLParser.reserialize(jsobj, '  ');
               this.__writeFileIfChanged(comppath, newdata);
               
@@ -124,7 +128,7 @@ define(function(require, exports, module) {
                 comppath = define.expandVariables(this.__getCompositionPath()),
                 jsobj = JSON.parse(buf);
               if (query.stripeditor === '1') {
-                this.__transformToNormalMode(jsobj);
+                this.__transformToNormalMode(jsobj, false);
               } else {
                 this.__transformToEditMode(screenName, jsobj);
               }
@@ -163,7 +167,7 @@ define(function(require, exports, module) {
             jsobj = htmlParser.parse(data),
             isExitAction = query.stripeditor === '1';
           if (isExitAction) {
-            this.__transformToNormalMode(jsobj);
+            this.__transformToNormalMode(jsobj, false);
           } else {
             this.__transformToEditMode(query.screen || 'default', jsobj);
           }
@@ -263,6 +267,7 @@ define(function(require, exports, module) {
                 '<html lang="en">\n'+
                 '  <head>\n'+
                 '    <title>' + title + '</title>\n'+
+                (this.__isPreviewPath(url) ? '<base href="' + url.substring("/preview".length) + '"/>' : '') +
                 '    <script type="text/javascript">window.define = {MAIN:"' + boot + '"}</script>\n'+
                 '    <script type="text/javascript" src="/define.js"></script>\n'+
                 '    <style type="text/css">\n'+
@@ -335,13 +340,16 @@ define(function(require, exports, module) {
       }
     };
     
-    this.__isPreviewPath = function(file) {
+    this.__isPreviewFile = function(file) {
       var prefix = define.expandVariables('$ROOT');
       if (file.startsWith(prefix)) {
-        file = file.substring(prefix.length);
-        if (file.startsWith('/preview/')) return true;
+        return this.__isPreviewPath(file.substring(prefix.length));
       }
       return false;
+    };
+    
+    this.__isPreviewPath = function(path) {
+      return path.startsWith('/preview/');
     };
     
     /** @private */
@@ -354,7 +362,7 @@ define(function(require, exports, module) {
         // Generate a placeholder composition if this is a "preview" request.
         // This allows previewer clients to listen for a composition to start
         // being edited.
-        if (e.code === 'ENOENT' && this.__isPreviewPath(expandedPath)) {
+        if (e.code === 'ENOENT' && this.__isPreviewFile(expandedPath)) {
           data = "<composition><screens><screen type='browser' name='default' title='Waiting for edits'><text>Waiting for edits</text></screen></screens></composition>";
           try {
             var dirPath = path.dirname(expandedPath);
@@ -810,6 +818,7 @@ define(function(require, exports, module) {
     }
 
     this.__editableRE = /[,\s]*editable/;
+    this.__previewableRE = /[,\s]*previewable/;
     this.__skiptagsRE = /$comment|handler|method|include|setter|attribute/;
     this.__guid = 0;
 
@@ -861,8 +870,8 @@ define(function(require, exports, module) {
                 // Begin processing matching screen at depth 0.
                 while (i) if (this.__transformToEditMode(screenName, children[--i], 0)) children.splice(i, 1);
               } else {
-                // Transform non-matching scrrens to normal
-                while (i) if (this.__transformToNormalMode(children[--i])) children.splice(i, 1);
+                // Transform non-matching screens to normal
+                while (i) if (this.__transformToNormalMode(children[--i], false)) children.splice(i, 1);
               }
             } else {
               // Should process composition and screens or any other elements above
@@ -875,7 +884,7 @@ define(function(require, exports, module) {
       return false;
     };
     
-    this.__transformToNormalMode = function(jsobj) {
+    this.__transformToNormalMode = function(jsobj, preserveIds) {
       var attr = jsobj.attr, tag = jsobj.tag;
       
       // Strip out editor include by returning true.
@@ -883,8 +892,10 @@ define(function(require, exports, module) {
       
       if (!tag.match(this.__skiptagsRE)) {
         if (attr) {
-          // Remove lzeditor ids
-          if (typeof attr.id === 'string' && attr.id.indexOf('lzeditor_') > -1) delete attr.id;
+          // Remove lzeditor ids unless specifically told to preserver them.
+          // The previewer will want to preserver them since node/views are
+          // retrieved by ID.
+          if (!preserveIds && typeof attr.id === 'string' && attr.id.indexOf('lzeditor_') > -1) delete attr.id;
           
           // Remove editor placement
           if (attr.placement === 'editor') delete attr.placement;
@@ -900,7 +911,65 @@ define(function(require, exports, module) {
         var children = jsobj.child;
         if (children) {
           var i = children.length;
-          while (i) if (this.__transformToNormalMode(children[--i])) children.splice(i, 1);
+          while (i) if (this.__transformToNormalMode(children[--i], preserveIds)) children.splice(i, 1);
+        }
+      }
+    };
+    
+    this.__transformToPreviewMode = function(screenName, jsobj, depth) {
+      var attr = jsobj.attr, tag = jsobj.tag;
+      if (!tag.match(this.__skiptagsRE)) {
+        var children = jsobj.child, i;
+        
+        if (depth >= 0) {
+          if (!attr) attr = jsobj.attr = {};
+          
+          // Make all nodes/views previewable.
+          if (!attr.with) {
+            attr.with = 'previewable';
+          } else if (!attr.with.match(this.__previewableRE)){
+            attr.with += ',previewable';
+          }
+          
+          if (children) {
+            i = children.length;
+            depth++;
+            while (i) this.__transformToPreviewMode(screenName, children[--i], depth);
+          }
+        } else {
+          // Process composition, screens and non-matching screen trees.
+          if (children) {
+            if (tag === 'screen') {
+              if (attr && attr.name === screenName) {
+                // Explicitly include undo classes since they will get auto
+                // loaded since no tags are used.
+                children.unshift({tag:'include', attr:{href:'/classes/editor/undostack.dre'}});
+                children.unshift({tag:'include', attr:{href:'/editor/undo/createlayoutundoable.dre'}});
+                children.unshift({tag:'include', attr:{href:'/editor/undo/deletelayoutundoable.dre'}});
+                children.unshift({tag:'include', attr:{href:'/editor/undo/createbehaviorundoable.dre'}});
+                children.unshift({tag:'include', attr:{href:'/editor/undo/deletebehaviorundoable.dre'}});
+                children.unshift({tag:'include', attr:{href:'/editor/undo/editorattrundoable.dre'}});
+                
+                // Explicitly include previewable since it does not reside in
+                // classes and thus can't be auto loaded. This mixin is the
+                // previewer analog to editable in the editor. All instances
+                // must be "previewable" so they will work correctly with
+                // undo/redo and behaviors.
+                children.unshift({tag:'include', attr:{href:'/editor/previewable.dre'}});
+                
+                // Make an undostack to execute undo/redo messages from the server.
+                children.unshift({tag:'editor-undostack', attr:{id:'previewer_undostack'}});
+                
+                var i = children.length;
+                while (i) this.__transformToPreviewMode(screenName, children[--i], 0);
+              }
+            } else {
+              // Should process composition and screens or any other elements above
+              // and/or outside the matching screen.
+              i = children.length;
+              while (i) this.__transformToPreviewMode(screenName, children[--i]);
+            }
+          }
         }
       }
     };

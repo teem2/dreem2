@@ -55,4 +55,36 @@
     }
     return this.super();
   </method>
+
+  <!--/**
+    * @method serialize
+    * @overrides
+    */-->
+  <method name="serialize" args="obj">
+    if (!obj) obj = {};
+    
+    // Store attrs of this undoable on the obj to be serialized. Use IDs for
+    // any node/view references since we just want to retrieve the objects
+    // from the composition during deserialization not serialize/deserialize 
+    // entire view/node objects.
+    obj.target = this.target.id || null;
+    obj.oldprevsibling = this.oldprevsibling ? this.oldprevsibling.id : null;
+    obj.newprevsibling = this.newprevsibling ? this.newprevsibling.id : null;
+    
+    return this.super(obj);
+  </method>
+
+  <!--/**
+    * @method deserialize
+    * @overrides
+    */-->
+  <method name="deserialize" args="data">
+    // Retrieve objects via the serialized IDs.
+    var retrieveFunc = dr.sprite.retrieveGlobal;
+    if (data.target) data.target = retrieveFunc(data.target);
+    if (data.oldprevsibling) data.oldprevsibling = retrieveFunc(data.oldprevsibling);
+    if (data.newprevsibling) data.newprevsibling = retrieveFunc(data.newprevsibling);
+    
+    return this.super(data);
+  </method>
 </class>

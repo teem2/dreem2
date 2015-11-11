@@ -26,8 +26,35 @@ SOFTWARE. -->
   <attribute name="overspeed" type="number" value="400"/>
   <attribute name="outspeed" type="number" value="400"/>
 
-  <handler event="onmouseover" reference="this.parent" method="show"></handler>
-  <handler event="onmouseout" reference="this.parent" method="hide"></handler>
+  <handler name="show" event="onmouseover" reference="this.parent">
+    // Check for parent since over/out events will still occur when this
+    // behavior has been temporarily orphaned via a create/delete undoable.
+    if (this.parent) {
+      var speed = this.overspeed,
+        hlt = this.__hlt;
+      if (!hlt) {
+        hlt = this.__hlt = this.parent.createChild({
+          class:'view', ignoreplacement:true, ignorelayout:true, opacity:0,
+          width:'100%', height:'100%', bordercolor:this.color
+        });
+      }
+      
+      hlt.moveToFront();
+      hlt.stopActiveAnimators('border');
+      hlt.stopActiveAnimators('opacity');
+      hlt.animate({attribute:'border', to:this.thickness, duration:speed/2});
+      hlt.animate({attribute:'opacity', to:this.opacity, duration:speed});
+    }
+  </handler>
+
+  <handler name="hide" event="onmouseout" reference="this.parent">
+    var speed = this.outspeed,
+      hlt = this.__hlt;
+    hlt.stopActiveAnimators('border');
+    hlt.stopActiveAnimators('opacity');
+    hlt.animate({attribute:'border', to:0, duration:speed});
+    hlt.animate({attribute:'opacity', to:0, duration:speed});
+  </handler>
 
   <handler event="onselected" reference="this.parent" args="sel">
     if (sel) {
@@ -37,38 +64,11 @@ SOFTWARE. -->
     }
   </handler>
 
-
-  <method name="show">
-    var speed = this.overspeed,
-      hlt = this.__hlt;
-    if (!hlt) {
-      hlt = this.__hlt = this.parent.createChild({
-        class:'view', ignoreplacement:true, ignorelayout:true, opacity:0,
-        width:'100%', height:'100%', bordercolor:this.color
-      });
-    }
-    
-    hlt.moveToFront();
-    hlt.stopActiveAnimators('border');
-    hlt.stopActiveAnimators('opacity');
-    hlt.animate({attribute:'border', to:this.thickness, duration:speed/2});
-    hlt.animate({attribute:'opacity', to:this.opacity, duration:speed});
-  </method>
-
-  <method name="hide">
-    var speed = this.outspeed,
-      hlt = this.__hlt;
-    hlt.stopActiveAnimators('border');
-    hlt.stopActiveAnimators('opacity');
-    hlt.animate({attribute:'border', to:0, duration:speed});
-    hlt.animate({attribute:'opacity', to:0, duration:speed});
-  </method>
-  
   <!--// Editor Support //-->
   <method name="__getBehaviorDomains">
     return {behavior_overborder:true}; // Don't allow two of this behavior
   </method>
-  
+
   <method name="__behaviorMakesViews">
     return true;
   </method>

@@ -25,8 +25,32 @@ SOFTWARE. -->
   <attribute name="scaleoutduration" type="number" value="400"/>
   <attribute name="bringtofront" type="boolean" value="true"/>
 
-  <handler event="onmouseover" reference="this.parent" method="show"></handler>
-  <handler event="onmouseout" reference="this.parent" method="hide"></handler>
+  <handler name="show" event="onmouseover" reference="this.parent">
+    var parent = this.parent,
+      magnitude = this.magnitude;
+    // Check for parent since over/out events will still occur when this
+    // behavior has been temporarily orphaned via a create/delete undoable.
+    if (parent) {
+      parent.stopActiveAnimators('xscale');
+      parent.stopActiveAnimators('yscale');
+      parent.animate({attribute:'xscale', to:magnitude, duration:this.scaleinduration});
+      parent.animate({attribute:'yscale', to:magnitude, duration:this.scaleinduration});
+      
+      if (this.bringtofront) parent.moveToFront();
+    }
+  </handler>
+
+  <handler name="hide" event="onmouseout" reference="this.parent">
+    var parent = this.parent;
+    // Check for parent since over/out events will still occur when this
+    // behavior has been temporarily orphaned via a create/delete undoable.
+    if (parent) {
+      parent.stopActiveAnimators('xscale');
+      parent.stopActiveAnimators('yscale');
+      parent.animate({attribute:'xscale', to:1, duration:this.scaleoutduration});
+      parent.animate({attribute:'yscale', to:1, duration:this.scaleoutduration});
+    }
+  </handler>
 
   <handler event="onselected" reference="this.parent" args="sel">
     if (sel) {
@@ -35,25 +59,6 @@ SOFTWARE. -->
       this.hide();
     }
   </handler>
-
-  <method name="show">
-    var parent = this.parent,
-      magnitude = this.magnitude;
-    parent.stopActiveAnimators('xscale');
-    parent.stopActiveAnimators('yscale');
-    parent.animate({attribute:'xscale', to:magnitude, duration:this.scaleinduration});
-    parent.animate({attribute:'yscale', to:magnitude, duration:this.scaleinduration});
-    
-    if (this.bringtofront) parent.moveToFront();
-  </method>
-
-  <method name="hide">
-    var parent = this.parent;
-    parent.stopActiveAnimators('xscale');
-    parent.stopActiveAnimators('yscale');
-    parent.animate({attribute:'xscale', to:1, duration:this.scaleoutduration});
-    parent.animate({attribute:'yscale', to:1, duration:this.scaleoutduration});
-  </method>
 
   <!--// Editor Support //-->
   <method name="__getBehaviorDomains">

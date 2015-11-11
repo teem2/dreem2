@@ -128,4 +128,49 @@
     }
     return this.super();
   </method>
+
+  <!--/**
+    * @method serialize
+    * @overrides
+    */-->
+  <method name="serialize" args="obj">
+    if (!obj) obj = {};
+    
+    // Store attrs of this undoable on the obj to be serialized. Use IDs for
+    // any node/view references since we just want to retrieve the objects
+    // from the composition during deserialization not serialize/deserialize 
+    // entire view/node objects.
+    obj.target = this.target.id || null;
+    obj.attribute = this.attribute;
+    
+    // The parent attr is a special case where the old and new values are
+    // node/view references.
+    if (this.attribute === 'parent') {
+      obj.oldvalue = this.oldvalue.id;
+      obj.newvalue = this.newvalue.id;
+    } else {
+      obj.oldvalue = this.oldvalue;
+      obj.newvalue = this.newvalue;
+    }
+    
+    return this.super(obj);
+  </method>
+
+  <!--/**
+    * @method deserialize
+    * @overrides
+    */-->
+  <method name="deserialize" args="data">
+    // Retrieve objects via the serialized IDs.
+    if (data.target) data.target = dr.sprite.retrieveGlobal(data.target);
+    
+    // The parent attr is a special case where the old and new values are
+    // node/view references.
+    if (data.attribute === 'parent') {
+      data.oldvalue = dr.sprite.retrieveGlobal(data.oldvalue);
+      data.newvalue = dr.sprite.retrieveGlobal(data.newvalue);
+    }
+    
+    return this.super(data);
+  </method>
 </class>

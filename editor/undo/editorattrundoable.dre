@@ -45,7 +45,7 @@
       while (i) layouts[--i].setActualAttribute('locked', false);
     }
     
-    if (isLayout || isBehavior) selectionmanager.select(target.parent);
+    if (!dr.sprite.retrieveGlobal('previewer_undostack') && (isLayout || isBehavior)) selectionmanager.select(target.parent);
     
     return retval;
   </method>
@@ -88,7 +88,7 @@
       while (i) layouts[--i].setActualAttribute('locked', false);
     }
     
-    if (isLayout || isBehavior) selectionmanager.select(target.parent);
+    if (!dr.sprite.retrieveGlobal('previewer_undostack') && (isLayout || isBehavior)) selectionmanager.select(target.parent);
     
     return retval;
   </method>

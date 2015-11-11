@@ -112,29 +112,45 @@ define(function(require, exports, module) {
       
       bus.onMessage = function(msg, socket) {
         // we will get messages from the clients
-        if (msg.type == 'connectBrowser') {
-          // ok we have to send it all historic joins.
-          socket.send({type:'connectBrowserOK', rpcdef: rpcdef});
-          socket.rpcpromise = new RpcPromise(socket);
-          if (teem.screens){
-            teem.screens.screenJoin(socket, bus.attribute_sets);
-            socket.send({type:'joinComplete'});
-          }
-        } else if (msg.type == 'attribute') {
-          var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
-          if (obj){
-            var old = obj._onAttributeSet
-            obj._onAttributeSet = undefined
-            obj[msg.attribute] = msg.value;
-            obj._onAttributeSet = old
-          }
-          bus.broadcast(msg, socket)
-        } else if (msg.type == 'method') {
-          var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
-          if (obj) RpcProxy.handleCall(obj, msg, socket);
-        } else if (msg.type == 'return') {
-          // we got an rpc return
-          socket.rpcpromise.resolveResult(msg);
+        switch (msg.type) {
+          case 'connectBrowser':
+            // ok we have to send it all historic joins.
+            socket.send({type:'connectBrowserOK', rpcdef: rpcdef});
+            socket.rpcpromise = new RpcPromise(socket);
+            if (teem.screens){
+              teem.screens.screenJoin(socket, bus.attribute_sets);
+              socket.send({type:'joinComplete'});
+            }
+            break;
+          case 'attribute':
+            var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
+            if (obj){
+              var old = obj._onAttributeSet
+              obj._onAttributeSet = undefined
+              obj[msg.attribute] = msg.value;
+              obj._onAttributeSet = old
+            }
+            bus.broadcast(msg, socket);
+            break;
+          case 'method':
+            var obj = RpcProxy.decodeRpcID(teem, msg.rpcid);
+            if (obj) RpcProxy.handleCall(obj, msg, socket);
+            break;
+          case 'return':
+            // we got an rpc return
+            socket.rpcpromise.resolveResult(msg);
+            break;
+          case 'undostack_do':
+          case 'undostack_undo':
+          case 'undostack_redo':
+          case 'undostack_reset':
+            // Get the preview composition and broadcast the message to all
+            // clients connected to it. This allows undo/redo events to "stream"
+            // to all the previewers.
+            var compositionServer = bus.compositionserver;
+            var previewComposition = compositionServer.teemserver.__getComposition('preview/' + compositionServer.name + '.dre');
+            if (previewComposition) previewComposition.busserver.broadcast(msg);
+            break;
         }
       }
       
@@ -145,6 +161,8 @@ define(function(require, exports, module) {
   } else if (define.env == 'browser') {
     // web environment
     var BusClient = require('$CORE/busclient');
+    
+    var dr = require('$LIB/dr/dr.js');
     
     teem.bus = new BusClient(location.pathname + location.search);
     var rpcpromise = new RpcPromise(teem.bus);
@@ -209,6 +227,28 @@ define(function(require, exports, module) {
           case 'filechange':
             // ignore
             break;
+            
+          case 'undostack_do':
+            // Should only be received by previewers. Make an undoable from 
+            // the message and tell the undo stack to "do" it.
+            dr.sprite.retrieveGlobal('previewer_undostack').do(dr.deserialize(msg.undoable), null, function(error) {console.warn(error);});
+            break;
+          case 'undostack_undo':
+            // Should only be received by previewers. Tell the undostack to 
+            // "undo" the current undoable.
+            dr.sprite.retrieveGlobal('previewer_undostack').undo(null, function(error) {console.warn(error);});
+            break;
+          case 'undostack_redo':
+            // Should only be received by previewers. Tell the undostack to 
+            // "redo" the current undoable.
+            dr.sprite.retrieveGlobal('previewer_undostack').redo(null, function(error) {console.warn(error);});
+            break;
+          case 'undostack_reset':
+            // Should only be received by previewers. Can be ignored for now 
+            // since a previewer will reload after the editor reloads and that 
+            // is the only case that triggers an undostack_reset right now.
+            break;
+          
           default:
             console.log('Unexpected message type: ', msg);
         }
