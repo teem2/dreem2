@@ -607,20 +607,63 @@ SOFTWARE. -->
             
             {klass:dr.listviewseparator},
             
-            {attrs:{name:'iphonetall', text:'iphone (Portrait)',              w:320, h:480}},
-            {attrs:{name:'iphonewide', text:'iphone (Landscape)',             w:480, h:320}},
+            {attrs:{name:'iphonetall', text:'iphone (Portrait)',                w:320, h:480}},
+            {attrs:{name:'iphonewide', text:'iphone (Landscape)',               w:480, h:320}},
             
-            {attrs:{name:'iphone4tall', text:'iphone 4 (Portrait)',           w:Math.round(640  * 163/326), h:Math.round(960  * 163/326)}},
-            {attrs:{name:'iphone4wide', text:'iphone 4 (Landscape)',          w:Math.round(960  * 163/326), h:Math.round(640  * 163/326)}},
+            {attrs:{name:'iphone4tall', text:'iphone 4 (Portrait)',             w:Math.round(640  * 163/326), h:Math.round(960  * 163/326)}},
+            {attrs:{name:'iphone4wide', text:'iphone 4 (Landscape)',            w:Math.round(960  * 163/326), h:Math.round(640  * 163/326)}},
             
-            {attrs:{name:'iphone5tall', text:'iphone 5 (Portrait)',           w:Math.round(640  * 163/326), h:Math.round(1135 * 163/326)}},
-            {attrs:{name:'iphone5wide', text:'iphone 5 (Landscape)',          w:Math.round(1135 * 163/326), h:Math.round(640  * 163/326)}},
+            {attrs:{name:'iphone5tall', text:'iphone 5 (Portrait)',             w:Math.round(640  * 163/326), h:Math.round(1135 * 163/326)}},
+            {attrs:{name:'iphone5wide', text:'iphone 5 (Landscape)',            w:Math.round(1135 * 163/326), h:Math.round(640  * 163/326)}},
             
-            {attrs:{name:'iphone6tall', text:'iphone 6 (Portrait)',           w:Math.round(750  * 163/326), h:Math.round(1334 * 163/326)}},
-            {attrs:{name:'iphone6wide', text:'iphone 6 (Landscape)',          w:Math.round(1334 * 163/326), h:Math.round(750  * 163/326)}},
+            {attrs:{name:'iphone6tall', text:'iphone 6 (Portrait)',             w:Math.round(750  * 163/326), h:Math.round(1334 * 163/326)}},
+            {attrs:{name:'iphone6wide', text:'iphone 6 (Landscape)',            w:Math.round(1334 * 163/326), h:Math.round(750  * 163/326)}},
             
-            {attrs:{name:'iphone6plustall', text:'iphone 6 Plus (Portrait)',  w:Math.round(1080 * 163/401), h:Math.round(1920 * 163/401)}},
-            {attrs:{name:'iphone6pluswide', text:'iphone 6 Plus (Landscape)', w:Math.round(1920 * 163/401), h:Math.round(1080 * 163/401)}}
+            {attrs:{name:'iphone6plustall', text:'iphone 6 Plus (Portrait)',    w:Math.round(1080 * 163/401), h:Math.round(1920 * 163/401)}},
+            {attrs:{name:'iphone6pluswide', text:'iphone 6 Plus (Landscape)',   w:Math.round(1920 * 163/401), h:Math.round(1080 * 163/401)}},
+            
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'galaxystall', text:'Galaxy S (Portrait)',             w:Math.round(480 * 163/233), h:Math.round(800 * 163/233)}},
+            {attrs:{name:'galaxyswide', text:'Galaxy S (Landscape)',            w:Math.round(800 * 163/233), h:Math.round(480 * 163/233)}},
+            
+            {attrs:{name:'galaxys2tall', text:'Galaxy S2 (Portrait)',           w:Math.round(480 * 163/217), h:Math.round(800 * 163/217)}},
+            {attrs:{name:'galaxys2wide', text:'Galaxy S2 (Landscape)',          w:Math.round(800 * 163/217), h:Math.round(480 * 163/217)}},
+            
+            {attrs:{name:'galaxys2ltetall', text:'Galaxy S2 LTE (Portrait)',    w:Math.round(720  * 163/318), h:Math.round(1280 * 163/318)}},
+            {attrs:{name:'galaxys2ltewide', text:'Galaxy S2 LTE (Landscape)',   w:Math.round(1280 * 163/318), h:Math.round(720  * 163/318)}},
+            
+            {attrs:{name:'galaxys3minitall', text:'Galaxy S3 Mini (Portrait)',  w:Math.round(480 * 163/233), h:Math.round(800 * 163/233)}},
+            {attrs:{name:'galaxys3miniwide', text:'Galaxy S3 Mini (Landscape)', w:Math.round(800 * 163/233), h:Math.round(480 * 163/233)}},
+            
+            {attrs:{name:'galaxys3slimtall', text:'Galaxy S3 Slim (Portrait)',  w:Math.round(540 * 163/244), h:Math.round(960 * 163/244)}},
+            {attrs:{name:'galaxys3slimwide', text:'Galaxy S3 Slim (Landscape)', w:Math.round(960 * 163/244), h:Math.round(540 * 163/244)}},
+            
+            {attrs:{name:'galaxys3tall', text:'Galaxy S3 (Portrait)',           w:Math.round(720  * 163/306), h:Math.round(1280 * 163/306)}},
+            {attrs:{name:'galaxys3wide', text:'Galaxy S3 (Landscape)',          w:Math.round(1280 * 163/306), h:Math.round(720  * 163/306)}},
+            
+            {attrs:{name:'galaxys4minitall', text:'Galaxy S4 Mini (Portrait)',  w:Math.round(540 * 163/256), h:Math.round(960 * 163/256)}},
+            {attrs:{name:'galaxys4miniwide', text:'Galaxy S4 Mini (Landscape)', w:Math.round(960 * 163/256), h:Math.round(540 * 163/256)}},
+            
+            {attrs:{name:'galaxys4tall', text:'Galaxy S4 (Portrait)',           w:Math.round(1080 * 163/441), h:Math.round(1920 * 163/441)}},
+            {attrs:{name:'galaxys4wide', text:'Galaxy S4 (Landscape)',          w:Math.round(1920 * 163/441), h:Math.round(1080 * 163/441)}},
+            
+            {attrs:{name:'galaxys5minitall', text:'Galaxy S5 Mini (Portrait)',  w:Math.round(720 *  163/326), h:Math.round(1280 * 163/326)}},
+            {attrs:{name:'galaxys5miniwide', text:'Galaxy S5 Mini (Landscape)', w:Math.round(1280 * 163/326), h:Math.round(720 *  163/326)}},
+            
+            {attrs:{name:'galaxys5tall', text:'Galaxy S5 (Portrait)',           w:Math.round(1080 * 163/432), h:Math.round(1920 * 163/432)}},
+            {attrs:{name:'galaxys5wide', text:'Galaxy S5 (Landscape)',          w:Math.round(1920 * 163/432), h:Math.round(1080 * 163/432)}},
+            
+            {attrs:{name:'galaxys6tall', text:'Galaxy S6 (Portrait)',           w:Math.round(1440 * 163/576), h:Math.round(2560 * 163/576)}},
+            {attrs:{name:'galaxys6wide', text:'Galaxy S6 (Landscape)',          w:Math.round(2560 * 163/576), h:Math.round(1440 * 163/576)}},
+            
+            {klass:dr.listviewseparator},
+            
+            {attrs:{name:'nexus4tall', text:'Nexus 4 (Portrait)',               w:Math.round(768 * 163/318), h:Math.round(1280 * 163/318)}},
+            {attrs:{name:'nexus4wide', text:'Nexus 4 (Landscape)',              w:Math.round(1280 * 163/318), h:Math.round(768 * 163/318)}},
+            
+            {attrs:{name:'nexus5tall', text:'Nexus 5 (Portrait)',               w:Math.round(1080 * 163/445), h:Math.round(1920 * 163/445)}},
+            {attrs:{name:'nexus5wide', text:'Nexus 5 (Landscape)',              w:Math.round(1920 * 163/445), h:Math.round(1080 * 163/445)}}
           ];
           
           this.super();
