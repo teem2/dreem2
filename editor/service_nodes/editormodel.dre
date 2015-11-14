@@ -435,7 +435,7 @@ SOFTWARE. -->
               var newMixins = [];
               mixins.split(define.SEPARATOR_REGEX).forEach(
                 function(mixinName) {
-                  if (mixinName !== 'editable') newMixins.push(mixinName);
+                  if (mixinName !== 'editable' && mixinName !== 'editableanimator') newMixins.push(mixinName);
                 }
               );
               attrs.with = newMixins.join(',');

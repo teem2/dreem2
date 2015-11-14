@@ -80,7 +80,7 @@ SOFTWARE. -->
       if (this.islayout) delete objectifyAttrs.locked;
       attrs.__objectify_attrs_list = Object.keys(objectifyAttrs);
       
-      attrs.with = 'editable';
+      attrs.with = this.isanimation ? 'editableanimation' : 'editable';
       var instance = droptarget.createChild(attrs);
       
       var i;
@@ -133,7 +133,7 @@ SOFTWARE. -->
       } else if (this.isbehavior) {
         actions.do(new dr.editor.createbehaviorundoable({target:instance, previewinfo:previewerAttrs}));
       } else if (this.isanimation) {
-        // FIXME:implement actions.do(new dr.editor.createbehaviorundoable({target:instance, previewinfo:previewerAttrs}));
+        actions.do(new dr.editor.createanimatorundoable({target:instance, previewinfo:previewerAttrs}));
       } else {
         actions.do(new dr.editor.createundoable({target:instance, previewinfo:previewerAttrs}));
         selectionmanager.select(instance);

@@ -22,6 +22,7 @@ SOFTWARE. -->
 <include href='./keyboarddraggable.dre'/>
 <include href='./previewable.dre'/>
 <include href='./editable.dre'/>
+<include href='./editableanimation.dre'/>
 <include href='./controlhandle.dre'/>
 <include href='./reticle.dre'/>
 <include href='./toolbarbutton.dre'/>
@@ -35,6 +36,8 @@ SOFTWARE. -->
 <include href='./undo/deletelayoutundoable.dre'/>
 <include href='./undo/createbehaviorundoable.dre'/>
 <include href='./undo/deletebehaviorundoable.dre'/>
+<include href='./undo/createanimatorundoable.dre'/>
+<include href='./undo/deleteanimatorundoable.dre'/>
 <include href='./undo/editorattrundoable.dre'/>
 
 <view name="editor" id="editor"
@@ -1023,7 +1026,7 @@ SOFTWARE. -->
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
         
         <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
-          //this.repl.setActualAttribute('data', selectedview ? selectedview.getBehaviors() : []);
+          this.repl.setActualAttribute('data', selectedview ? selectedview.getAnimators() : []);
         </handler>
         
         <replicator name="repl" classname="subnodeeditor"/>

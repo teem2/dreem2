@@ -1,0 +1,55 @@
+<!-- The MIT License (see LICENSE)
+     Copyright (C) 2014-2015 Teem2 LLC -->
+<!--/**
+  * @class dr.editor.createanimatorundoable {UI Components}
+  * @extends dr.editor.createundoable
+  * An undoable that Inserts a new animator into a parent node.
+  */-->
+<class name="editor-createanimatorundoable" extends="editor-createundoable"
+  undodescription='Undo create animator.'
+  redodescription='Redo create animator.'
+>
+  <!--// Class Methods //////////////////////////////////////////////////////-->
+  <method name="refresh" args="targetParent" allocation="class">
+    if (dr.sprite.retrieveGlobal('previewer_undostack')) {
+      // Previewer only case
+    } else {
+      // Editor only case
+      if (selectionmanager.selectedview === targetParent) {
+        animators_panel.refresh(targetParent);
+      } else {
+        selectionmanager.select(targetParent);
+      }
+    }
+  </method>
+
+
+  <!--// METHODS ////////////////////////////////////////////////////////////-->
+  <!--/**
+    * @method undo
+    * @overrides
+    * Removes the target animator from its parent.
+    */-->
+  <method name="undo" args="callback">
+    var retval = this.super();
+    
+    // Only do this if creation succeeded
+    if (!this.done) dr.editor.createanimatorundoable.refresh(this._targetParent);
+    
+    return retval;
+  </method>
+
+  <!--/**
+    * @method redo
+    * @overrides
+    * Inserts the target animator into the target parent.
+    */-->
+  <method name="redo" args="callback">
+    var retval = this.super();
+    
+    // Only do this if creation succeeded
+    if (this.done) dr.editor.createanimatorundoable.refresh(this._notFirstTime ? this._targetParent : this.target.parent);
+    
+    return retval;
+  </method>
+</class>

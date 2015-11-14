@@ -332,7 +332,10 @@ SOFTWARE. -->
     
     for (; len > i; i++) attrMap = dr.extend(attrMap, ancestors[i].attributes);
     for (key in attrMap) {
-      value = attrMap[key];
+      // Make a copy of each entry, otherwise we're modifying the shared
+      // attributes object on a class.
+      value = attrMap[key] = dr.extend({}, attrMap[key]);
+      
       value.name = key;
       value.target = this;
       attrs.push(value)
@@ -404,7 +407,16 @@ SOFTWARE. -->
     
     return attrs;
   </method>
-  
+
+  <method name="getAnimators">
+    var children = this.getSubnodes(), i = children.length, child, retval = [];
+    while (i) {
+      child = children[--i];
+      if (child.isA(dr.AnimBase)) retval.push(child);
+    }
+    return retval;
+  </method>
+
   <!--// Behavior Support //-->
   <method name="getBehaviors">
     var children = this.getSubnodes(), i = children.length, child, retval = [];

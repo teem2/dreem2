@@ -118,10 +118,10 @@
               if (items.length) object.items = items;
             }
             
-            // Keep all child nodes that are not layouts or behaviors.
+            // Keep all child nodes that are not layouts, behaviors or animators.
             if (id) {
               var view = self._getEditable(id);
-              if (view && !view.isA(dr.Layout) && !view.isA(dr.behavior.behavior)) m.push(object);
+              if (view && !view.isA(dr.Layout) && !view.isA(dr.behavior.behavior) && !view.isA(dr.AnimBase)) m.push(object);
             }
           }
         }
