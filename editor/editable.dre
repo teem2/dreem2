@@ -332,7 +332,10 @@ SOFTWARE. -->
     
     for (; len > i; i++) attrMap = dr.extend(attrMap, ancestors[i].attributes);
     for (key in attrMap) {
-      value = attrMap[key];
+      // Make a copy of each entry, otherwise we're modifying the shared
+      // attributes object on a class.
+      value = attrMap[key] = dr.extend({}, attrMap[key]);
+      
       value.name = key;
       value.target = this;
       attrs.push(value)
