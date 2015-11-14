@@ -1017,6 +1017,18 @@ SOFTWARE. -->
         <replicator name="repl" classname="subnodeeditor"/>
       </view>
       
+      <subhead width="100%" text="Animators"/>
+      
+      <view id="animators_panel" width="100%" clip="true">
+        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
+        
+        <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
+          //this.repl.setActualAttribute('data', selectedview ? selectedview.getBehaviors() : []);
+        </handler>
+        
+        <replicator name="repl" classname="subnodeeditor"/>
+      </view>
+      
       <subhead width="100%" text="Behaviors"/>
       
       <view id="behaviors_panel" width="100%" clip="true">

@@ -57,7 +57,7 @@ SOFTWARE. -->
       var attrs = dr.extend({}, this.instanceattrs);
       attrs.id = editormodel.generateModelId();
       
-      if (!this.islayout && !this.isbehavior) {
+      if (!this.islayout && !this.isbehavior && !this.isanimation) {
         if (attrs.x == null || attrs.y == null) {
           var loc = dr.componentdropable.calculateDropLocation(this, droptarget);
           if (attrs.x == null) attrs.x = loc.x;
@@ -132,6 +132,8 @@ SOFTWARE. -->
         actions.do(new dr.editor.createlayoutundoable({target:instance, previewinfo:previewerAttrs}));
       } else if (this.isbehavior) {
         actions.do(new dr.editor.createbehaviorundoable({target:instance, previewinfo:previewerAttrs}));
+      } else if (this.isanimation) {
+        // FIXME:implement actions.do(new dr.editor.createbehaviorundoable({target:instance, previewinfo:previewerAttrs}));
       } else {
         actions.do(new dr.editor.createundoable({target:instance, previewinfo:previewerAttrs}));
         selectionmanager.select(instance);
