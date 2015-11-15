@@ -49,6 +49,8 @@
     var reload = false;
     if (args["-server"]) server = args["-server"];
     
+    var preview = args["-preview"];
+
     if (args["-composition"]) {
         composition = args["-composition"];
     } else {
@@ -106,9 +108,22 @@
         define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
         define.BUILD = "$ROOT/dalicache";
         define.MAIN = "$BUILD/compositions/" + composition + ".dre.screens." + screen + ".js";
+
+	if (preview) {
+	    define.COMPOSITIONROOT = UpdatePreview(define.COMPOSITIONROOT);
+	    define.ROOTURL = UpdatePreview(define.ROOTURL);
+	    define.BUILD = UpdatePreview(define.BUILD);
+	    define.MAIN = UpdatePreview(define.MAIN);
+	}
+
         var F = require(define.MAIN)();
         define.startMain();
         loaded = true;
+    }
+
+
+    function UpdatePreview(str) {
+	return str.replace(/compositions/g, 'preview/compositions');
     }
 
     function Unload() {
@@ -132,6 +147,8 @@
     // in the short term.
     function selectiveReload() {
         script_url = server + "/build/compositions/" + composition + ".dre.screens." + screen + ".js";
+
+	if (preview) script_url = UpdatePreview(script_url);
 
         var script = {}
         var scripturl = url.parse(script_url);
@@ -237,15 +254,25 @@
         loadedscripts.push(script);
     }
     var main_file = "./dalicache/compositions/" + composition + ".dre.screens." + screen + ".js";
+    if (preview) main_file = UpdatePreview(main_file);
+console.log('main_file', main_file);
 
     function LoadAll() {
         var originalroot = define.ROOT;
         define.ROOT = server + "/" + composition + "/default";
         define.MAIN = server + "/build/compositions/" + composition + ".dre.screens." + screen + ".js";
+
+	if (preview) {
+	    define.ROOT = UpdatePreview(define.ROOT);
+	    define.MAIN = UpdatePreview(define.MAIN);
+	}
+
         requireWalker(define.MAIN, define.ROOT, main_file);
     }
     var sock;
     var sockethost = server + "/compositions/" + composition + ".dre"
+    if (preview) sockethost = UpdatePreview(sockethost);
+
     var reconnect = function() {
         // put up websocket.
         console.color("~~** reconnect started");
@@ -261,6 +288,17 @@
             try {
                 msg = JSON.parse(msg);
             } catch (e) {}
+
+	    // Dynamic editing support messages
+	    switch (msg.type) {
+            case 'undostack_do':
+            case 'undostack_undo':
+            case 'undostack_redo':
+            case 'undostack_reset':
+		console.log('*** undostack message', msg.type);
+		break;
+	    }
+
             if (msg.type == "sessionCheck") {
                 console.color('~~** ~by~Files updated on server: downloading~~.');
 		if (loaded) {
@@ -289,8 +327,9 @@
         var window = {
             x: 0,
             y: 0,
-            width: 1920,
-            height: 1080,
+	    // NOTE: I'm using a smaller size while debugging dynamic editing
+            width: 1067, //1920,
+            height: 600, //1080,
             transparent: false,
             name: 'Dreem Dali Runtime: ' + composition
         };
