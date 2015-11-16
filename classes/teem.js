@@ -323,6 +323,10 @@ define(function(require, exports, module) {
             teem.__startup(mainModuleExports);
             break;
             
+          case 'filechange':
+            // ignore
+            break;
+
           case 'undostack_do':
             // Should only be received by previewers. Make an undoable from 
             // the message and tell the undo stack to "do" it.
