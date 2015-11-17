@@ -144,6 +144,18 @@ define(function(require, exports, module){
 				while(this.state());
 			}.bind(this))
 
+			// Catch
+			this.socket.on('error', function(err){
+			    // Most common source of error is server stopping
+				//console.log(err.stack);
+			    if (err.code == 'ECONNRESET') {
+					console.log('ECONNRESET received. Did the server stop?');
+			    }
+			    else {
+					console.log('Ignoring Connection error:', err.code);
+			    }
+			}.bind(this))
+
 			this.socket.on('close', function(){
 				this.close()
 			}.bind(this))
