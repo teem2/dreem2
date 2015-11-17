@@ -79,7 +79,7 @@
 
     // Some directories must be manually created
     // (ex: /dalicache is removed)
-    var dirs = ["./dalicache", "./dalicache/classes", "./dalicache/classes/behavior", "./dalicache/compositions"];
+    var dirs = ["./dalicache", "./dalicache/classes", "./dalicache/classes/behavior", "./dalicache/compositions", "./dalicache/resources"];
     for (var i in dirs) {
         var dir = dirs[i];
 	console.log('dir', dir, fs.existsSync(dir));
