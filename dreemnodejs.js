@@ -187,7 +187,7 @@
             pathsofar += S[i] + '/';
             //console.log(pathsofar);
             if (fs.existsSync(pathsofar) == false) {
-                fs.mkdir(pathsofar);
+                fs.mkdirSync(pathsofar);
             }
         }
     }
