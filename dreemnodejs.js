@@ -49,7 +49,12 @@
     var reload = false;
     if (args["-server"]) server = args["-server"];
     
+    // If preview exists, add preview to urls when communicating to the server.
     var preview = args["-preview"];
+
+    // If loading exists, show a loading screen immediately, and remove when 
+    // the application ui starts.
+    var loading = args["-loading"];
 
     if (args["-composition"]) {
         composition = args["-composition"];
@@ -187,6 +192,7 @@
             pathsofar += S[i] + '/';
             //console.log(pathsofar);
             if (fs.existsSync(pathsofar) == false) {
+				console.log('mkdir', pathsofar);
                 fs.mkdirSync(pathsofar);
             }
         }
@@ -346,6 +352,40 @@ console.log('main_file', main_file);
         
         console.log("** loading Dali")
         global.dali = require('./dalinode/dali')(options);
+
+		// Show/hide a loading page
+		global.show_loading_page = function() {
+			var sz = dali.stage.getSize();
+			dali.stage.setBackgroundColor([0.5, 0.5, 0.5, 1]);
+			global.loading_page = new dali.Control('TextField');
+			loading_page.text = "Loading...";
+
+			// Compute scale to fit the text to the screen size
+			var lpsz = loading_page.getNaturalSize();
+			var scale = Math.min (sz.x / lpsz.x, sz.y / lpsz.y);
+			var ptsize = loading_page.pointSize * scale / 2;
+			loading_page.pointSize = ptsize;
+
+			loading_page.parentOrigin = dali.CENTER;
+			loading_page.anchorPoint = dali.CENTER;
+			loading_page.horizontalAlignment = 'CENTER';
+			loading_page.verticalAlignment = 'CENTER';
+
+			dali.stage.add(loading_page);
+		};
+
+		global.remove_loading_page = function() {
+			if (global.loading_page) {
+				//console.log('Removing loading_page');
+				dali.stage.remove(global.loading_page);
+				global.loading_page = null;
+			}
+		};
+
+		// Show a loading page
+		if (loading)
+			global.show_loading_page();
+
 
 //        global.dali.stage.add(new global.dali.ImageActor(new global.dali.ResourceImage({url:"./img/shoarma.jpg"})));
 
