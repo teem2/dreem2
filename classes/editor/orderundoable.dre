@@ -82,6 +82,12 @@
     // Retrieve objects via the serialized IDs.
     var retrieveFunc = dr.sprite.retrieveGlobal;
     if (data.target) data.target = retrieveFunc(data.target);
+    
+    if (!data.target) {
+      dr.global.error.notifyWarn('deserialization', "Target could not be found for orderundoable: " + data.target);
+      return null;
+    }
+    
     if (data.oldprevsibling) data.oldprevsibling = retrieveFunc(data.oldprevsibling);
     if (data.newprevsibling) data.newprevsibling = retrieveFunc(data.newprevsibling);
     
