@@ -49,6 +49,13 @@
     var reload = false;
     if (args["-server"]) server = args["-server"];
     
+    // If preview exists, add preview to urls when communicating to the server.
+    var preview = args["-preview"];
+
+    // If loading exists, show a loading screen immediately, and remove when 
+    // the application ui starts.
+    var loading = args["-loading"];
+
     if (args["-composition"]) {
         composition = args["-composition"];
     } else {
@@ -77,7 +84,7 @@
 
     // Some directories must be manually created
     // (ex: /dalicache is removed)
-    var dirs = ["./dalicache", "./dalicache/classes", "./dalicache/classes/behavior", "./dalicache/compositions"];
+    var dirs = ["./dalicache", "./dalicache/classes", "./dalicache/classes/behavior", "./dalicache/compositions", "./dalicache/resources"];
     for (var i in dirs) {
         var dir = dirs[i];
 	console.log('dir', dir, fs.existsSync(dir));
@@ -106,9 +113,22 @@
         define.ROOT = define.filePath(module.filename.replace(/\\/g, '/'));
         define.BUILD = "$ROOT/dalicache";
         define.MAIN = "$BUILD/compositions/" + composition + ".dre.screens." + screen + ".js";
+
+	if (preview) {
+	    define.COMPOSITIONROOT = UpdatePreview(define.COMPOSITIONROOT);
+	    define.ROOTURL = UpdatePreview(define.ROOTURL);
+	    define.BUILD = UpdatePreview(define.BUILD);
+	    define.MAIN = UpdatePreview(define.MAIN);
+	}
+
         var F = require(define.MAIN)();
         define.startMain();
         loaded = true;
+    }
+
+
+    function UpdatePreview(str) {
+	return str.replace(/compositions/g, 'preview/compositions');
     }
 
     function Unload() {
@@ -132,6 +152,8 @@
     // in the short term.
     function selectiveReload() {
         script_url = server + "/build/compositions/" + composition + ".dre.screens." + screen + ".js";
+
+	if (preview) script_url = UpdatePreview(script_url);
 
         var script = {}
         var scripturl = url.parse(script_url);
@@ -170,7 +192,8 @@
             pathsofar += S[i] + '/';
             //console.log(pathsofar);
             if (fs.existsSync(pathsofar) == false) {
-                fs.mkdir(pathsofar);
+				console.log('mkdir', pathsofar);
+                fs.mkdirSync(pathsofar);
             }
         }
     }
@@ -237,15 +260,25 @@
         loadedscripts.push(script);
     }
     var main_file = "./dalicache/compositions/" + composition + ".dre.screens." + screen + ".js";
+    if (preview) main_file = UpdatePreview(main_file);
+console.log('main_file', main_file);
 
     function LoadAll() {
         var originalroot = define.ROOT;
         define.ROOT = server + "/" + composition + "/default";
         define.MAIN = server + "/build/compositions/" + composition + ".dre.screens." + screen + ".js";
+
+	if (preview) {
+	    define.ROOT = UpdatePreview(define.ROOT);
+	    define.MAIN = UpdatePreview(define.MAIN);
+	}
+
         requireWalker(define.MAIN, define.ROOT, main_file);
     }
     var sock;
     var sockethost = server + "/compositions/" + composition + ".dre"
+    if (preview) sockethost = UpdatePreview(sockethost);
+
     var reconnect = function() {
         // put up websocket.
         console.color("~~** reconnect started");
@@ -261,6 +294,17 @@
             try {
                 msg = JSON.parse(msg);
             } catch (e) {}
+
+	    // Dynamic editing support messages
+	    switch (msg.type) {
+            case 'undostack_do':
+            case 'undostack_undo':
+            case 'undostack_redo':
+            case 'undostack_reset':
+		console.log('*** undostack message', msg.type);
+		break;
+	    }
+
             if (msg.type == "sessionCheck") {
                 console.color('~~** ~by~Files updated on server: downloading~~.');
 		if (loaded) {
@@ -289,8 +333,9 @@
         var window = {
             x: 0,
             y: 0,
-            width: 1920,
-            height: 1080,
+	    // NOTE: I'm using a smaller size while debugging dynamic editing
+            width: 1067, //1920,
+            height: 600, //1080,
             transparent: false,
             name: 'Dreem Dali Runtime: ' + composition
         };
@@ -307,6 +352,40 @@
         
         console.log("** loading Dali")
         global.dali = require('./dalinode/dali')(options);
+
+		// Show/hide a loading page
+		global.show_loading_page = function() {
+			var sz = dali.stage.getSize();
+			dali.stage.setBackgroundColor([0.5, 0.5, 0.5, 1]);
+			global.loading_page = new dali.Control('TextField');
+			loading_page.text = "Loading...";
+
+			// Compute scale to fit the text to the screen size
+			var lpsz = loading_page.getNaturalSize();
+			var scale = Math.min (sz.x / lpsz.x, sz.y / lpsz.y);
+			var ptsize = loading_page.pointSize * scale / 2;
+			loading_page.pointSize = ptsize;
+
+			loading_page.parentOrigin = dali.CENTER;
+			loading_page.anchorPoint = dali.CENTER;
+			loading_page.horizontalAlignment = 'CENTER';
+			loading_page.verticalAlignment = 'CENTER';
+
+			dali.stage.add(loading_page);
+		};
+
+		global.remove_loading_page = function() {
+			if (global.loading_page) {
+				//console.log('Removing loading_page');
+				dali.stage.remove(global.loading_page);
+				global.loading_page = null;
+			}
+		};
+
+		// Show a loading page
+		if (loading)
+			global.show_loading_page();
+
 
 //        global.dali.stage.add(new global.dali.ImageActor(new global.dali.ResourceImage({url:"./img/shoarma.jpg"})));
 

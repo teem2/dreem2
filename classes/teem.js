@@ -250,12 +250,15 @@ define(function(require, exports, module) {
             break;
           
           default:
-            console.log('Unexpected message type: ', msg);
+            console.log('Unexpected Main message type: ', msg);
         }
       }
     }
   } else if (define.env == 'v8') {
+    //DALI
     console.log("Setting up V8 teem client...")
+
+    var dr = require('$LIB/dr/dr.js');
 
     // dali environment
     var BusClient = require('$CORE/busclient');
@@ -320,6 +323,32 @@ define(function(require, exports, module) {
             teem.__startup(mainModuleExports);
             break;
             
+          case 'filechange':
+            // ignore
+            break;
+
+          case 'undostack_do':
+            // Should only be received by previewers. Make an undoable from 
+            // the message and tell the undo stack to "do" it.
+            dr.sprite.retrieveGlobal('previewer_undostack').do(dr.deserialize(msg.undoable), null, function(error) {console.warn(error);});
+            break;
+          case 'undostack_undo':
+            // Should only be received by previewers. Tell the undostack to 
+            // "undo" the current undoable.
+            dr.sprite.retrieveGlobal('previewer_undostack').undo(null, function(error) {console.warn(error);});
+            break;
+          case 'undostack_redo':
+            // Should only be received by previewers. Tell the undostack to 
+            // "redo" the current undoable.
+            dr.sprite.retrieveGlobal('previewer_undostack').redo(null, function(error) {console.warn(error);});
+            break;
+          case 'undostack_reset':
+            // Should only be received by previewers. Can be ignored for now 
+            // since a previewer will reload after the editor reloads and that 
+            // is the only case that triggers an undostack_reset right now.
+            break;
+          
+
           default:
             console.log('Unexpected message type: ', msg);
         }
