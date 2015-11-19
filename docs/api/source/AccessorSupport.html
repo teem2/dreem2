@@ -15,7 +15,12 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides support for getter and setter functions on an object.
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='global-property-'>/** Provides support for getter and setter functions on an object.
 </span>    
     Events:
         None
@@ -124,7 +129,8 @@ define(function(require, exports, module) {
                             if (defaultValue !== undefined) {
                                 value = defaultValue;
                             } else {
-                                dr.dumpStack(&quot;NaN encountered parsing value as number with no default: &quot; + value);
+                                dr.dumpStack(&quot;NaN encountered parsing value as number with no default. Attr: &quot; + attrName);
+                                value = NaN;
                             }
                         } else {
                             value = newValue;
@@ -174,10 +180,14 @@ define(function(require, exports, module) {
                         if (!value) value = dr.Animator.DEFAULT_MOTION;
                         break;
                     case &#39;json&#39;:
-                        try {
-                            value = JSON.parse(value);
-                        } catch (e) {
-                            dr.global.error.logWarn(&quot;error parsing json value &#39;&quot; + value + &quot;&#39; for attribute &#39;&quot; + attrName + &quot;&#39;&quot;);
+                        if (value == null || value === &#39;&#39;) {
+                            value = undefined;
+                        } else {
+                            try {
+                                value = JSON.parse(value);
+                            } catch (e) {
+                                dr.global.error.logWarn(&quot;error parsing json value &#39;&quot; + value + &quot;&#39; for attribute &#39;&quot; + attrName + &quot;&#39;&quot;);
+                            }
                         }
                         break;
                     case &#39;expression&#39;:
@@ -455,6 +465,7 @@ define(function(require, exports, module) {
 </span>        bindConstraint: function(attrName, expression, isAsync) {
             // Unbind again in case multiple constraints got registered for the
             // same attribute during initialization.
+            
             if (isAsync) this.unbindConstraint(attrName);
             
             expression = evaluator(expression);
@@ -479,13 +490,21 @@ define(function(require, exports, module) {
                     bindings = [],
                     scopes = bindingCache[expression], i = scopes.length, 
                     scope, eventName, target;
-                
                 while (i) {
                     scope = scopes[--i];
                     target = dr.resolveName(scope.binding, this);
                     if (target) {
                         eventName = &#39;on&#39; + scope.property;
-                        this.listenTo(target, eventName, funcName);
+                        // its an rpc class
+                        if (target._rpcpromise) {
+                            if (target[&#39;on_&#39; + scope.property]) {
+                                target[&#39;on_&#39; + scope.property].addListener(fn.bind(this, null, dr));
+                            } else {
+                                console.log(&quot;RPC binding &quot;+ &#39;on_&#39; + scope.property + &quot; not found&quot;);
+                            }
+                        } else {
+                            this.listenTo(target, eventName, funcName);
+                        }
                         bindings.push({target:target, eventName:eventName});
                     }
                 }

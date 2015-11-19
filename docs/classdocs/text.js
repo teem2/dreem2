@@ -108,6 +108,11 @@
         * The contents of this input text field
         */
 /**
+        * @method isLeaf
+        * @overrides
+        * Text views do not support subviews.
+        */
+/**
         * @method format
         * Format the text to be displayed. The default behavior is to
         * return the text intact. Override to change formatting. This method

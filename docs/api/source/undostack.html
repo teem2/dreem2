@@ -404,9 +404,60 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <strong><a href="#n250" name="n250">250</a></strong>
 <a href="#n251" name="n251">251</a>
 <a href="#n252" name="n252">252</a>
+<a href="#n253" name="n253">253</a>
+<a href="#n254" name="n254">254</a>
+<a href="#n255" name="n255">255</a>
+<a href="#n256" name="n256">256</a>
+<a href="#n257" name="n257">257</a>
+<a href="#n258" name="n258">258</a>
+<a href="#n259" name="n259">259</a>
+<strong><a href="#n260" name="n260">260</a></strong>
+<a href="#n261" name="n261">261</a>
+<a href="#n262" name="n262">262</a>
+<a href="#n263" name="n263">263</a>
+<a href="#n264" name="n264">264</a>
+<a href="#n265" name="n265">265</a>
+<a href="#n266" name="n266">266</a>
+<a href="#n267" name="n267">267</a>
+<a href="#n268" name="n268">268</a>
+<a href="#n269" name="n269">269</a>
+<strong><a href="#n270" name="n270">270</a></strong>
+<a href="#n271" name="n271">271</a>
+<a href="#n272" name="n272">272</a>
+<a href="#n273" name="n273">273</a>
+<a href="#n274" name="n274">274</a>
+<a href="#n275" name="n275">275</a>
+<a href="#n276" name="n276">276</a>
+<a href="#n277" name="n277">277</a>
+<a href="#n278" name="n278">278</a>
+<a href="#n279" name="n279">279</a>
+<strong><a href="#n280" name="n280">280</a></strong>
+<a href="#n281" name="n281">281</a>
+<a href="#n282" name="n282">282</a>
+<a href="#n283" name="n283">283</a>
+<a href="#n284" name="n284">284</a>
+<a href="#n285" name="n285">285</a>
+<a href="#n286" name="n286">286</a>
+<a href="#n287" name="n287">287</a>
+<a href="#n288" name="n288">288</a>
+<a href="#n289" name="n289">289</a>
+<strong><a href="#n290" name="n290">290</a></strong>
+<a href="#n291" name="n291">291</a>
+<a href="#n292" name="n292">292</a>
+<a href="#n293" name="n293">293</a>
+<a href="#n294" name="n294">294</a>
+<a href="#n295" name="n295">295</a>
+<a href="#n296" name="n296">296</a>
+<a href="#n297" name="n297">297</a>
+<a href="#n298" name="n298">298</a>
+<a href="#n299" name="n299">299</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
   * @class dr.editor.undostack {UI Components}
   * @extends dr.node
@@ -415,6 +466,14 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   *
   * This object should be used to form the foundation of an undo/redo system
   * for an editor.
+  *
+  * @event onstackchange
+  * Fired when the location of the stack changes
+  * @param {Object} An object with a &quot;type&quot; property that indicates what
+  * caused the stack change. Supported types are &quot;undostack_reset&quot;, 
+  * &quot;undostack_do&quot;, &quot;undostack_undo&quot; and &quot;undostack_redo&quot;. The do, undo and
+  * redo types also have an &quot;undoable&quot; property which is a reference to the
+  * undoable that caused the stack change.
   */--&gt;</span>
 <span class="tag">&lt;class</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">editor-undostack</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">extends</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">node</span><span class="delimiter">&quot;</span></span>
   <span class="attribute-name">requires</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">editor-compoundundoable editor-attrundoable editor-orderundoable editor-createundoable editor-deleteundoable</span><span class="delimiter">&quot;</span></span>
@@ -447,10 +506,19 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     var stack = this.__stack || (this.__stack = []);
     while (stack.length) stack.pop().destroy();
     this.__stackLoc = -1;
-    
     this.__syncUndoabilityAttrs();
-    
+    this.__fireStackChangeEvent({type:'undostack_reset'});
     return this;
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * Fires an onstackchange event whenever the location in the stack changes.
+    * @method __fireStackChangeEvent
+    * @private
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__fireStackChangeEvent</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">infoObj</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    infoObj.stackloc = this.__stackLoc;
+    this.sendEvent('onstackchange', infoObj);
   <span class="tag">&lt;/method&gt;</span>
 
   <span class="comment">&lt;!--/**
@@ -513,6 +581,18 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   <span class="tag">&lt;/method&gt;</span>
 
   <span class="comment">&lt;!--/**
+    * @method __handleError
+    * @private
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__handleError</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">errorHandler, msg</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if (errorHandler <span class="error">&amp;</span><span class="error">&amp;</span> typeof errorHandler === 'function') {
+      errorHandler(msg);
+    } else {
+      dr.global.error.logWarn(msg);
+    }
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
     * @method do
     * Adds the undoable to this stack at the current location and immediately
     * does that undoable. Also removes and destroys any undoables that exist
@@ -538,17 +618,17 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     * not.
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">do</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">undoable, callback, errorHandler</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    if (!undoable || undoable.done) {
-      if (errorHandler <span class="error">&amp;</span><span class="error">&amp;</span> typeof errorHandler === 'function') errorHandler({msg:'Undoable already done.'});
+    if (this.__executingUndoable) {
+      this.__handleError(errorHandler, {msg:'Prevent undostack loops in do method.'});
+    } else if (!undoable || undoable.done) {
+      this.__handleError(errorHandler, {msg:'Undoable already done.'});
     } else {
       var error = this.__executeUndoable(undoable, callback, true);
       if (error) {
         // Rollback since an error occurred.
         var undoError = this.__executeUndoable(undoable, callback, false);
-        if (errorHandler <span class="error">&amp;</span><span class="error">&amp;</span> typeof errorHandler === 'function') {
-          errorHandler(error);
-          if (undoError) errorHandler(err);
-        }
+        this.__handleError(errorHandler, error);
+        if (undoError) this.__handleError(errorHandler, undoError);
       } else {
         ++this.__stackLoc;
         var stack = this.__stack,
@@ -556,6 +636,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         while (stack.length <span class="error">&gt;</span> loc) stack.pop().destroy();
         stack.push(undoable);
         this.__syncUndoabilityAttrs();
+        this.__fireStackChangeEvent({type:'undostack_do', undoable:undoable});
         return true;
       }
     }
@@ -582,13 +663,17 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     * undone or not.
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">undo</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">callback, errorHandler</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    if (this.canUndo()) {
-      var error = this.__executeUndoable(this.__stack[this.__stackLoc--], callback, false);
+    if (this.__executingUndoable) {
+      this.__handleError(errorHandler, {msg:'Prevent undostack loops in undo method.'});
+    } else if (this.canUndo()) {
+      var undoable = this.__stack[this.__stackLoc--],
+        error = this.__executeUndoable(undoable, callback, false);
       if (error) {
         ++this.__stackLoc;
-        if (errorHandler <span class="error">&amp;</span><span class="error">&amp;</span> typeof errorHandler === 'function') errorHandler(err);
+        this.__handleError(errorHandler, error);
       } else {
         this.__syncUndoabilityAttrs();
+        this.__fireStackChangeEvent({type:'undostack_undo', undoable:undoable});
         return true;
       }
     }
@@ -614,13 +699,17 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     * @returns {Boolean} Indicates if the undoable was successfully done or not.
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">redo</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">callback, errorHandler</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    if (this.canRedo()) {
-      var error = this.__executeUndoable(this.__stack[++this.__stackLoc], callback, true);
+    if (this.__executingUndoable) {
+      this.__handleError(errorHandler, {msg:'Prevent undostack loops in redo method.'});
+    } else if (this.canRedo()) {
+      var undoable = this.__stack[++this.__stackLoc],
+        error = this.__executeUndoable(undoable, callback, true);
       if (error) {
         --this.__stackLoc;
-        if (errorHandler <span class="error">&amp;</span><span class="error">&amp;</span> typeof errorHandler === 'function') errorHandler(err);
+        this.__handleError(errorHandler, error);
       } else {
         this.__syncUndoabilityAttrs();
+        this.__fireStackChangeEvent({type:'undostack_redo', undoable:undoable});
         return true;
       }
     }
@@ -633,6 +722,9 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     * Executes the undoable and returns an error if one occured.
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__executeUndoable</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">undoable, callback, isRedo</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    // Prevent undo/redo from recursively modifying the undostack.
+    this.__executingUndoable = true;
+    
     // Listen for expected errors while doing the undoable.
     var error,
       expectedErrorHandler = new dr.Eventable(null, [{
@@ -653,6 +745,8 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     }
     
     expectedErrorHandler.destroy();
+    
+    this.__executingUndoable = false;
     
     return error;
   <span class="tag">&lt;/method&gt;</span>

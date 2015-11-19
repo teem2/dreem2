@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 <span id='DreemCompiler'>/**
 </span> * @class DreemCompiler {Internal}
  * Client and server usable dreem compiler
@@ -107,8 +108,10 @@ define(function(require, exports, module) {
     }
     
     // give the method a unique but human readable name
-    var name = node.tag + &#39;_&#39; + (node.attr &amp;&amp; node.attr.name) + &#39;_&#39; + node.pos + &#39;_&#39; + language;
+    var name = node.tag + &#39;_&#39; + (node.attr &amp;&amp; (node.attr.name || node.attr.event)) + &#39;_&#39; + node.pos + &#39;_&#39; + language;
     if (parent &amp;&amp; (parent.tag == &#39;class&#39; || parent.tag == &#39;mixin&#39;)) name = (parent.attr &amp;&amp; parent.attr.name) + &#39;_&#39; + name;
+    name = name.split(define.SEPARATOR_REGEX).join(&#39;_&#39;);
+    
     name = exports.classnameToJS(name);
     
     //node.method_id = output.methods.length
@@ -467,7 +470,7 @@ define(function(require, exports, module) {
                   value = &#39;&quot;&#39; + value.split(&#39;&quot;&#39;).join(&#39;\\&quot;&#39;).split(&#39;\n&#39;).join(&#39;\\n&#39;) + &#39;&quot;&#39;;
                 }
                 attributes[attr.name.toLowerCase()] = [
-                  attr.type.toLowerCase() || &#39;string&#39;,
+                  attr.type!==undefined &amp;&amp; attr.type.toLowerCase() || &#39;string&#39;,
                   value
                 ];
               } else {

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/*
+LICENSE
+
+The MIT License
+
+Copyright (c) 2014 Todd Motto
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the &quot;Software&quot;), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Based on a fork by Rene Hernandez found at:
+  https://github.com/renehernandez/atomic/blob/develop/src/atomic.js
+*/
+<span id='global-property-'>/** Provides the ability to send and receive data over the network. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        globalScope = require(&#39;$SPRITE/global.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = sprite.GlobalRequestor = new JS.Class(&#39;sprite.GlobalRequestor&#39;, {
+        // Constructor /////////////////////////////////////////////////////////////
+<span id='global-method-initialize'>        /** The standard JSClass initializer function. Subclasses should not
+</span>            override this function.
+            @param attrs:object A map of attribute names and values.
+            @returns void */
+        initialize: function(attrs) {
+            this.__xhr = function (type, url, data) {
+                var methods = {
+                        success: function() {},
+                        error: function() {},
+                        always: function() {}
+                    },
+                    XHR = globalScope.XMLHttpRequest || ActiveXObject,
+                    request = new XHR(&#39;MSXML2.XMLHTTP.3.0&#39;);
+                
+                request.open(type, url, true);
+                request.setRequestHeader(&#39;Content-type&#39;, &#39;application/x-www-form-urlencoded&#39;);
+                
+                request.onreadystatechange = function() {
+                    if (request.readyState === 4) {
+                        var response = request.responseText;
+                        
+                        if (request.status &gt;= 200 &amp;&amp; request.status &lt; 300) {
+                            methods.success.call(methods, response, request.status);
+                        } else {
+                            methods.error.call(methods, response, request.status);
+                        }
+                        methods.always.call(methods, response, request.status);
+                    }
+                };
+                request.send(data);
+                
+                var callbacks = {
+                    success: function(callback) {
+                        methods.success = callback;
+                        return callbacks;
+                    },
+                    error: function(callback) {
+                        methods.error = callback;
+                        return callbacks;
+                    },
+                    always: function(callback) {
+                        methods.always = callback;
+                        return callbacks;
+                    }
+                };
+                return callbacks;
+            };
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+        fetch: function(url) {
+            return this.__xhr(&#39;GET&#39;, url);
+        },
+        
+        send: function(url, data) {
+            return this.__xhr(&#39;POST&#39;, url, data);
+        }
+    });
+});
+</pre>
+</body>
+</html>

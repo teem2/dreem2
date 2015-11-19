@@ -342,9 +342,58 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n188" name="n188">188</a>
 <a href="#n189" name="n189">189</a>
 <strong><a href="#n190" name="n190">190</a></strong>
+<a href="#n191" name="n191">191</a>
+<a href="#n192" name="n192">192</a>
+<a href="#n193" name="n193">193</a>
+<a href="#n194" name="n194">194</a>
+<a href="#n195" name="n195">195</a>
+<a href="#n196" name="n196">196</a>
+<a href="#n197" name="n197">197</a>
+<a href="#n198" name="n198">198</a>
+<a href="#n199" name="n199">199</a>
+<strong><a href="#n200" name="n200">200</a></strong>
+<a href="#n201" name="n201">201</a>
+<a href="#n202" name="n202">202</a>
+<a href="#n203" name="n203">203</a>
+<a href="#n204" name="n204">204</a>
+<a href="#n205" name="n205">205</a>
+<a href="#n206" name="n206">206</a>
+<a href="#n207" name="n207">207</a>
+<a href="#n208" name="n208">208</a>
+<a href="#n209" name="n209">209</a>
+<strong><a href="#n210" name="n210">210</a></strong>
+<a href="#n211" name="n211">211</a>
+<a href="#n212" name="n212">212</a>
+<a href="#n213" name="n213">213</a>
+<a href="#n214" name="n214">214</a>
+<a href="#n215" name="n215">215</a>
+<a href="#n216" name="n216">216</a>
+<a href="#n217" name="n217">217</a>
+<a href="#n218" name="n218">218</a>
+<a href="#n219" name="n219">219</a>
+<strong><a href="#n220" name="n220">220</a></strong>
+<a href="#n221" name="n221">221</a>
+<a href="#n222" name="n222">222</a>
+<a href="#n223" name="n223">223</a>
+<a href="#n224" name="n224">224</a>
+<a href="#n225" name="n225">225</a>
+<a href="#n226" name="n226">226</a>
+<a href="#n227" name="n227">227</a>
+<a href="#n228" name="n228">228</a>
+<a href="#n229" name="n229">229</a>
+<strong><a href="#n230" name="n230">230</a></strong>
+<a href="#n231" name="n231">231</a>
+<a href="#n232" name="n232">232</a>
+<a href="#n233" name="n233">233</a>
+<a href="#n234" name="n234">234</a>
+<a href="#n235" name="n235">235</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
       * @class dr.alignlayout {Layout}
       * @extends dr.variablelayout
@@ -365,6 +414,19 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
       */--&gt;</span>
 <span class="tag">&lt;class</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">alignlayout</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">extends</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">variablelayout</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">coffee</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
   <span class="comment">&lt;!--/**
+    * @attribute {String} [axis='']
+    * The orientation of the layout. Supported values are 'x' and 'y' and ''.
+    * A value of 'x' will restrict align values to 'left', 'center' and 'right'.
+    * A value of 'y' will restrict align values to 'top', 'middle' and 'bottom'.
+    * An empty/null value will not restrict the align values.
+    */--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">axis</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">axis</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">axis</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    @setActual('axis', axis, 'string', '')
+    @setAttribute('align', @align)
+  <span class="tag">&lt;/setter&gt;</span>
+
+  <span class="comment">&lt;!--/**
     * @attribute {String} [align='middle']
     * Determines which way the views are aligned. Supported values are 
     * 'left', 'center', 'right' for horizontal alignment and 'top', 'middle' 
@@ -377,6 +439,16 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
       # be done before the new align value is set since stopMonitoringSubview
       # needs to know the old values.
       @stopMonitoringAllSubviews()
+      
+      switch @axis
+        when 'x'
+          if align is 'top' then align = 'left'
+          else if align is 'middle' then align = 'center'
+          else if align is 'bottom' then align = 'right'
+        when 'y'
+          if align is 'left' then align = 'top'
+          else if align is 'center' then align = 'middle'
+          else if align is 'right' then align = 'bottom'
       
       # Setup private attributes based on axis
       switch align
@@ -532,6 +604,24 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     parent = @parent
     @__positionView(parent, @__parentAttrName, value + parent[@__parentAttrName] - parent[@__innerAttrName])
   <span class="tag">&lt;/method&gt;</span>
+  
+  <span class="comment">&lt;!--// Editor //--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__getLayoutDomains</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    retval = {}
+    retval[@axis] = true
+    return retval
+  <span class="tag">&lt;/method&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__getLayoutParentDomains</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    retval = {}
+    retval[@__parentAttrName] = true
+    return retval
+  <span class="tag">&lt;/method&gt;</span>
+  
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">hiddenattrs</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{attribute:true, value:true, reverse:true}</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">readonlyattrs</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{axis:true}</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attrimportance</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span>
+    <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{axis:-2, name:-1, align:1, updateparent:2, speed:3}</span><span class="delimiter">&quot;</span></span>
+  <span class="tag">/&gt;</span>
 <span class="tag">&lt;/class&gt;</span>
 </pre></td>
 </tr></table>

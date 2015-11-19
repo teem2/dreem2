@@ -17,6 +17,13 @@
       *     <view x="110" width="50" height="15" bgcolor="lightblue"></view>
       */
 /**
+    * @attribute {String} [axis='']
+    * The orientation of the layout. Supported values are 'x' and 'y' and ''.
+    * A value of 'x' will restrict align values to 'left', 'center' and 'right'.
+    * A value of 'y' will restrict align values to 'top', 'middle' and 'bottom'.
+    * An empty/null value will not restrict the align values.
+    */
+/**
     * @attribute {String} [align='middle']
     * Determines which way the views are aligned. Supported values are 
     * 'left', 'center', 'right' for horizontal alignment and 'top', 'middle' 

@@ -10,6 +10,11 @@
     * Configures the view to be draggable or not.
     */
 /**
+    * @method __updateDraggability
+    * @private
+    * Configures the view to be draggable or not.
+    */
+/**
     * @attribute {Boolean} isdragging
     * Indicates that this view is currently being dragged.
     */

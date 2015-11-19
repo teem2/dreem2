@@ -573,9 +573,33 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n419" name="n419">419</a>
 <strong><a href="#n420" name="n420">420</a></strong>
 <a href="#n421" name="n421">421</a>
+<a href="#n422" name="n422">422</a>
+<a href="#n423" name="n423">423</a>
+<a href="#n424" name="n424">424</a>
+<a href="#n425" name="n425">425</a>
+<a href="#n426" name="n426">426</a>
+<a href="#n427" name="n427">427</a>
+<a href="#n428" name="n428">428</a>
+<a href="#n429" name="n429">429</a>
+<strong><a href="#n430" name="n430">430</a></strong>
+<a href="#n431" name="n431">431</a>
+<a href="#n432" name="n432">432</a>
+<a href="#n433" name="n433">433</a>
+<a href="#n434" name="n434">434</a>
+<a href="#n435" name="n435">435</a>
+<a href="#n436" name="n436">436</a>
+<a href="#n437" name="n437">437</a>
+<a href="#n438" name="n438">438</a>
+<a href="#n439" name="n439">439</a>
+<strong><a href="#n440" name="n440">440</a></strong>
+<a href="#n441" name="n441">441</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
       * @class dr.wrappinglayout {Layout}
       * @extends dr.variablelayout
@@ -994,6 +1018,22 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     parent = @parent
     @__positionView(parent, @__parentAttrName, @__linePos + @__lineSize + @lineoutset + parent[@__parentAttrName] - parent[@__otherInnerAttrName])
   <span class="tag">&lt;/method&gt;</span>
+  
+  <span class="comment">&lt;!--// Editor //--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__getLayoutDomains</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    return {x:true, y:true}
+  <span class="tag">&lt;/method&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__getLayoutParentDomains</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    retval = {}
+    retval[@__parentAttrName] = true
+    return retval
+  <span class="tag">&lt;/method&gt;</span>
+  
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">hiddenattrs</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{attribute:true, value:true}</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">readonlyattrs</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{axis:true}</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attrimportance</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span>
+    <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{axis:-2, name:-1, inset:1, spacing:2, outset:3, lineinset:4, linespacing:5, lineoutset:6, align:7, linealign:8, justify:9, reverse:10, updateparent:11, speed:12}</span><span class="delimiter">&quot;</span></span>
+  <span class="tag">/&gt;</span>
 <span class="tag">&lt;/class&gt;</span>
 </pre></td>
 </tr></table>

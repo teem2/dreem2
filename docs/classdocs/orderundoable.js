@@ -15,3 +15,11 @@
     * @attribute {expression} [newprevsibling]
     * The view the target view ends up in front of.
     */
+/**
+    * @method serialize
+    * @overrides
+    */
+/**
+    * @method deserialize
+    * @overrides
+    */

@@ -336,31 +336,13 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n182" name="n182">182</a>
 <a href="#n183" name="n183">183</a>
 <a href="#n184" name="n184">184</a>
-<a href="#n185" name="n185">185</a>
-<a href="#n186" name="n186">186</a>
-<a href="#n187" name="n187">187</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (MIT)
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
 
-Copyright ( c ) 2014-2015 Teem2 LLC
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the &quot;Software&quot;), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. --&gt;</span>
 <span class="comment">&lt;!--/**
      * @class dr.inputtext {UI Components, Input}
      * @extends dr.view
@@ -421,8 +403,15 @@ SOFTWARE. --&gt;</span>
     * @event onrows
     * Fired the rows attribute changes.
     * @param {number} The number of rows displayed for multiline text input.
+    *
+    * @event onwrap
+    * Fired the wrap attribute changes.
+    * @param {string} The wrap behavior for multiline text input.
     */--&gt;</span>
   <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">rows</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">number</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">3</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+  
+  <span class="comment">&lt;!-- Determines wether text will wrap or not. --&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">wrap</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">true</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
 
   <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">value</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">value</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
@@ -458,7 +447,7 @@ SOFTWARE. --&gt;</span>
   <span class="tag">&lt;/handler&gt;</span>
 
   <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">oninput</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">event</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    @setAttribute('value', @sprite.get_value())
+    @setActualAttribute('value', @sprite.get_value());
   <span class="tag">&lt;/handler&gt;</span>
 
   <span class="comment">&lt;!--// Methods //--&gt;</span>
@@ -475,16 +464,21 @@ SOFTWARE. --&gt;</span>
     
     # Allow filtering of input
     @listenToPlatform(@, 'onkeypress', @__filterInputPress)
+    
+    # Make sure mouse interaction is handled here
+    @listenToPlatform(@, 'onmousedown', @__captureMouse)
+    @listenToPlatform(@, 'onmouseup', @__captureMouse)
+    @listenToPlatform(@, 'onclick', @__captureMouse)
+    @listenToPlatform(@, 'ondblclick', @__captureMouse)
+    @listenToPlatform(@, 'onmousemove', @__captureMouse)
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__captureMouse</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">platformEvent</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    # Do nothing
   <span class="tag">&lt;/method&gt;</span>
 
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__filterInputPress</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">platformEvent</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     @sprite.filterInputPress(platformEvent)
-  <span class="tag">&lt;/method&gt;</span>
-
-  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">isPlatformEvent</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">eventType</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    if dr.sprite.InputObservable.EVENT_TYPES[eventType]
-      return true
-    return @super()
   <span class="tag">&lt;/method&gt;</span>
 
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">createSprite</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attrs</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>

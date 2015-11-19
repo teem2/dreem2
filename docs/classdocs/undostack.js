@@ -6,6 +6,14 @@
   *
   * This object should be used to form the foundation of an undo/redo system
   * for an editor.
+  *
+  * @event onstackchange
+  * Fired when the location of the stack changes
+  * @param {Object} An object with a "type" property that indicates what
+  * caused the stack change. Supported types are "undostack_reset", 
+  * "undostack_do", "undostack_undo" and "undostack_redo". The do, undo and
+  * redo types also have an "undoable" property which is a reference to the
+  * undoable that caused the stack change.
   */
 /**
     * @method initNode
@@ -17,6 +25,11 @@
     * Clears out this undostack and destroys any undoables contained within
     * the undostack at the time of this method call.
     * @returns {this}
+    */
+/**
+    * Fires an onstackchange event whenever the location in the stack changes.
+    * @method __fireStackChangeEvent
+    * @private
     */
 /**
     * @method __syncUndoabilityAttrs
@@ -47,6 +60,10 @@
     * Gets the human readable redo description of the undoable that will be
     * executed if the redo method of this undostack is called.
     * @returns {String}
+    */
+/**
+    * @method __handleError
+    * @private
     */
 /**
     * @method do

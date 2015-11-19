@@ -60,3 +60,23 @@
     * redo succeeds. The undoable is passed in as an argument to the callback.
     * @returns {this}
     */
+/**
+    * @method serialize
+    * Serializes this undoable as a JSON string. Subclasses should implement
+    * this method and call super from that implementation. The obj passed in 
+    * is what actually gets serialized via JSON.stringify. Subclasses should 
+    * store attrs on this object as needed before calling super.
+    * @param {Object} obj An object passed up from subclasses that should
+    * contain the main payload for the undoable.
+    * @returns {String}
+    */
+/**
+    * @method deserialize
+    * Restores the state of an undoable from serialized data. Subclasses should
+    * implement this method and call super from that implementation. The obj
+    * passed in is a set of attributes that will be directly assigned to this
+    * undoable instance (setAttribute is not called).
+    * @param {Object} data An object containing attribute values to be restored
+    * via direct assignment.
+    * @returns {void}
+    */

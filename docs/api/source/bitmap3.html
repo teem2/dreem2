@@ -15,57 +15,106 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='dr-bitmap'>/**
-</span>    * @class dr.bitmap {UI Components}
-    * @extends dr.view
-    * Loads an image from a URL.
-    *
-    *     @example
-    *     &lt;bitmap src=&quot;../api-examples-resources/shasta.jpg&quot; width=&quot;230&quot; height=&quot;161&quot;&gt;&lt;/bitmap&gt;
-    *
-    * Stretch an image to fill the entire view.
-    *     @example
-    *     &lt;bitmap src=&quot;../api-examples-resources/shasta.jpg&quot; width=&quot;300&quot; height=&quot;150&quot; stretches=&quot;true&quot;&gt;&lt;/bitmap&gt;
-    *
-    */
-<span id='dr-bitmap-attribute-src'>/**
-</span>      * @attribute {String} [src=&#39;&#39;]
-      * The URL of the bitmap file to load.
-      */
-<span id='dr-bitmap-event-onload'>/**
-</span>      * @event onload 
-      * Fired when the bitmap is loaded
-      * @param {Object} size An object containing the width and height
-      */
-<span id='dr-bitmap-event-onerror'>/**
-</span>      * @event onerror 
-      * Fired when there is an error loading the bitmap
-      */
-<span id='dr-bitmap-attribute-stretches'>/**
-</span>      * @attribute {String} [stretches=false]
-      * How the image is scaled to the size of the view.
-      * Supported values are &#39;true&#39;, &#39;false&#39;, &#39;scale&#39;.
-      * false will scale the image to completely fill the view, but may obscure parts of the image.
-      * true will stretch the image to fit the view.
-      * scale will scale the image so it visible within the view, but the image may not fill the entire view.
-      */
-<span id='dr-bitmap-attribute-naturalsize'>/**
-</span>      * @attribute {Boolean} [naturalsize=false]
-      * If set to true the bitmap will be sized to the width/height of the
-      * bitmap data in pixels.
-      */
-<span id='dr-bitmap-attribute-repeat'>/**
-</span>      * @attribute {String} [repeat=&#39;no-repeat&#39;]
-      * Determines if the image will be repeated within the bounds.
-      * Supported values are &#39;no-repeat&#39;, &#39;repeat&#39;, &#39;repeat-x&#39; and &#39;repeat-y&#39;.
-      */
-<span id='dr-bitmap-attribute-window'>/**
-</span>    * @attribute {String} [window=&#39;&#39;]
-    * A window (section) of the image is displayed by specifying four,
-    * comma-separated values:
-    *   x,y  The coordinates of the upper-left hand corner of the image
-    *   w,h  The width and height of the window to display.
-    */
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='global-property-'>/** Provides an interface to platform specific Bitmap functionality. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = sprite.Bitmap = new JS.Class(&#39;sprite.Bitmap&#39;, require(&#39;./View.js&#39;), {
+        // Life Cycle //////////////////////////////////////////////////////////////
+        createPlatformObject: function(attrs) {
+            var elem = this.callSuper(attrs);
+            elem.style.backgroundSize = &#39;cover&#39;;
+            return elem;
+        },
+        
+        
+        // Attributes //////////////////////////////////////////////////////////////
+        set_src: function(v) {
+            var s = this.styleObj,
+                view = this.view;
+            
+            if (v) {
+                s.backgroundImage = &#39;url(&quot;&#39; + v + &#39;&quot;)&#39;;
+                s.backgroundRepeat = &#39;no-repeat&#39;;
+                
+                var sprite = this;
+				sprite.naturalWidth = 1;
+				sprite.naturalHeight = 1;
+				setTimeout(function() {view.sendEvent(&#39;onload&#39;, {width:1, height:1});}, 0);
+            } else {
+                s.backgroundImage = &#39;&#39;;
+                if (view.initing === false) {
+                    setTimeout(function() {view.sendEvent(&#39;onload&#39;, {width:0, height:0});}, 0);
+                }
+            }
+            return v;
+        },
+        
+        set_window: function(v) {
+            // The window is x,y,w,h
+            var args = v.split(&#39;,&#39;, 4),
+                s = this.styleObj;
+            if (args.length !== 4) {
+                s.backgroundPosition = &#39;&#39;;
+                this.windowWidth = this.windowHeight = undefined;
+                if (this.__img) this.__updateViewSize();
+            } else {
+                var view = this.view,
+                    x = args[0],
+                    y = args[1],
+                    w = this.windowWidth = args[2],
+                    h = this.windowHeight = args[3];
+                view.setAttribute(&#39;width&#39;, w);
+                view.setAttribute(&#39;height&#39;, h);
+                
+                s.backgroundSize = &#39;&#39;;
+                s.backgroundPosition = (-x) + &#39;px &#39; + (-y) + &#39;px&#39;;
+            }
+            return v;
+        },
+        
+        set_stretches: function(v) {
+            var propValue;
+            if (v === &#39;scale&#39; || v === &#39;contain&#39; || v === &#39;fit&#39;) {
+              propValue = &#39;contain&#39;;
+            } else if (v === &#39;true&#39;) {
+              propValue = &#39;100% 100%&#39;;
+            } else {
+              propValue = &#39;cover&#39;;
+            }
+            this.styleObj.backgroundSize = propValue;
+            return v;
+        },
+        
+        set_naturalsize: function(v) {
+            this.naturalSize = v;
+            if (this.__img) this.__updateViewSize();
+            return v;
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////
+<span id='global-method-__updateViewSize'>        /** @private */
+</span>        __updateViewSize: function() {
+            if (this.naturalSize) {
+                var view = this.view,
+                    w = this.naturalWidth,
+                    h = this.naturalHeight,
+                    ww = this.windowWidth,
+                    wh = this.windowHeight;
+                view.setAttribute(&#39;width&#39;, ww &gt;= 0 ? ww : (w &gt;= 0 ? w : 0));
+                view.setAttribute(&#39;height&#39;, wh &gt;= 0 ? wh : (h &gt;= 0 ? h : 0));
+            }
+        }
+    });
+});
 </pre>
 </body>
 </html>

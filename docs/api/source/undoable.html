@@ -250,9 +250,45 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n96" name="n96">96</a>
 <a href="#n97" name="n97">97</a>
 <a href="#n98" name="n98">98</a>
+<a href="#n99" name="n99">99</a>
+<strong><a href="#n100" name="n100">100</a></strong>
+<a href="#n101" name="n101">101</a>
+<a href="#n102" name="n102">102</a>
+<a href="#n103" name="n103">103</a>
+<a href="#n104" name="n104">104</a>
+<a href="#n105" name="n105">105</a>
+<a href="#n106" name="n106">106</a>
+<a href="#n107" name="n107">107</a>
+<a href="#n108" name="n108">108</a>
+<a href="#n109" name="n109">109</a>
+<strong><a href="#n110" name="n110">110</a></strong>
+<a href="#n111" name="n111">111</a>
+<a href="#n112" name="n112">112</a>
+<a href="#n113" name="n113">113</a>
+<a href="#n114" name="n114">114</a>
+<a href="#n115" name="n115">115</a>
+<a href="#n116" name="n116">116</a>
+<a href="#n117" name="n117">117</a>
+<a href="#n118" name="n118">118</a>
+<a href="#n119" name="n119">119</a>
+<strong><a href="#n120" name="n120">120</a></strong>
+<a href="#n121" name="n121">121</a>
+<a href="#n122" name="n122">122</a>
+<a href="#n123" name="n123">123</a>
+<a href="#n124" name="n124">124</a>
+<a href="#n125" name="n125">125</a>
+<a href="#n126" name="n126">126</a>
+<a href="#n127" name="n127">127</a>
+<a href="#n128" name="n128">128</a>
+<a href="#n129" name="n129">129</a>
+<strong><a href="#n130" name="n130">130</a></strong>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
   * @class dr.editor.undoable {UI Components}
   * @extends dr.eventable
@@ -347,6 +383,34 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
       if (callback <span class="error">&amp;</span><span class="error">&amp;</span> typeof callback === 'function') callback(this);
     }
     return this;
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * @method serialize
+    * Serializes this undoable as a JSON string. Subclasses should implement
+    * this method and call super from that implementation. The obj passed in 
+    * is what actually gets serialized via JSON.stringify. Subclasses should 
+    * store attrs on this object as needed before calling super.
+    * @param {Object} obj An object passed up from subclasses that should
+    * contain the main payload for the undoable.
+    * @returns {String}
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">serialize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">obj</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    return JSON.stringify({classname:this.$tagname, data:obj || null});
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * @method deserialize
+    * Restores the state of an undoable from serialized data. Subclasses should
+    * implement this method and call super from that implementation. The obj
+    * passed in is a set of attributes that will be directly assigned to this
+    * undoable instance (setAttribute is not called).
+    * @param {Object} data An object containing attribute values to be restored
+    * via direct assignment.
+    * @returns {void}
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">deserialize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">obj</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if (obj) for (var key in obj) this[key] = obj[key];
   <span class="tag">&lt;/method&gt;</span>
 <span class="tag">&lt;/class&gt;</span>
 </pre></td>

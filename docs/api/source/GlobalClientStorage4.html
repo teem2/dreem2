@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='global-property-'>/** Provides the ability to store and retrieve data on the client. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        globalScope = require(&#39;$SPRITE/global.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = sprite.GlobalClientStorage = new JS.Class(&#39;sprite.GlobalClientStorage&#39;, {
+        // Constructor /////////////////////////////////////////////////////////////
+<span id='global-method-initialize'>        /** The standard JSClass initializer function. Subclasses should not
+</span>            override this function.
+            @param attrs:object A map of attribute names and values.
+            @returns void */
+        initialize: function(attrs) {
+            this._storage = globalScope.localStorage;
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-getLength'>        /** @returns The number of data items stored in the Storage object. */
+</span>        getLength: function() {
+            return this._storage.length;
+        },
+        
+<span id='global-method-getKey'>        /** @param n:integer The index of the key name to retrieve.
+</span>            @returns The name of the nth key in the storage. */
+        getKey: function(n) {
+            return this._storage.key(n);
+        },
+        
+<span id='global-method-getItem'>        /** @param key:string The name of the storage entry to return.
+</span>            @returns The value of the storage entry or null if not found. */
+        getItem: function(key) {
+            return this._storage.getItem(key);
+        },
+        
+<span id='global-method-setItem'>        /** Stores the value under the key. If a value already exists for
+</span>            the key the value will be replaced with the new value.
+            @param key:string The key to store the value under.
+            @param value:* The value to store.
+            @returns void */
+        setItem: function(key, value) {
+            this._storage.setItem(key, value);
+        },
+        
+<span id='global-method-removeItem'>        /** Removes the storage entry for the key.
+</span>            @param key:string The key to remove.
+            @returns void */
+        removeItem: function(key) {
+            this._storage.removeItem(key);
+        },
+        
+<span id='global-method-clear'>        /** Removes all storage entries.
+</span>            @returns void */
+        clear: function() {
+            this._storage.clear();
+        }
+    });
+});
+</pre>
+</body>
+</html>
