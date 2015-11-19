@@ -37,7 +37,7 @@
 //               is added to the screen. default: disabled
 //
 // Example: (dreem server running at 192.168.1.19)
-//   node dreemnodejs.js -server http://192.168.1.19:8080 -composition editor_test -dali -preview -loading
+//   node dreemnodejs.js -server http://192.168.1.19:8080 -composition editor_test -dali -reload -preview -loading
 
 
     var require = require('./define.js');
@@ -404,8 +404,9 @@ console.log('main_file', main_file);
 			// Compute scale to fit the text to the screen size
 			var lpsz = loading_page.getNaturalSize();
 			var scale = Math.min (sz.x / lpsz.x, sz.y / lpsz.y);
-			var ptsize = loading_page.pointSize * scale / 2;
+			var ptsize = loading_page.pointSize * scale / (dali.stage.getDpi().x / 72);
 			loading_page.pointSize = ptsize;
+			loading_page.textColor = [0, 0, 0, .25];
 
 			loading_page.parentOrigin = dali.CENTER;
 			loading_page.anchorPoint = dali.CENTER;
