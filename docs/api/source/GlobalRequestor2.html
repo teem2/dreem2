@@ -15,8 +15,14 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
-LICENSE
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+
+<span id='global-property-'>/**
+</span>LICENSE
 
 The MIT License
 
@@ -56,9 +62,7 @@ Based on a fork by Rene Hernandez found at:
 </span>            override this function.
             @param attrs:object A map of attribute names and values.
             @returns void */
-        initialize: function(view, attrs) {
-            this.view = view;
-            
+        initialize: function(attrs) {
             this.__xhr = function (type, url, data) {
                 var methods = {
                         success: function() {},

@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 <span id='TeemServer'>/**
 </span> * @class TeemServer {Internal}
  * Main NodeJS HTTP server with support for WebSockets, static file handling and 
@@ -43,13 +44,13 @@ define(function(require, exports, module) {
   // Create a function to determine a mime type for a file.
   var mimeFromFile = (function() {
     var mimeTypes = {
-      htm:&quot;text/html&quot;,
-      html:&quot;text/html&quot;,
-      js:&quot;application/javascript&quot;,
+      htm:&quot;text/html;charset=utf-8&quot;,
+      html:&quot;text/html;charset=utf-8&quot;,
+      js:&quot;application/javascript;charset=utf-8&quot;,
+      txt:&quot;text/plain;charset=utf-8&quot;,
+      css:&quot;text/css;charset=utf-8&quot;,
       jpg:&quot;image/jpeg&quot;,
       jpeg:&quot;image/jpeg&quot;,
-      txt:&quot;text/plain&quot;,
-      css:&quot;text/css&quot;,
       ico:&quot;image/x-icon&quot;,
       png:&quot;image/png&quot;,
       gif:&quot;image/gif&quot;
@@ -102,13 +103,8 @@ define(function(require, exports, module) {
     
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
-      if (!args[&#39;-nodreem&#39;] &amp;&amp; file.indexOf(&#39;dreem.js&#39;) !== -1) {
-        return this.broadcast({type:&#39;delay&#39;});
-      }
-      this.broadcast({
-        type:&#39;filechange&#39;,
-        file:file
-      })
+      if (!args[&#39;-nodreem&#39;] &amp;&amp; file.indexOf(&#39;dreem.js&#39;) !== -1) return this.broadcast({type:&#39;delay&#39;});
+      this.broadcastFileChange(file);
     }.bind(this);
     
     this.busserver = new BusServer();
@@ -135,12 +131,23 @@ define(function(require, exports, module) {
       */
     this.broadcast = function(msg) {
       this.busserver.broadcast(msg);
-      for (var k in this.compositions) {
-        this.compositions[k].busserver.broadcast(msg);
-      }
-    }
+      var key, compositions = this.compositions;
+      for (key in compositions) compositions[key].busserver.broadcast(msg);
+    };
 
-<span id='TeemServer-method-'>    /**
+<span id='TeemServer-method-broadcastFileChange'>    /** 
+</span>      * @method broadcastFileChange
+      * Send a message to all my connected websockets and those on the 
+      * compositions that the provided file has changed.
+      * @param {Object} file String The path to the file that changed.
+      */
+    this.broadcastFileChange = function(file) {
+      var prefix = define.expandVariables(&#39;$ROOT&#39;);
+      if (file.startsWith(prefix)) file = file.substring(prefix.length);
+      this.broadcast({type:&#39;filechange&#39;, file:file});
+    };
+
+<span id='TeemServer-method-__getComposition'>    /**
 </span>      * Find composition object by url 
       * @param {String} url 
       * @return {Composition|undefined} 
@@ -212,7 +219,12 @@ define(function(require, exports, module) {
           filePath = filePath.substring(0, filePath.indexOf(&#39;?&#39;))
         }
         filePath = decodeURI(filePath);
-        
+
+        if (url[url.length - 1] == &#39;/&#39; &amp;&amp; fs.existsSync(filePath + &#39;index.html&#39;)) {
+          url = url + &#39;index.html&#39;;
+          filePath = filePath + &#39;index.html&#39;;
+        }
+
         fs.stat(filePath, function(err, stat) {
           if (err || !stat.isFile()) {
             if (url == &#39;/favicon.ico&#39;) {

@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 
 <span id='NodeWebSocket'>/**
 </span> * @class NodeWebSocket {Internal}
@@ -39,6 +40,7 @@ define(function(require, exports, module){
 	function NodeWebSocket(req, socket){
 		if(typeof req == &#39;string&#39;){
 			this.initClient(req)
+			console.log(&quot;starting websocket client!&quot;);
 		}
 		else{
 			this.initServer(req, socket)
@@ -75,8 +77,9 @@ define(function(require, exports, module){
 					&#39;sec-websocket-key&#39;: key,
 				}
 			}
+			
 			var req = http.request(opt)
-
+			
 			req.on(&#39;error&#39;, function(err){
 				console.log(&quot;WebSocket client &quot; + err)
 				if(this.onError) this.onError(err)
@@ -92,7 +95,7 @@ define(function(require, exports, module){
 				}
 				this.socket = socket
 				this.initState()
-				if(this.onConnect) this.onConnect()
+				if(this.onConnect) setTimeout(this.onConnect.bind(this), 50)
 			}.bind(this))
 
 			req.end()
@@ -157,6 +160,18 @@ define(function(require, exports, module){
 				this.input = data
 				this.read = 0
 				while(this.state());
+			}.bind(this))
+
+			// Catch
+			this.socket.on(&#39;error&#39;, function(err){
+			    // Most common source of error is server stopping
+				//console.log(err.stack);
+			    if (err.code == &#39;ECONNRESET&#39;) {
+					console.log(&#39;ECONNRESET received. Did the server stop?&#39;);
+			    }
+			    else {
+					console.log(&#39;Ignoring Connection error:&#39;, err.code);
+			    }
 			}.bind(this))
 
 			this.socket.on(&#39;close&#39;, function(){
@@ -272,9 +287,10 @@ define(function(require, exports, module){
 					this.expected--
 				}
 			}
-
+			
 			if(this.expected) return false
-			this.onMessage(this.output.toString(&#39;utf8&#39;, this.masked?0:2, this.written))
+//			console.log(&quot;masked:&quot;, this.masked, &quot;output:&quot;, this.output.toString(&#39;utf8&#39;));
+			this.onMessage(this.output.toString(&#39;utf8&#39;, this.masked?0:this.mask_correct, this.written))
 			this.expected = 1
 			this.written = 0
 			this.state = this.opcode
@@ -303,8 +319,15 @@ define(function(require, exports, module){
 		this.len8 = function(){
 			if(this.head()) return false
 			this.paylen = this.header.readUInt32BE(this.written - 4)
-			this.expected = 4
-			this.state = this.mask
+			if(this.masked){
+				this.expected = 4
+				this.state = this.mask
+			}
+			else{
+				this.mask_correct = 8
+				this.expected = this.paylen
+				this.state = this.data
+			}
 			return true
 		}
 
@@ -312,29 +335,41 @@ define(function(require, exports, module){
 		this.len2 = function(){
 			if(this.head()) return 
 			this.paylen = this.header.readUInt16BE(this.written - 2)
-			this.expected = 4
-			this.state = this.mask
+			if(this.masked){
+				this.expected = 4
+				this.state = this.mask
+			}
+			else{
+				this.mask_correct = 4
+				this.expected = this.paylen
+				this.state = this.data
+			}
 			return true
 		}
 
 		/* Internal len1 state*/
 		this.len1 = function(){
 			if(this.head()) return false
-			// we get plain data back
+			// set masked flag
 			if(!(this.header[this.written  - 1] &amp; 128)){
 				this.masked = false
-				this.state = this.data
-				this.expected = this.header[this.written  - 1]
-				return true
+				this.mask_correct = 2
 			}
 			else{
 				this.masked = true
 			}
+
 			var type = this.header[this.written - 1] &amp; 127
 			if(type &lt; 126){
 				this.paylen = type
 				this.expected = 4
-				this.state = this.mask
+				if(!this.masked){
+					this.state = this.data
+					this.expected = this.header[this.written  - 1]
+				}
+				else{
+					this.state = this.mask
+				}
 			}
 			else if(type == 126){
 				this.expected = 2
@@ -403,6 +438,7 @@ define(function(require, exports, module){
 			return this.error(&quot;opcode not supported &quot; + type)
 		}
 	}
-})</pre>
+})
+</pre>
 </body>
 </html>

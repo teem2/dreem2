@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 <span id='BusServer'>/**
 </span> * @class BusServer {Internal}
  * Holds a set of server side sockets for broadcast
@@ -50,7 +51,8 @@ define(function(require, exports, module) {
         this.onMessage(JSON.parse(message), sock);
       }.bind(this);
       
-      this.onConnect(sock);
+      // delaying connect a bit.
+      setTimeout(function(){this.onConnect(sock)}.bind(this), 10);
     };
     
 <span id='BusServer-event-onMessage'>    /**
@@ -67,16 +69,19 @@ define(function(require, exports, module) {
      * @param {Object} message
      * @param {WebSocket} socket
      */
-    this.onConnect = function(message, socket) {};
+    this.onConnect = function( socket) {console.log(&quot;empty sock? &quot;)};
     
 <span id='BusServer-method-broadcast'>    /** 
 </span>      * @method broadcast
       * Send a message to all connected sockets
       * @param {Object} message
       */
-    this.broadcast = function(message) {
+    this.broadcast = function(message, ignore) {
       message = JSON.stringify(message);
-      for (var i = 0; i &lt; this.sockets.length; i++) this.sockets[i].send(message);
+      for (var i = 0; i &lt; this.sockets.length; i++){
+        var socket = this.sockets[i]
+        if(socket !== ignore) socket.send(message);
+      }
     };
     
     this.closeAll = function() {

@@ -283,9 +283,67 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n129" name="n129">129</a>
 <strong><a href="#n130" name="n130">130</a></strong>
 <a href="#n131" name="n131">131</a>
+<a href="#n132" name="n132">132</a>
+<a href="#n133" name="n133">133</a>
+<a href="#n134" name="n134">134</a>
+<a href="#n135" name="n135">135</a>
+<a href="#n136" name="n136">136</a>
+<a href="#n137" name="n137">137</a>
+<a href="#n138" name="n138">138</a>
+<a href="#n139" name="n139">139</a>
+<strong><a href="#n140" name="n140">140</a></strong>
+<a href="#n141" name="n141">141</a>
+<a href="#n142" name="n142">142</a>
+<a href="#n143" name="n143">143</a>
+<a href="#n144" name="n144">144</a>
+<a href="#n145" name="n145">145</a>
+<a href="#n146" name="n146">146</a>
+<a href="#n147" name="n147">147</a>
+<a href="#n148" name="n148">148</a>
+<a href="#n149" name="n149">149</a>
+<strong><a href="#n150" name="n150">150</a></strong>
+<a href="#n151" name="n151">151</a>
+<a href="#n152" name="n152">152</a>
+<a href="#n153" name="n153">153</a>
+<a href="#n154" name="n154">154</a>
+<a href="#n155" name="n155">155</a>
+<a href="#n156" name="n156">156</a>
+<a href="#n157" name="n157">157</a>
+<a href="#n158" name="n158">158</a>
+<a href="#n159" name="n159">159</a>
+<strong><a href="#n160" name="n160">160</a></strong>
+<a href="#n161" name="n161">161</a>
+<a href="#n162" name="n162">162</a>
+<a href="#n163" name="n163">163</a>
+<a href="#n164" name="n164">164</a>
+<a href="#n165" name="n165">165</a>
+<a href="#n166" name="n166">166</a>
+<a href="#n167" name="n167">167</a>
+<a href="#n168" name="n168">168</a>
+<a href="#n169" name="n169">169</a>
+<strong><a href="#n170" name="n170">170</a></strong>
+<a href="#n171" name="n171">171</a>
+<a href="#n172" name="n172">172</a>
+<a href="#n173" name="n173">173</a>
+<a href="#n174" name="n174">174</a>
+<a href="#n175" name="n175">175</a>
+<a href="#n176" name="n176">176</a>
+<a href="#n177" name="n177">177</a>
+<a href="#n178" name="n178">178</a>
+<a href="#n179" name="n179">179</a>
+<strong><a href="#n180" name="n180">180</a></strong>
+<a href="#n181" name="n181">181</a>
+<a href="#n182" name="n182">182</a>
+<a href="#n183" name="n183">183</a>
+<a href="#n184" name="n184">184</a>
+<a href="#n185" name="n185">185</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
   * @class dr.editor.attrundoable {UI Components}
   * @extends dr.editor.undoable
@@ -334,9 +392,9 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     * constraint.
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">setAttribute</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attrName, value</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    if (attrName === 'oldvalue' || attrName === 'newvalue') {
+    if ((attrName === 'oldvalue' || attrName === 'newvalue') <span class="error">&amp;</span><span class="error">&amp;</span> this.attribute !== 'parent') {
       var cfgAttrName = dr.AccessorSupport.generateConfigAttrName(attrName);
-      if (value !== 'undefined') value = '&quot;' + value + '&quot;';
+      if (value !== 'undefined') value = '&quot;' + ('' + value).split('&quot;').join('\\&quot;').split('\n').join('\\n') + '&quot;';
       if (this[cfgAttrName] !== value) {
         this[cfgAttrName] = value;
         this.setActualAttribute(attrName, value);
@@ -386,7 +444,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">undo</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">callback</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if (this.done) {
-      this.target.setAttribute(this.attribute, this.oldvalue);
+      this.target.setAttribute(this.attribute, this.oldvalue, true); // 3rd arg enables model update
     } else {
       dr.global.error.notifyWarn('invalidUndo', &quot;Invalid undo in attrundoable.&quot;);
     }
@@ -410,9 +468,59 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         this.__storedOldValue = true;
       }
       
-      this.target.setAttribute(this.attribute, this.newvalue);
+      this.target.setAttribute(this.attribute, this.newvalue, true); // 3rd arg enables model update
     }
     return this.super();
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * @method serialize
+    * @overrides
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">serialize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">obj</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if (!obj) obj = {};
+    
+    // Store attrs of this undoable on the obj to be serialized. Use IDs for
+    // any node/view references since we just want to retrieve the objects
+    // from the composition during deserialization not serialize/deserialize 
+    // entire view/node objects.
+    obj.target = this.target.id || null;
+    obj.attribute = this.attribute;
+    
+    // The parent attr is a special case where the old and new values are
+    // node/view references.
+    if (this.attribute === 'parent') {
+      obj.oldvalue = this.oldvalue.id;
+      obj.newvalue = this.newvalue.id;
+    } else {
+      obj.oldvalue = this.oldvalue;
+      obj.newvalue = this.newvalue;
+    }
+    
+    return this.super(obj);
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * @method deserialize
+    * @overrides
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">deserialize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    // Retrieve objects via the serialized IDs.
+    if (data.target) data.target = dr.sprite.retrieveGlobal(data.target);
+    
+    if (!data.target) {
+      dr.global.error.notifyWarn('deserialization', &quot;Target could not be found for attrundoable: &quot; + data.target);
+      return null;
+    }
+    
+    // The parent attr is a special case where the old and new values are
+    // node/view references.
+    if (data.attribute === 'parent') {
+      data.oldvalue = dr.sprite.retrieveGlobal(data.oldvalue);
+      data.newvalue = dr.sprite.retrieveGlobal(data.newvalue);
+    }
+    
+    return this.super(data);
   <span class="tag">&lt;/method&gt;</span>
 <span class="tag">&lt;/class&gt;</span>
 </pre></td>

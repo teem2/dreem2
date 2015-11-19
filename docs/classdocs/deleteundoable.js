@@ -1,7 +1,7 @@
 /**
   * @class dr.editor.deleteundoable {UI Components}
   * @extends dr.editor.undoable
-  * An undoable that Inserts a new node into a parent node.
+  * An undoable that removes a node from its parent node.
   */
 /**
     * @method destroy
@@ -20,4 +20,12 @@
     * @method redo
     * @overrides
     * Removes the target from its parent.
+    */
+/**
+    * @method serialize
+    * @overrides
+    */
+/**
+    * @method deserialize
+    * @overrides
     */

@@ -436,291 +436,297 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n282" name="n282">282</a>
 <a href="#n283" name="n283">283</a>
 <a href="#n284" name="n284">284</a>
+<a href="#n285" name="n285">285</a>
+<a href="#n286" name="n286">286</a>
+<a href="#n287" name="n287">287</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (MIT)
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
 
-Copyright ( c ) 2014 Teem2 LLC
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the &quot;Software&quot;), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. --&gt;</span>
+<span class="comment">&lt;!--/**
+   * @class dr.replicator {Data}
+   * @extends dr.node
+   * Handles replication and data binding.
+   *
+   * This example shows the replicator to creating four text instances, each corresponding to an item in the data attribute:
+   *
+   *     @example
+   *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
+   *     &lt;replicator classname=&quot;text&quot; data=&quot;[1,2,3,4]&quot;&gt;&lt;/replicator&gt;
+   *
+   * Changing the data attribute to a new array causes the replicator to create a new text for each item:
+   *
+   *     @example
+   *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
+   *     &lt;text onclick=&quot;repl.setAttribute('data', [5,6,7,8]);&quot;&gt;Click to change data:&lt;/text&gt;
+   *     &lt;replicator id=&quot;repl&quot; classname=&quot;text&quot; data=&quot;[1,2,3,4]&quot;&gt;&lt;/replicator&gt;
+   *
+   * This example uses a {@link #filterexpression filterexpression} to filter the data to only numbers. Clicking changes {@link #filterexpression filterexpression} to show only non-numbers in the data:
+   *
+   *     @example
+   *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
+   *     &lt;text onclick=&quot;repl.setAttribute('filterexpression', '[^\\d]');&quot;&gt;Click to change filter:&lt;/text&gt;
+   *     &lt;replicator id=&quot;repl&quot; classname=&quot;text&quot; data=&quot;['a',1,'b',2,'c',3,4,5]&quot; filterexpression=&quot;\d&quot;&gt;&lt;/replicator&gt;
+   *
+   * Replicators can be used to look up {@link #datapath datapath} expressions to values in JSON data in a dr.dataset. This example looks up the color of the bicycle in the dr.dataset named bikeshop:
+   *
+   *     @example
+   *     &lt;dataset name=&quot;bikeshop&quot;&gt;
+   *      {
+   *        &quot;bicycle&quot;: {
+   *          &quot;color&quot;: &quot;red&quot;,
+   *          &quot;price&quot;: 19.95
+   *        }
+   *      }
+   *     &lt;/dataset&gt;
+   *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle/color&quot;&gt;&lt;/replicator&gt;
+   *
+   * Matching one or more items will cause the replicator to create multiple copies:
+   *
+   *     @example
+   *     &lt;dataset name=&quot;bikeshop&quot;&gt;
+   *      {
+   *        &quot;bicycle&quot;: [
+   *          {
+   *           &quot;color&quot;: &quot;red&quot;,
+   *           &quot;price&quot;: 19.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;green&quot;,
+   *           &quot;price&quot;: 29.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;blue&quot;,
+   *           &quot;price&quot;: 59.95
+   *          }
+   *        ]
+   *      }
+   *     &lt;/dataset&gt;
+   *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
+   *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle[*]/color&quot;&gt;&lt;/replicator&gt;
+   *
+   * It's possible to select a single item on from the array using an array index. This selects the second item:
+   *
+   *     @example
+   *     &lt;dataset name=&quot;bikeshop&quot;&gt;
+   *      {
+   *        &quot;bicycle&quot;: [
+   *          {
+   *           &quot;color&quot;: &quot;red&quot;,
+   *           &quot;price&quot;: 19.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;green&quot;,
+   *           &quot;price&quot;: 29.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;blue&quot;,
+   *           &quot;price&quot;: 59.95
+   *          }
+   *        ]
+   *      }
+   *     &lt;/dataset&gt;
+   *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
+   *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle[1]/color&quot;&gt;&lt;/replicator&gt;
+   *
+   * It's also possible to replicate a range of items in the array with the [start,end,stepsize] operator. This replicates every other item:
+   *
+   *     @example
+   *     &lt;dataset name=&quot;bikeshop&quot;&gt;
+   *      {
+   *        &quot;bicycle&quot;: [
+   *          {
+   *           &quot;color&quot;: &quot;red&quot;,
+   *           &quot;price&quot;: 19.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;green&quot;,
+   *           &quot;price&quot;: 29.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;blue&quot;,
+   *           &quot;price&quot;: 59.95
+   *          }
+   *        ]
+   *      }
+   *     &lt;/dataset&gt;
+   *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
+   *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle[0,3,2]/color&quot;&gt;&lt;/replicator&gt;
+   *
+   * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
+   *
+   *     @example
+   *     &lt;dataset name=&quot;bikeshop&quot;&gt;
+   *      {
+   *        &quot;bicycle&quot;: [
+   *          {
+   *           &quot;color&quot;: &quot;red&quot;,
+   *           &quot;price&quot;: 19.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;green&quot;,
+   *           &quot;price&quot;: 29.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;blue&quot;,
+   *           &quot;price&quot;: 59.95
+   *          }
+   *        ]
+   *      }
+   *     &lt;/dataset&gt;
+   *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
+   *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle[*][@]&quot;&gt;
+   *       &lt;method name=&quot;filterfunction&quot; args=&quot;obj, accum&quot;&gt;
+   *         // add the color to the beginning of the results if the price is greater than 20
+   *         if (obj.price &gt; 20)
+   *           accum.unshift(obj.color);
+   *         return accum
+   *       &lt;/method&gt;
+   *     &lt;/replicator&gt;
+   *
+   * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
+   */--&gt;</span>
+<span class="tag">&lt;class</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">replicator</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">coffee</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">extends</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">node</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">requires</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">datapath</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">_arrayidentity</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">[]</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
   <span class="comment">&lt;!--/**
-     * @class dr.replicator {Data}
-     * @extends dr.node
-     * Handles replication and data binding.
-     *
-     * This example shows the replicator to creating four text instances, each corresponding to an item in the data attribute:
-     *
-     *     @example
-     *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
-     *     &lt;replicator classname=&quot;text&quot; data=&quot;[1,2,3,4]&quot;&gt;&lt;/replicator&gt;
-     *
-     * Changing the data attribute to a new array causes the replicator to create a new text for each item:
-     *
-     *     @example
-     *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
-     *     &lt;text onclick=&quot;repl.setAttribute('data', [5,6,7,8]);&quot;&gt;Click to change data:&lt;/text&gt;
-     *     &lt;replicator id=&quot;repl&quot; classname=&quot;text&quot; data=&quot;[1,2,3,4]&quot;&gt;&lt;/replicator&gt;
-     *
-     * This example uses a {@link #filterexpression filterexpression} to filter the data to only numbers. Clicking changes {@link #filterexpression filterexpression} to show only non-numbers in the data:
-     *
-     *     @example
-     *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
-     *     &lt;text onclick=&quot;repl.setAttribute('filterexpression', '[^\\d]');&quot;&gt;Click to change filter:&lt;/text&gt;
-     *     &lt;replicator id=&quot;repl&quot; classname=&quot;text&quot; data=&quot;['a',1,'b',2,'c',3,4,5]&quot; filterexpression=&quot;\d&quot;&gt;&lt;/replicator&gt;
-     *
-     * Replicators can be used to look up {@link #datapath datapath} expressions to values in JSON data in a dr.dataset. This example looks up the color of the bicycle in the dr.dataset named bikeshop:
-     *
-     *     @example
-     *     &lt;dataset name=&quot;bikeshop&quot;&gt;
-     *      {
-     *        &quot;bicycle&quot;: {
-     *          &quot;color&quot;: &quot;red&quot;,
-     *          &quot;price&quot;: 19.95
-     *        }
-     *      }
-     *     &lt;/dataset&gt;
-     *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle/color&quot;&gt;&lt;/replicator&gt;
-     *
-     * Matching one or more items will cause the replicator to create multiple copies:
-     *
-     *     @example
-     *     &lt;dataset name=&quot;bikeshop&quot;&gt;
-     *      {
-     *        &quot;bicycle&quot;: [
-     *          {
-     *           &quot;color&quot;: &quot;red&quot;,
-     *           &quot;price&quot;: 19.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;green&quot;,
-     *           &quot;price&quot;: 29.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;blue&quot;,
-     *           &quot;price&quot;: 59.95
-     *          }
-     *        ]
-     *      }
-     *     &lt;/dataset&gt;
-     *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
-     *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle[*]/color&quot;&gt;&lt;/replicator&gt;
-     *
-     * It's possible to select a single item on from the array using an array index. This selects the second item:
-     *
-     *     @example
-     *     &lt;dataset name=&quot;bikeshop&quot;&gt;
-     *      {
-     *        &quot;bicycle&quot;: [
-     *          {
-     *           &quot;color&quot;: &quot;red&quot;,
-     *           &quot;price&quot;: 19.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;green&quot;,
-     *           &quot;price&quot;: 29.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;blue&quot;,
-     *           &quot;price&quot;: 59.95
-     *          }
-     *        ]
-     *      }
-     *     &lt;/dataset&gt;
-     *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
-     *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle[1]/color&quot;&gt;&lt;/replicator&gt;
-     *
-     * It's also possible to replicate a range of items in the array with the [start,end,stepsize] operator. This replicates every other item:
-     *
-     *     @example
-     *     &lt;dataset name=&quot;bikeshop&quot;&gt;
-     *      {
-     *        &quot;bicycle&quot;: [
-     *          {
-     *           &quot;color&quot;: &quot;red&quot;,
-     *           &quot;price&quot;: 19.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;green&quot;,
-     *           &quot;price&quot;: 29.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;blue&quot;,
-     *           &quot;price&quot;: 59.95
-     *          }
-     *        ]
-     *      }
-     *     &lt;/dataset&gt;
-     *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
-     *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle[0,3,2]/color&quot;&gt;&lt;/replicator&gt;
-     *
-     * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
-     *
-     *     @example
-     *     &lt;dataset name=&quot;bikeshop&quot;&gt;
-     *      {
-     *        &quot;bicycle&quot;: [
-     *          {
-     *           &quot;color&quot;: &quot;red&quot;,
-     *           &quot;price&quot;: 19.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;green&quot;,
-     *           &quot;price&quot;: 29.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;blue&quot;,
-     *           &quot;price&quot;: 59.95
-     *          }
-     *        ]
-     *      }
-     *     &lt;/dataset&gt;
-     *     &lt;spacedlayout spacing=&quot;5&quot;&gt;&lt;/spacedlayout&gt;
-     *     &lt;replicator classname=&quot;text&quot; datapath=&quot;$bikeshop/bicycle[*][@]&quot;&gt;
-     *       &lt;method name=&quot;filterfunction&quot; args=&quot;obj, accum&quot;&gt;
-     *         // add the color to the beginning of the results if the price is greater than 20
-     *         if (obj.price &gt; 20)
-     *           accum.unshift(obj.color);
-     *         return accum
-     *       &lt;/method&gt;
-     *     &lt;/replicator&gt;
-     *
-     * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
-     */--&gt;</span>
-    <span class="tag">&lt;class</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">replicator</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">coffee</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">extends</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">node</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">requires</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">datapath</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-      <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">_arrayidentity</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">[]</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
-      <span class="comment">&lt;!--/**
-        * @attribute {Boolean} [pooling=false]
-        * If true, reuse views when replicating.
-        */--&gt;</span>
-      <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">pooling</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+    * @attribute {Boolean} [pooling=false]
+    * If true, reuse views when replicating.
+    */--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">pooling</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
 
-      <span class="comment">&lt;!--/**
-        * @attribute {Array} [data=[]]
-        * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
-        */--&gt;</span>
-      <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">dr.replicator._arrayidentity</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
-      <span class="comment">&lt;!--/**
-        * @attribute {String} [path=]
-        * If set, a {@link #datapath datapath} will be used to look up the value.
-        */--&gt;</span>
-      <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">datapath</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
-      <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ondatapath</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">datapath</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-        if datapath
-          unless @_datapath?
-            @_datapath = new dr.datapath(@parent)
-            @listenTo(@_datapath, 'onresult', (data) =<span class="error">&gt;</span>
-              @setAttribute('data', data) #unless data == dr.datapath._arrayidentity
-              # console.log('data callback', data, @)
-            )
-            # console.log('new datapath', @_datapath)
-          @_datapath.setAttribute('path', datapath)
-      <span class="tag">&lt;/handler&gt;</span>
+  <span class="comment">&lt;!--/**
+    * @attribute {Array} [data=[]]
+    * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
+    */--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">dr.replicator._arrayidentity</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="comment">&lt;!--/**
+    * @attribute {String} [path=]
+    * If set, a {@link #datapath datapath} will be used to look up the value.
+    */--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">datapath</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ondatapath</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">datapath</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if datapath
+      unless @_datapath?
+        @_datapath = new dr.datapath(@parent)
+        @listenTo(@_datapath, 'onresult', (data) =<span class="error">&gt;</span>
+          @setAttribute('data', data) #unless data == dr.datapath._arrayidentity
+          # console.log('data callback', data, @)
+        )
+        # console.log('new datapath', @_datapath)
+      @_datapath.setAttribute('path', datapath)
+  <span class="tag">&lt;/handler&gt;</span>
 
-      <span class="comment">&lt;!--/**
-        * @attribute {String} classname (required)
-        * The name of the class to be replicated.
-        */--&gt;</span>
-      <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">classname</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="comment">&lt;!--/**
+    * @attribute {String} classname (required)
+    * The name of the class to be replicated.
+    */--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">classname</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
 
-      <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ondestroy</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">method</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">clear</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/handler&gt;</span>
+  <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ondestroy</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">method</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">clear</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/handler&gt;</span>
 
-      <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">updateData</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-        # remove dataset declaration
-        re = /^\$([^\/]+)/
-        @dataset.updateData(@datapath.replace(re, ''), data);
-      <span class="tag">&lt;/method&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">updateData</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    # remove dataset declaration
+    re = /^\$([^\/]+)/
+    @dataset.updateData(@datapath.replace(re, ''), data);
+  <span class="tag">&lt;/method&gt;</span>
 
-      <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">clear</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-        @_lockLayouts(true)
-        # @parent.setAttribute('display', 'none')
-        if @children
-          for child in @children
-            # console.log 'destroying child', child
-            child.destroy()
-        @children = []
-        # @parent.setAttribute('display', null)
-        @_lockLayouts(false)
-      <span class="tag">&lt;/method&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">clear</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if not @locked then @_lockLayouts(true)
+    # @parent.setAttribute('display', 'none')
+    if @children
+      for child in @children
+        # console.log 'destroying child', child
+        child.destroy()
+    @children = []
+    # @parent.setAttribute('display', null)
+    if not @locked then @_lockLayouts(false)
+  <span class="tag">&lt;/method&gt;</span>
 
-      <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">_lockLayouts</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">locked</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-        if @parent.layouts
-          for layout in @parent.layouts
-            layout.setAttribute('locked', locked)
-      <span class="tag">&lt;/method&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">_lockLayouts</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">locked</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if @parent.layouts
+      for layout in @parent.layouts
+        layout.setAttribute('locked', locked)
+  <span class="tag">&lt;/method&gt;</span>
 
-      <span class="comment">&lt;!--/**
-        * @event onreplicated
-        * Fired when the replicator is done
-        * @param {dr.replicator} replicator The dr.replicator that fired the event
-        */--&gt;</span>
-      <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">onclassname,ondata,oninit</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-        return unless @inited and @parent
-        unless @classname
-          console.warn 'missing classname for replicator', @
-          return
-        # console.log('_applyData', @data, @classname, @parent, @children, @, @inited)
+  <span class="comment">&lt;!--/**
+    * @event onreplicated
+    * Fired when the replicator is done
+    * @param {dr.replicator} replicator The dr.replicator that fired the event
+    */--&gt;</span>
+  <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">onclassname,ondata,oninit</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    return unless @inited and @parent
+    unless @classname
+      console.warn 'missing classname for replicator', @
+      return
+    # console.log('_applyData', @data, @classname, @parent, @children, @, @inited)
 
-        unless dr.lookupClass(@classname)
-          console.warn 'missing class for replicator', @classname, 'skipping replication'
-          return
+    unless dr.lookupClass(@classname)
+      console.warn 'missing class for replicator', @classname, 'skipping replication'
+      return
 
-        return if @locked
-        return unless @data and @data != dr.replicator._arrayidentity
+    return if @locked
+    return unless @data and @data != dr.replicator._arrayidentity
 
-        locked = @locked
-        @locked = true
+    locked = @locked
+    @locked = true
 
-        if @classname == 'node'
-          # bail out before actually replicating
-          @locked = locked
-          return
+    if @classname == 'node'
+      # bail out before actually replicating
+      @locked = locked
+      return
 
-        @_lockLayouts(true)
+    @_lockLayouts(true)
 
-        #console.log @data.length
-        @children ?= []
-        if @pooling 
-          for child, i in @children
-            datum = @data[i]
-            # console.log 'replicator updating', i, child, 'in', datum
-            if i <span class="error">&lt;</span> @data.length
-              child.setAttribute('data', datum)
-              child.setAttribute('visible', true);
-            else
-              child.setAttribute('visible', false);
-          if @data.length <span class="error">&gt;</span> @children.length
-            i = @children.length;
-            while @data.length <span class="error">&gt;</span> @children.length
-              datum = @data[i++]
-              @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
-              # console.log 'replicator created', @classname, @children[@children.length - 1]
+    #console.log @data.length
+    @children ?= []
+    if @pooling 
+      for child, i in @children
+        datum = @data[i]
+        # console.log 'replicator updating', i, child, 'in', datum
+        if i <span class="error">&lt;</span> @data.length
+          child.setAttribute('data', datum)
+          child.setAttribute('visible', true);
         else
-          @clear()
-          for datum in @data
-            # console.log 'replicator creating', @classname, 'in', @parent
-            @children.push(@createChild({class: @classname, data: datum, parent: @parent, replicator: @}))
-            # console.log 'replicator created', @classname, @children[@children.length - 1]
+          child.setAttribute('visible', false);
+      if @data.length <span class="error">&gt;</span> @children.length
+        i = @children.length;
+        while @data.length <span class="error">&gt;</span> @children.length
+          datum = @data[i++]
+          @_createChild(datum)
+          # console.log 'replicator created', @classname, @children[@children.length - 1]
+    else
+      @clear()
+      for datum in @data
+        # console.log 'replicator creating', @classname, 'in', @parent
+        @_createChild(datum)
+        # console.log 'replicator created', @classname, @children[@children.length - 1]
 
-        @_lockLayouts(false)
-        @locked = locked
-        @sendEvent('onreplicated', @)
-      <span class="tag">&lt;/handler&gt;</span>
-    <span class="tag">&lt;/class&gt;</span></pre></td>
+    @_lockLayouts(false)
+    @locked = locked
+    @sendEvent('onreplicated', @)
+  <span class="tag">&lt;/handler&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">_createChild</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    attrs = {class: @classname, data: data, parent: @parent, __replicator: @}
+    
+    # add stuff required by the editor unless it's a class used by the editor itself!
+    shouldedit = this.searchAncestors((node) -<span class="error">&gt;</span>
+      return node.isA(dr.editable)
+    )
+    if 'editable' of dr and shouldedit?
+      attrs.with = 'editable'
+      attrs.__objectify_attrs_list = []
+    child = @createChild(attrs)
+    # Work around ondata event not firing
+    @children.push(child)
+    child.sendEvent('ondata', data)
+  <span class="tag">&lt;/method&gt;</span>
+  
+  <span class="comment">&lt;!--// Editor //--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">hiddenattrs</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{pooling:true, data:true}</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+<span class="tag">&lt;/class&gt;</span></pre></td>
 </tr></table>
 
 </body>

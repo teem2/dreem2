@@ -391,80 +391,50 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n237" name="n237">237</a>
 <a href="#n238" name="n238">238</a>
 <a href="#n239" name="n239">239</a>
-<strong><a href="#n240" name="n240">240</a></strong>
-<a href="#n241" name="n241">241</a>
-<a href="#n242" name="n242">242</a>
-<a href="#n243" name="n243">243</a>
-<a href="#n244" name="n244">244</a>
-<a href="#n245" name="n245">245</a>
-<a href="#n246" name="n246">246</a>
-<a href="#n247" name="n247">247</a>
-<a href="#n248" name="n248">248</a>
-<a href="#n249" name="n249">249</a>
-<strong><a href="#n250" name="n250">250</a></strong>
-<a href="#n251" name="n251">251</a>
-<a href="#n252" name="n252">252</a>
-<a href="#n253" name="n253">253</a>
-<a href="#n254" name="n254">254</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (MIT)
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
 
-Copyright ( c ) 2015 Teem2 LLC
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the &quot;Software&quot;), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE. --&gt;</span>
-  <span class="comment">&lt;!--/**
-     * @class dr.datapath {Data}
-     * @extends dr.node
-     * Handles data querying, filtering and transformation
-     *
-     * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
-     *
-     *     @example
-     *     &lt;dataset name=&quot;bikeshop&quot;&gt;
-     *      {
-     *        &quot;bicycle&quot;: [
-     *          {
-     *           &quot;color&quot;: &quot;red&quot;,
-     *           &quot;price&quot;: 19.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;green&quot;,
-     *           &quot;price&quot;: 29.95
-     *          },
-     *          {
-     *           &quot;color&quot;: &quot;blue&quot;,
-     *           &quot;price&quot;: 59.95
-     *          }
-     *        ]
-     *      }
-     *     &lt;/dataset&gt;
-     *     &lt;datapath path=&quot;$bikeshop/bicycle[*][@]&quot;&gt;
-     *       &lt;method name=&quot;filterfunction&quot; args=&quot;obj, accum&quot;&gt;
-     *         // add the color to the beginning of the results if the price is greater than 20
-     *         if (obj.price &gt; 20)
-     *           accum.unshift(obj.color);
-     *         return accum
-     *       &lt;/method&gt;
-     *     &lt;/datapath&gt;
-     *
-     * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
-     */--&gt;</span>
+<span class="comment">&lt;!--/**
+   * @class dr.datapath {Data}
+   * @extends dr.node
+   * Handles data querying, filtering and transformation
+   *
+   * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
+   *
+   *     @example
+   *     &lt;dataset name=&quot;bikeshop&quot;&gt;
+   *      {
+   *        &quot;bicycle&quot;: [
+   *          {
+   *           &quot;color&quot;: &quot;red&quot;,
+   *           &quot;price&quot;: 19.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;green&quot;,
+   *           &quot;price&quot;: 29.95
+   *          },
+   *          {
+   *           &quot;color&quot;: &quot;blue&quot;,
+   *           &quot;price&quot;: 59.95
+   *          }
+   *        ]
+   *      }
+   *     &lt;/dataset&gt;
+   *     &lt;datapath path=&quot;$bikeshop/bicycle[*][@]&quot;&gt;
+   *       &lt;method name=&quot;filterfunction&quot; args=&quot;obj, accum&quot;&gt;
+   *         // add the color to the beginning of the results if the price is greater than 20
+   *         if (obj.price &gt; 20)
+   *           accum.unshift(obj.color);
+   *         return accum
+   *       &lt;/method&gt;
+   *     &lt;/datapath&gt;
+   *
+   * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
+   */--&gt;</span>
     <span class="tag">&lt;class</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">datapath</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">coffee</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">extends</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">node</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">scriptincludes</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">/lib/json-path+json-ptr-0.1.3.min.js</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
       <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">_arrayidentity</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">[]</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
       <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">datasetmatcher</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">/^\$([^\/]+)/</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>

@@ -15,123 +15,155 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='dr-text'>/**
-</span>      * @class dr.text {UI Components}
-      * @extends dr.view
-      * Text component that supports single and multi-line text.
-      * 
-      *  The text component can be fixed size, or sized to fit the size of the text.
-      * 
-      *      @example
-      *      &lt;text text=&quot;Hello World!&quot; bgcolor=&quot;red&quot;&gt;&lt;/text&gt;
-      * 
-      *  Here is a multiline text
-      * 
-      *      @example
-      *      &lt;text multiline=&quot;true&quot; text=&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit&quot;&gt;&lt;/text&gt;
-      * 
-      *  You might want to set the value of a text element based on the value of other attributes via a constraint. Here we set the value by concatenating three attributes together.
-      * 
-      *      @example
-      *      &lt;attribute name=&quot;firstname&quot; type=&quot;string&quot; value=&quot;Lumpy&quot;&gt;&lt;/attribute&gt;
-      *      &lt;attribute name=&quot;middlename&quot; type=&quot;string&quot; value=&quot;Space&quot;&gt;&lt;/attribute&gt;
-      *      &lt;attribute name=&quot;lastname&quot; type=&quot;string&quot; value=&quot;Princess&quot;&gt;&lt;/attribute&gt;
-      * 
-      *      &lt;text text=&quot;${this.parent.firstname + &#39; &#39; + this.parent.middlename + &#39; &#39; + this.parent.lastname}&quot; color=&quot;hotpink&quot;&gt;&lt;/text&gt;
-      * 
-      *  Constraints can contain more complex JavaScript code
-      * 
-      *      @example
-      *      &lt;attribute name=&quot;firstname&quot; type=&quot;string&quot; value=&quot;Lumpy&quot;&gt;&lt;/attribute&gt;
-      *      &lt;attribute name=&quot;middlename&quot; type=&quot;string&quot; value=&quot;Space&quot;&gt;&lt;/attribute&gt;
-      *      &lt;attribute name=&quot;lastname&quot; type=&quot;string&quot; value=&quot;Princess&quot;&gt;&lt;/attribute&gt;
-      * 
-      *      &lt;text text=&quot;${this.parent.firstname.charAt(0) + &#39; &#39; + this.parent.middlename.charAt(0) + &#39; &#39; + this.parent.lastname.charAt(0)}&quot; color=&quot;hotpink&quot;&gt;&lt;/text&gt;
-      * 
-      *  We can simplify this by using a method to return the concatenation and constraining the text value to the return value of the method
-      * 
-      *      @example
-      *      &lt;attribute name=&quot;firstname&quot; type=&quot;string&quot; value=&quot;Lumpy&quot;&gt;&lt;/attribute&gt;
-      *      &lt;attribute name=&quot;middlename&quot; type=&quot;string&quot; value=&quot;Space&quot;&gt;&lt;/attribute&gt;
-      *      &lt;attribute name=&quot;lastname&quot; type=&quot;string&quot; value=&quot;Princess&quot;&gt;&lt;/attribute&gt;
-      * 
-      *      &lt;method name=&quot;initials&quot;&gt;
-      *        return this.firstname.charAt(0) + &#39; &#39; + this.middlename.charAt(0) + &#39; &#39; + this.lastname.charAt(0);
-      *      &lt;/method&gt;
-      * 
-      *      &lt;text text=&quot;${this.parent.initials()}&quot; color=&quot;hotpink&quot;&gt;&lt;/text&gt;
-      * 
-      *  You can override the format method to provide custom formatting for text elements. Here is a subclass of text, timetext, with the format method overridden to convert the text given in seconds into a formatted string.
-      * 
-      *      @example
-      *      &lt;class name=&quot;timetext&quot; extends=&quot;text&quot;&gt;
-      *        &lt;method name=&quot;format&quot; args=&quot;seconds&quot;&gt;
-      *          var minutes = Math.floor(seconds / 60);
-      *          var seconds = Math.floor(seconds) - minutes * 60;
-      *          if (seconds &lt; 10) {
-      *            seconds = &#39;0&#39; + seconds;
-      *          }
-      *          return minutes + &#39;:&#39; + seconds;
-      *        &lt;/method&gt;
-      *      &lt;/class&gt;
-      * 
-      *      &lt;timetext text=&quot;240&quot;&gt;&lt;/timetext&gt;
-      * 
-      */
-<span id='dr-text-attribute-fontsize'>/**
-</span>        * @attribute {Number} [fontsize]
-        * The size of the font in pixels.
-        */
-<span id='dr-text-attribute-fontfamily'>/**
-</span>        * @attribute {Number} [fontfamily=&quot;&quot;]
-        * The name of the font family to use, e.g. &quot;Helvetica&quot;  Include multiple fonts on a line, separated by commas.
-        */
-<span id='dr-text-attribute-textalign'>/**
-</span>        * @attribute {Number} [textalign=&quot;&quot;]
-        * Align text within its bounds. Supported values are 
-        * &#39;left&#39;, &#39;right&#39;, &#39;center&#39; and &#39;inherit&#39;.
-        */
-<span id='dr-text-attribute-bold'>/**
-</span>        * @attribute {Boolean} [bold=false]
-        * Use bold text.
-        */
-<span id='dr-text-attribute-italic'>/**
-</span>        * @attribute {Boolean} [italic=false]
-        * Use italic text.
-        */
-<span id='dr-text-attribute-smallcaps'>/**
-</span>        * @attribute {Boolean} [smallcaps=false]
-        * Use small caps style.
-        */
-<span id='dr-text-attribute-underline'>/**
-</span>        * @attribute {Boolean} [underline=false]
-        * Draw and underline under text (note, is incompatible with dr.text#strike)
-        */
-<span id='dr-text-attribute-strike'>/**
-</span>        * @attribute {Boolean} [strike=false]
-        * Draw and strike-through the text (note, is incompatible with dr.text#underline)
-        */
-<span id='dr-text-attribute-multiline'>/**
-</span>        * @attribute {Boolean} [multiline=false]
-        * Determines how line breaks within the text are handled.
-        */
-<span id='dr-text-attribute-ellipsis'>/**
-</span>        * @attribute {Boolean} [ellipsis=false]
-        * Determines if ellipsis shouls be shown or not. Only works when
-        * multiline is false.
-        */
-<span id='dr-text-attribute-text'>/**
-</span>        * @attribute {String} [text=&quot;&quot;]
-        * The contents of this input text field
-        */
-<span id='dr-text-method-format'>/**
-</span>        * @method format
-        * Format the text to be displayed. The default behavior is to
-        * return the text intact. Override to change formatting. This method
-        * is called whenever the text attribute is set.
-        * @param {String} str The current value of the text component.
-        * @return {String} The formated string to display in the component.
-        */
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='global-property-'>/** Provides an interface to platform specific Text functionality. */
+</span>define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        globalScope = require(&#39;$SPRITE/global.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    
+    module.exports = sprite.Text = new JS.Class(&#39;sprite.Text&#39;, require(&#39;./View.js&#39;), {
+        // Life Cycle //////////////////////////////////////////////////////////////
+<span id='global-method-initialize'>        /** @overrides */
+</span>        initialize: function(view, attrs) {
+            this.callSuper(view, attrs);
+            
+            // On chrome the text objects need to be informed when the fonts on 
+            // the page have finally finished loading so they can recalculate 
+            // their proper size
+            var fonts = globalScope.document.fonts;
+            if (fonts &amp;&amp; fonts.status !== &#39;loaded&#39; &amp;&amp; fonts.ready &amp;&amp; fonts.ready.constructor == Promise) {
+                var self = this;
+                fonts.ready.then(function() {self.view.sizeToPlatform()});
+            }
+        },
+        
+        createPlatformObject: function(attrs) {
+            var elem = this.callSuper(attrs),
+                s = elem.style;
+            s.fontFamily = &quot;font-family:mission-gothic, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif&quot;;
+            s.fontSize = &quot;20px&quot;;
+            
+            // The following two properties make text look more alike 
+            // between chrome and firefox.
+            s.lineHeight = &#39;120%&#39;;
+            s.fontKerning = &#39;normal&#39;;
+            
+            return elem;
+        },
+        
+        
+        // Attributes //////////////////////////////////////////////////////////////
+        set_text: function(v) {
+            if (v != null) {
+                var platformObject = this.platformObject, 
+                    childNodes = platformObject.childNodes,
+                    i = 0, len = childNodes.length, child;
+                for (; len &gt; i;) {
+                    child = childNodes[i++];
+                    if (child &amp;&amp; child.nodeType === 3) platformObject.removeChild(child);
+                }
+                platformObject.appendChild(globalScope.document.createTextNode(v))
+            }
+            return v;
+        },
+        
+        set_fontsize: function(v) {
+            this.styleObj.fontSize = v;
+            return v;
+        },
+        
+        set_fontfamily: function(v) {
+            this.styleObj.fontFamily = v;
+            return v;
+        },
+        
+        set_bold: function(v) {
+            this.styleObj.fontWeight = v ? &#39;bold&#39; : &#39;normal&#39;;
+            return v;
+        },
+        
+        set_italic: function(v) {
+            this.styleObj.fontStyle = v ? &#39;italic&#39; : &#39;normal&#39;;
+            return v;
+        },
+        
+        set_smallcaps: function(v) {
+            this.styleObj.fontVariant = v ? &#39;small-caps&#39; : &#39;normal&#39;;
+            return v;
+        },
+        
+        set_underline: function(v) {
+            this.styleObj.textDecoration = v ? &#39;underline&#39; : &#39;none&#39;;
+            return v;
+        },
+        
+        set_strike: function(v) {
+            this.styleObj.textDecoration = v ? &#39;line-through&#39; : &#39;none&#39;;
+            return v;
+        },
+        
+        set_ellipsis: function(v) {
+            this.__ellipsis = v;
+            this.styleObj.textOverflow = v ? &#39;ellipsis&#39; : &#39;clip&#39;;
+            this.__updateOverflow();
+            return v;
+        },
+        
+        set_multiline: function(v) {
+            this.__isMultiline = v;
+            this.__updateMultiline();
+            return v;
+        },
+        
+        set_width: function(v) {
+            this.__isAutoWidth = v === &#39;auto&#39;;
+            this.__updateMultiline();
+            return this.callSuper(v);
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-__updateMultiline'>        /** @private */
+</span>        __updateMultiline: function() {
+            var whitespace;
+            if (this.__isMultiline) {
+                whitespace = this.__isAutoWidth ? &#39;pre&#39; : &#39;pre-wrap&#39;;
+            } else {
+                whitespace = &#39;nowrap&#39;;
+            }
+            this.styleObj.whiteSpace = whitespace;
+        },
+        
+<span id='global-method-__updateOverflow'>        /** @overrides */
+</span>        __updateOverflow: function() {
+            if (this.__ellipsis) {
+                this.styleObj.overflow = &#39;hidden&#39;;
+            } else {
+                this.callSuper()
+            }
+        },
+        
+        getText: function() {
+            // Firefox doesn&#39;t support innerText and textContent gives us more than
+            // we want. Instead, walk the dom children and concat all the text nodes.
+            // The nodes get trimmed since line feeds and other junk whitespace will
+            // show up as text nodes.
+            var child = this.platformObject.firstChild,
+                texts = [];
+            while (child) {
+                if (child.nodeType === 3) texts.push(child.data.trim());
+                child = child.nextSibling;
+            }
+            return texts.join(&quot;&quot;)
+        }
+    });
+});
 </pre>
 </body>
 </html>

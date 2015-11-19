@@ -249,9 +249,53 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n95" name="n95">95</a>
 <a href="#n96" name="n96">96</a>
 <a href="#n97" name="n97">97</a>
+<a href="#n98" name="n98">98</a>
+<a href="#n99" name="n99">99</a>
+<strong><a href="#n100" name="n100">100</a></strong>
+<a href="#n101" name="n101">101</a>
+<a href="#n102" name="n102">102</a>
+<a href="#n103" name="n103">103</a>
+<a href="#n104" name="n104">104</a>
+<a href="#n105" name="n105">105</a>
+<a href="#n106" name="n106">106</a>
+<a href="#n107" name="n107">107</a>
+<a href="#n108" name="n108">108</a>
+<a href="#n109" name="n109">109</a>
+<strong><a href="#n110" name="n110">110</a></strong>
+<a href="#n111" name="n111">111</a>
+<a href="#n112" name="n112">112</a>
+<a href="#n113" name="n113">113</a>
+<a href="#n114" name="n114">114</a>
+<a href="#n115" name="n115">115</a>
+<a href="#n116" name="n116">116</a>
+<a href="#n117" name="n117">117</a>
+<a href="#n118" name="n118">118</a>
+<a href="#n119" name="n119">119</a>
+<strong><a href="#n120" name="n120">120</a></strong>
+<a href="#n121" name="n121">121</a>
+<a href="#n122" name="n122">122</a>
+<a href="#n123" name="n123">123</a>
+<a href="#n124" name="n124">124</a>
+<a href="#n125" name="n125">125</a>
+<a href="#n126" name="n126">126</a>
+<a href="#n127" name="n127">127</a>
+<a href="#n128" name="n128">128</a>
+<a href="#n129" name="n129">129</a>
+<strong><a href="#n130" name="n130">130</a></strong>
+<a href="#n131" name="n131">131</a>
+<a href="#n132" name="n132">132</a>
+<a href="#n133" name="n133">133</a>
+<a href="#n134" name="n134">134</a>
+<a href="#n135" name="n135">135</a>
+<a href="#n136" name="n136">136</a>
+<a href="#n137" name="n137">137</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
   * @class dr.editor.compoundundoable {UI Components}
   * @extends dr.editor.undoable
@@ -264,6 +308,12 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   */--&gt;</span>
 <span class="tag">&lt;class</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">editor-compoundundoable</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">extends</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">editor-undoable</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
   <span class="comment">&lt;!--// LIFE CYCLE /////////////////////////////////////////////////////////--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">init</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attrs</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    this.__undoables = [];
+    
+    this.super();
+  <span class="tag">&lt;/method&gt;</span>
+
   <span class="comment">&lt;!--/**
     * @method destroy
     * @overrides
@@ -279,6 +329,10 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 
 
   <span class="comment">&lt;!--// METHODS ////////////////////////////////////////////////////////////--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">getUndoableCount</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    return this.__undoables.length;
+  <span class="tag">&lt;/method&gt;</span>
+
   <span class="comment">&lt;!--/**
     * @method add
     * Adds an undoable to this dr.editor.compoundundoable.
@@ -293,7 +347,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     } else if (undoable === this) {
       dr.sprite.console.warn(&quot;Adding compoundundoable to itself is not allowed.&quot;);
     } else {
-      (this.__undoables || (this.__undoables = [])).push(undoable);
+      this.__undoables.push(undoable);
     }
     return this;
   <span class="tag">&lt;/method&gt;</span>
@@ -305,15 +359,13 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">undo</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">callback</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if (this.done) {
-      var undoables = this.__undoables;
-      if (undoables) {
-        var i = undoables.length;
-        try {
-          this.done = false; // Provide cyclic protection
-          while (i) undoables[--i].undo(callback);
-        } finally {
-          this.done = true;
-        }
+      var undoables = this.__undoables,
+        i = undoables.length;
+      try {
+        this.done = false; // Provide cyclic protection
+        while (i) undoables[--i].undo(callback);
+      } finally {
+        this.done = true;
       }
       return this.super();
     } else {
@@ -329,22 +381,50 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">redo</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">callback</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if (!this.done) {
-      var undoables = this.__undoables;
-      if (undoables) {
-        var len = undoables.length, i = 0;
-        
-        try {
-          this.done = true; // Provide cyclic protection
-          for (; len <span class="error">&gt;</span> i;) undoables[i++].redo(callback);
-        } finally {
-          this.done = false;
-        }
+      var undoables = this.__undoables,
+        len = undoables.length, i = 0;
+      
+      try {
+        this.done = true; // Provide cyclic protection
+        for (; len <span class="error">&gt;</span> i;) undoables[i++].redo(callback);
+      } finally {
+        this.done = false;
       }
       return this.super();
     } else {
       dr.global.error.notifyWarn('invalidCompoundRedo', &quot;Invalid redo in compoundundoable.&quot;);
       return this;
     }
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * @method serialize
+    * Builds a serialized object from each of the child undoables.
+    * @overrides
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">serialize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">obj</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if (!obj) obj = {};
+    var objUndoables = obj.undoables = [],
+      undoables = this.__undoables, 
+      len = undoables.length, i = 0;
+    for (; len <span class="error">&gt;</span> i;) objUndoables.push(undoables[i++].serialize());
+    return this.super(obj);
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * @method deserialize
+    * Deserializes each child undoable to rebuild this compound undoable.
+    * @overrides
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">deserialize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    var undoables = data.undoables;
+    if (undoables) {
+      var i = undoables.length;
+      while (i) undoables[--i] = dr.deserialize(undoables[i]);
+      data.__undoables = undoables;
+      delete data.undoables;
+    }
+    return this.super(data);
   <span class="tag">&lt;/method&gt;</span>
 <span class="tag">&lt;/class&gt;</span>
 </pre></td>

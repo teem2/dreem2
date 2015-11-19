@@ -62,3 +62,11 @@
     * the current value of the target object as the oldvalue if this is the
     * first time redo is called successfully.
     */
+/**
+    * @method serialize
+    * @overrides
+    */
+/**
+    * @method deserialize
+    * @overrides
+    */

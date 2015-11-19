@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 <span id='CompositionServer'>/**
 </span> * @class CompositionServer {Internal}
  * Holder of the dreem &lt;composition&gt; for the server
@@ -37,6 +38,8 @@ define(function(require, exports, module) {
     DreemError = require(&#39;./dreemerror&#39;),
     dreemCompiler = require(&#39;./dreemcompiler&#39;);
 
+    var UAParser = require(&#39;ua-parser-js&#39;);
+
 <span id='CompositionServer-method-constructor'><span id='CompositionServer'>  /**
 </span></span>    * @constructor
     * @param {Object} args Process arguments
@@ -44,26 +47,25 @@ define(function(require, exports, module) {
     * @param {String} name Name of the composition .dre
     */
   function CompositionServer(args, name, teemserver) {
-    this.teemserver = teemserver;
     this.args = args;
     this.name = name;
+    this.teemserver = teemserver;
 
     this.busserver = new BusServer();
+    this.busserver.compositionserver = this;
     this.watcher = new FileWatcher();
     this.watcher.onChange = function(file) {
       this.__reloadComposition();
-      
-      // Tell the client to refresh itself.
-      teemserver.broadcast({type:&#39;filechange&#39;, file:file});
+      teemserver.broadcastFileChange(file);
     }.bind(this);
     
-    // lets compile and run the dreem composition
-    define.onRequire = function(filename) {
+    /*define.onRequire = function(filename) {
       // lets output to the main watcher
       process.stderr.write(&#39;\x0F!&#39; + filename + &#39;\n&#39;, function() {});
       this.watcher.watch(filename);
-    }.bind(this);
+    }.bind(this);*/
     
+    // lets compile and run the dreem composition
     this.__reloadComposition();
   };
 
@@ -94,27 +96,120 @@ define(function(require, exports, module) {
         }
       }
       
+      // Redirect preview query to preview URL
+      if (query.preview === &#39;1&#39;) {
+          delete query.preview;
+          url = &#39;/preview&#39; + url;
+          var isFirst = true, name;
+          for (name in query) {
+            if (isFirst) {
+              url += &#39;?&#39;;
+              isFirst = false;
+            } else {
+              url += &#39;&amp;&#39;;
+            }
+            url += name + &#39;=&#39; + query[name];
+          }
+          // We need to redirect the client so it will refresh and show the editor.
+          res.writeHead(302, {&#39;Location&#39;:url});
+          res.end();
+          return;
+      }
+      
       // handle editor requests
       if (query.edit) {
+        // Editor Handling for &quot;save&quot; and &quot;notifyPreviewers&quot;
         if (req.method == &#39;POST&#39;) {
-          var buf = &#39;&#39;
-          req.on(&#39;data&#39;, function(data) {buf += data.toString();});
-          req.on(&#39;end&#39;, function() {
-            var comppath = define.expandVariables(this.__getCompositionPath())
-            this.__saveEditableFile(comppath, buf, query.stripeditor === &#39;1&#39;);
-          }.bind(this));
-          return;
+          if (query.notifyPreviewers === &#39;1&#39;) {
+            var buf = &#39;&#39;
+            req.on(&#39;data&#39;, function(data) {buf += data.toString();});
+            req.on(&#39;end&#39;, function() {
+              var screenName = query.screen || &#39;default&#39;,
+                comppath = define.expandVariables(this.__getCompositionPath(true)),
+                jsobj = JSON.parse(buf);
+              // Transform to normal mode to clean out editor mode modifications.
+              this.__transformToNormalMode(jsobj, true);
+              // Then transform from normal mode to preview mode
+              this.__transformToPreviewMode(screenName, jsobj);
+              var newdata = HTMLParser.reserialize(jsobj, &#39;  &#39;);
+              this.__writeFileIfChanged(comppath, newdata);
+              
+              res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/json&quot;});
+              res.end();
+            }.bind(this));
+          } else {
+            // Save the composition
+            var buf = &#39;&#39;;
+            req.on(&#39;data&#39;, function(data) {buf += data.toString();});
+            req.on(&#39;end&#39;, function() {
+              var screenName = query.screen || &#39;default&#39;,
+                comppath = define.expandVariables(this.__getCompositionPath()),
+                jsobj = JSON.parse(buf);
+              if (query.stripeditor === &#39;1&#39;) {
+                this.__transformToNormalMode(jsobj, false);
+              } else {
+                this.__transformToEditMode(screenName, jsobj);
+              }
+              var newdata = HTMLParser.reserialize(jsobj, &#39;  &#39;);
+              this.__writeFileIfChanged(comppath, newdata);
+              
+              // Force a reload since we know we just changed the file.
+              this.__reloadComposition();
+              
+              res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/json&quot;});
+              res.end();
+            }.bind(this));
+          }
         } else {
-          res.writeHead(302, {
-            &#39;Location&#39;: req.url.substring(0, req.url.indexOf(&#39;?&#39;))
-            //add other headers here...
-          });
-          res.end();
-          var comppath = define.expandVariables(this.__getCompositionPath())
-          this.__makeFileEditable(comppath);
-          return;
+          // Editor Handling for &quot;enter&quot; and &quot;exit&quot;
+          
+          // Read the composition from the filesystem and convert it to/from
+          // edit mode.
+          var comppath = define.expandVariables(this.__getCompositionPath()),
+            data = this.__readFile(comppath);
+          
+          if (data == null) {
+            console.log(&#39;composition does not exist so create a placeholder: &#39; + comppath);
+            data = &quot;&lt;composition&gt;&lt;screens&gt;&lt;screen type=&#39;browser&#39; name=&#39;default&#39; title=&#39;New File&#39;&gt;&lt;view width=&#39;100%&#39; height=&#39;100%&#39;/&gt;&lt;/screen&gt;&lt;/screens&gt;&lt;/composition&gt;&quot;;
+            try {
+              var dirPath = path.dirname(comppath);
+              if (!fs.existsSync(dirPath)) this.__mkdirParent(dirPath);
+              fs.writeFileSync(comppath, data);
+            } catch(ex) {
+              errors.push(new DreemError(&quot;Error in writeFilSync: &quot; + ex.toString()));
+              return;
+            }
+          }
+          
+          var htmlParser = new HTMLParser(),
+            jsobj = htmlParser.parse(data),
+            isExitAction = query.stripeditor === &#39;1&#39;;
+          if (isExitAction) {
+            this.__transformToNormalMode(jsobj, false);
+          } else {
+            this.__transformToEditMode(query.screen || &#39;default&#39;, jsobj);
+          }
+          
+          this.__writeFileIfChanged(comppath, HTMLParser.reserialize(jsobj, &#39;  &#39;));
+          
+          // Force a reload since we know we just changed the file.
+          this.__reloadComposition();
+          
+          if (isExitAction) {
+            // The client handles the redirect for exit
+            res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/json&quot;});
+            res.end();
+          } else {
+            // We need to redirect the client so it will refresh and show the editor.
+            var redirectUrl = url;
+            redirectUrl += (query.screen ? &#39;?screen=&#39; + query.screen : &#39;&#39;);
+            res.writeHead(302, {&#39;Location&#39;:redirectUrl});
+            res.end();
+          }
         }
+        return;
       }
+      
       if (query.raw) {
         var comppath = define.expandVariables(this.__getCompositionPath())
         res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/text&quot;});
@@ -138,7 +233,7 @@ define(function(require, exports, module) {
               }
             });
           } catch(e) {
-            res.writeHead(500, {&quot;Content-Type&quot;:&quot;text/html&quot;});
+            res.writeHead(500, {&quot;Content-Type&quot;:&quot;text/html;charset=utf-8&quot;});
             res.write(&#39;FAIL&#39;);
             res.end();
           }
@@ -150,7 +245,7 @@ define(function(require, exports, module) {
           // for an example that uses this.
           res.writeHead(200, {
             &quot;Cache-control&quot;:&quot;max-age=0&quot;,
-            &quot;Content-Type&quot;:&quot;text/html&quot;
+            &quot;Content-Type&quot;:&quot;text/html;charset=utf-8&quot;
           });
           var modules = this.modules,
             i = 0, len = modules.length,
@@ -162,27 +257,57 @@ define(function(require, exports, module) {
           res.write(JSON.stringify(pkg));
           res.end();
         } else {
-          var screenName = query.screen || &#39;default&#39;,
-            screen = this.screens[screenName];
+          var screenName = query.screen;
+          if (!screenName) {
+            var ua = UAParser(req.headers[&#39;user-agent&#39;]);
+            if (ua &amp;&amp; ua.device &amp;&amp; ua.device.type) {
+              screenName = ua.device.type;
+            } else {
+              screenName = &#39;default&#39;;
+            }
+          }
+
+          var screen = this.screens[screenName];
           if (screen) {
             var name = this.name;
             if (screenName === &#39;dali&#39;) {
               var stream = fs.createReadStream(define.expandVariables(this.__buildScreenPath(&#39;dali.dali&#39;)));
-              res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/html&quot;});
+              res.writeHead(200, {&quot;Content-Type&quot;:&quot;text/html;charset=utf-8&quot;});
               stream.pipe(res);
             } else {
               res.writeHead(200, {
                 &quot;Cache-control&quot;:&quot;max-age=0&quot;,
-                &quot;Content-Type&quot;:&quot;text/html&quot;
+                &quot;Content-Type&quot;:&quot;text/html;charset=utf-8&quot;
               });
-              res.write(this.__renderHTMLTemplate(
-                screen.attr &amp;&amp; screen.attr.title || name, 
-                this.__buildScreenPath(screenName)
-              ));
+              var title = screen.attr &amp;&amp; screen.attr.title || name,
+                boot = this.__buildScreenPath(screenName);
+              res.write(
+                &#39;&lt;html lang=&quot;en&quot;&gt;\n&#39;+
+                &#39;  &lt;head&gt;\n&#39;+
+                &#39;    &lt;title&gt;&#39; + title + &#39;&lt;/title&gt;\n&#39;+
+                (this.__isPreviewPath(url) ? &#39;&lt;base href=&quot;&#39; + url.substring(&quot;/preview&quot;.length) + &#39;&quot;/&gt;&#39; : &#39;&#39;) +
+                &#39;    &lt;script type=&quot;text/javascript&quot;&gt;window.define = {MAIN:&quot;&#39; + boot + &#39;&quot;}&lt;/script&gt;\n&#39;+
+                &#39;    &lt;script type=&quot;text/javascript&quot; src=&quot;/define.js&quot;&gt;&lt;/script&gt;\n&#39;+
+                &#39;    &lt;style type=&quot;text/css&quot;&gt;\n&#39;+
+                &#39;      html,body {\n&#39;+
+                &#39;        height:100%;\n&#39;+
+                &#39;        margin:0px;\n&#39;+
+                &#39;        padding:0px;\n&#39;+
+                &#39;        border:0px none;\n&#39;+
+                &#39;      }\n&#39;+
+                &#39;      body {\n&#39;+
+                &#39;        font-family:Arial, Helvetica, sans-serif;\n&#39;+
+                &#39;        font-size:14px;\n&#39;+
+                &#39;      }\n&#39;+
+                &#39;    &lt;/style&gt;&#39;+
+                &#39;  &lt;/head&gt;\n&#39;+
+                &#39;  &lt;body&gt;&lt;/body&gt;\n&#39;+
+                &#39;&lt;/html&gt;\n&#39;
+              );
               res.end();
             }
           } else {
-            res.writeHead(404, {&quot;Content-Type&quot;:&quot;text/html&quot;});
+            res.writeHead(404, {&quot;Content-Type&quot;:&quot;text/html;charset=utf-8&quot;});
             res.write(&#39;NO SCREENS FOUND&#39;);
             res.end();
           }
@@ -198,7 +323,7 @@ define(function(require, exports, module) {
     
 <span id='CompositionServer-method-__buildScreenPath'>    /** @private */
 </span>    this.__buildScreenPath = function(screenName) {
-      return this.__buildPath(this.name, &#39;screens.&#39; + screenName);
+        return this.__buildPath(this.name, &#39;screens.&#39; + screenName);
     };
     
 <span id='CompositionServer-method-__buildPath'>    /** @private */
@@ -233,14 +358,42 @@ define(function(require, exports, module) {
       }
     };
     
+    this.__isPreviewFile = function(file) {
+      var prefix = define.expandVariables(&#39;$ROOT&#39;);
+      if (file.startsWith(prefix)) {
+        return this.__isPreviewPath(file.substring(prefix.length));
+      }
+      return false;
+    };
+    
+    this.__isPreviewPath = function(path) {
+      return path.startsWith(&#39;/preview/&#39;);
+    };
+    
 <span id='CompositionServer-method-__parseDreSync'>    /** @private */
 </span>    this.__parseDreSync = function(drefile, errors) {
       // read our composition file
+      var data, expandedPath = define.expandVariables(drefile);
       try {
-        var data = fs.readFileSync(define.expandVariables(drefile));
+        data = fs.readFileSync(expandedPath);
       } catch(e) {
-        errors.push(new DreemError(&quot;Error during readFileSync in __parseDreSync: &quot; + e.toString()));
-        return;
+        // Generate a placeholder composition if this is a &quot;preview&quot; request.
+        // This allows previewer clients to listen for a composition to start
+        // being edited.
+        if (e.code === &#39;ENOENT&#39; &amp;&amp; this.__isPreviewFile(expandedPath)) {
+          data = &quot;&lt;composition&gt;&lt;screens&gt;&lt;screen type=&#39;browser&#39; name=&#39;default&#39; title=&#39;Waiting for edits&#39;&gt;&lt;text&gt;Waiting for edits&lt;/text&gt;&lt;/screen&gt;&lt;/screens&gt;&lt;/composition&gt;&quot;;
+          try {
+            var dirPath = path.dirname(expandedPath);
+            if (!fs.existsSync(dirPath)) this.__mkdirParent(dirPath);
+            fs.writeFileSync(expandedPath, data);
+          } catch(ex) {
+            errors.push(new DreemError(&quot;Error in writeFilSync: &quot; + ex.toString()));
+            return;
+          }
+        } else {
+          errors.push(new DreemError(&quot;Error during readFileSync in __parseDreSync: &quot; + e.toString()));
+          return;
+        }
       }
       
       // watch it
@@ -252,10 +405,9 @@ define(function(require, exports, module) {
         jsobj = htmlParser.parse(source);
 
       if (jsobj.tag == &#39;$root&#39; &amp;&amp; jsobj.child) {
-
         var children = jsobj.child;
         var composition;
-        for (var i=0;i&lt;children.length;i++) {
+        for (var i = 0; i &lt; children.length; i++) {
           var child = children[i];
           if (child.tag == &#39;composition&#39;) {
             this.teemserver.pluginLoader.inject(child);
@@ -402,16 +554,16 @@ define(function(require, exports, module) {
     };
     
 <span id='CompositionServer-method-__getCompositionPath'>    /** @private */
-</span>    this.__getCompositionPath = function() {
+</span>    this.__getCompositionPath = function(isPreviewPath) {
       var compositionName = this.name;
-      var filepath = &#39;$ROOT/&#39; + compositionName + define.DREEM_EXTENSION;
+      var filepath = &#39;$ROOT/&#39; + (isPreviewPath ? &#39;preview/&#39; : &#39;&#39;) + compositionName + define.DREEM_EXTENSION;
 
       var match = /^plugins\/([^\/]+)\/examples\/([^\/]+)$/.exec(compositionName)
       if (match) {
         var pluginName = match[1];
         var compName = match[2];
         var plugin = this.teemserver.pluginLoader.plugins[pluginName];
-        if (plugin.rootDir) {
+        if (plugin &amp;&amp; plugin.rootDir) {
           filepath = plugin.rootDir + &#39;/examples/&#39; + compName + define.DREEM_EXTENSION
         }
       }
@@ -432,8 +584,7 @@ define(function(require, exports, module) {
     
 <span id='CompositionServer-method-__reloadComposition'>    /** @private */
 </span>    this.__reloadComposition = function() {
-      var errors = [],
-        compositionPath = this.__getCompositionPath();
+      var errors = [], compositionPath = this.__getCompositionPath();
       
       console.color(&quot;~bg~Reloading~~ composition: &quot; + this.name + &quot;\n&quot;);
       
@@ -490,6 +641,9 @@ define(function(require, exports, module) {
         } else if (tag === &#39;classes&#39;) {
           // generate local classes
           for (var j = 0, classes = child.child, clen = classes.length; j &lt; clen; j++) {
+            if (classes[j].tag == &#39;$comment&#39;) {
+              continue;
+            }
             this.__compileLocalClass(classes[j], errors, [compositionPath]);
           }
         } else {
@@ -589,7 +743,7 @@ define(function(require, exports, module) {
         this.__packageDali(screenPath, screenPath.slice(0, -3) + &quot;.dali.js&quot;);
         define.SPRITE = &#39;$LIB/dr/sprite_browser&#39;;
       }
-      
+      console.log(&quot;MAKING SCREEN &quot;+screenJson.name)
       this.screens[screenJson.name] = screenNode;
     };
     
@@ -638,31 +792,6 @@ define(function(require, exports, module) {
       this.__writeFileIfChanged(output, out);
     };
     
-<span id='CompositionServer-method-__renderHTMLTemplate'>    /** The html response template for browser composition requests.
-</span>        @private */
-    this.__renderHTMLTemplate = function(title, boot) {
-      return &#39;&lt;html lang=&quot;en&quot;&gt;\n&#39;+
-        &#39;  &lt;head&gt;\n&#39;+
-        &#39;    &lt;title&gt;&#39; + title + &#39;&lt;/title&gt;\n&#39;+
-        &#39;    &lt;script type=&quot;text/javascript&quot;&gt;window.define = {MAIN:&quot;&#39; + boot + &#39;&quot;}&lt;/script&gt;\n&#39;+
-        &#39;    &lt;script type=&quot;text/javascript&quot; src=&quot;/define.js&quot;&gt;&lt;/script&gt;\n&#39;+
-        &#39;    &lt;style type=&quot;text/css&quot;&gt;\n&#39;+
-        &#39;      html,body {\n&#39;+
-        &#39;        height:100%;\n&#39;+
-        &#39;        margin:0px;\n&#39;+
-        &#39;        padding:0px;\n&#39;+
-        &#39;        border:0px none;\n&#39;+
-        &#39;      }\n&#39;+
-        &#39;      body {\n&#39;+
-        &#39;        font-family:Arial, Helvetica, sans-serif;\n&#39;+
-        &#39;        font-size:14px;\n&#39;+
-        &#39;      }\n&#39;+
-        &#39;    &lt;/style&gt;&#39;+
-        &#39;  &lt;/head&gt;\n&#39;+
-        &#39;  &lt;body&gt;&lt;/body&gt;\n&#39;+
-        &#39;&lt;/html&gt;\n&#39;;
-    };
-    
 <span id='CompositionServer-method-__mkdirParent'>    /** Recursively makes directories for a path.
 </span>        @private */
     this.__mkdirParent = function(dirPath) {
@@ -697,9 +826,8 @@ define(function(require, exports, module) {
       }
     };
 
-    this.__guid = 0;
     this.__readFile = function(filepath) {
-      var data, newdata;
+      var data;
       try {
         data = fs.readFileSync(filepath);
         if (data) data = data.toString();
@@ -707,109 +835,162 @@ define(function(require, exports, module) {
       return data;
     }
 
-    this.__makeFileEditable = function(filepath) {
-      var data, newdata;
-      data = this.__readFile(filepath)
-
-      if (data.indexOf(&#39;lzeditor_&#39;) &gt; 0) {
-        // already editable, don&#39;t do anything
-        newdata = data
-      } else {
-        var htmlParser = new HTMLParser(),
-        jsobj = htmlParser.parse(data);
-        this.__walkChildren(jsobj)
-        newdata = HTMLParser.reserialize(jsobj, &#39; &#39;)
-        this.__writeFileIfChanged(filepath, newdata)
-      }
-
-      return newdata
-    }
     this.__editableRE = /[,\s]*editable/;
-    this.__skiptagsRE = /screens|screen|composition|$comment|handler|method|include|setter/;
-    this.__walkChildren = function(jsobj, stripeditor, insidescreen) {
-      var setplacement = false, setwith = false;
-      if (jsobj.tag !== &#39;screen&#39;) {
-        setwith = true;
-      } else {
-        // track if we&#39;re inside the screen tag
-        insidescreen = true;
-      }
+    this.__previewableRE = /[,\s]*previewable/;
+    this.__skiptagsRE = /$comment|handler|method|include|setter|attribute/;
+    this.__guid = 0;
 
-      var children = jsobj.child;
-      if (! children.length) return;
-
-      // strip out editor include
-      for (var i = 0; i &lt; children.length; i++) {
-        var child = children[i]
-        if (child.tag === &#39;include&#39; &amp;&amp; child.attr.href === &#39;./editor/editor_include.dre&#39;) {
-          children.splice(i, 1);
-          break;
-        }
-      }
-      if (jsobj.tag === &#39;view&#39; &amp;&amp; insidescreen) {
-        // only set placement=&#39;editor&#39; for tags in the top-level view immediately inside the screen tag
-        insidescreen = false;
-        setplacement = true;
-        if (! stripeditor) {
-          // add top-level editor include
-          jsobj.child.unshift({
-            tag: &#39;include&#39;,
-            attr: {
-              href: &#39;./editor/editor_include.dre&#39;
+    this.__transformToEditMode = function(screenName, jsobj, depth) {
+      var attr = jsobj.attr, tag = jsobj.tag;
+      
+      // Remove all existing editor includes just in case.
+      if (tag === &#39;include&#39; &amp;&amp; attr &amp;&amp; attr.href === &#39;/editor/editor_include.dre&#39;) return true;
+      
+      if (!tag.match(this.__skiptagsRE)) {
+        var i, children = jsobj.child;
+        if (depth &gt;= 0) {
+          // Process descendant of the matching screen
+          if (!attr) attr = jsobj.attr = {};
+          
+          // Add lzeditor ids
+          if (!attr.id) attr.id = &#39;lzeditor_&#39; + this.__guid++;
+          
+          // Add placement to top level views and datasets
+          if (depth === 1) attr.placement = &#39;editor&#39;;
+          
+          // Add mixin
+          if (depth &gt; 0 || tag === &#39;dataset&#39;) {
+            if (!attr.with) {
+              attr.with = &#39;editable&#39;;
+            } else if (!attr.with.match(this.__editableRE)){
+              attr.with += &#39;,editable&#39;;
             }
-          });
-        }
-      }
-
-      for (var i = 0; i &lt; children.length; i++) {
-        var child = children[i]
-
-        if (! child.tag.match(this.__skiptagsRE)) {
-          if (! child.attr) {
-            child.attr = {};
           }
-          var attr = child.attr;
-          if (stripeditor) {
-            if ((typeof attr.id === &#39;string&#39;) &amp;&amp; (attr.id.indexOf(&#39;lzeditor_&#39;) &gt; -1)) {
-              delete attr.id;
-            }
-            if ((typeof attr.with === &#39;string&#39;) &amp;&amp; attr.with.match(this.__editableRE)) {
-              attr.with = attr.with.replace(this.__editableRE, &#39;&#39;);
-              if (! attr.with) delete attr.with;
-            }
-            if (attr.placement === &#39;editor&#39;) {
-              delete attr.placement;
-            }
-          } else {
-            if (! attr.id) {
-              attr.id = &#39;lzeditor_&#39; + this.__guid++;
-            }
-            if (setwith) {
-              if (! attr.with) {
-                attr.with = &#39;editable&#39;;
-              } else if (! attr.with.match(this.__editableRE)){
-                attr.with += &#39;,editable&#39;;
+          
+          // Recurse
+          if (children) {
+            i = children.length;
+            while (i) if (this.__transformToEditMode(screenName, children[--i], depth + 1)) children.splice(i, 1);
+          }
+          
+          // Insert editor include as the first child of the first view of the
+          // selected screen. Must come after recursion so it doesn&#39;t get removed.
+          if (depth === 0 &amp; tag === &#39;view&#39;) {
+            if (!children) children = jsobj.child = [];
+            children.unshift({tag:&#39;include&#39;, attr:{href:&#39;/editor/editor_include.dre&#39;}});
+          }
+        } else {
+          // Process composition, screens and non-matching screen trees.
+          if (children) {
+            i = children.length;
+            if (tag === &#39;screen&#39;) {
+              if (attr &amp;&amp; attr.name === screenName) {
+                // Begin processing matching screen at depth 0.
+                while (i) if (this.__transformToEditMode(screenName, children[--i], 0)) children.splice(i, 1);
+              } else {
+                // Transform non-matching screens to normal
+                while (i) if (this.__transformToNormalMode(children[--i], false)) children.splice(i, 1);
               }
-              if (setplacement) {
-                attr.placement = &#39;editor&#39;;
-              }
+            } else {
+              // Should process composition and screens or any other elements above
+              // and/or outside the matching screen.
+              while (i) if (this.__transformToEditMode(screenName, children[--i])) children.splice(i, 1);
             }
           }
         }
-
-        // console.log(stripeditor, JSON.stringify(child));
-        if (child.child) {
-          this.__walkChildren(child, stripeditor, insidescreen);
+      }
+      return false;
+    };
+    
+    this.__transformToNormalMode = function(jsobj, preserveIds) {
+      var attr = jsobj.attr, tag = jsobj.tag;
+      
+      // Strip out editor include by returning true.
+      if (tag === &#39;include&#39; &amp;&amp; attr &amp;&amp; attr.href === &#39;/editor/editor_include.dre&#39;) return true;
+      
+      if (!tag.match(this.__skiptagsRE)) {
+        if (attr) {
+          // Remove lzeditor ids unless specifically told to preserver them.
+          // The previewer will want to preserver them since node/views are
+          // retrieved by ID.
+          if (!preserveIds &amp;&amp; typeof attr.id === &#39;string&#39; &amp;&amp; attr.id.indexOf(&#39;lzeditor_&#39;) &gt; -1) delete attr.id;
+          
+          // Remove editor placement
+          if (attr.placement === &#39;editor&#39;) delete attr.placement;
+          
+          // Remove editor mixin
+          if (typeof attr.with === &#39;string&#39; &amp;&amp; attr.with.match(this.__editableRE)) {
+            attr.with = attr.with.replace(this.__editableRE, &#39;&#39;);
+            if (!attr.with) delete attr.with;
+          }
+        }
+        
+        // Recurse over children
+        var children = jsobj.child;
+        if (children) {
+          var i = children.length;
+          while (i) if (this.__transformToNormalMode(children[--i], preserveIds)) children.splice(i, 1);
         }
       }
     };
-    this.__saveEditableFile = function(filepath, data, stripeditor) {
-      var jsobj = JSON.parse(data);
-      this.__walkChildren(jsobj, stripeditor);
-      var newdata = HTMLParser.reserialize(jsobj, &#39; &#39;);
-      this.__writeFileIfChanged(filepath, newdata);
-      // console.log(&#39;saved&#39;, filepath, stripeditor);
-    }
+    
+    this.__transformToPreviewMode = function(screenName, jsobj, depth) {
+      var attr = jsobj.attr, tag = jsobj.tag;
+      if (!tag.match(this.__skiptagsRE)) {
+        var children = jsobj.child, i;
+        
+        if (depth &gt;= 0) {
+          if (!attr) attr = jsobj.attr = {};
+          
+          // Make all nodes/views previewable.
+          if (!attr.with) {
+            attr.with = &#39;previewable&#39;;
+          } else if (!attr.with.match(this.__previewableRE)){
+            attr.with += &#39;,previewable&#39;;
+          }
+          
+          if (children) {
+            i = children.length;
+            depth++;
+            while (i) this.__transformToPreviewMode(screenName, children[--i], depth);
+          }
+        } else {
+          // Process composition, screens and non-matching screen trees.
+          if (children) {
+            if (tag === &#39;screen&#39;) {
+              if (attr &amp;&amp; attr.name === screenName) {
+                // Explicitly include undo classes since they will get auto
+                // loaded since no tags are used.
+                children.unshift({tag:&#39;include&#39;, attr:{href:&#39;/classes/editor/undostack.dre&#39;}});
+                children.unshift({tag:&#39;include&#39;, attr:{href:&#39;/editor/undo/createlayoutundoable.dre&#39;}});
+                children.unshift({tag:&#39;include&#39;, attr:{href:&#39;/editor/undo/deletelayoutundoable.dre&#39;}});
+                children.unshift({tag:&#39;include&#39;, attr:{href:&#39;/editor/undo/createbehaviorundoable.dre&#39;}});
+                children.unshift({tag:&#39;include&#39;, attr:{href:&#39;/editor/undo/deletebehaviorundoable.dre&#39;}});
+                children.unshift({tag:&#39;include&#39;, attr:{href:&#39;/editor/undo/editorattrundoable.dre&#39;}});
+                
+                // Explicitly include previewable since it does not reside in
+                // classes and thus can&#39;t be auto loaded. This mixin is the
+                // previewer analog to editable in the editor. All instances
+                // must be &quot;previewable&quot; so they will work correctly with
+                // undo/redo and behaviors.
+                children.unshift({tag:&#39;include&#39;, attr:{href:&#39;/editor/previewable.dre&#39;}});
+                
+                // Make an undostack to execute undo/redo messages from the server.
+                children.unshift({tag:&#39;editor-undostack&#39;, attr:{id:&#39;previewer_undostack&#39;}});
+                
+                var i = children.length;
+                while (i) this.__transformToPreviewMode(screenName, children[--i], 0);
+              }
+            } else {
+              // Should process composition and screens or any other elements above
+              // and/or outside the matching screen.
+              i = children.length;
+              while (i) this.__transformToPreviewMode(screenName, children[--i]);
+            }
+          }
+        }
+      }
+    };
   };
 })</pre>
 </body>

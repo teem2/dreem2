@@ -15,13 +15,22 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific Input Text functionality. */
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='global-property-'>/** Provides an interface to platform specific Input Text functionality. */
 </span>define(function(require, exports, module) {
     var dr = require(&#39;$LIB/dr/dr.js&#39;),
         JS = require(&#39;$LIB/jsclass.js&#39;),
+        globalScope = require(&#39;$SPRITE/global.js&#39;),
         sprite = require(&#39;$SPRITE/sprite.js&#39;);
     
-    module.exports = sprite.InputText = new JS.Class(&#39;sprite.InputText&#39;, require(&#39;$SPRITE/Text.js&#39;), {
+    module.exports = sprite.InputText = new JS.Class(&#39;sprite.InputText&#39;, require(&#39;./Text.js&#39;), {
+        include: [require(&#39;$SPRITE/events/InputObservable.js&#39;)],
+        
+        
         // Life Cycle //////////////////////////////////////////////////////////////
         createPlatformObject: function(attrs) {
             var isMulti = attrs.multiline === &#39;true&#39;;
@@ -52,6 +61,110 @@
         
         get_value: function() {
             return this.platformObject.value;
+        },
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='global-method-getCaretPosition'>        /** Gets the location of the caret.
+</span>            @returns int. */
+        getCaretPosition: function() {
+            var document = globalScope.document;
+            
+            // IE Support
+            if (document.selection) {
+                var selection = document.selection.createRange();
+                selection.moveStart(&#39;character&#39;, -this.get_value().length);
+                return selection.text.length;
+            }
+            
+            return this.platformObject.selectionStart || 0;
+        },
+        
+<span id='global-method-setCaretPosition'>        /** Sets the caret and selection.
+</span>            @param start:int the start of the selection or location of the caret
+                if no end is provided.
+            @param end:int (optional) the end of the selection.
+            @returns void */
+        setCaretPosition: function(start, end) {
+            if (end === undefined || start === end) {
+                // Don&#39;t update if the current position already matches.
+                if (this.getCaretPosition() === start) return;
+                
+                end = start;
+            }
+            var elem = this.platformObject;
+            
+            if (elem.setSelectionRange) {
+                elem.setSelectionRange(start, end);
+            } else if (elem.createTextRange) {
+                var range = elem.createTextRange();
+                range.collapse(true);
+                range.moveEnd(&#39;character&#39;, end);
+                range.moveStart(&#39;character&#39;, start);
+                range.select();
+            }
+        },
+        
+<span id='global-method-setCaretToStart'>        /** Sets the caret to the start of the text input.
+</span>            @returns void */
+        setCaretToStart: function() {
+            this.setCaretPosition(0);
+        },
+        
+<span id='global-method-setCaretToEnd'>        /** Sets the caret to the end of the text input.
+</span>            @returns void */
+        setCaretToEnd: function() {
+            this.setCaretPosition(this.get_value().length);
+        },
+        
+        // Selection //
+<span id='global-method-selectAll'>        /** Selects all the text in the input element.
+</span>            @returns void */
+        selectAll: function() {
+            this.platformObject.select();
+        },
+        
+        getSelection: function() {
+            var po = this.platformObject;
+            return {
+                //startElem:po,
+                //endElem:po,
+                start:po.selectionStart,
+                end:po.selectionEnd
+            };
+        },
+        
+        getSelectedText: function() {
+            var selection = this.getSelection(),
+                value = this.get_value();
+            return value.substring(selection.start, selection.end);
+        },
+        
+        setSelection: function(selection) {
+            if (typeof selection === &#39;number&#39;) {
+                if (arguments.length === 2) {
+                    this.setCaretPosition(arguments[0], arguments[1]);
+                } else {
+                    this.setCaretPosition(selection);
+                }
+            } else {
+                if (selection) {
+                    this.setCaretPosition(selection.start, selection.end);
+                } else {
+                    this.clearSelection();
+                }
+            }
+        },
+        
+        clearSelection: function() {
+            this.setCaretPosition(0, 0);
+        },
+        
+        saveSelection: function(selection) {
+            this.__selRange = selection || this.getSelection() || this._selRange;
+        },
+        
+        restoreSelection: function() {
+            this.setSelection(this.__selRange);
         }
     });
 });

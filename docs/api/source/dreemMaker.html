@@ -15,34 +15,14 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (MIT)
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
 
- Copyright ( c ) 2014-2015 Teem2 LLC
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the &quot;Software&quot;), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
-
-Instantiates dr classes from a package JSON object.
-*/
 define(function(require, exports, module) {
   var maker = exports,
-    dr = require(&#39;$LIB/dr/dr.js&#39;)
+    dr = require(&#39;$LIB/dr/dr.js&#39;),
     JS = require(&#39;$LIB/jsclass.js&#39;),
     sprite = require(&#39;$SPRITE/sprite.js&#39;),
     acorn = require(&#39;$LIB/acorn&#39;),
@@ -50,6 +30,7 @@ define(function(require, exports, module) {
     htmlparser = require(&#39;$CORE/htmlparser.js&#39;);
 
   require(&#39;$LIB/dr/globals/GlobalError.js&#39;);
+  require(&#39;$LIB/dr/globals/GlobalClientStorage.js&#39;);
   require(&#39;$LIB/dr/globals/GlobalRequestor.js&#39;);
   require(&#39;$LIB/dr/globals/GlobalKeys.js&#39;);
   require(&#39;$LIB/dr/globals/GlobalMouse.js&#39;);
@@ -149,6 +130,11 @@ define(function(require, exports, module) {
           trying to load one screen into another.
         @returns A Compiler object. */
     proto.execute = function(rootdre, classmap, teem, parentInstance, allowNestedScreens) {
+      if (dr.ready) {
+          console.log(&#39;Preventing reinstantiation of the UI since it was already made once. This is expected during reloads triggered by file changes.&#39;);
+          return;
+      }
+      
       var errors = [],
         methods = [],
         classes = {};
@@ -214,12 +200,26 @@ define(function(require, exports, module) {
           case &#39;handler&#39;:
           case &#39;setter&#39;:
             // give the method a unique but human readable name
-            var funcName = tagName + &#39;_&#39; + attr.name + &#39;_&#39; + node._ + &#39;_&#39; + language;
-            if (parent &amp;&amp; (parent.tag === &#39;class&#39; || parent.tag === &#39;mixin&#39;)) funcName = (parent.attr &amp;&amp; parent.attr.name) + &#39;_&#39; + funcName;
+            var funcName = tagName.toUpperCase() + &#39;_&#39; + (attr.name || attr.event) + &#39;_&#39; + node.pos + &#39;_&#39; + language;
+            if (parent &amp;&amp; parent.attr) {
+                var pattr = parent.attr;
+                if (parent.tag === &#39;class&#39;) {
+                    funcName = &#39;CLASS_&#39; + pattr.name + &#39;_&#39; + funcName;
+                } else if (parent.tag === &#39;mixin&#39;) {
+                    funcName = &#39;MIXIN_&#39; + pattr.name + &#39;_&#39; + funcName;
+                } else {
+                    if (pattr.name) {
+                        funcName = &#39;NAME_&#39; + pattr.name + &#39;_&#39; + funcName;
+                    } else if (pattr.id) {
+                        funcName = &#39;ID_&#39; + pattr.id + &#39;_&#39; + funcName;
+                    }
+                }
+            }
+            funcName = funcName.split(define.SEPARATOR_REGEX).join(&#39;_&#39;).split(&#39;-&#39;).join(&#39;_&#39;);
             
             node.method_id = methods.length;
             methods.push({
-              name:funcName.split(&#39;-&#39;).join(&#39;_&#39;),
+              name:funcName,
               origin:node.pos,
               language:language,
               argStr:attr.args || &#39;&#39;,
@@ -310,6 +310,7 @@ define(function(require, exports, module) {
           dr.pkg = pkg;
           dr.teem = teem;
           dr.htmlparser = htmlparser;
+          dr.classmap = classmap;
           
           dr.ready = false;
           
@@ -361,7 +362,7 @@ define(function(require, exports, module) {
     if (isClassroot) this.__classroots.shift();
   };
 
-  maker.__walkDreemJSXML = function(node, pkg, parentInstance, allowNestedScreens) {
+  maker.__walkDreemJSXML = function(node, pkg, parentInstance, allowNestedScreens, parentIsScreen) {
     var tagName = node.tag;
     
     if (tagName.startsWith(&#39;$&#39;)) {
@@ -392,6 +393,10 @@ define(function(require, exports, module) {
     
     var klass = this.lookupClass(tagName, pkg);
     if (klass) {
+      if (typeof klass !== &#39;function&#39;) {
+        // More info on a rare bug that happens in the editor when trying to preview sometimes
+        console.log(&#39;Class is not a function&#39;, tagName, klass, pkg);
+      }
       var compiledMethods = pkg.compiledMethods,
         attrs = this.__normalizeAttrs(node.attr || {}),
         mixins = this.__extractMixins(attrs, pkg),
@@ -448,7 +453,7 @@ define(function(require, exports, module) {
       
       // Root Nodes need a mixin that indicates this
       var isDescendantOfNode = klass.isDescendantOf(dr.Node);
-      if (!parentInstance &amp;&amp; isDescendantOfNode) {
+      if ((!parentInstance || parentIsScreen) &amp;&amp; isDescendantOfNode) {
         if (klass.isDescendantOf(dr.View)) {
           mixins.push(dr.SizeToViewport);
         } else {
@@ -469,7 +474,7 @@ define(function(require, exports, module) {
       
       if (isScreen &amp;&amp; instanceChildrenJson) {
         for (i = 0, len = instanceChildrenJson.length; len &gt; i;) {
-          this.__walkDreemJSXML(instanceChildrenJson[i++], pkg, parentInstance, allowNestedScreens);
+          this.__walkDreemJSXML(instanceChildrenJson[i++], pkg, parentInstance, allowNestedScreens, isScreen);
         }
       }
     }
@@ -535,7 +540,7 @@ define(function(require, exports, module) {
               klassDeclaredAttrValues = {};
               klassDeclaredAttrMeta = {};
             }
-            klassDeclaredAttrMeta[childNode.attr.name] = childNode.attr;
+            if (childNode.attr.allocation !== &#39;class&#39;) klassDeclaredAttrMeta[childNode.attr.name] = childNode.attr;
             this.__processAttribute(childNode, klassDeclaredAttrs, klassDeclaredAttrValues, staticBody);
             break;
           default:

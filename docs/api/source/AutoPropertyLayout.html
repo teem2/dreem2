@@ -15,7 +15,13 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='global-property-'>/** A private layout used by the special value for width/height of &#39;auto&#39;.
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+
+<span id='global-property-'>/** A private layout used by the special value for width/height of &#39;auto&#39;.
 </span>    This layout sizes the view to fit its child views. */
 define(function(require, exports, module) {
     var dr = require(&#39;$LIB/dr/dr.js&#39;),
@@ -25,10 +31,7 @@ define(function(require, exports, module) {
         // Life Cycle //////////////////////////////////////////////////////////////
         doAfterAdoption: function() {
             this.callSuper();
-            
-            parent = this.parent;
-            this.listenTo(parent, &#39;onborder&#39;, &#39;update&#39;);
-            this.listenTo(parent, &#39;onpadding&#39;, &#39;update&#39;);
+            this.listenTo(this.parent, &#39;onborder,onpadding&#39;, &#39;update&#39;);
         },
         
         // Attributes //////////////////////////////////////////////////////////////
@@ -38,24 +41,18 @@ define(function(require, exports, module) {
         // Methods /////////////////////////////////////////////////////////////////
         startMonitoringSubview: function(view) {
             if (this.axis === &#39;x&#39;) {
-                this.listenTo(view, &#39;onboundsx&#39;, &#39;update&#39;);
-                this.listenTo(view, &#39;onboundswidth&#39;, &#39;update&#39;);
+                this.listenTo(view, &#39;onvisible,onboundsx,onboundswidth&#39;, &#39;update&#39;);
             } else {
-                this.listenTo(view, &#39;onboundsy&#39;, &#39;update&#39;);
-                this.listenTo(view, &#39;onboundsheight&#39;, &#39;update&#39;);
+                this.listenTo(view, &#39;onvisible,onboundsy,onboundsheight&#39;, &#39;update&#39;);
             }
-            this.listenTo(view, &#39;onvisible&#39;, &#39;update&#39;);
         },
         
         stopMonitoringSubview: function(view) {
             if (this.axis === &#39;x&#39;) {
-                this.stopListening(view, &#39;onboundsx&#39;, &#39;update&#39;);
-                this.stopListening(view, &#39;onboundswidth&#39;, &#39;update&#39;);
+                this.stopListening(view, &#39;onvisible,onboundsx,onboundswidth&#39;, &#39;update&#39;);
             } else {
-                this.stopListening(view, &#39;onboundsy&#39;, &#39;update&#39;);
-                this.stopListening(view, &#39;onboundsheight&#39;, &#39;update&#39;);
+                this.stopListening(view, &#39;onvisible,onboundsy,onboundsheight&#39;, &#39;update&#39;);
             }
-            this.stopListening(view, &#39;onvisible&#39;, &#39;update&#39;);
         },
         
         update: function() {

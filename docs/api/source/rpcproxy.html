@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 <span id='RunMonitor'>/**
 </span> * @class RunMonitor {Internal}
  * RunMonitor class executes ourselves as a subprocess, receives the dependency file names
@@ -98,18 +99,23 @@ define(function(require, exports, module) {
   RpcProxy.bindSetAttribute = function(object, rpcid, bus) {
     // ok lets now wire our mod.vdom.onSetAttribute
     object._onAttributeSet = function(key, value) {
+
       // lets broadcast
       if (!RpcProxy.isJsonSafe(value)) {
         console.log(&#39;setAttribute not JSON safe &#39; + name + &#39;.&#39; + key);
         return;
       }
+
       var msg = {
         type:&#39;attribute&#39;,
         rpcid:rpcid,
         attribute:key,
         value: value
       };
+
+      // lets keep this attribute set as wel for new joins.
       if (bus.broadcast) {
+        bus.attribute_sets[rpcid+&#39;.&#39;+key] = msg
         bus.broadcast(msg);
       } else {
         bus.send(msg);
@@ -168,7 +174,7 @@ define(function(require, exports, module) {
       if (typeof prop == &#39;object&#39;) {
         if (prop.kind == &#39;attribute&#39;) {
           // lets make an attribute
-          obj.__attribute(key, prop.type);
+          obj.__attribute(key, prop.type, prop.value);
         } else if (prop.kind == &#39;method&#39;) {
           // its a method, lets make an rpc interface for it
           RpcProxy.defineMethod(obj, key);
@@ -177,7 +183,7 @@ define(function(require, exports, module) {
         RpcProxy.defineProp(obj, key, prop);
       }
     }
-    
+    if(rpcpromise) RpcProxy.bindSetAttribute(obj, rpcid, rpcpromise.sendbus)
     return obj;
   };
 
@@ -188,7 +194,7 @@ define(function(require, exports, module) {
       if (object.__lookupGetter__(key)) { // we iz attribute
         var attr = object[&#39;on_&#39; + key];
         if (attr) {
-          def[key] = {kind:&#39;attribute&#39;, type:attr.type};
+          def[key] = {kind:&#39;attribute&#39;, type:attr.type, value:attr.value};
         }
       } else {
         var prop = object[key];
