@@ -1,0 +1,118 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+<class name="datascanner" extends="node">
+
+  <attribute name="patterns" type="expression" value="{}"></attribute>
+
+  <method name="generateType" args="obj">
+    if (obj.__type) {
+      return obj.__type
+    }
+
+    var type, sep;
+
+    if (Array.isArray(obj)) {
+      var generated = [];
+      for (var i=0; i < obj.length;i++) {
+        generated.push(this.generateType(obj[i]))
+      }
+
+      generated = generated.filter(function (item, pos) {return generated.indexOf(item) == pos});
+
+      type = '[' + generated.join(',') + ']';
+
+    } else if (typeof(obj) === 'object') {
+      type = '{'
+      sep = ''
+      for (var a in obj) {
+        type = type + sep + a + ":" + this.generateType(obj[a])
+        sep = ','
+      }
+      type = type + '}'
+
+    } else if (typeof(obj) === 'string') {
+      type = 's';
+    } else if (typeof(obj) === 'number') {
+      type = 'n';
+    } else if (typeof(obj) === 'boolean') {
+      type = 'b';
+    }
+
+    obj.__type = type;
+
+    return type;
+  </method>
+
+  <method name="generateEdges" args="obj">
+    var types = [];
+    var edge = true;
+
+    if (Array.isArray(obj)) {
+      for (var i=0; i < obj.length;i++) {
+        var v = obj[i];
+        var vtype = typeof(v);
+        if (vtype !== 'string' && vtype !== 'number' && vtype !== 'boolean') {
+          edge = false;
+        }
+        Array.prototype.push.apply(types, this.generateEdges(v))
+      }
+      types.push(this.generateType(obj))
+    } else if (typeof(obj) === 'object') {
+      for (var k in obj) {
+        if (obj.hasOwnProperty(k) && !k.toString().startsWith('__')) {
+          var v = obj[k];
+          var vtype = typeof(v);
+          if (vtype !== 'string' && vtype !== 'number' && vtype !== 'boolean') {
+            edge = false;
+          }
+          Array.prototype.push.apply(types, this.generateEdges(v))
+        }
+      }
+      types.push(this.generateType(obj))
+    }
+
+    obj.__edge = edge;
+
+    return types.filter(function (item, pos) {return types.indexOf(item) == pos});
+
+  </method>
+
+  <handler event="oninit">
+    var leafs = {
+      a:1,
+      b:'b',
+      c:[1,2,3],
+      c3:['a','b', 3],
+      c2:[1,2,3,'a','b', {e:'f'}],
+      d:['one'],
+      e:{a:1,b:"b"},
+      f:{a:1,b:"b"},
+      g:{a:1, b:"b", c:{k:'f'}, d:{k:'f'}}
+    }
+
+    console.log('..>', this.generateEdges(leafs))
+    console.dir(leafs)
+    console.log('..>', this.generateEdges(leafs))
+  </handler>
+
+</class>
