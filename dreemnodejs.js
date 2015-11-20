@@ -376,8 +376,6 @@ console.log('main_file', main_file);
         }
         
         console.log("** loading Dali")
-        global.dali = require('./dalinode/dali')(options);
-        console.log("** loading Dali")
 	try {
 	    var exists = fs.statSync('/etc/tizen-release').isFile();
 	    console.log('Running Tizen, requiring dali from: /usr/lib/node_modules/npm/node_modules/dali/dali')
