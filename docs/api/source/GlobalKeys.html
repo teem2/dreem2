@@ -15,7 +15,13 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides global keyboard events. Registered with dr.global as &#39;keys&#39;.
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+
+<span id='global-property-'>/** Provides global keyboard events. Registered with dr.global as &#39;keys&#39;.
 </span>    
     Also works with GlobalFocus to navigate the focus hierarchy when the 
     focus traversal keys are used.
@@ -134,6 +140,7 @@ define(function(require, exports, module) {
     var dr = require(&#39;$LIB/dr/dr.js&#39;),
         JS = require(&#39;$LIB/jsclass.js&#39;),
         GlobalFocus = require(&#39;./GlobalFocus.js&#39;),
+        GlobalIdle = require(&#39;./GlobalIdle.js&#39;),
         GlobalKeysSprite = require(&#39;$SPRITE/GlobalKeys.js&#39;),
         GlobalRegistry = require(&#39;$LIB/dr/globals/Global.js&#39;);
     
@@ -151,6 +158,7 @@ define(function(require, exports, module) {
             this.set_sprite(this.createSprite());
             
             this.listenTo(GlobalRegistry.focus, &#39;onfocused&#39;, &#39;__handleFocused&#39;);
+            this.listenTo(GlobalRegistry.idle, &#39;onenvironmenthidden&#39;, &#39;__handleEnvironmentHidden&#39;);
             
             this.sprite.__listenToDocument();
             
@@ -231,6 +239,11 @@ define(function(require, exports, module) {
 <span id='global-method-__handleFocused'>        /** @private */
 </span>        __handleFocused: function(platformEvent) {
             this.sprite.handleFocusChange(platformEvent);
+        },
+        
+<span id='global-method-__handleEnvironmentHidden'>        /** @private */
+</span>        __handleEnvironmentHidden: function(platformEvent) {
+            this.sprite.handleEnvironmentHidden(platformEvent);
         }
     });
 });

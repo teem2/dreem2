@@ -32,6 +32,18 @@
     * @attribute {Boolean} hideonblur
     * If true this panel will be hidden when a focus traverses outside the panel.
     */
+/**
+    * @attribute {Boolean} hideonwheel
+    * If true this panel will be hidden when a wheel event occurs.
+    */
+/** @private */
+/**
+    * @method doWheelOutside
+    * Called when a wheel occurs outside the floating panel. The default
+    * behavior is to hide the panel. This gives subclasses a chance to 
+    * provide different behavior.
+    * @returns {void}
+    */
 /** @private */
 /**
     * @method doMouseDownOutside

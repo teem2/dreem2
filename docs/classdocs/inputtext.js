@@ -54,4 +54,8 @@
     * @event onrows
     * Fired the rows attribute changes.
     * @param {number} The number of rows displayed for multiline text input.
+    *
+    * @event onwrap
+    * Fired the wrap attribute changes.
+    * @param {string} The wrap behavior for multiline text input.
     */

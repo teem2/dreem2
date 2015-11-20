@@ -29,3 +29,13 @@
     * @overrides
     * Does all the contained undoables.
     */
+/**
+    * @method serialize
+    * Builds a serialized object from each of the child undoables.
+    * @overrides
+    */
+/**
+    * @method deserialize
+    * Deserializes each child undoable to rebuild this compound undoable.
+    * @overrides
+    */

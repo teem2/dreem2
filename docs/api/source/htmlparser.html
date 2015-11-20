@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 
 <span id='parser-HTMLParser'>/**
 </span> * @class parser.HTMLParser {Internal}
@@ -44,52 +45,61 @@ define(function(require, exports, module){
 	 * @param {Object} node A node the parser outputs
 	 * @param {String} spacing The indentation character(s) to use
 	 */
-	HTMLParser.reserialize = function(node, spacing, indent){
-		if(spacing === undefined) spacing = &#39;\t&#39;
-		var ret = &#39;&#39;
-		var child = &#39;&#39;
-		var textonly = false;
-		if(node.child){
-			for(var i = 0, l = node.child.length; i&lt;l; i++){
-				var sub = node.child[i]
-				textonly = sub.tag === &#39;$text&#39;
-				child += this.reserialize(sub, spacing, indent === undefined?&#39;&#39;: indent + spacing)
+	HTMLParser.reserialize = function(node, spacing, indent) {
+		var child = &#39;&#39;,
+			textonly = false;
+		if (node.child) {
+			var i = 0, len = node.child.length, sub;
+			for (; i &lt; len;) {
+				sub = node.child[i++];
+				textonly = sub.tag === &#39;$text&#39;;
+				child += this.reserialize(sub, spacing, indent === undefined ? &#39;&#39; : indent + spacing);
 			}
 		}
-		if(!node.tag) return child
-		if(!node.tag.startsWith(&#39;$&#39;)){
-			ret += indent + &#39;&lt;&#39; + node.tag
-			var attr = node.attr
-			if(attr) {
-				for(var k in attr){
-					var val = attr[k]
-					if(ret[ret.length - 1] != &#39; &#39;) ret += &#39; &#39;
-					ret += k
-					var delim = &quot;&#39;&quot;
-					if(val !== 1){
-						if(typeof val === &#39;string&#39; &amp;&amp; val.indexOf(delim) !== -1) delim = &#39;&quot;&#39;
-						ret += &#39;=&#39; + delim + val + delim
+		
+		var tag = node.tag;
+		if (tag) {
+			if (tag.startsWith(&#39;$&#39;)) {
+				if (tag === &#39;$text&#39;) {
+					return node.value;
+				} else if (tag === &#39;$cdata&#39;) {
+					return indent + &#39;&lt;![CDATA[&#39; + node.value + &#39;]]&gt;\n&#39;;
+				} else if (tag === &#39;$comment&#39;) {
+					if (node.value.charAt(0) === &#39;\n&#39;) {
+						return node.value.substring(1) + &#39;--&gt;\n&#39;;
+					} else {
+						return node.value + &#39;--&gt;\n&#39;;
+					}
+				} else if (tag === &#39;$root&#39;) {
+					return child;
+				}
+				return &#39;&#39;;
+			}
+			
+			var ret = indent + &#39;&lt;&#39; + tag,
+				attr = node.attr;
+			if (attr) {
+				var delim, attrName, attrValue;
+				for (attrName in attr) {
+					attrValue = attr[attrName];
+					if (ret[ret.length - 1] !== &#39; &#39;) ret += &#39; &#39;;
+					ret += attrName;
+					
+					delim = &quot;&#39;&quot;;
+					if (attrValue !== 1) {
+						if (typeof attrValue === &#39;string&#39; &amp;&amp; attrValue.indexOf(delim) !== -1) delim = &#39;&quot;&#39;;
+						ret += &#39;=&#39; + delim + attrValue + delim;
 					}
 				}
 			}
-
-			if(child) {
-				if (textonly) {
-					ret += &#39;&gt;&#39; + child + &#39;&lt;/&#39; + node.tag + &#39;&gt;\n&#39;
-				} else {
-					ret += &#39;&gt;\n&#39; + child + indent + &#39;&lt;/&#39; + node.tag + &#39;&gt;\n&#39;
-				}
-			} else {
-				ret += &#39;/&gt;\n&#39;
+			
+			if (child) {
+				if (textonly) return ret + &#39;&gt;&#39; + child + &#39;&lt;/&#39; + tag + &#39;&gt;\n&#39;;
+				return ret + &#39;&gt;\n&#39; + child + indent + &#39;&lt;/&#39; + tag + &#39;&gt;\n&#39;;
 			}
+			return ret + &#39;/&gt;\n&#39;;
 		}
-		else{
-			if(node.tag == &#39;$text&#39;) ret += node.value
-			else if(node.tag == &#39;$cdata&#39;) ret += indent + &#39;&lt;![CDATA[&#39;+node.value+&#39;]]&gt;\n&#39;
-			else if(node.tag == &#39;$comment&#39;) ret += indent + node.value+&#39;--&gt;\n&#39;
-			else if(node.tag == &#39;$root&#39;) ret += child
-		}
-		return ret
+		return child;
 	}
 
 	function body(){
@@ -102,7 +112,7 @@ define(function(require, exports, module){
 
 		/* Internal create a node */
 		this.createNode = function(tag, charpos){
-			return {tag:tag, pos: charpos}
+			return {tag:tag, pos:charpos}
 		} 
 
 		/* Internal append an error message*/
@@ -312,6 +322,8 @@ define(function(require, exports, module){
 		 *
 		 */
 		this.parse = function(source){
+			// Windows \r messes up parsing
+			source = source.replace(/\r/g,&#39;&#39;)
 			// lets create some state
 			var root = this.node = this.createNode(&#39;$root&#39;,0)
 
@@ -444,6 +456,7 @@ define(function(require, exports, module){
 			return root
 		}
 	}
-})</pre>
+})
+</pre>
 </body>
 </html>

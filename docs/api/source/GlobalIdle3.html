@@ -15,34 +15,40 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific Idle functionality. */
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='global-property-'>/** Provides an interface to platform specific Idle functionality. */
 </span>define(function(require, exports, module) {
     var dr = require(&#39;$LIB/dr/dr.js&#39;),
         JS = require(&#39;$LIB/jsclass.js&#39;),
-        global = require(&#39;$SPRITE/global.js&#39;),
-        dali = require(&#39;$SPRITE/dali.js&#39;);
-    require(&#39;./sprite.js&#39;);
+        globalScope = require(&#39;$SPRITE/global.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
     
-    module.exports = new JS.Class(&#39;sprite.GlobalIdle&#39;, {
+    module.exports = sprite.GlobalIdle = new JS.Class(&#39;sprite.GlobalIdle&#39;, {
         // Constructor /////////////////////////////////////////////////////////////
 <span id='global-method-initialize'>        /** The standard JSClass initializer function. Subclasses should not
 </span>            override this function.
             @param attrs:object A map of attribute names and values.
             @returns void */
-        
         initialize: function(view, attrs) {
             this.view = view;
-            dali.StartIdleTick(global.callAllIdleFunctions);
+            
+            
             // Setup callback function
             var self = this;
             this.__event = {};
             this.__doIdle = function doIdle(time) {
                 var lastTime = self.lastTime;
                 if (lastTime !== -1) {
-                    time = Math.round(time);
+                    time = Math.round(new Date().getTime());
                     var event = self.__event;
                     event.delta = time - lastTime;
                     event.time = time;
+                    //console.log(event.delta, time);
+                    //console.log(&quot;idle!&quot;);
                     view.sendEvent(&#39;onidle&#39;, event);
                 }
                 self.lastTime = time;
@@ -52,12 +58,16 @@
         
         // Methods /////////////////////////////////////////////////////////////////
         start: function() {
-            this.lastTime = -1;
-            this.__timerId = global.SetupIdleCallback(this.__doIdle);
+			this.stop();
+            this.lastTime = new Date().getTime();
+			this.theTimer = setInterval(this.__doIdle.bind(this), 20)
         },
         
         stop: function() {
-            global.CancleIdleCallback(this.__timerId);
+			if (this.theTimer) {
+				clearInterval(this.theTimer);
+				this.theTimer = null;
+			}
         }
     });
 });

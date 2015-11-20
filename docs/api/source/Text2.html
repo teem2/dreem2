@@ -15,91 +15,126 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='global-property-'>/** Provides an interface to platform specific Text functionality. */
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='global-property-'>/** Provides an interface to platform specific Text functionality. */
 </span>define(function(require, exports, module) {
-    var JS = require(&#39;$LIB/jsclass.js&#39;),
-        global= require(&#39;$SPRITE/global.js&#39;),
-        View = require(&#39;./View.js&#39;);
-    
-    module.exports = new JS.Class(&#39;sprite.Text&#39;, View, {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;),
+        globalScope = require(&#39;$SPRITE/global.js&#39;),
+        Color = require(&#39;$LIB/dr/model/Color.js&#39;),
+        sprite = require(&#39;$SPRITE/sprite.js&#39;);
+    module.exports = sprite.Text = new JS.Class(&#39;sprite.Text&#39;, require(&#39;./View.js&#39;), {
         // Life Cycle //////////////////////////////////////////////////////////////
+<span id='global-method-initialize'>        /** @overrides */
+</span>        initialize: function(view, attrs) {
+            this.callSuper(view, attrs);
+            this.styleObj.color = &quot;black&quot;;
+            // On chrome the text objects need to be informed when the fonts on 
+            // the page have finally finished loading so they can recalculate 
+            // their proper size
+            var fonts = globalScope.fonts;
+            if (fonts &amp;&amp; fonts.status !== &#39;loaded&#39; &amp;&amp; fonts.ready &amp;&amp; fonts.ready.constructor == Promise) {
+                var self = this;
+                fonts.ready.then(function() {
+                    self.view.sizeToPlatform()
+                });
+            }
+        },
         createPlatformObject: function(attrs) {
             var elem = this.callSuper(attrs),
-                s = elem.style;
+            s = elem.style;
             s.fontFamily = &quot;font-family:mission-gothic, &#39;Helvetica Neue&#39;, Helvetica, Arial, sans-serif&quot;;
             s.fontSize = &quot;20px&quot;;
             
+            
+            // The following two properties make text look more alike 
+            // between chrome and firefox.
+            s.lineHeight = &#39;120%&#39;;
+            s.fontKerning = &#39;normal&#39;;
             return elem;
         },
-         
         // Attributes //////////////////////////////////////////////////////////////
         set_text: function(v) {
             if (v != null) {
-                var platformObject = this.platformObject
-                platformObject.setText(v)
+                var platformObject = this.platformObject,
+                    childNodes = platformObject.childNodes,
+                    i = 0,
+                    len = childNodes.length,
+                    child;
+
+                for (; len &gt; i;) {
+                    child = childNodes[i++];
+                    if (child &amp;&amp; child.nodeType === 3) platformObject.removeChild(child);
+                }
+                var newchild = globalScope.createTextNode(v);
+                platformObject.appendChild(newchild);
+                this.set_color(this.styleObj.color);
+                this.set_fontsize(this.styleObj.fontSize);
             }
             return v;
         },
-        
         set_fontsize: function(v) {
             this.styleObj.fontSize = v;
-            this.platformObject.setFontSize(v)
-            return v;
-        },
-        
-        set_fontfamily: function(v) {
-            this.styleObj.fontFamily = v;
-            this.platformObject.setFontFamily(v)
-            return v;
-        },
-        
-        set_bold: function(v) {
-            this.styleObj.fontWeight = v ? &#39;bold&#39; : &#39;normal&#39;;
-            this.platformObject.setFontStyle(v ? &#39;bold&#39; : &#39;normal&#39;);
+            
+            this.platformObject.setFontSize(v);
+            this.performFuncOnAllChildren(function(child) {
+                child.setFontSize(v)
+            }.bind(this));
+
             
             return v;
         },
-        
+        set_fontfamily: function(v) {
+            this.styleObj.fontFamily = v;
+            return v;
+        },
+        set_bold: function(v) {
+            this.styleObj.fontWeight = v ? &#39;bold&#39; : &#39;normal&#39;;
+            return v;
+        },
         set_italic: function(v) {
             this.styleObj.fontStyle = v ? &#39;italic&#39; : &#39;normal&#39;;
             return v;
         },
-        
         set_smallcaps: function(v) {
             this.styleObj.fontVariant = v ? &#39;small-caps&#39; : &#39;normal&#39;;
             return v;
         },
-        
         set_underline: function(v) {
             this.styleObj.textDecoration = v ? &#39;underline&#39; : &#39;none&#39;;
             return v;
         },
-        
         set_strike: function(v) {
             this.styleObj.textDecoration = v ? &#39;line-through&#39; : &#39;none&#39;;
             return v;
         },
-        
         set_ellipsis: function(v) {
             this.__ellipsis = v;
             this.styleObj.textOverflow = v ? &#39;ellipsis&#39; : &#39;clip&#39;;
             this.__updateOverflow();
             return v;
         },
-        
         set_multiline: function(v) {
             this.__isMultiline = v;
             this.__updateMultiline();
             return v;
         },
-        
         set_width: function(v) {
             this.__isAutoWidth = v === &#39;auto&#39;;
             this.__updateMultiline();
             return this.callSuper(v);
         },
-        
-        
+        set_color: function(c) {
+            this.styleObj.color = c;
+            var colorObj = Color.makeColorFromHexOrNameString(c);
+            this.performFuncOnAllChildren(function(child) {
+                child.setFontColor([colorObj.red / 255.0, colorObj.green / 255.0, colorObj.blue / 255.0, 1.0])
+            }.bind(this));
+        },
         // Methods /////////////////////////////////////////////////////////////////
 <span id='global-method-__updateMultiline'>        /** @private */
 </span>        __updateMultiline: function() {
@@ -111,7 +146,6 @@
             }
             this.styleObj.whiteSpace = whitespace;
         },
-        
 <span id='global-method-__updateOverflow'>        /** @overrides */
 </span>        __updateOverflow: function() {
             if (this.__ellipsis) {
@@ -120,21 +154,30 @@
                 this.callSuper()
             }
         },
-        
         getText: function() {
             // Firefox doesn&#39;t support innerText and textContent gives us more than
             // we want. Instead, walk the dom children and concat all the text nodes.
             // The nodes get trimmed since line feeds and other junk whitespace will
             // show up as text nodes.
-            var child = this.platformObject.firstChild, texts = [];
+            var child = this.platformObject.firstChild,
+                texts = [];
             while (child) {
                 if (child.nodeType === 3) texts.push(child.data.trim());
                 child = child.nextSibling;
             }
             return texts.join(&quot;&quot;)
+        },
+        performFuncOnAllChildren: function(f) {
+
+            for (i in  this.platformObject.childNodes) {
+                var child = this.platformObject.childNodes[i];
+                if (child.nodeType === 3) {
+                    f(child);
+                } 
+                child = child.nextSibling;
+            }
         }
     });
-});
-</pre>
+});</pre>
 </body>
 </html>

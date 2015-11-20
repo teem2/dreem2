@@ -477,9 +477,31 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n323" name="n323">323</a>
 <a href="#n324" name="n324">324</a>
 <a href="#n325" name="n325">325</a>
+<a href="#n326" name="n326">326</a>
+<a href="#n327" name="n327">327</a>
+<a href="#n328" name="n328">328</a>
+<a href="#n329" name="n329">329</a>
+<strong><a href="#n330" name="n330">330</a></strong>
+<a href="#n331" name="n331">331</a>
+<a href="#n332" name="n332">332</a>
+<a href="#n333" name="n333">333</a>
+<a href="#n334" name="n334">334</a>
+<a href="#n335" name="n335">335</a>
+<a href="#n336" name="n336">336</a>
+<a href="#n337" name="n337">337</a>
+<a href="#n338" name="n338">338</a>
+<a href="#n339" name="n339">339</a>
+<strong><a href="#n340" name="n340">340</a></strong>
+<a href="#n341" name="n341">341</a>
+<a href="#n342" name="n342">342</a>
+<a href="#n343" name="n343">343</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
    * @mixin dr.draggable {UI Behavior}
    * Makes an dr.View draggable via the mouse.
@@ -520,27 +542,36 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     */--&gt;</span>
   <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">isdraggable</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">true</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">isdraggable</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
-    if (this.setActual('isdraggable', v, 'boolean', true)) {
-      var func;
-      if (this.isdraggable) {
-        func = this.listenToPlatform.bind(this);
-      } else if (this.initing === false) {
-        func = this.stopListeningToPlatform.bind(this);
-      }
+    if (this.setActual('isdraggable', v, 'boolean', true)) this.__updateDraggability();
+  <span class="tag">&lt;/setter&gt;</span>
+
+  <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ondisabled</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">method</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__updateDraggability</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * @method __updateDraggability
+    * @private
+    * Configures the view to be draggable or not.
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__updateDraggability</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    var func;
+    if (this.isdraggable <span class="error">&amp;</span><span class="error">&amp;</span> !this.disabled) {
+      func = this.listenToPlatform.bind(this);
+    } else if (this.initing === false) {
+      func = this.stopListeningToPlatform.bind(this);
+    }
+    
+    if (func) {
+      var dvs = this.getDragViews();
+      if (!Array.isArray(dvs)) dvs = [dvs];
       
-      if (func) {
-        var dvs = this.getDragViews();
-        if (!Array.isArray(dvs)) dvs = [dvs];
-        
-        var dragview, i = dvs.length;
-        while (i) {
-          dragview = dvs[--i];
-          func(dragview, 'onmousedown', '__doMouseDown');
-          func(dragview, 'oncontextmenu', '__doContextMenu');
-        }
+      var dragview, i = dvs.length;
+      while (i) {
+        dragview = dvs[--i];
+        func(dragview, 'onmousedown', '__doMouseDown');
+        func(dragview, 'oncontextmenu', '__doContextMenu');
       }
     }
-  <span class="tag">&lt;/setter&gt;</span>
+  <span class="tag">&lt;/method&gt;</span>
 
   <span class="comment">&lt;!--/**
     * @attribute {Boolean} isdragging
@@ -648,6 +679,11 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 
   <span class="comment">&lt;!--/** @private */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__doMouseDown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">event</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    var absPosition = this.getAbsolutePosition();
+    this.__initAbsLocX = absPosition.x;
+    this.__initAbsLocY = absPosition.y;
+    this.__initMouseX = event.x;
+    this.__initMouseY = event.y;
     this.__initLocX = this.x;
     this.__initLocY = this.y;
     this.draginitx = event.x - this.x;

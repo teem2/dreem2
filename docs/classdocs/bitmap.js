@@ -1,7 +1,7 @@
 /**
     * @class dr.bitmap {UI Components}
     * @extends dr.view
-    * Loads an image from a URL.
+    * Loads an image from a URL. 
     *
     *     @example
     *     <bitmap src="../api-examples-resources/shasta.jpg" width="230" height="161"></bitmap>
@@ -27,10 +27,14 @@
 /**
       * @attribute {String} [stretches=false]
       * How the image is scaled to the size of the view.
-      * Supported values are 'true', 'false', 'scale'.
-      * false will scale the image to completely fill the view, but may obscure parts of the image.
-      * true will stretch the image to fit the view.
-      * scale will scale the image so it visible within the view, but the image may not fill the entire view.
+      * Supported values are 'true', 'false', 'scale' and 'none'.
+      * "false" will scale the image to completely fill the view, but may 
+      * obscure parts of the image.
+      * "true" will stretch the image to fit the view.
+      * "scale" will scale the image so it visible within the view, but the 
+      * image may not fill the entire view.
+      * "none" will display the image at its natural size but without resizing 
+      * the view as the naturalsize attribute does.
       */
 /**
       * @attribute {Boolean} [naturalsize=false]
@@ -49,3 +53,8 @@
     *   x,y  The coordinates of the upper-left hand corner of the image
     *   w,h  The width and height of the window to display.
     */
+/**
+        * @method isLeaf
+        * @overrides
+        * Bitmap views do not support subviews.
+        */

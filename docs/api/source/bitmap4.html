@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-bitmap'>/**
+</span>    * @class dr.bitmap {UI Components}
+    * @extends dr.view
+    * Loads an image from a URL. 
+    *
+    *     @example
+    *     &lt;bitmap src=&quot;../api-examples-resources/shasta.jpg&quot; width=&quot;230&quot; height=&quot;161&quot;&gt;&lt;/bitmap&gt;
+    *
+    * Stretch an image to fill the entire view.
+    *     @example
+    *     &lt;bitmap src=&quot;../api-examples-resources/shasta.jpg&quot; width=&quot;300&quot; height=&quot;150&quot; stretches=&quot;true&quot;&gt;&lt;/bitmap&gt;
+    *
+    */
+<span id='dr-bitmap-attribute-src'>/**
+</span>      * @attribute {String} [src=&#39;&#39;]
+      * The URL of the bitmap file to load.
+      */
+<span id='dr-bitmap-event-onload'>/**
+</span>      * @event onload 
+      * Fired when the bitmap is loaded
+      * @param {Object} size An object containing the width and height
+      */
+<span id='dr-bitmap-event-onerror'>/**
+</span>      * @event onerror 
+      * Fired when there is an error loading the bitmap
+      */
+<span id='dr-bitmap-attribute-stretches'>/**
+</span>      * @attribute {String} [stretches=false]
+      * How the image is scaled to the size of the view.
+      * Supported values are &#39;true&#39;, &#39;false&#39;, &#39;scale&#39; and &#39;none&#39;.
+      * &quot;false&quot; will scale the image to completely fill the view, but may 
+      * obscure parts of the image.
+      * &quot;true&quot; will stretch the image to fit the view.
+      * &quot;scale&quot; will scale the image so it visible within the view, but the 
+      * image may not fill the entire view.
+      * &quot;none&quot; will display the image at its natural size but without resizing 
+      * the view as the naturalsize attribute does.
+      */
+<span id='dr-bitmap-attribute-naturalsize'>/**
+</span>      * @attribute {Boolean} [naturalsize=false]
+      * If set to true the bitmap will be sized to the width/height of the
+      * bitmap data in pixels.
+      */
+<span id='dr-bitmap-attribute-repeat'>/**
+</span>      * @attribute {String} [repeat=&#39;no-repeat&#39;]
+      * Determines if the image will be repeated within the bounds.
+      * Supported values are &#39;no-repeat&#39;, &#39;repeat&#39;, &#39;repeat-x&#39; and &#39;repeat-y&#39;.
+      */
+<span id='dr-bitmap-attribute-window'>/**
+</span>    * @attribute {String} [window=&#39;&#39;]
+    * A window (section) of the image is displayed by specifying four,
+    * comma-separated values:
+    *   x,y  The coordinates of the upper-left hand corner of the image
+    *   w,h  The width and height of the window to display.
+    */
+<span id='dr-bitmap-method-isLeaf'>/**
+</span>        * @method isLeaf
+        * @overrides
+        * Bitmap views do not support subviews.
+        */
+</pre>
+</body>
+</html>

@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
- */
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 <span id='PluginLoader'>/**
 </span> * @class PluginLoader {Internal}
  * Reads plugins and injects them into compositins when requested.
@@ -46,19 +47,25 @@ define(function(require, exports, module) {
 
         this.__findPlugins = function() {
             var pluginDirs = this.args[&#39;-plugin&#39;];
+            if (!pluginDirs) {
+                pluginDirs = []
+            }
             if (!Array.isArray(pluginDirs)) {
                 pluginDirs = [pluginDirs]
             }
 
             var errors = [];
             for (var i=0;i&lt;pluginDirs.length;i++) {
-                var dir = path.resolve(pluginDirs[i]);
-                if (fs.existsSync(dir + &#39;/index.dre&#39;)) {
-                    if (!define[&#39;PLUGIN&#39;]) {
-                        define[&#39;PLUGIN&#39;] = [];
+                var pdir = pluginDirs[i];
+                if (pdir) {
+                    var dir = path.resolve(pdir);
+                    if (fs.existsSync(dir + &#39;/index.dre&#39;)) {
+                        if (!define[&#39;PLUGIN&#39;]) {
+                            define[&#39;PLUGIN&#39;] = [];
+                        }
+                        define[&#39;PLUGIN&#39;].push(dir + &#39;/node_modules/&#39;);
+                        this.__loadPlugin(dir, errors);
                     }
-                    define[&#39;PLUGIN&#39;].push(dir + &#39;/node_modules/&#39;);
-                    this.__loadPlugin(dir, errors);
                 }
             }
 

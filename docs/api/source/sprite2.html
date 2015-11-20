@@ -15,25 +15,38 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='global-property-'>/** Common functions for the sprite package. */
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='global-property-'>/** Common functions for the sprite package. */
 </span>define(function(require, exports, module) {
     var dr = require(&#39;$LIB/dr/dr.js&#39;),
         JS = require(&#39;$LIB/jsclass.js&#39;),
-        global = require(&#39;$SPRITE/global.js&#39;);
+        globalScope = require(&#39;$SPRITE/global.js&#39;);
     
     var sprite = module.exports = dr.sprite = {
-        platform: {
-            prefix:{css :&quot;&quot;},
-            name:&#39;dali&#39;
-        },
-        
+       
         storeGlobal: function(newId, oldId, obj) {
             var dict = dr.IDdictionary;
-            if (dict[oldId] === obj) delete dict[oldId]
-            if (newId) dict[newId] = obj;
+
+            console.log(&quot;storeglobal&quot;, newId, oldId);
+            if (dict[oldId] === obj) {
+                delete globalScope[oldId];
+                delete dict[oldId]
+            }
+            if (newId) {
+                if (globalScope[newId] != null) this.console.warn(&#39;Clobbering global reference:&#39;, newId);
+                globalScope[newId] = dict[newId] = obj;
+            }
         },
-        // Error Console
         
+        retrieveGlobal: function(id) {
+            return dr.IDdictionary[id];
+        },
+        
+        // Error Console
         set_stackTraceLimit: function(v) {
             Error.stackTraceLimit = v;
             return v;
@@ -44,12 +57,19 @@
             return err.stack || err.stacktrace;
         },
         
-        console: {
-            debug: function(msg) {console.debug(msg);},
-            info: function(msg) {console.info(msg);},
-            warn: function(msg) {console.warn(msg);},
-            error: function(msg) {console.error(msg);}
-        },
+        console: (function() {
+            if (console) {
+                return console;
+            } else {
+                // No console, so assign empty function implementations.
+                return {
+                    debug: dr.noop,
+                    info: dr.noop,
+                    warn: dr.noop,
+                    error: dr.noop
+                }
+            }
+        })(),
         
         // Event Listener Support
 <span id='global-property-addEventListener'>        /** Event listener code Adapted from:
@@ -57,7 +77,7 @@
             A more robust solution can be found here:
                 http://msdn.microsoft.com/en-us/magazine/ff728624.aspx */
         addEventListener: function() {
-            if (global.addEventListener) {
+            if (globalScope.addEventListener) {
 <span id='global-property-'>                /** Adds an event listener to a dom element. 
 </span>                    @param elem:DomElement the dom element to listen to.
                     @param type:string the name of the event to listen to.
@@ -67,22 +87,25 @@
                         registered during the capture phase or bubble phase.
                     @returns void */
                 return function(elem, type, callback, capture) {
-                        console.log(&quot;skipping addEventListener on sprite&quot;);
-                        elem.addEventListener(type, callback, capture || false);
+                    elem.addEventListener(type, callback, capture || false);
                 };
             } else {
                 return function(elem, type, callback) {
                     var prop = type + callback;
-                    if (elem) {
-                        elem[&#39;e&#39; + prop] = callback;
-                        elem[prop] = function() {elem[&#39;e&#39; + prop](window.event);}
-                        elem.attachEvent(&#39;on&#39; + type, elem[prop]);
-                    }
+					if (elem == undefined) elem = globalScope;
+					//{
+                    elem[&#39;e&#39; + prop] = callback;
+                    elem[prop] = function() {elem[&#39;e&#39; + prop](window.event);}
+                    elem.attachEvent(&#39;on&#39; + type, elem[prop]);
+				//	}
+				//	else{
+				//		console.log(&quot;no element for:&quot;, type);
+				//	}
                 };
             }
         }(),
         removeEventListener: function() {
-            if (global.addEventListener) {
+            if (globalScope.addEventListener) {
                 return function(elem, type, callback, capture) {
                     elem.removeEventListener(type, callback, capture || false);
                 };
@@ -108,10 +131,8 @@
             focusedDom: null,
             
 <span id='global-method-set_focusedView'>            /** Sets the currently focused view. */
-</span>            set_focusedView: function(v) 
-            {
-                if (this.focusedView !== v) 
-                {
+</span>            set_focusedView: function(v) {
+                if (this.focusedView !== v) {
                     this.prevFocusedView = this.focusedView; // Remember previous focus
                     this.focusedView = v;
                     if (v) this.focusedDom = null; // Wipe this since we have actual focus now.
@@ -169,10 +190,10 @@
                 @returns the new view to give focus to, or null if there is no view
                     to focus on or an unmanaged dom element will receive focus. */
             __focusTraverse: function(isForward, ignoreFocusTrap) {
-                this.lastTraversalWasForward = dr.global.focus.lastTraversalWasForward = isForward;
+                this.lastTraversalWasForward = isForward;
                 
                 // Determine root element and starting element for traversal.
-                var document = global.document,
+                var document = globalScope.document,
                     activeElem = document.activeElement, 
                     rootElem = document.body,
                     startElem = rootElem,
@@ -231,7 +252,7 @@
                     }
                     
                     // If we&#39;ve looped back around return the starting element.
-                    if (elem === startElem) return startElem.model.view;
+                    if (elem === startElem) return startElem.model ? startElem.model.view : null;
                     
                     // Check that the element is focusable and return it if it is.
                     if (elem.nodeType === 1) {
@@ -288,6 +309,153 @@
                 while (elem.lastChild) elem = elem.lastChild;
                 return elem;
             }
+        },
+        
+        // Dom Utility
+<span id='global-method-__getComputedStyle'>        /** Gets the computed style for a dom element.
+</span>            @param elem:dom element the dom element to get the style for.
+            @returns object the style object. */
+        __getComputedStyle: function(elem) {
+            // getComputedStyle is IE&#39;s proprietary way.
+            var g = globalScope;
+            return g.getComputedStyle ? g.getComputedStyle(elem, &#39;&#39;) : elem.currentStyle;
+        },
+        
+<span id='global-method-__isDomElementVisible'>        /** Tests if a dom element is visible or not.
+</span>            @param elem:DomElement the element to check visibility for.
+            @returns boolean True if visible, false otherwise. */
+        __isDomElementVisible: function(elem) {
+            // Special Case: hidden input elements should be considered not visible.
+            if (elem.nodeName === &#39;INPUT&#39; &amp;&amp; elem.type === &#39;hidden&#39;) return false;
+            
+            var style, document = globalScope;
+            while (elem) {
+                if (elem === document) return true;
+                
+                style = this.__getComputedStyle(elem);
+                if (style.display === &#39;none&#39; || style.visibility === &#39;hidden&#39;) break;
+                
+                elem = elem.parentNode;
+            }
+            return false;
+        },
+        
+<span id='global-method-createElement'>        /** Creates a now dom element.
+</span>            @runtime:browser
+            @param parentElem:DomElement (optional) The dom element to append 
+                the new element to. If not provided document.body is used.
+            @param tagname:string (optional) The name of the tag. If not 
+                provided div is used.
+            @param props:object (optional) Properties to set on the element.
+            @param body:string (optional) The inner html for the new element.
+            @returns The created dom element. */
+        createElement: function(parentElem, tagname, props, body) {
+				console.log(&quot;creating element!&quot;);
+            var document = globalScope;
+            if (!tagname) tagname = &#39;div&#39;;
+            if (!parentElem) parentElem = document.body;
+            
+            var de = document.createElement(tagname), key;
+            if (props) for (key in props) de[key] = props[key];
+            de.innerHTML = body;
+            parentElem.appendChild(de);
+            return de;
+        },
+        
+<span id='global-method-simulatePlatformEvent'>        /** Generates a platform event on a dom element. Adapted from:
+</span>                http://stackoverflow.com/questions/6157929/how-to-simulate-mouse-click-using-javascript
+            @param view:dr.View the view to simulate the event on.
+            @param eventName:string the name of the dom event to generate.
+            @param customOpts:Object (optional) a map of options that will
+                be added onto the platform event object.
+            @returns void */
+        simulatePlatformEvent: function(spriteBacked, eventName, customOpts) {
+            if (spriteBacked) {
+                var po = spriteBacked.get_sprite().platformObject;
+                
+                var opts = {
+                    pointerX:0, pointerY:0, button:0,
+                    ctrlKey:false, altKey:false, shiftKey:false, metaKey:false,
+                    bubbles:true, cancelable:true
+                };
+                
+                if (customOpts) {
+                    for (var p in customOpts) opts[p] = customOpts[p];
+                }
+                
+                var eventType,
+                    eventMatchers = {
+                        &#39;HTMLEvents&#39;: /^(?:load|unload|abort|error|select|change|submit|reset|focus|blur|resize|scroll)$/,
+                        &#39;MouseEvents&#39;: /^(?:click|dblclick|mouse(?:down|up|over|move|out))$/
+                    };
+                for (var name in eventMatchers) {
+                    if (eventMatchers[name].test(eventName)) {eventType = name; break;}
+                }
+                if (!eventType) throw new SyntaxError(&#39;Only HTMLEvent and MouseEvent interfaces supported&#39;);
+                
+                var domEvent, document = globalScope.document;
+                if (document.createEvent) {
+                    domEvent = document.createEvent(eventType);
+                    if (eventType === &#39;HTMLEvents&#39;) {
+                        domEvent.initEvent(eventName, opts.bubbles, opts.cancelable);
+                    } else {
+                        domEvent.initMouseEvent(
+                            eventName, opts.bubbles, opts.cancelable, document.defaultView,
+                            opts.button, opts.pointerX, opts.pointerY, opts.pointerX, opts.pointerY,
+                            opts.ctrlKey, opts.altKey, opts.shiftKey, opts.metaKey, 
+                            opts.button, null
+                        );
+                    }
+                    po.dispatchEvent(domEvent);
+                } else {
+                    opts.clientX = opts.pointerX;
+                    opts.clientY = opts.pointerY;
+                    domEvent = document.createEventObject();
+                    for (var key in opts) domEvent[key] = opts[key];
+                    po.fireEvent(&#39;on&#39; + eventName, domEvent);
+                }
+            }
+        },
+        
+<span id='global-method-retainFocusDuringDomUpdate'>        /** Preserves focus and scroll position during dom updates. Focus can 
+</span>            get lost in webkit when an element is removed from the dom.
+            viewBeingRemoved:dr.View
+            wrapperFunc:function a function to execute that manipulates the
+                dom in some way, typically a remove followed by an insert.
+            @returns void */
+        retainFocusDuringDomUpdate: function(viewBeingRemoved, wrappedFunc) {
+            var restoreFocus = dr.global.focus.focusedView, 
+                sprite = viewBeingRemoved.sprite,
+                po = sprite.platformObject, 
+                restoreScrollTop, restoreScrollLeft;
+            if (restoreFocus === viewBeingRemoved || (restoreFocus &amp;&amp; restoreFocus.isDescendantOf(viewBeingRemoved))) {
+                sprite.__ignoreFocus = true;
+            }
+            
+            // Also maintain scrollTop/scrollLeft since those also
+            // get reset when a dom element is removed. Note: descendant
+            // elements with scroll positions won&#39;t get maintained.
+            restoreScrollTop = po.scrollTop;
+            restoreScrollLeft = po.scrollLeft;
+            
+            wrappedFunc.call();
+            
+            if (restoreFocus) {
+                sprite.__ignoreFocus = false;
+                restoreFocus.focus(true);
+            }
+            
+            // Restore scrollTop/scrollLeft
+            po.scrollTop = restoreScrollTop;
+            po.scrollLeft = restoreScrollLeft;
+        },
+        
+<span id='global-method-sendReadyEvent'>        /** Called from dr.notifyReady. Sends a dreeminit event. Used by 
+</span>            phantomjs testing */
+        sendReadyEvent: function() {
+            var event = globalScope.createEvent(&#39;Event&#39;)
+            event.initEvent(&#39;dreeminit&#39;, true, true);
+            globalScope.dispatchEvent(event);
         }
     };
 });

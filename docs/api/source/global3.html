@@ -15,62 +15,83 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">define(function(require, exports, module)
-{
-	var view = require(&#39;$SPRITE/view.js&#39;);
-	
-	
-	function Global()
-	{
-		this.addEventListener= function(type, callback, capture)
-		{
-			log(&quot;addEventListener&quot; + type, callback, capture);
-		},
-		
-		this.idleCallBackID=0;
-		
-		this.idleCallbackMap={};
-		
-		this.attachEvent = function (eventname, func)
-		{
-			console.log(&quot;attach Event on global&quot;);
-			for(a in arguments)
-			{
-				console.log(a + &quot; &quot; + arguments[a]);
-			}
-			
-		}
-		
-		this.SetupIdleCallback=function(func)
-		{
-			this.idleCallBackID++;				
-			this.idleCallbackMap[this.idleCallBackID] = func;		
-			return this.idleCallBackID ;
-		};
-		
-		this.CancleIdleCallback= function(id)
-		{
-			delete this.idleCallbackMap[id];
-		};
-		
-		this.Time = 0;
-		
-		this.callAllIdleFunctions =function()
-		{
-		this.Time+=30;
-			for (a in this.idleCallbackMap)
-			{
-				this.idleCallbackMap[a](Time);			
-			}
-		};
-		
-		this.createTextNode=function()
-		{
-			return view.prototype.createPlatformObject();
-		}
-	};
-	
-	module.exports = new Global();
-});</pre>
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+define(function(require, exports, module) {
+    var glob = global;
+    glob.fonts = {};
+    glob.createTextNode = function(v) {
+        //console.dir(v);
+        var elem = dalihost.CreateView(0, 0, 0, 0);
+        elem.nodeType = 3;
+        elem.setText(v);
+        return elem;
+    }
+    glob.attachEvent = function(name, func) {
+        console.log(&quot;global event handler:&quot;, name)
+    }
+    glob.createElement = function(elementname) {  
+        var elem = dalihost.CreateView(0, 0, 0, 0);
+        elem.tagname = elementname;
+        elem.style = {};
+        //elem.setBackgroundColor([0,1,1,1]);
+        elem.setSize(0, 0);
+        elem.setPosition(0, 0);
+        elem.setCornerRadius(0);
+        elem.setBorderWidth(0);
+        
+      
+        elem.style = {};
+
+        elem.childNodes = [];
+        elem.appendChild = function(child) {
+            this.childNodes.push(child);
+            if (elem.childNodes.size ==1 ) this.firstChild = child;
+            this.addChild(child);
+        }
+        elem.handlers = {};
+        elem.attachEvent = function(eventname, func) {
+            if (elem.handlers[eventname] === undefined) {
+                elem.handlers[eventname] = [];
+            }
+            elem.handlers[eventname].push(func);
+            if (eventname.indexOf(&quot;idle&quot;) &gt; -1) {
+                console.log(&quot; idle attached!&quot;, func);
+            }
+            //console.log(&quot;handler attached to elem:&quot;, eventname);
+        }
+        return elem;
+    };
+    glob.createEvent = function(name) {
+        return {
+            name: name,
+            initEvent: function(name, bubbles, cancelable) {
+                this.name = name;
+                this.bubbles = bubbles;
+                this.cancelable = cancelable;
+            }
+        };
+    }
+    glob.dispatchEvent = function(evt) {}
+    glob.roots = []
+    glob.addRoot = function(elem) {
+        console.log(&quot;new root: &quot;, elem);
+        this.roots.push(elem);
+    }
+    glob.removeRoot = function(elem) {
+        var index = this.roots.indexOf(elem);
+        if (index &gt; -1) {
+            this.roots.splice(index, 1);
+        }
+    }
+    var size = dali.stage.getSize();
+    glob.innerWidth = size.x;
+    glob.innerHeight = size.y;
+    return glob;
+});
+</pre>
 </body>
 </html>

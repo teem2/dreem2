@@ -369,9 +369,61 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n215" name="n215">215</a>
 <a href="#n216" name="n216">216</a>
 <a href="#n217" name="n217">217</a>
+<a href="#n218" name="n218">218</a>
+<a href="#n219" name="n219">219</a>
+<strong><a href="#n220" name="n220">220</a></strong>
+<a href="#n221" name="n221">221</a>
+<a href="#n222" name="n222">222</a>
+<a href="#n223" name="n223">223</a>
+<a href="#n224" name="n224">224</a>
+<a href="#n225" name="n225">225</a>
+<a href="#n226" name="n226">226</a>
+<a href="#n227" name="n227">227</a>
+<a href="#n228" name="n228">228</a>
+<a href="#n229" name="n229">229</a>
+<strong><a href="#n230" name="n230">230</a></strong>
+<a href="#n231" name="n231">231</a>
+<a href="#n232" name="n232">232</a>
+<a href="#n233" name="n233">233</a>
+<a href="#n234" name="n234">234</a>
+<a href="#n235" name="n235">235</a>
+<a href="#n236" name="n236">236</a>
+<a href="#n237" name="n237">237</a>
+<a href="#n238" name="n238">238</a>
+<a href="#n239" name="n239">239</a>
+<strong><a href="#n240" name="n240">240</a></strong>
+<a href="#n241" name="n241">241</a>
+<a href="#n242" name="n242">242</a>
+<a href="#n243" name="n243">243</a>
+<a href="#n244" name="n244">244</a>
+<a href="#n245" name="n245">245</a>
+<a href="#n246" name="n246">246</a>
+<a href="#n247" name="n247">247</a>
+<a href="#n248" name="n248">248</a>
+<a href="#n249" name="n249">249</a>
+<strong><a href="#n250" name="n250">250</a></strong>
+<a href="#n251" name="n251">251</a>
+<a href="#n252" name="n252">252</a>
+<a href="#n253" name="n253">253</a>
+<a href="#n254" name="n254">254</a>
+<a href="#n255" name="n255">255</a>
+<a href="#n256" name="n256">256</a>
+<a href="#n257" name="n257">257</a>
+<a href="#n258" name="n258">258</a>
+<a href="#n259" name="n259">259</a>
+<strong><a href="#n260" name="n260">260</a></strong>
+<a href="#n261" name="n261">261</a>
+<a href="#n262" name="n262">262</a>
+<a href="#n263" name="n263">263</a>
+<a href="#n264" name="n264">264</a>
+<a href="#n265" name="n265">265</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
       * @class dr.text {UI Components}
       * @extends dr.view
@@ -440,7 +492,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {Number} [fontsize]
         * The size of the font in pixels.
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">fontsize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">number</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">fontsize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">number</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">fontsize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('fontsize', v, 'number', '')
       if @inited then @sizeToPlatform()
@@ -450,7 +502,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {Number} [fontfamily=&quot;&quot;]
         * The name of the font family to use, e.g. &quot;Helvetica&quot;  Include multiple fonts on a line, separated by commas.
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">fontfamily</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">fontfamily</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">fontfamily</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('fontfamily', v, 'string', '')
       if @inited then @sizeToPlatform()
@@ -461,7 +513,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * Align text within its bounds. Supported values are 
         * 'left', 'right', 'center' and 'inherit'.
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">textalign</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">textalign</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">textalign</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('textalign', v, 'string', '')
       if @inited then @sizeToPlatform()
@@ -471,7 +523,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {Boolean} [bold=false]
         * Use bold text.
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">bold</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">bold</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">bold</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('bold', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -481,7 +533,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {Boolean} [italic=false]
         * Use italic text.
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">italic</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">italic</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">italic</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('italic', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -491,7 +543,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {Boolean} [smallcaps=false]
         * Use small caps style.
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">smallcaps</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">smallcaps</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">smallcaps</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('smallcaps', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -501,7 +553,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {Boolean} [underline=false]
         * Draw and underline under text (note, is incompatible with dr.text#strike)
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">underline</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">underline</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">underline</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('underline', v, 'boolean', false)
       if @underline and @strike then @setSimpleActual('strike', false, true)
@@ -512,7 +564,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {Boolean} [strike=false]
         * Draw and strike-through the text (note, is incompatible with dr.text#underline)
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">strike</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">strike</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">strike</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('strike', v, 'boolean', false)
       if @strike and @underline then @setSimpleActual('underline', false, true)
@@ -523,7 +575,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {Boolean} [multiline=false]
         * Determines how line breaks within the text are handled.
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">multiline</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">multiline</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">multiline</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('multiline', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -534,7 +586,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * Determines if ellipsis shouls be shown or not. Only works when
         * multiline is false.
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ellipsis</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ellipsis</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">ellipsis</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('ellipsis', v, 'boolean', false)
       if @inited then @sizeToPlatform()
@@ -544,11 +596,24 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         * @attribute {String} [text=&quot;&quot;]
         * The contents of this input text field
         */--&gt;</span>
-  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">text</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span><span class="tag">&lt;/attribute&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">text</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">string</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">text</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     if @setActual('text', @format(v), 'string', '')
       if @inited then @sizeToPlatform()
   <span class="tag">&lt;/setter&gt;</span>
+
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">editable</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">false</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">editable</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if @setActual('editable', v, 'boolean', false)
+      if @editable
+        @listenToPlatform(@, 'onkeydown', @__cleanInput)
+      else
+        @stopListeningToPlatform(@, 'onkeydown', @__cleanInput)
+  <span class="tag">&lt;/setter&gt;</span>
+  
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__cleanInput</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">event</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    @sprite.cleanInput(event)
+  <span class="tag">&lt;/method&gt;</span>
 
   <span class="tag">&lt;setter</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">v</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     @setActualAttribute('text', v)
@@ -558,6 +623,17 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     @setActualAttribute('text', v)
   <span class="tag">&lt;/setter&gt;</span>
 
+  <span class="tag">&lt;handler</span> <span class="attribute-name">event</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">oninput</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">event</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if @editable
+      @setAttribute('text', @sprite.getText(true));
+  <span class="tag">&lt;/handler&gt;</span>
+
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">isPlatformEvent</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">eventType</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if dr.sprite.InputObservable.EVENT_TYPES[eventType]
+      return true
+    return @super()
+  <span class="tag">&lt;/method&gt;</span>
+  
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">createSprite</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attrs</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     return new dr.sprite.Text(this, attrs);
   <span class="tag">&lt;/method&gt;</span>
@@ -576,6 +652,20 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   <span class="tag">&lt;/method&gt;</span>
 
   <span class="comment">&lt;!--/**
+        * @method isLeaf
+        * @overrides
+        * Text views do not support subviews.
+        */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">isLeaf</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">subnode</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if subnode
+      if subnode.isA(dr.View)
+        return true
+      else
+        return @super()
+    return true
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
         * @method format
         * Format the text to be displayed. The default behavior is to
         * return the text intact. Override to change formatting. This method
@@ -586,6 +676,12 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">format</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">str</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     return str
   <span class="tag">&lt;/method&gt;</span>
+  
+  <span class="comment">&lt;!--// Editor //--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">hiddenattrs</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{editable:true, clip:true, scrollable:true, underline:true, strike:true, smallcaps:true}</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">attrimportance</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">expression</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">allocation</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">class</span><span class="delimiter">&quot;</span></span>
+    <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">{name:-1, text:50, color:51, fontfamily:52, fontsize:53, bold:54, italic:55, multiline:200, ellipsis:201, smallcaps:210, underline:211, strike:212}</span><span class="delimiter">&quot;</span></span>
+  <span class="tag">/&gt;</span>
 <span class="tag">&lt;/class&gt;</span>
 </pre></td>
 </tr></table>

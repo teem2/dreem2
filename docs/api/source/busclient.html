@@ -15,10 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">/*
- The MIT License (see LICENSE)
- Copyright (C) 2014-2015 Teem2 LLC
-*/
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License. */
+
 <span id='BusClient'>/**
 </span> * @class BusClient {Internal}
  * Auto (re)connecting always writable socket
@@ -26,8 +27,9 @@
 define(function(require, exports, module) {
   module.exports = BusClient;
 
-  function BusClient(url) {
+  function BusClient(url, server) {
     this.url = url || &#39;&#39;;
+    this.targetserver = server || &#39;&#39;;
     this.backoff = 1;
     this.__reconnect();
   }
@@ -46,30 +48,39 @@ define(function(require, exports, module) {
         this.socket.close();
         this.socket = undefined;
       }
-      
+
       if (!this.queue) this.queue = [];
-      
-      this.socket = new WebSocket(&#39;ws://&#39; + window.location.host + this.url);
-      
-      this.socket.onopen = function() {
+
+      var socketUrl;
+      if (typeof(window) === &quot;undefined&quot;) {
+        // NodeJS Server
+        socketUrl = this.targetserver + &#39;/&#39; + this.url;
+      } else {
+        // Client Browser
+        socketUrl = &#39;ws://&#39; + window.location.host + this.url;
+      }
+      this.socket = new WebSocket(socketUrl);
+
+      this.socket.onConnect = this.socket.onopen = function() {
         this.backoff = 1;
         for (var i = 0; i &lt; this.queue.length; i++) {
           this.socket.send(this.queue[i]);
         }
         this.queue = undefined;
       }.bind(this);
-      
-      this.socket.onerror = function() {
+
+      this.socket.onError = this.socket.onerror = function() {
         //this.__reconnect()
       }.bind(this);
-      
-      this.socket.onclose = function() {
+
+      this.socket.onClose = this.socket.onclose = function() {
         this.backoff = Math.min(1000, 2 * this.backoff);
         setTimeout(function() {this.__reconnect();}.bind(this), this.backoff);
       }.bind(this);
-      
-      this.socket.onmessage = function(event) {
-        this.onMessage(JSON.parse(event.data));
+
+      this.socket.onMessage = this.socket.onmessage = function(event) {
+        var msgdata = typeof(event) === &quot;string&quot; ? event : event.data;
+        this.onMessage(JSON.parse(msgdata));
       }.bind(this);
     };
     

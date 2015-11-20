@@ -15,27 +15,11 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js"><span id='global-property-'>/**
-</span> * Copyright (c) 2015 Teem2 LLC
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the &quot;Software&quot;), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
 define(function(require, exports, module) {
     require(&#39;$LIB/dr/shim/language.js&#39;);
     var globalScope = require(&#39;$SPRITE/global.js&#39;);
@@ -73,6 +57,22 @@ define(function(require, exports, module) {
 <span id='global-method-noop'>        /** Common noop function. Also used as a return value for setters to 
 </span>            prevent the default setAttribute behavior. */
         noop: function() {},
+        
+<span id='global-method-deserialize'>        /** Called from previewers to deserialize undoables. Not intended for
+</span>            use in other contexts, though it may still be useful. */
+        deserialize: function(json) {
+          var objTree = JSON.parse(json),
+            classname = objTree.classname,
+            data = objTree.data;
+            
+          var klass = this.lookupClass(classname);
+          if (klass) {
+              var obj = new klass();
+              if (obj.deserialize) obj.deserialize(data);
+              return obj;
+          }
+          return null;
+        },
         
 <span id='global-method-resolveName'>        /** Takes a &#39;.&#39; separated string such as &quot;foo.bar.baz&quot; and resolves it
 </span>            into the value found at that location relative to a starting scope.
@@ -283,6 +283,59 @@ define(function(require, exports, module) {
                 ABdotAP = ABx * APx + ABy * APy,
                 t = ABdotAP / magAB2;
             return {x:Ax + ABx * t, y:Ay + ABy * t};
+        },
+        
+        // Random numbers
+<span id='global-method-getRandom'>        /** @returns a random number between 0 (inclusive) and 1 (exclusive)
+</span>            @param func:function (optional) a distribution function for the
+                random numbers. The function should map a number between 0 and 1
+                to another number between 0 (inclusive) and 1 (exclusive). If not 
+                provided a flat distribution will be used. Example functions:
+                    - function(v) {return v * v;} will skew the value towards 0.
+                    - function(v) {return 0.9999999999 - v * v;} will skew the 
+                      value towards a value very close to 1.
+            @returns number: a random number between 0 and almost 1. */
+        getRandom: function(func) {
+            var v = Math.random();
+            if (func) {
+                v = func(v);
+                
+                // Correct for badly behaved skew functions.
+                if (v &gt;= 1) {
+                    v = 0.9999999999;
+                } else if (v &lt; 0) {
+                    v = 0;
+                }
+            }
+            return v;
+        },
+        
+<span id='global-method-getRandomArbitrary'>        /** @returns a random number between min (inclusive) and max (exclusive).
+</span>            @param min:number the minimum value returned.
+            @param max:number the maximum value returned.
+            @param func:function a skew function. See myt.getRandom for more info.
+            @returns number: between min and max. */
+        getRandomArbitrary: function(min, max, func) {
+            if (min &gt; max) {
+                var tmp = min;
+                min = max;
+                max = tmp;
+            }
+            return this.getRandom(func) * (max - min) + min;
+        },
+        
+<span id='global-method-getRandomInt'>        /** @returns a random integer between min (inclusive) and max (inclusive)
+</span>            @param min:number the minimum value returned.
+            @param max:number the maximum value returned.
+            @param func:function a skew function. See myt.getRandom for more info.
+            @returns number: an integer between min and max. */
+        getRandomInt: function(min, max, func) {
+            if (min &gt; max) {
+                var tmp = min;
+                min = max;
+                max = tmp;
+            }
+            return Math.floor(this.getRandom(func) * (max - min + 1) + min);
         },
         
         // Dreem Instantiation

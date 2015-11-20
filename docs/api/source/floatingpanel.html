@@ -400,9 +400,77 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n246" name="n246">246</a>
 <a href="#n247" name="n247">247</a>
 <a href="#n248" name="n248">248</a>
+<a href="#n249" name="n249">249</a>
+<strong><a href="#n250" name="n250">250</a></strong>
+<a href="#n251" name="n251">251</a>
+<a href="#n252" name="n252">252</a>
+<a href="#n253" name="n253">253</a>
+<a href="#n254" name="n254">254</a>
+<a href="#n255" name="n255">255</a>
+<a href="#n256" name="n256">256</a>
+<a href="#n257" name="n257">257</a>
+<a href="#n258" name="n258">258</a>
+<a href="#n259" name="n259">259</a>
+<strong><a href="#n260" name="n260">260</a></strong>
+<a href="#n261" name="n261">261</a>
+<a href="#n262" name="n262">262</a>
+<a href="#n263" name="n263">263</a>
+<a href="#n264" name="n264">264</a>
+<a href="#n265" name="n265">265</a>
+<a href="#n266" name="n266">266</a>
+<a href="#n267" name="n267">267</a>
+<a href="#n268" name="n268">268</a>
+<a href="#n269" name="n269">269</a>
+<strong><a href="#n270" name="n270">270</a></strong>
+<a href="#n271" name="n271">271</a>
+<a href="#n272" name="n272">272</a>
+<a href="#n273" name="n273">273</a>
+<a href="#n274" name="n274">274</a>
+<a href="#n275" name="n275">275</a>
+<a href="#n276" name="n276">276</a>
+<a href="#n277" name="n277">277</a>
+<a href="#n278" name="n278">278</a>
+<a href="#n279" name="n279">279</a>
+<strong><a href="#n280" name="n280">280</a></strong>
+<a href="#n281" name="n281">281</a>
+<a href="#n282" name="n282">282</a>
+<a href="#n283" name="n283">283</a>
+<a href="#n284" name="n284">284</a>
+<a href="#n285" name="n285">285</a>
+<a href="#n286" name="n286">286</a>
+<a href="#n287" name="n287">287</a>
+<a href="#n288" name="n288">288</a>
+<a href="#n289" name="n289">289</a>
+<strong><a href="#n290" name="n290">290</a></strong>
+<a href="#n291" name="n291">291</a>
+<a href="#n292" name="n292">292</a>
+<a href="#n293" name="n293">293</a>
+<a href="#n294" name="n294">294</a>
+<a href="#n295" name="n295">295</a>
+<a href="#n296" name="n296">296</a>
+<a href="#n297" name="n297">297</a>
+<a href="#n298" name="n298">298</a>
+<a href="#n299" name="n299">299</a>
+<strong><a href="#n300" name="n300">300</a></strong>
+<a href="#n301" name="n301">301</a>
+<a href="#n302" name="n302">302</a>
+<a href="#n303" name="n303">303</a>
+<a href="#n304" name="n304">304</a>
+<a href="#n305" name="n305">305</a>
+<a href="#n306" name="n306">306</a>
+<a href="#n307" name="n307">307</a>
+<a href="#n308" name="n308">308</a>
+<a href="#n309" name="n309">309</a>
+<strong><a href="#n310" name="n310">310</a></strong>
+<a href="#n311" name="n311">311</a>
+<a href="#n312" name="n312">312</a>
 </pre></td>
-  <td class="code"><pre><span class="comment">&lt;!-- The MIT License (see LICENSE)
-     Copyright (C) 2014-2015 Teem2 LLC --&gt;</span>
+  <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  --&gt;</span>
+
+
 <span class="comment">&lt;!--/**
    * @class dr.floatingpanel {UI Component}
    * A panel that floats above everything else.
@@ -454,8 +522,34 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     */--&gt;</span>
   <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">hideonblur</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">true</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
 
+  <span class="comment">&lt;!--/**
+    * @attribute {Boolean} hideonwheel
+    * If true this panel will be hidden when a wheel event occurs.
+    */--&gt;</span>
+  <span class="tag">&lt;attribute</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">hideonwheel</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">type</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">boolean</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">value</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">true</span><span class="delimiter">&quot;</span></span><span class="tag">/&gt;</span>
+
 
   <span class="comment">&lt;!--// Methods ////////////////////////////////////////////////////////////--&gt;</span>
+  <span class="comment">&lt;!--/** @private */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__doWheel</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">event</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    var x = event.x, y = event.y;
+    if (!this.containsPoint(x, y) <span class="error">&amp;</span><span class="error">&amp;</span> (this.ignoreownerforhideonmousedown ? !this.owner.containsPoint(x, y) : true)) {
+      this.doWheelOutside();
+    }
+    return true;
+  <span class="tag">&lt;/method&gt;</span>
+
+  <span class="comment">&lt;!--/**
+    * @method doWheelOutside
+    * Called when a wheel occurs outside the floating panel. The default
+    * behavior is to hide the panel. This gives subclasses a chance to 
+    * provide different behavior.
+    * @returns {void}
+    */--&gt;</span>
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">doWheelOutside</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    if (this.hideonwheel) this.hide();
+  <span class="tag">&lt;/method&gt;</span>
+  
   <span class="comment">&lt;!--/** @private */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__doMouseDown</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">event</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     var x = event.x, y = event.y;
@@ -558,6 +652,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
       
       var g = dr.global;
       this.listenToPlatform(g.mouse, 'onmousedown', '__doMouseDown', true);
+      this.listenToPlatform(g.mouse, 'onwheel', '__doWheel', true);
       this.listenTo(g.focus, 'onfocused', '__doFocusChange');
     }
   <span class="tag">&lt;/method&gt;</span>
@@ -574,6 +669,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     if (this.isShown()) {
       var g = dr.global;
       this.stopListeningToPlatform(g.mouse, 'onmousedown', '__doMouseDown', true);
+      this.stopListeningToPlatform(g.mouse, 'onwheel', '__doWheel', true);
       this.stopListening(g.focus, 'onfocused', '__doFocusChange');
       
       this.setAttribute('visible', false);
@@ -604,12 +700,15 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">updateLocation</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">panelAnchor</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     this.setAttribute('owner', panelAnchor);
     
+    var anchorLocation = panelAnchor.getAbsolutePosition();
+    this.__updateXLocation(panelAnchor, anchorLocation);
+    this.__updateYLocation(panelAnchor, anchorLocation);
+  <span class="tag">&lt;/method&gt;</span>
+  
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__updateXLocation</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">panelAnchor, anchorLocation</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     var panelId = this.panelid,
       align = panelAnchor.getFloatingAlignForPanelId(panelId),
-      valign = panelAnchor.getFloatingValignForPanelId(panelId),
-      anchorLocation = panelAnchor.getAbsolutePosition(),
-      x = 0, y = 0,
-      type = typeof align;
+      x = 0, type = typeof align;
     
     if (type === 'string') {
       x = anchorLocation.x + panelAnchor.getFloatingAlignOffsetForPanelId(panelId);
@@ -620,6 +719,19 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         case 'insideleft': break;
         default: dr.sprite.console.warn(&quot;Unexpected align value&quot;, type, align);
       }
+      
+      // Flip position if this panel extends beyond the viewport
+      var limit = dr.global.viewportResize.getWidth();
+      if (0 <span class="error">&gt;</span> x || x + this.width <span class="error">&gt;</span> limit) {
+        x = anchorLocation.x - panelAnchor.getFloatingAlignOffsetForPanelId(panelId);
+        switch(align) {
+          case 'outsideright': x -= this.width; break;
+          case 'insideright': break;
+          case 'outsideleft': x += panelAnchor.width; break;
+          case 'insideleft': x += panelAnchor.width - this.width; break;
+          default: dr.sprite.console.warn(&quot;Unexpected align value&quot;, type, align);
+        }
+      }
     } else if (type === 'number') {
       // Absolute position
       x = align;
@@ -627,9 +739,12 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
       dr.sprite.console.warn(&quot;Unexpected align type&quot;, type, align);
     }
     this.setAttribute('x', x);
-    
-    // Vertical positioning
-    type = typeof valign;
+  <span class="tag">&lt;/method&gt;</span>
+  
+  <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">__updateYLocation</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">panelAnchor, anchorLocation</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
+    var panelId = this.panelid,
+      valign = panelAnchor.getFloatingValignForPanelId(panelId),
+      y = 0, type = typeof valign;
     
     if (type === 'string') {
       y = anchorLocation.y + panelAnchor.getFloatingValignOffsetForPanelId(panelId);
@@ -639,6 +754,19 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
         case 'outsidetop': y -= this.height; break;
         case 'insidetop': break;
         default: dr.sprite.console.warn(&quot;Unexpected valign value&quot;, type, valign);
+      }
+      
+      // Flip position if this panel extends beyond the viewport
+      var limit = dr.global.viewportResize.getHeight();
+      if (0 <span class="error">&gt;</span> y || y + this.height <span class="error">&gt;</span> limit) {
+        y = anchorLocation.y - panelAnchor.getFloatingValignOffsetForPanelId(panelId);
+        switch(valign) {
+          case 'outsidebottom': y -= this.height; break;
+          case 'insidebottom': break;
+          case 'outsidetop': y += panelAnchor.height; break;
+          case 'insidetop': y += panelAnchor.height - this.height; break;
+          default: dr.sprite.console.warn(&quot;Unexpected valign value&quot;, type, valign);
+        }
       }
     } else if (type === 'number') {
       // Absolute position

@@ -1,40 +1,40 @@
 /**
-     * @class dr.datapath {Data}
-     * @extends dr.node
-     * Handles data querying, filtering and transformation
-     *
-     * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
-     *
-     *     @example
-     *     <dataset name="bikeshop">
-     *      {
-     *        "bicycle": [
-     *          {
-     *           "color": "red",
-     *           "price": 19.95
-     *          },
-     *          {
-     *           "color": "green",
-     *           "price": 29.95
-     *          },
-     *          {
-     *           "color": "blue",
-     *           "price": 59.95
-     *          }
-     *        ]
-     *      }
-     *     </dataset>
-     *     <datapath path="$bikeshop/bicycle[*][@]">
-     *       <method name="filterfunction" args="obj, accum">
-     *         // add the color to the beginning of the results if the price is greater than 20
-     *         if (obj.price > 20)
-     *           accum.unshift(obj.color);
-     *         return accum
-     *       </method>
-     *     </datapath>
-     *
-     * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
-     */
+   * @class dr.datapath {Data}
+   * @extends dr.node
+   * Handles data querying, filtering and transformation
+   *
+   * Sometimes it's necessary to have complete control and flexibility over filtering and transforming results. Adding a [@] operator to the end of your datapath causes {@link #filterfunction filterfunction} to be called for each result. This example shows bike colors for bikes with a price greater than 20, in reverse order:
+   *
+   *     @example
+   *     <dataset name="bikeshop">
+   *      {
+   *        "bicycle": [
+   *          {
+   *           "color": "red",
+   *           "price": 19.95
+   *          },
+   *          {
+   *           "color": "green",
+   *           "price": 29.95
+   *          },
+   *          {
+   *           "color": "blue",
+   *           "price": 59.95
+   *          }
+   *        ]
+   *      }
+   *     </dataset>
+   *     <datapath path="$bikeshop/bicycle[*][@]">
+   *       <method name="filterfunction" args="obj, accum">
+   *         // add the color to the beginning of the results if the price is greater than 20
+   *         if (obj.price > 20)
+   *           accum.unshift(obj.color);
+   *         return accum
+   *       </method>
+   *     </datapath>
+   *
+   * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
+   */
 /**
         * @attribute {Object} data
         * A pointer to the data to be evaluated

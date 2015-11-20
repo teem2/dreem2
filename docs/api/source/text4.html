@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>The source code</title>
+  <link href="../resources/prettify/prettify.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="../resources/prettify/prettify.js"></script>
+  <style type="text/css">
+    .highlight { display: block; background-color: #ddd; }
+  </style>
+  <script type="text/javascript">
+    function highlight() {
+      document.getElementById(location.hash.replace(/#/, "")).className = "highlight";
+    }
+  </script>
+</head>
+<body onload="prettyPrint(); highlight();">
+  <pre class="prettyprint lang-js"><span id='dr-text'>/**
+</span>      * @class dr.text {UI Components}
+      * @extends dr.view
+      * Text component that supports single and multi-line text.
+      * 
+      *  The text component can be fixed size, or sized to fit the size of the text.
+      * 
+      *      @example
+      *      &lt;text text=&quot;Hello World!&quot; bgcolor=&quot;red&quot;&gt;&lt;/text&gt;
+      * 
+      *  Here is a multiline text
+      * 
+      *      @example
+      *      &lt;text multiline=&quot;true&quot; text=&quot;Lorem ipsum dolor sit amet, consectetur adipiscing elit&quot;&gt;&lt;/text&gt;
+      * 
+      *  You might want to set the value of a text element based on the value of other attributes via a constraint. Here we set the value by concatenating three attributes together.
+      * 
+      *      @example
+      *      &lt;attribute name=&quot;firstname&quot; type=&quot;string&quot; value=&quot;Lumpy&quot;&gt;&lt;/attribute&gt;
+      *      &lt;attribute name=&quot;middlename&quot; type=&quot;string&quot; value=&quot;Space&quot;&gt;&lt;/attribute&gt;
+      *      &lt;attribute name=&quot;lastname&quot; type=&quot;string&quot; value=&quot;Princess&quot;&gt;&lt;/attribute&gt;
+      * 
+      *      &lt;text text=&quot;${this.parent.firstname + &#39; &#39; + this.parent.middlename + &#39; &#39; + this.parent.lastname}&quot; color=&quot;hotpink&quot;&gt;&lt;/text&gt;
+      * 
+      *  Constraints can contain more complex JavaScript code
+      * 
+      *      @example
+      *      &lt;attribute name=&quot;firstname&quot; type=&quot;string&quot; value=&quot;Lumpy&quot;&gt;&lt;/attribute&gt;
+      *      &lt;attribute name=&quot;middlename&quot; type=&quot;string&quot; value=&quot;Space&quot;&gt;&lt;/attribute&gt;
+      *      &lt;attribute name=&quot;lastname&quot; type=&quot;string&quot; value=&quot;Princess&quot;&gt;&lt;/attribute&gt;
+      * 
+      *      &lt;text text=&quot;${this.parent.firstname.charAt(0) + &#39; &#39; + this.parent.middlename.charAt(0) + &#39; &#39; + this.parent.lastname.charAt(0)}&quot; color=&quot;hotpink&quot;&gt;&lt;/text&gt;
+      * 
+      *  We can simplify this by using a method to return the concatenation and constraining the text value to the return value of the method
+      * 
+      *      @example
+      *      &lt;attribute name=&quot;firstname&quot; type=&quot;string&quot; value=&quot;Lumpy&quot;&gt;&lt;/attribute&gt;
+      *      &lt;attribute name=&quot;middlename&quot; type=&quot;string&quot; value=&quot;Space&quot;&gt;&lt;/attribute&gt;
+      *      &lt;attribute name=&quot;lastname&quot; type=&quot;string&quot; value=&quot;Princess&quot;&gt;&lt;/attribute&gt;
+      * 
+      *      &lt;method name=&quot;initials&quot;&gt;
+      *        return this.firstname.charAt(0) + &#39; &#39; + this.middlename.charAt(0) + &#39; &#39; + this.lastname.charAt(0);
+      *      &lt;/method&gt;
+      * 
+      *      &lt;text text=&quot;${this.parent.initials()}&quot; color=&quot;hotpink&quot;&gt;&lt;/text&gt;
+      * 
+      *  You can override the format method to provide custom formatting for text elements. Here is a subclass of text, timetext, with the format method overridden to convert the text given in seconds into a formatted string.
+      * 
+      *      @example
+      *      &lt;class name=&quot;timetext&quot; extends=&quot;text&quot;&gt;
+      *        &lt;method name=&quot;format&quot; args=&quot;seconds&quot;&gt;
+      *          var minutes = Math.floor(seconds / 60);
+      *          var seconds = Math.floor(seconds) - minutes * 60;
+      *          if (seconds &lt; 10) {
+      *            seconds = &#39;0&#39; + seconds;
+      *          }
+      *          return minutes + &#39;:&#39; + seconds;
+      *        &lt;/method&gt;
+      *      &lt;/class&gt;
+      * 
+      *      &lt;timetext text=&quot;240&quot;&gt;&lt;/timetext&gt;
+      * 
+      */
+<span id='dr-text-attribute-fontsize'>/**
+</span>        * @attribute {Number} [fontsize]
+        * The size of the font in pixels.
+        */
+<span id='dr-text-attribute-fontfamily'>/**
+</span>        * @attribute {Number} [fontfamily=&quot;&quot;]
+        * The name of the font family to use, e.g. &quot;Helvetica&quot;  Include multiple fonts on a line, separated by commas.
+        */
+<span id='dr-text-attribute-textalign'>/**
+</span>        * @attribute {Number} [textalign=&quot;&quot;]
+        * Align text within its bounds. Supported values are 
+        * &#39;left&#39;, &#39;right&#39;, &#39;center&#39; and &#39;inherit&#39;.
+        */
+<span id='dr-text-attribute-bold'>/**
+</span>        * @attribute {Boolean} [bold=false]
+        * Use bold text.
+        */
+<span id='dr-text-attribute-italic'>/**
+</span>        * @attribute {Boolean} [italic=false]
+        * Use italic text.
+        */
+<span id='dr-text-attribute-smallcaps'>/**
+</span>        * @attribute {Boolean} [smallcaps=false]
+        * Use small caps style.
+        */
+<span id='dr-text-attribute-underline'>/**
+</span>        * @attribute {Boolean} [underline=false]
+        * Draw and underline under text (note, is incompatible with dr.text#strike)
+        */
+<span id='dr-text-attribute-strike'>/**
+</span>        * @attribute {Boolean} [strike=false]
+        * Draw and strike-through the text (note, is incompatible with dr.text#underline)
+        */
+<span id='dr-text-attribute-multiline'>/**
+</span>        * @attribute {Boolean} [multiline=false]
+        * Determines how line breaks within the text are handled.
+        */
+<span id='dr-text-attribute-ellipsis'>/**
+</span>        * @attribute {Boolean} [ellipsis=false]
+        * Determines if ellipsis shouls be shown or not. Only works when
+        * multiline is false.
+        */
+<span id='dr-text-attribute-text'>/**
+</span>        * @attribute {String} [text=&quot;&quot;]
+        * The contents of this input text field
+        */
+<span id='dr-text-method-isLeaf'>/**
+</span>        * @method isLeaf
+        * @overrides
+        * Text views do not support subviews.
+        */
+<span id='dr-text-method-format'>/**
+</span>        * @method format
+        * Format the text to be displayed. The default behavior is to
+        * return the text intact. Override to change formatting. This method
+        * is called whenever the text attribute is set.
+        * @param {String} str The current value of the text component.
+        * @return {String} The formated string to display in the component.
+        */
+</pre>
+</body>
+</html>

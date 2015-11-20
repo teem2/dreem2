@@ -15,7 +15,1924 @@
   </script>
 </head>
 <body onload="prettyPrint(); highlight();">
-  <pre class="prettyprint lang-js">
+  <pre class="prettyprint lang-js">/* Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an &quot;AS IS&quot; BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.*/
+
+<span id='dr-view'>/**
+</span>  * @class dr.view {UI Components}
+  * @extends dr.node
+  * @aside guide constraints
+  *
+  * The visual base class for everything in dreem. Views extend dr.node 
+  * to add the ability to set and animate visual attributes, and interact 
+  * with the mouse.
+  *
+  * Views are positioned inside their parent according to their x and 
+  * y coordinates.
+  *
+  * Views can contain methods, handlers, setters, constraints, attributes 
+  * and other view, node or class instances.
+  *
+  * Views can be easily converted to reusable classes/tags by changing their 
+  * outermost &amp;lt;view&gt; tags to &amp;lt;class&gt; and adding a name attribute.
+  *
+  * Views support a number of builtin attributes. Setting attributes that 
+  * aren&#39;t listed explicitly will pass through to the underlying Sprite 
+  * implementation.
+  *
+  * Note that dreem apps must be contained inside a top-level &amp;lt;view&gt;&amp;lt;/view&gt; tag.
+  *
+  * The following example shows a pink view that contains a smaller blue view 
+  * offset 10 pixels from the top and 10 from the left.
+  *
+  *     @example
+  *     &lt;view width=&quot;200&quot; height=&quot;100&quot; bgcolor=&quot;lightpink&quot;&gt;
+  *       &lt;view width=&quot;50&quot; height=&quot;50&quot; x=&quot;10&quot; y=&quot;10&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+  *     &lt;/view&gt;
+  *
+  * Here the blue view is wider than its parent pink view, and because the 
+  * clip attribute of the parent is set to false it extends beyond the 
+  * parents bounds.
+  *
+  *     @example
+  *     &lt;view width=&quot;200&quot; height=&quot;100&quot; bgcolor=&quot;lightpink&quot; clip=&quot;false&quot;&gt;
+  *       &lt;view width=&quot;250&quot; height=&quot;50&quot; x=&quot;10&quot; y=&quot;10&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+  *     &lt;/view&gt;
+  *
+  * Now we set the clip attribute on the parent view to true, causing the 
+  * overflowing child view to be clipped at its parent&#39;s boundary.
+  *
+  *     @example
+  *     &lt;view width=&quot;200&quot; height=&quot;100&quot; bgcolor=&quot;lightpink&quot; clip=&quot;true&quot;&gt;
+  *       &lt;view width=&quot;250&quot; height=&quot;50&quot; x=&quot;10&quot; y=&quot;10&quot; bgcolor=&quot;lightblue&quot;&gt;&lt;/view&gt;
+  *     &lt;/view&gt;
+  *
+  * Here we demonstrate how unsupported attributes are passed to the 
+  * underlying sprite system. We make the child view semi-transparent by 
+  * setting opacity. Although this is not in the list of supported attributes 
+  * it is still applied.
+  *
+  *     @example
+  *     &lt;view width=&quot;200&quot; height=&quot;100&quot; bgcolor=&quot;lightpink&quot;&gt;
+  *       &lt;view width=&quot;250&quot; height=&quot;50&quot; x=&quot;10&quot; y=&quot;10&quot; bgcolor=&quot;lightblue&quot; opacity=&quot;.5&quot;&gt;&lt;/view&gt;
+  *     &lt;/view&gt;
+  *
+  * It is convenient to [constrain](#!/guide/constraints) a view&#39;s size and 
+  * position to attributes of its parent view. Here we&#39;ll position the inner 
+  * view so that its inset by 10 pixels in its parent.
+  *
+  *     @example
+  *     &lt;view width=&quot;200&quot; height=&quot;100&quot; bgcolor=&quot;lightpink&quot;&gt;
+  *       &lt;view width=&quot;${this.parent.width-this.inset*2}&quot; height=&quot;${this.parent.height-this.inset*2}&quot; x=&quot;${this.inset}&quot; y=&quot;${this.inset}&quot; bgcolor=&quot;lightblue&quot;&gt;
+  *         &lt;attribute name=&quot;inset&quot; type=&quot;number&quot; value=&quot;10&quot;&gt;&lt;/attribute&gt;
+  *       &lt;/view&gt;
+  *     &lt;/view&gt;
+  */
+
+<span id='dr-view-event-onsubviewadded'>/**
+</span>  * @event onsubviewadded
+  * Fired when a subview is added to this view
+  * @param {dr.view} view The dr.view that was added
+  */
+
+<span id='dr-view-event-onsubviewremoved'>/**
+</span>  * @event onsubviewremoved
+  * Fired when a subview is removed from this view
+  * @param {dr.view} view The dr.view that was removed
+  */
+
+<span id='dr-view-event-onlayoutadded'>/**
+</span>  * @event onlayoutadded
+  * Fired when a layout is added to this view
+  * @param {dr.Layout} layout The dr.layout that was added
+  */
+
+<span id='dr-view-event-onlayoutremoved'>/**
+</span>  * @event onlayoutremoved
+  * Fired when a layout is removed from this view
+  * @param {dr.Layout} layout The dr.layout that was removed
+  */
+
+<span id='dr-view-event-onsubvieworderchange'>/**
+</span>  * @event onsubvieworderchange
+  * Fired when one of the subviews of this view has its lexical order changed.
+  * In particular, this is fired when moveToFront, moveToBack, moveForward,
+  * moveBackward, moveInFrontOf or moveBehind actually changes the subview order.
+  * @param {dr.View} subview The dr.View that was reordered.
+  */
+
+<span id='dr-view-attribute-focustrap'>/**
+</span>  * @attribute {Boolean} focustrap
+  * Determines if focus traversal can move above this view or not. The default 
+  * is undefined which is equivalent to false. Can be ignored using a key 
+  * modifier. The key modifier is typically &#39;option&#39;.
+  */
+
+<span id='dr-view-attribute-focuscage'>/**
+</span>  * @attribute {Boolean} focuscage
+  * Determines if focus traversal can move above this view or not. The default 
+  * is undefined which is equivalent to false. This is the same as focustrap 
+  * except it can&#39;t be ignored using a key modifier.
+  */
+
+<span id='dr-view-attribute-maskfocus'>/**
+</span>  * @attribute {Boolean} maskfocus
+  * Prevents focus from traversing into this view or any of its subviews. The 
+  * default is undefined which is equivalent to false.
+  */
+
+<span id='dr-view-attribute-focusable'>/**
+</span>  * @attribute {Boolean} focusable
+  * Indicates if this view can have focus or not. Defaults to false.
+  */
+
+<span id='dr-view-attribute-focused'>/**
+</span>  * @attribute {Boolean} focused
+  * Indicates if this view has focus or not.
+  */
+
+<span id='dr-view-attribute-focusembellishment'>/**
+</span>  * @attribute {Boolean} focusembellishment
+  * Indicates if the focus embellishment should be shown for this view or not 
+  * when it has focus.
+  */
+
+<span id='dr-view-attribute-cursor'>/**
+</span>  * @attribute {String} cursor
+  * Determines what cursor to show when moused over the view. Allowed values: 
+  * &#39;auto&#39;, &#39;move&#39;, &#39;no-drop&#39;, &#39;col-resize&#39;, &#39;all-scroll&#39;, &#39;pointer&#39;, 
+  * &#39;not-allowed&#39;, &#39;row-resize&#39;, &#39;crosshair&#39;, &#39;progress&#39;, &#39;e-resize&#39;, 
+  * &#39;ne-resize&#39;, &#39;default&#39;, &#39;text&#39;, &#39;n-resize&#39;, &#39;nw-resize&#39;, &#39;help&#39;, 
+  * &#39;vertical-text&#39;, &#39;s-resize&#39;, &#39;se-resize&#39;, &#39;inherit&#39;, &#39;wait&#39;, &#39;w-resize&#39;,
+  * &#39;sw-resize&#39;. Defaults to undefined which is equivalent to &#39;auto&#39;.
+  */
+
+<span id='dr-view-attribute-boxshadow'>/**
+</span>  * @attribute {Array} boxshadow
+  * Sets a shadow around this view. In the array, index 0 is the horizontal 
+  * shadow offset, index 1 is the vertical shadow offset, index 2 is the blur 
+  * amount, index 3 is the spread and index 4 is the color. Each entry in the 
+  * array is optional and the values default to: [0, 0, 4, 0, &#39;rgba(0,0,0,0.5)&#39;]
+  *
+  */
+
+<span id='dr-view-attribute-gradient'>/**
+</span>  * @attribute {Array} gradient
+  * Sets a linear gradient fill on the view. The value at index 0 is the 
+  * gradient angle. The remaining entries are the color stops. Each color 
+  * stop is a color value plus an optional location percentage. If no stops 
+  * are provided the current bgcolor and color will be used. If those do 
+  * not exist transparent will be used.
+  */
+
+<span id='dr-view-attribute-subviews'>/**
+</span>  * @attribute {Array} subviews
+  * The array of child dr.Views for this view. Should be accessed through 
+  * the getSubviews method.
+  */
+
+<span id='dr-view-attribute-layouts'>/**
+</span>  * @attribute {Array} layouts
+  * The array of child dr.Layouts for this view. Should be accessed through 
+  * the getLayouts method.
+  */
+
+<span id='dr-view-attribute-__fullBorderPaddingWidth'>/**
+</span>  * @attribute {Number} __fullBorderPaddingWidth
+  * @private
+  * The sum of borderleft, borderright, paddingleft and paddingright.
+  */
+
+<span id='dr-view-attribute-__fullBorderPaddingHeight'>/**
+</span>  * @attribute {Number} __fullBorderPaddingHeight
+  * @private
+  * The sum of bordertop, borderbottom, paddingtop and paddingbottom.
+  */
+
+<span id='dr-view-attribute-__autoLayoutwidth'>/**
+</span>  * @attribute {dr.AutoPropertyLayout} __autoLayoutwidth
+  * @private
+  * A reference to the layout used for auto widths.
+  */
+
+<span id='dr-view-attribute-__autoLayoutheight'>/**
+</span>  * @attribute {dr.AutoPropertyLayout} __autoLayoutheight
+  * @private
+  * A reference to the layout used for auto heights.
+  */
+
+<span id='dr-view-attribute-__isPercentConstraint_x'>/**
+</span>  * @attribute {Boolean} __isPercentConstraint_x
+  * @private
+  * True if a percent constraint is used for the x attribute.
+  */
+
+<span id='dr-view-attribute-__isPercentConstraint_y'>/**
+</span>  * @attribute {Boolean} __isPercentConstraint_y
+  * @private
+  * True if a percent constraint is used for the y attribute.
+  */
+
+<span id='dr-view-attribute-__isPercentConstraint_width'>/**
+</span>  * @attribute {Boolean} __isPercentConstraint_width
+  * True if a percent constraint is used for the width attribute.
+  */
+
+<span id='dr-view-attribute-__isPercentConstraint_height'>/**
+</span>  * @attribute {Boolean} __isPercentConstraint_height
+  * True if a percent constraint is used for the height attribute.
+  */
+
+<span id='dr-view-attribute-__lockRecalc'>/**
+</span>  * @attribute {Boolean} __lockRecalc
+  * Used to prevent recacalcuation of border, padding and corner radius when 
+  * setting them via set_border, set_padding or set_cornerradius.
+  */
+
+<span id='dr-view-attribute-x'>/**
+</span>  * @attribute {Number} [x=0]
+  * This view&#39;s x-position. There are several categories of allowed values.
+  *
+  *   1) Fixed: If a number is provided the x-position will be a fixed
+  *      pixel position relative to the parent view.
+  *
+  *   2) Percentage: If a number followed by a &#39;%&#39; sign is provided the
+  *      x-position will constrained to a percent of the parent views
+  *      inner width.
+  *
+  *   3) Aligned Left: If the string &#39;left&#39; is provided the x-position will
+  *      be constrained so that the view&#39;s left bound is aligned with the
+  *      inner left edge of the parent view. To clarify, aligning left is
+  *      different from a fixed x-position of 0 since it accounts for
+  *      transformations applied to the view.
+  *
+  *   4) Aligned Right: If the string &#39;right&#39; is provided the x-position will
+  *      be constrained so that the view&#39;s right bound is aligned with the
+  *      inner right edge of the parent view. Like align left, this means
+  *      transformations applied to the view are accounted for.
+  *
+  *   5) Aligned Center: If the string &#39;center&#39; or &#39;middle&#39; is provided the
+  *      x-position will be constrained so that the midpoint of the width
+  *      bound of the view is the same as the midpoint of the inner width of
+  *      the parent view. Like align left, this means transformations applied
+  *      to the view are accounted for.
+  */
+
+<span id='dr-view-attribute-y'>/**
+</span>  * @attribute {Number} [y=0]
+  * This view&#39;s y-position. There are several categories of allowed values.
+  *
+  *   1) Fixed: If a number is provided the y-position will be a fixed
+  *      pixel position relative to the parent view.
+  *
+  *   2) Percentage: If a number followed by a &#39;%&#39; sign is provided the
+  *      y-position will constrained to a percent of the parent views
+  *      inner height.
+  *
+  *   3) Aligned Top: If the string &#39;top&#39; is provided the y-position will
+  *      be constrained so that the view&#39;s top bound is aligned with the
+  *      inner top edge of the parent view. To clarify, aligning top is
+  *      different from a fixed y-position of 0 since it accounts for
+  *      transformations applied to the view.
+  *
+  *   4) Aligned Bottom: If the string &#39;bottom&#39; is provided the y-position
+  *      will be constrained so that the view&#39;s bottom bound is aligned with
+  *      the inner bottom edge of the parent view. Like align top, this means
+  *      transformations applied to the view are accounted for.
+  *
+  *   5) Aligned Middle: If the string &#39;middle&#39; or &#39;center&#39; is provided the
+  *      y-position will be constrained so that the midpoint of the height
+  *      bound of the view is the same as the midpoint of the inner height of
+  *      the parent view. Like align top, this means transformations applied
+  *      to the view are accounted for.
+  */
+
+<span id='dr-view-attribute-width'>/**
+</span>  * @attribute {Number} [width=0]
+  * This view&#39;s width. There are several categories of allowed values.
+  *
+  *   1) Fixed: If a number is provided the width will be a fixed
+  *      pixel size.
+  *
+  *   2) Percentage: If a number followed by a &#39;%&#39; sign is provided the
+  *      width will constrained to a percent of the parent views
+  *      inner width.
+  *
+  *   3) Auto: If the string &#39;auto&#39; is provided the width will be constrained
+  *      to the maximum x bounds of the view children of this view. This
+  *      feature is implemented like a Layout, so you can use ignorelayout
+  *      on a child view to disregard them for auto sizing. Furthermore,
+  *      views with a percentage width, percentage x, or an x-position of
+  *      &#39;center&#39; or &#39;right&#39; will also be disregarded. Note that &#39;left&#39; is
+  *      not ignored since it does not necessarily result in a circular
+  *      constraint.
+  */
+
+<span id='dr-view-attribute-height'>/**
+</span>  * @attribute {Number} [height=0]
+  * This view&#39;s height. There are several categories of allowed values.
+  *   1) Fixed: If a number is provided the height will be a fixed
+  *      pixel size.
+  *
+  *   2) Percentage: If a number followed by a &#39;%&#39; sign is provided the
+  *      height will constrained to a percent of the parent views
+  *      inner height.
+  *
+  *   3) Auto: If the string &#39;auto&#39; is provided the height will be constrained
+  *      to the maximum y bounds of the view children of this view. This
+  *      feature is implemented like a Layout, so you can use ignorelayout
+  *      on a child view to disregard them for auto sizing. Furthermore,
+  *      views with a percentage height, percentage y, or a y-position of
+  *      &#39;center&#39;, &#39;middle&#39; or &#39;bottom&#39; will also be disregarded. Note that
+  *      &#39;top&#39; is not ignored since it does not necessarily result in a
+  *      circular constraint.
+  */
+
+<span id='dr-view-attribute-isaligned'>/**
+</span>  * @attribute {Boolean} isaligned Indicates that the x attribute is
+  * set to one of the &quot;special&quot; alignment values.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-isvaligned'>/**
+</span>  * @attribute {Boolean} isvaligned Indicates that the y attribute is
+  * set to one of the &quot;special&quot; alignment values.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-innerwidth'>/**
+</span>  * @attribute {Number} innerwidth The width of the view less padding and
+  * border. This is the width child views should use if border or padding
+  * is being used by the view.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-innerheight'>/**
+</span>  * @attribute {Number} innerheight The height of the view less padding and
+  * border. This is the height child views should use if border or padding
+  * is being used by the view.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-boundsx'>/**
+</span>  * @attribute {Number} boundsx The x position of the bounding box for the
+  * view. This value accounts for rotation and scaling of the view.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-boundsy'>/**
+</span>  * @attribute {Number} boundsy The y position of the bounding box for the
+  * view. This value accounts for rotation and scaling of the view.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-boundsxdiff'>/**
+</span>  * @attribute {Number} boundsxdiff The difference between the x position
+  * of the view and the boundsx of the view. Useful when you need to offset
+  * a view to make it line up when it is scaled or rotated.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-boundsydiff'>/**
+</span>  * @attribute {Number} boundsydiff The difference between the y position
+  * of the view and the boundsy of the view. Useful when you need to offset
+  * a view to make it line up when it is scaled or rotated.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-boundswidth'>/**
+</span>  * @attribute {Number} boundswidth The width of the bounding box for the
+  * view. This value accounts for rotation and scaling of the view. This is
+  * the width non-descendant views should use if the view is rotated or
+  * scaled.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-boundsheight'>/**
+</span>  * @attribute {Number} boundsheight The height of the bounding box for the
+  * view. This value accounts for rotation and scaling of the view. This is
+  * the height non-descendant views should use if the view is rotated or
+  * scaled.
+  * @readonly
+  */
+
+<span id='dr-view-attribute-clickable'>/**
+</span>  * @attribute {Boolean} [clickable=false]
+  * If true, this view recieves mouse events. Automatically set to true when 
+  * an onclick/mouse* event is registered for this view.
+  */
+
+<span id='dr-view-attribute-clip'>/**
+</span>  * @attribute {Boolean} [clip=false]
+  * If true, this view clips to its bounds
+  */
+
+<span id='dr-view-attribute-scrollable'>/**
+</span>  * @attribute {Boolean} [scrollable=false]
+  * If true, this view clips to its bounds and provides scrolling to see 
+  * content that overflows the bounds
+  */
+
+<span id='dr-view-attribute-scrollbars'>/**
+</span>  * @attribute {Boolean} [scrollbars=false]
+  * Controls the visibility of scrollbars if scrollable is true
+  */
+
+<span id='dr-view-attribute-visible'>/**
+</span>  * @attribute {Boolean} [visible=true]
+  * If false, this view is invisible
+  */
+
+<span id='dr-view-attribute-bgcolor'>/**
+</span>  * @attribute {String} bgcolor
+  * Sets this view&#39;s background color
+  */
+
+<span id='dr-view-attribute-bordercolor'>/**
+</span>  * @attribute {String} bordercolor
+  * Sets this view&#39;s border color
+  */
+
+<span id='dr-view-attribute-borderstyle'>/**
+</span>  * @attribute {String} borderstyle
+  * Sets this view&#39;s border style (can be any css border-style value)
+  */
+
+<span id='dr-view-attribute-border'>/**
+</span>  * @attribute {Number} border
+  * Sets this view&#39;s border width
+  */
+
+<span id='dr-view-attribute-padding'>/**
+</span>  * @attribute {Number} padding
+  * Sets this view&#39;s padding
+  */
+
+<span id='dr-view-attribute-xscale'>/**
+</span>  * @attribute {Number} [xscale=1.0]
+  * Sets this view&#39;s width scale
+  */
+
+<span id='dr-view-attribute-yscale'>/**
+</span>  * @attribute {Number} [yscale=1.0]
+  * Sets this view&#39;s height scale
+  */
+
+<span id='dr-view-attribute-z'>/**
+</span>  * @attribute {Number} [z=0]
+  * Sets this view&#39;s z position (higher values are on top of other views)
+  *
+  * *(note: setting a &#39;z&#39; value for a view implicitly sets its parent&#39;s 
+  * &#39;transform-style&#39; to &#39;preserve-3d&#39;)*
+  */
+
+<span id='dr-view-attribute-rotation'>/**
+</span>  * @attribute {Number} [rotation=0]
+  * Sets this view&#39;s rotation in degrees.
+  */
+
+<span id='dr-view-attribute-perspective'>/**
+</span>  * @attribute {String} [perspective=0]
+  * Sets this view&#39;s perspective depth along the z access, values in pixels.
+  * When this value is set, items further from the camera will appear smaller, 
+  * and closer items will be larger.
+  */
+
+<span id='dr-view-attribute-opacity'>/**
+</span>  * @attribute {Number} [opacity=1.0]
+  * Sets this view&#39;s opacity, values can be a float from 0.0 to 1.0
+  */
+
+<span id='dr-view-attribute-scrollx'>/**
+</span>  * @attribute {Number} [scrollx=0]
+  * Sets the horizontal scroll position of the view. Only relevant if
+  * this.scrollable is true. Setting this value will generate both a
+  * scrollx event and a scroll event.
+  */
+
+<span id='dr-view-attribute-scrolly'>/**
+</span>  * @attribute {Number} [scrolly=0]
+  * Sets the vertical scroll position of the view. Only relevant if
+  * this.scrollable is true. Setting this value will generate both a
+  * scrolly event and a scroll event.
+  */
+
+<span id='dr-view-attribute-xanchor'>/**
+</span>  * @attribute {Number} [xanchor=0]
+  * Sets the horizontal center of the view&#39;s transformations (such as
+  * rotation) There are several categories of allowed values:
+  *   1) Fixed: If a number is provided the x anchor will be a fixed
+  *      pixel position.
+  *   2) Left: If the string &#39;left&#39; is provided the left edge of the view
+  *      will be used. This is equivalent to a fixed value of 0.
+  *   3) Right: If the string &#39;right&#39; is provided the right edge of the
+  *      view will be used.
+  *   4) Center: If the string &#39;center&#39; is provided the midpoint of the
+  *      width of the view will be used.
+  */
+
+<span id='dr-view-attribute-yanchor'>/**
+</span>  * @attribute {Number} [yanchor=0]
+  * Sets the vertical center of the view&#39;s transformations (such as
+  * rotation) There are several categories of allowed values:
+  *   1) Fixed: If a number is provided the y anchor will be a fixed
+  *      pixel position.
+  *   2) Top: If the string &#39;top&#39; is provided the top edge of the view
+  *      will be used. This is equivalent to a fixed value of 0.
+  *   3) Bottom: If the string &#39;bottom&#39; is provided the bottom edge of the
+  *      view will be used.
+  *   4) Center: If the string &#39;center&#39; is provided the midpoint of the
+  *      height of the view will be used.
+  */
+
+<span id='dr-view-attribute-zanchor'>/**
+</span>  * @attribute {Number} [zanchor=0]
+  * Sets the z-axis center of the view&#39;s transformations (such as rotation)
+  */
+
+<span id='dr-view-attribute-cursor'>/**
+</span>  * @attribute {String} [cursor=&#39;pointer&#39;]
+  * Cursor that should be used when the mouse is over this view, can be any 
+  * CSS cursor value. Only applies when clickable is true.
+  */
+
+<span id='dr-view-attribute-boxshadow'>/**
+</span>  * @attribute {String} [boxshadow]
+  * Drop shadow using standard CSS format (offset-x offset-y blur-radius 
+  * spread-radius color). For example: &quot;10px 10px 5px 0px  *888888&quot;.
+  */
+
+<span id='dr-view-attribute-ignorelayout'>/**
+</span>  * @attribute {String} [ignorelayout=&#39;false&#39;]
+  * Indicates if layouts should ignore this view or not. A variety of
+  * configuration mechanisms are supported. Provided true or false will
+  * cause the view to be ignored or not by all layouts. If instead a
+  * serialized map is provided the keys of the map will target values
+  * the layouts with matching names. A special key of &#39;*&#39; indicates a
+  * default value for all layouts not specifically mentioned in the map.
+  */
+
+<span id='dr-view-attribute-layouthint'>/**
+</span>  * @attribute {String} [layouthint=&#39;&#39;]
+  * Provides per view hinting to layouts. The specific hints supported
+  * are layout specific. Hints are provided as a map. A map key may
+  * be prefixied with the name of a layout followed by a &#39;/&#39;. This will
+  * target that hint at a specific layout. If the prefix is ommitted or
+  * a prefix of &#39;*&#39; is used the hint will be targeted to all layouts.
+  */
+
+<span id='dr-view-event-onclick'>/**
+</span>  * @event onclick
+  * Fired when this view is clicked
+  * @param {dr.view} view The dr.view that fired the event
+  */
+
+<span id='dr-view-event-onmouseover'>/**
+</span>  * @event onmouseover
+  * Fired when the mouse moves over this view
+  * @param {dr.view} view The dr.view that fired the event
+  */
+
+<span id='dr-view-event-onmouseout'>/**
+</span>  * @event onmouseout
+  * Fired when the mouse moves off this view
+  * @param {dr.view} view The dr.view that fired the event
+  */
+
+<span id='dr-view-event-onmousedown'>/**
+</span>  * @event onmousedown
+  * Fired when the mouse goes down on this view
+  * @param {dr.view} view The dr.view that fired the event
+  */
+
+<span id='dr-view-event-onmouseup'>/**
+</span>  * @event onmouseup
+  * Fired when the mouse goes up on this view
+  * @param {dr.view} view The dr.view that fired the event
+  */
+
+<span id='dr-view-event-onscroll'>/**
+</span>  * @event onscroll
+  * Fired when the scroll position changes. Also provides information about
+  * the scroll width and scroll height though it does not refire when those
+  * values change since the DOM does not generate an event when they do. This
+  * event is typically delayed by a few millis after setting scrollx or
+  * scrolly since the underlying DOM event fires during the next DOM refresh
+  * performed by the browser.
+  * @param {Object} scroll The following four properties are defined:
+  *     scrollx:number The horizontal scroll position.
+  *     scrolly:number The vertical scroll position.
+  *     scrollwidth:number The width of the scrollable area. Note this is
+  *       not the maximum value for scrollx since that depends on the bounds
+  *       of the scrollable view. The maximum can be calculated using this
+  *       formula: scrollwidth - view.width + 2*view.border
+  *     scrollheight:number The height of the scrollable area. Note this is
+  *       not the maximum value for scrolly since that depends on the bounds
+  *       of the scrollable view. The maximum can be calculated using this
+  *       formula: scrollheight - view.height + 2*view.border
+  */
+
+<span id='dr-view-attribute-subviews'>/**
+</span>  * @attribute {dr.view[]} subviews
+  * @readonly
+  * An array of this views&#39;s child views
+  */
+
+<span id='dr-view-attribute-layouts'>/**
+</span>  * @attribute {dr.layout[]} layouts
+  * @readonly
+  * An array of this views&#39;s layouts. Only defined when needed.
+  */
+
+define(function(require, exports, module) {
+    var dr = require(&#39;$LIB/dr/dr.js&#39;),
+        JS = require(&#39;$LIB/jsclass.js&#39;);
+    require(&#39;$SPRITE/View.js&#39;);
+    require(&#39;$LIB/dr/layout/AutoPropertyLayout.js&#39;);
+    require(&#39;../model/Path.js&#39;);
+    
+    module.exports = dr.View = new JS.Class(&#39;View&#39;, dr.Node, {
+        include: [
+            require(&#39;$LIB/dr/SpriteBacked.js&#39;)
+        ],
+        
+        
+        // Class Methods and Attributes ////////////////////////////////////////////
+        extend: {
+            getLayoutHint: function(hints, layoutName, hintName) {
+                if (hints) {
+                    var hint = hints[layoutName + &#39;/&#39; + hintName];
+                    if (hint != null) return hint;
+                    
+                    hint = hints[hintName];
+                    if (hint != null) return hint;
+                    
+                    hint = hints[&#39;*/&#39; + hintName];
+                    if (hint != null) return hint;
+                } else {
+                  // No hints exist
+                }
+            },
+            
+            ATTR_TYPES: {
+                ignorelayout:&#39;boolean&#39;,
+                layouthint:&#39;json&#39;,
+                
+                focustrap:&#39;boolean&#39;,
+                focuscage:&#39;boolean&#39;,
+                maskfocus:&#39;boolean&#39;,
+                focusable:&#39;boolean&#39;,
+                focused:&#39;boolean&#39;,
+                focusembellishment:&#39;boolean&#39;,
+                
+                scrollable:&#39;boolean&#39;,
+                scrollx:&#39;number&#39;,
+                scrolly:&#39;number&#39;,
+                
+                bordercolor:&#39;color&#39;,
+                borderstyle:&#39;string&#39;,
+                border:&#39;positivenumber&#39;,
+                padding:&#39;positivenumber&#39;,
+                topborder:&#39;positivenumber&#39;,
+                bottomborder:&#39;positivenumber&#39;,
+                leftborder:&#39;positivenumber&#39;,
+                rightborder:&#39;positivenumber&#39;,
+                toppadding:&#39;positivenumber&#39;,
+                bottompadding:&#39;positivenumber&#39;,
+                leftpadding:&#39;positivenumber&#39;,
+                rightpadding:&#39;positivenumber&#39;,
+                
+                cornerradius:&#39;positivenumber&#39;,
+                topleftcornerradius:&#39;positivenumber&#39;,
+                toprightcornerradius:&#39;positivenumber&#39;,
+                bottomleftcornerradius:&#39;positivenumber&#39;,
+                bottomrightcornerradius:&#39;positivenumber&#39;,
+                
+                xscale:&#39;positivenumber&#39;,
+                yscale:&#39;positivenumber&#39;,
+                rotation:&#39;number&#39;,
+                z:&#39;number&#39;,
+                xanchor:&#39;*&#39;,
+                yanchor:&#39;*&#39;,
+                zanchor:&#39;*&#39;,
+                
+                clickable:&#39;boolean&#39;,
+                clip:&#39;boolean&#39;,
+                bgcolor:&#39;color&#39;,
+                boxshadow:&#39;expression&#39;,
+                gradient:&#39;expression&#39;,
+                opacity:&#39;number&#39;,
+                visible:&#39;boolean&#39;,
+                cursor:&#39;string&#39;,
+                x:&#39;number&#39;,
+                y:&#39;number&#39;,
+                width:&#39;positivenumber&#39;,
+                height:&#39;positivenumber&#39;
+            },
+            
+            // Attribute descriptions used in the editor
+            attributes: {
+              x: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 10,
+              },
+              y: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 11,
+              },
+              width: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 12,
+              },
+              height: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 13,
+              },
+              
+              bgcolor: {
+                type: &#39;color&#39;,
+                value: &#39;transparent&#39;,
+                importance: 20,
+              },
+              
+              border: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 30,
+              },
+              bordercolor: {
+                type: &#39;color&#39;,
+                value: &#39;transparent&#39;,
+                importance: 31,
+              },
+              borderstyle: {
+                type: &#39;string&#39;,
+                value: &#39;solid&#39;,
+                importance: 32,
+              },
+              
+              opacity: {
+                type: &#39;number&#39;,
+                value: 1,
+                importance: 100,
+              },
+              visible: {
+                type: &#39;boolean&#39;,
+                value: false,
+                importance: 101,
+              },
+              
+              color: {
+                type: &#39;color&#39;,
+                value: &#39;inherit&#39;,
+                importance: 105,
+              },
+              padding: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 106,
+              },
+              cornerradius: {
+                type: &#39;number&#39;,
+                value: 0,
+                importance: 107,
+              },
+              
+              clip: {
+                type: &#39;boolean&#39;,
+                value: &#39;false&#39;,
+                importance: 110,
+              },
+              scrollable: {
+                type: &#39;boolean&#39;,
+                value: &#39;false&#39;,
+                importance: 111,
+              },
+              ignorelayout: {
+                type: &#39;boolean&#39;,
+                value: &#39;false&#39;,
+                importance: 120,
+              },
+              layouthint: {
+                type: &#39;json&#39;,
+                value: &#39;&#39;,
+                importance: 121,
+              }
+            }
+        },
+        
+        
+        // Life Cycle //////////////////////////////////////////////////////////////
+<span id='dr-view-method-initNode'>        /** @overrides dr.Node */
+</span>        initNode: function(parent, attrs) {
+            this.subviews = [];
+            if (attrs.$tagname === undefined) {
+              attrs.$tagname = &#39;view&#39;;
+            }
+            
+            // Used in many calculations so precalculating for performance.
+            this.__fullBorderPaddingWidth = this.__fullBorderPaddingHeight = 0;
+            
+            // Initialize default values to reduce setter calls during initialization
+            this.x = this.y = this.width = this.height = this.innerwidth = this.innerheight =
+                this.boundsx = this.boundsy = this.boundswidth = this.boundsheight = this.boundsxdiff = this.boundsydiff = 
+                this.rotation = this.z = 
+                this.leftborder = this.rightborder = this.topborder = this.bottomborder = this.border = 
+                this.leftpadding = this.rightpadding = this.toppadding = this.bottompadding = this.padding = 
+                this.topleftcornerradius = this.toprightcornerradius = this.bottomleftcornerradius = this.bottomrightcornerradius = this.cornerradius = 
+                this.scrollx = this.scrolly = 0;
+            this.opacity = this.xscale = this.yscale = 1;
+            this.visible = this.focusembellishment = true;
+            this.focusable = this.clickable = this.ignorelayout = this.clip = this.scrollable = this.isaligned = this.isvaligned = false;
+            this.bgcolor = this.bordercolor = &#39;transparent&#39;;
+            this.borderstyle = &#39;solid&#39;;
+            this.cursor = &#39;auto&#39;;
+            this.xanchor = this.yanchor = &#39;center&#39;;
+            this.zanchor = 0;
+            
+            // Initialize __cfg_ values too
+            this.__cfg_x = this.__cfg_y = this.__cfg_width = this.__cfg_height = this.__cfg_innerwidth = this.__cfg_innerheight =
+                this.__cfg_boundsx = this.__cfg_boundsy = this.__cfg_boundswidth = this.__cfg_boundsheight = this.__cfg_boundsxdiff = this.__cfg_boundsydiff = 
+                this.__cfg_rotation = this.__cfg_z = 
+                this.__cfg_leftborder = this.__cfg_rightborder = this.__cfg_topborder = this.__cfg_bottomborder = this.__cfg_border = 
+                this.__cfg_leftpadding = this.__cfg_rightpadding = this.__cfg_toppadding = this.__cfg_bottompadding = this.__cfg_padding = 
+                this.__cfg_topleftcornerradius = this.__cfg_toprightcornerradius = this.__cfg_bottomleftcornerradius = this.__cfg_bottomrightcornerradius = this.__cfg_cornerradius = 
+                this.__cfg_scrollx = this.__cfg_scrolly = 0;
+            this.__cfg_opacity = this.__cfg_xscale = this.__cfg_yscale = 1;
+            this.__cfg_visible = this.__cfg_focusembellishment = true;
+            this.__cfg_focusable = this.__cfg_clickable = this.__cfg_ignorelayout = this.__cfg_clip = this.__cfg_scrollable = this.__cfg_isaligned = this.__cfg_isvaligned = false;
+            this.__cfg_bgcolor = this.__cfg_bordercolor = &#39;transparent&#39;;
+            this.__cfg_borderstyle = &#39;solid&#39;;
+            this.__cfg_cursor = &#39;auto&#39;;
+            this.__cfg_xanchor = this.__cfg_yanchor = &#39;center&#39;;
+            this.__cfg_zanchor = 0;
+            
+            this.set_sprite(this.createSprite(attrs));
+            
+            var clickableWasDisabled = attrs.clickable === &#39;false&#39;;
+            
+            this.callSuper(parent, attrs);
+            
+            if (!clickableWasDisabled) this.__checkClickability();
+        },
+        
+<span id='dr-view-method-__checkClickability'>        /** @private */
+</span>        __checkClickability: function() {
+            var clickableEvents = [&#39;onmousedown&#39;, &#39;onmouseup&#39;, &#39;onmouseover&#39;, &#39;onmouseout&#39;, &#39;onclick&#39;], 
+                i = clickableEvents.length;
+            while (i) {
+                if (this.hasObservers(clickableEvents[--i])) {
+                    this.setAttribute(&#39;clickable&#39;, true);
+                    break;
+                }
+            }
+        },
+        
+        doBeforeAdoption: function() {
+            this.__updateBounds(true);
+        },
+        
+<span id='dr-view-method-notifyReady'>        /** @overrides dr.Node */
+</span>        notifyReady: function() {
+            if (this.__autoLayoutwidth) this.__autoLayoutwidth.setAttribute(&#39;locked&#39;, false);
+            if (this.__autoLayoutheight) this.__autoLayoutheight.setAttribute(&#39;locked&#39;, false);
+            
+            this.callSuper();
+        },
+        
+<span id='dr-view-method-destroyBeforeOrphaning'>        /** @overrides dr.Node */
+</span>        destroyBeforeOrphaning: function() {
+            this.giveAwayFocus();
+            this.callSuper();
+        },
+        
+<span id='dr-view-method-destroyAfterOrphaning'>        /** @overrides dr.Node */
+</span>        destroyAfterOrphaning: function() {
+            this.callSuper();
+            
+            this.sprite.destroy();
+        },
+        
+        
+        // Accessors ///////////////////////////////////////////////////////////////
+        setAttribute: function(attrName, value) {
+            var constraint;
+            switch (attrName) {
+                case &#39;x&#39;:
+                    constraint = this.__setupPercentConstraint(&#39;x&#39;, value, &#39;innerwidth&#39;);
+                    if (!constraint) constraint = this.__setupAlignConstraint(&#39;x&#39;, value);
+                    break;
+                case &#39;y&#39;:
+                    constraint = this.__setupPercentConstraint(&#39;y&#39;, value, &#39;innerheight&#39;);
+                    if (!constraint) constraint = this.__setupAlignConstraint(&#39;y&#39;, value);
+                    break;
+                case &#39;width&#39;:
+                    constraint = this.__setupPercentConstraint(&#39;width&#39;, value, &#39;innerwidth&#39;);
+                    if (!constraint) constraint = this.__setupAutoConstraint(&#39;width&#39;, value, &#39;x&#39;);
+                    break;
+                case &#39;height&#39;:
+                    constraint = this.__setupPercentConstraint(&#39;height&#39;, value, &#39;innerheight&#39;);
+                    if (!constraint) constraint = this.__setupAutoConstraint(&#39;height&#39;, value, &#39;y&#39;);
+                    break;
+            }
+            
+            if (constraint !== dr.noop) {
+                return this.callSuper(attrName, constraint !== undefined ? constraint : value);
+            } else {
+                return this;
+            }
+        },
+        
+<span id='dr-view-method-__setupAlignConstraint'>        /** Returns a constraint string if the provided value matches an
+</span>            align special value.
+            @private */
+        __setupAlignConstraint: function(name, value) {
+            var key = &#39;__noAutoForAlignConstraint_&#39; + name;
+            this[key] = false;
+            if (typeof value === &#39;string&#39;) {
+                var normValue = value.toLowerCase(),
+                    isX, axis, boundsdiff, boundssize, alignattr;
+                
+                if (name === &#39;x&#39;) {
+                    isX = true;
+                    axis = &#39;innerwidth&#39;;
+                    boundsdiff = &#39;boundsxdiff&#39;;
+                    boundssize = &#39;boundswidth&#39;;
+                    alignattr = &#39;isaligned&#39;;
+                } else {
+                    isX = false;
+                    axis = &#39;innerheight&#39;;
+                    boundsdiff = &#39;boundsydiff&#39;;
+                    boundssize = &#39;boundsheight&#39;;
+                    alignattr = &#39;isvaligned&#39;;
+                }
+                
+                if (normValue === &#39;begin&#39; || (isX &amp;&amp; normValue === &#39;left&#39;) || (!isX &amp;&amp; normValue === &#39;top&#39;)) {
+                    this.setSimpleActual(alignattr, true, true);
+                    return this.constraintify(&quot;this.&quot; + boundsdiff);
+                } else if (normValue === &#39;middle&#39; || normValue === &#39;center&#39;) {
+                    this.setSimpleActual(alignattr, true, true);
+                    this[key] = true;
+                    return this.constraintify(&quot;((this.parent.&quot; + axis + &quot; - this.&quot; + boundssize + &quot;) / 2) + this.&quot; + boundsdiff);
+                } else if (normValue === &#39;end&#39; || (isX &amp;&amp; normValue === &#39;right&#39;) || (!isX &amp;&amp; normValue === &#39;bottom&#39;)) {
+                    this.setSimpleActual(alignattr, true, true);
+                    this[key] = true;
+                    return this.constraintify(&quot;this.parent.&quot; + axis + &quot; - this.&quot; + boundssize + &quot; + this.&quot; + boundsdiff);
+                } else if (normValue === &#39;none&#39;) {
+                    this.setSimpleActual(alignattr, false, true);
+                    return dr.noop;
+                }
+            } else {
+                this.setSimpleActual(name === &#39;x&#39; ? &#39;isaligned&#39; : &#39;isvaligned&#39;, false, true);
+            }
+        },
+        
+<span id='dr-view-method-__setupPercentConstraint'>        /** Returns a constraint string if the provided value matches a percent
+</span>            special value.
+            @private */
+        __setupPercentConstraint: function(name, value, axis) {
+            var key = &#39;__isPercentConstraint_&#39; + name;
+            if (typeof value === &#39;string&#39; &amp;&amp; value.endsWith(&#39;%&#39;)) {
+                this[key] = true;
+                var scale = parseInt(value)/100;
+                // Handle root view case using dr.global.viewportResize
+                if (this.isA(dr.SizeToViewport)) {
+                    axis = axis.substring(5);
+                    return this.constraintify(&quot;Math.max(dr.global.viewportResize.&quot; + axis + &quot; * &quot; + scale + &quot;, this.min&quot; + axis + &quot;)&quot;);
+                } else {
+                    return this.constraintify(&quot;this.parent.&quot; + axis + &quot; * &quot; + scale);
+                }
+            } else {
+                this[key] = false;
+            }
+        },
+        
+<span id='dr-view-method-__setupAutoConstraint'>        /** @private */
+</span>        __setupAutoConstraint: function(name, value, axis) {
+            var layoutKey = &#39;__autoLayout&#39; + name;
+                oldLayout = this[layoutKey];
+            if (oldLayout) {
+                oldLayout.destroy();
+                delete this[layoutKey];
+            }
+            
+            if (value === &#39;auto&#39;) {
+                this[layoutKey] = new dr.AutoPropertyLayout(this, {axis:axis, locked:this.initing === false ? &#39;false&#39; : &#39;true&#39;});
+                this[dr.AccessorSupport.generateConfigAttrName(name)] = value;
+                
+                return dr.noop;
+            }
+        },
+        
+        getSubviews: function() {
+            return this.subviews;
+        },
+        
+<span id='dr-view-method-getSiblingViews'>        /** Gets the views that are our siblings.
+</span>            @returns array of dr.View or null if this view is orphaned. */
+        getSiblingViews: function() {
+            if (!this.parent) return null;
+            var self = this;
+            return this.parent.getSubviews().filter(function(v) {return v !== self;});
+        },
+        
+        // Layout Attributes //
+<span id='dr-view-method-getLayouts'>        /** Does lazy instantiation of the layouts array.
+</span>            @param noAuto:boolan (Optional) If provided any &quot;auto&quot; layouts
+                will be filtered out.
+            @returns array The list of layouts. */
+        getLayouts: function(noAuto) {
+            var retval = this.layouts || (this.layouts = []);
+            
+            if (noAuto) {
+                var i = retval.length;
+                if (i) {
+                    var filtered = [], layout;
+                    while (i) {
+                        layout = retval[--i];
+                        if (!layout.isA(dr.AutoPropertyLayout)) filtered.push(layout);
+                    }
+                    retval = filtered;
+                }
+            }
+            
+            return retval;
+        },
+        
+        set_ignorelayout: function(v) {this.setActual(&#39;ignorelayout&#39;, v, &#39;json&#39;, &#39;false&#39;);},
+        set_layouthint: function(v) {this.setActual(&#39;layouthint&#39;, v, &#39;json&#39;, &#39;&#39;);},
+        
+        // Focus Attributes //
+        set_focustrap: function(v) {this.setActual(&#39;focustrap&#39;, v, &#39;boolean&#39;, false);},
+        set_focuscage: function(v) {this.setActual(&#39;focuscage&#39;, v, &#39;boolean&#39;, false);},
+        set_maskfocus: function(v) {this.setActual(&#39;maskfocus&#39;, v, &#39;boolean&#39;, false);},
+        set_focusable: function(v) {this.setActual(&#39;focusable&#39;, v, &#39;boolean&#39;, false);},
+        
+        set_focused: function(v) {
+            if (this.setActual(&#39;focused&#39;, v, &#39;boolean&#39;, false)) {
+                if (this.initing === false) {
+                    dr.global.focus[this.focused ? &#39;notifyFocus&#39; : &#39;notifyBlur&#39;](this);
+                }
+            }
+        },
+        
+        set_focusembellishment: function(v) {
+            if (this.setActual(&#39;focusembellishment&#39;, v, &#39;boolean&#39;, true)) {
+                if (this.focused) {
+                    if (v) {
+                        this.showFocusEmbellishment();
+                    } else {
+                        this.hideFocusEmbellishment();
+                    }
+                }
+            }
+        },
+        
+        // Scroll Attributes //
+        set_scrollable: function(v) {
+            if (this.setActual(&#39;scrollable&#39;, v, &#39;boolean&#39;, false)) {
+                if (this.scrollable) {
+                    this.listenToPlatform(this, &#39;onscroll&#39;, &#39;__handleScroll&#39;);
+                } else {
+                    this.stopListeningToPlatform(this, &#39;onscroll&#39;, &#39;__handleScroll&#39;);
+                }
+            }
+        },
+        
+        set_scrollx: function(v) {
+            v = isNaN(v) ? 0 : Math.max(0, Math.min(this.sprite.getScrollWidth() - this.width + this.leftborder + this.rightborder, v));
+            this.setActual(&#39;scrollx&#39;, v, &#39;number&#39;, 0);
+        },
+        
+        set_scrolly: function(v) {
+            v = isNaN(v) ? 0 : Math.max(0, Math.min(this.sprite.getScrollHeight() - this.height + this.topborder + this.bottomborder, v));
+            this.setActual(&#39;scrolly&#39;, v, &#39;number&#39;, 0);
+        },
+        
+<span id='dr-view-method-__handleScroll'>        /** @private */
+</span>        __handleScroll: function(platformEvent) {
+            var sprite = this.sprite,
+                x = sprite.getScrollX(),
+                y = sprite.getScrollY();
+            
+            if (this.scrollx !== x) this.set_scrollx(x);
+            if (this.scrolly !== y) this.set_scrolly(y);
+            
+            this.sendEvent(&#39;onscroll&#39;, {
+                scrollx:x,
+                scrolly:y,
+                scrollwidth:sprite.getScrollWidth(),
+                scrollheight:sprite.getScrollHeight()
+            });
+        },
+        
+        // Border and Padding Attributes //
+        set_bordercolor: function(v) {this.setActual(&#39;bordercolor&#39;, v, &#39;color&#39;, &#39;transparent&#39;);},
+        set_borderstyle: function(v) {this.setActual(&#39;borderstyle&#39;, v, &#39;string&#39;, &#39;solid&#39;);},
+        
+        set_border: function(v) {this.__setBP(&#39;border&#39;, v);},
+        set_padding: function(v) {this.__setBP(&#39;padding&#39;, v);},
+        
+<span id='dr-view-method-__setBP'>        /** @private */
+</span>        __setBP: function(type, v) {
+            this.__lockRecalc = true;
+            this.setAttribute(&#39;top&#39; + type, v);
+            this.setAttribute(&#39;bottom&#39; + type, v);
+            this.setAttribute(&#39;left&#39; + type, v);
+            this.setAttribute(&#39;right&#39; + type, v);
+            this.__lockRecalc = false;
+            
+            this.__fullBorderPaddingWidth = this.leftborder + this.rightborder + this.leftpadding + this.rightpadding;
+            this.__fullBorderPaddingHeight = this.topborder + this.bottomborder + this.toppadding + this.bottompadding;
+            
+            this.setActual(type, v, &#39;positivenumber&#39;, 0);
+            
+            this.__updateInnerWidth();
+            this.__updateInnerHeight();
+        },
+        
+        set_topborder: function(v) {this.__updateBP(&#39;topborder&#39;, v, true, true);},
+        set_bottomborder: function(v) {this.__updateBP(&#39;bottomborder&#39;, v, true, true);},
+        set_leftborder: function(v) {this.__updateBP(&#39;leftborder&#39;, v, false, true);},
+        set_rightborder: function(v) {this.__updateBP(&#39;rightborder&#39;, v, false, true);},
+        
+        set_toppadding: function(v) {this.__updateBP(&#39;toppadding&#39;, v, true, false);},
+        set_bottompadding: function(v) {this.__updateBP(&#39;bottompadding&#39;, v, true, false);},
+        set_leftpadding: function(v) {this.__updateBP(&#39;leftpadding&#39;, v, false, false);},
+        set_rightpadding: function(v) {this.__updateBP(&#39;rightpadding&#39;, v, false, false);},
+        
+<span id='dr-view-method-__updateBP'>        /** @private */
+</span>        __updateBP: function(attrName, v, vertical, isBorder) {
+            if (this.setActual(attrName, v, &#39;positivenumber&#39;, 0) &amp;&amp; !this.__lockRecalc) {
+                if (vertical) {
+                    this.__fullBorderPaddingHeight = this.topborder + this.bottomborder + this.toppadding + this.bottompadding;
+                } else {
+                    this.__fullBorderPaddingWidth = this.leftborder + this.rightborder + this.leftpadding + this.rightpadding;
+                }
+                
+                var test;
+                if (isBorder) {
+                    test = this.topborder;
+                    if (this.bottomborder === test &amp;&amp; this.leftborder === test &amp;&amp; this.rightborder === test) {
+                        this.setSimpleActual(&#39;border&#39;, test, true);
+                    } else if (this.border != null) {
+                        this.setSimpleActual(&#39;border&#39;, undefined, true);
+                    }
+                } else {
+                    test = this.toppadding;
+                    if (this.bottompadding === test &amp;&amp; this.leftpadding === test &amp;&amp; this.rightpadding === test) {
+                        this.setSimpleActual(&#39;padding&#39;, test, true);
+                    } else if (this.padding != null) {
+                        this.setSimpleActual(&#39;padding&#39;, undefined, true);
+                    }
+                }
+                
+                if (vertical) {
+                    this.__updateInnerHeight();
+                } else {
+                    this.__updateInnerWidth();
+                }
+            }
+        },
+        
+<span id='dr-view-method-__updateInnerWidth'>        /** @private */
+</span>        __updateInnerWidth: function() {
+            var inset = this.__fullBorderPaddingWidth;
+            // Prevent width less than horizontal border padding
+            if (inset &gt; this.width) this.set_width(inset);
+            this.setActual(&#39;innerwidth&#39;, this.width - inset, &#39;positivenumber&#39;, 0);
+        },
+        
+<span id='dr-view-method-__updateInnerHeight'>        /** @private */
+</span>        __updateInnerHeight: function() {
+            var inset = this.__fullBorderPaddingHeight;
+            // Prevent height less than vertical border padding
+            if (inset &gt; this.height) this.set_height(inset);
+            this.setActual(&#39;innerheight&#39;, this.height - inset, &#39;positivenumber&#39;, 0);
+        },
+        
+        // Corner Attributes //
+        set_cornerradius: function(v) {
+            this.__lockRecalc = true;
+            this.setAttribute(&#39;topleftcornerradius&#39;, v);
+            this.setAttribute(&#39;toprightcornerradius&#39;, v);
+            this.setAttribute(&#39;bottomleftcornerradius&#39;, v);
+            this.setAttribute(&#39;bottomrightcornerradius&#39;, v);
+            this.__lockRecalc = false;
+            
+            this.setActual(&#39;cornerradius&#39;, v, &#39;positivenumber&#39;, 0);
+        },
+        
+        set_topleftcornerradius: function(v) {this.__updateCornerRadius(&#39;topleftcornerradius&#39;, v);},
+        set_toprightcornerradius: function(v) {this.__updateCornerRadius(&#39;toprightcornerradius&#39;, v);},
+        set_bottomleftcornerradius: function(v) {this.__updateCornerRadius(&#39;bottomleftcornerradius&#39;, v);},
+        set_bottomrightcornerradius: function(v) {this.__updateCornerRadius(&#39;bottomrightcornerradius&#39;, v);},
+        
+<span id='dr-view-method-__updateCornerRadius'>        /** @private */
+</span>        __updateCornerRadius: function(attrName, v) {
+            if (this.setActual(attrName, v, &#39;positivenumber&#39;, 0) &amp;&amp; !this.__lockRecalc) {
+                var test = this.topleftcornerradius;
+                if (this.toprightcornerradius === test &amp;&amp; this.bottomleftcornerradius === test &amp;&amp; this.bottomrightcornerradius === test) {
+                    this.setSimpleActual(&#39;cornerradius&#39;, test, true);
+                } else if (this.cornerradius != null) {
+                    this.setSimpleActual(&#39;cornerradius&#39;, undefined, true);
+                }
+            }
+        },
+        
+        // Transform Attributes //
+        set_xscale: function(v) {
+            var self = this;
+            this.setActual(&#39;xscale&#39;, v, &#39;positivenumber&#39;, 1, function() {
+                self.__updateTransform();
+                self.__updateBounds();
+            });
+        },
+        
+        set_yscale: function(v) {
+            var self = this;
+            this.setActual(&#39;yscale&#39;, v, &#39;positivenumber&#39;, 1, function() {
+                self.__updateTransform();
+                self.__updateBounds();
+            });
+        },
+        
+        set_rotation: function(v) {
+            var self = this;
+            this.setActual(&#39;rotation&#39;, v, &#39;number&#39;, 0, function() {
+                self.__updateTransform();
+                self.__updateBounds();
+            });
+        },
+        
+        set_z: function(v) {
+            this.setActual(&#39;z&#39;, v, &#39;number&#39;, 0, this.__updateTransform.bind(this));
+        },
+        
+        set_xanchor: function(v) {
+            if (v == null || v === &#39;&#39; || v === &#39;undefined&#39;) v = &#39;center&#39;;
+            var self = this;
+            this.setActual(&#39;xanchor&#39;, v, &#39;*&#39;, &#39;center&#39;, function() {
+                self.__updateTransform();
+                self.__updateBounds();
+            });
+        },
+        
+        set_yanchor: function(v) {
+            if (v == null || v === &#39;&#39; || v === &#39;undefined&#39;) v = &#39;center&#39;;
+            var self = this;
+            this.setActual(&#39;yanchor&#39;, v, &#39;*&#39;, &#39;center&#39;, function() {
+                self.__updateTransform();
+                self.__updateBounds();
+            });
+        },
+        
+        set_zanchor: function(v) {
+            if (v == null || v === &#39;&#39;) v = 0;
+            this.setActual(&#39;zanchor&#39;, v, &#39;*&#39;, 0, this.__updateTransform.bind(this));
+        },
+        
+<span id='dr-view-method-__updateTransform'>        /** @private */
+</span>        __updateTransform: function() {
+            var xscale = this.xscale == null ? 1 : this.xscale,
+                yscale = this.yscale == null ? 1 : this.yscale,
+                rotation = this.rotation || 0,
+                z = this.z || 0;
+            
+            // Make it easy to determine that the bounds are different than the
+            // simple x, y, width, height box
+            var boundsAreDifferent = this.__boundsAreDifferent = xscale !== 1 || yscale !== 1 || rotation % 360 !== 0;
+            
+            // Apply to sprite
+            if (boundsAreDifferent || z !== 0) {
+                this.sprite.updateTransformOrigin(this.xanchor, this.yanchor, this.zanchor);
+            }
+            this.sprite.updateTransform(xscale, yscale, rotation, z);
+        },
+        
+        // Text Attributes //
+        set_color: function(v) {this.setActual(&#39;color&#39;, v, &#39;color&#39;, &#39;inherit&#39;);},
+        
+        // Visual Attributes //
+        set_clickable: function(v) {this.setActual(&#39;clickable&#39;, v, &#39;boolean&#39;, false);},
+        set_clip: function(v) {this.setActual(&#39;clip&#39;, v, &#39;boolean&#39;, false);},
+        set_bgcolor: function(v) {this.setActual(&#39;bgcolor&#39;, v, &#39;color&#39;, &#39;transparent&#39;);},
+        set_boxshadow: function(v) {this.setActual(&#39;boxshadow&#39;, v, &#39;expression&#39;);},
+        set_gradient: function(v) {this.setActual(&#39;gradient&#39;, v, &#39;expression&#39;);},
+        set_opacity: function(v) {this.setActual(&#39;opacity&#39;, v, &#39;number&#39;, 1);},
+        set_visible: function(v) {this.setActual(&#39;visible&#39;, v, &#39;boolean&#39;, true);},
+        set_cursor: function(v) {this.setActual(&#39;cursor&#39;, v, &#39;string&#39;, &#39;auto&#39;);},
+        set_x: function(v) {this.setActual(&#39;x&#39;, v, &#39;number&#39;, this.x, this.__updateBounds.bind(this));},
+        set_y: function(v) {this.setActual(&#39;y&#39;, v, &#39;number&#39;, this.y, this.__updateBounds.bind(this));},
+        
+        set_width: function(v) {
+            // Prevent width smaller than border and padding
+            v = Math.max(v, this.__fullBorderPaddingWidth);
+            
+            if (this.setActual(&#39;width&#39;, v, &#39;positivenumber&#39;, 0, this.__updateBounds.bind(this))) {
+                this.setSimpleActual(&#39;innerwidth&#39;, this.width - this.__fullBorderPaddingWidth, true);
+            }
+        },
+        
+        set_height: function(v) {
+            // Prevent height smaller than border and padding
+            v = Math.max(v, this.__fullBorderPaddingHeight);
+            
+            if (this.setActual(&#39;height&#39;, v, &#39;positivenumber&#39;, 0, this.__updateBounds.bind(this))) {
+                this.setSimpleActual(&#39;innerheight&#39;, this.height - this.__fullBorderPaddingHeight, true);
+            }
+        },
+        
+<span id='dr-view-method-__updateBounds'>        /** Updates the boundswidth and boundsheight attributes.
+</span>            @private
+            @returns void */
+        __updateBounds: function(forceUpdate) {
+            if (forceUpdate || this.initing === false) {
+                var bounds, width, height, x, y, xdiff, ydiff;
+                if (this.__boundsAreDifferent) {
+                    bounds = this.getBoundsRelativeToParent();
+                    width = bounds.width;
+                    height = bounds.height;
+                    x = bounds.x;
+                    y = bounds.y;
+                    xdiff = this.x - x;
+                    ydiff = this.y - y;
+                } else {
+                    x = this.x;
+                    y = this.y;
+                    xdiff = ydiff = 0;
+                    width = this.width;
+                    height = this.height;
+                }
+                if (!dr.closeTo(this.boundsx, x)) this.setActual(&#39;boundsx&#39;, x, &#39;number&#39;, 0);
+                if (!dr.closeTo(this.boundsy, y)) this.setActual(&#39;boundsy&#39;, y, &#39;number&#39;, 0);
+                if (!dr.closeTo(this.boundswidth, width)) this.setActual(&#39;boundswidth&#39;, width, &#39;positivenumber&#39;, 0);
+                if (!dr.closeTo(this.boundsheight, height)) this.setActual(&#39;boundsheight&#39;, height, &#39;positivenumber&#39;, 0);
+                if (!dr.closeTo(this.boundsxdiff, xdiff)) this.setActual(&#39;boundsxdiff&#39;, xdiff, &#39;number&#39;, 0);
+                if (!dr.closeTo(this.boundsydiff, ydiff)) this.setActual(&#39;boundsydiff&#39;, ydiff, &#39;number&#39;, 0);
+            }
+        },
+        
+        
+        // Methods /////////////////////////////////////////////////////////////////
+<span id='dr-view-method-getTypeForAttrName'>        /** @overrides */
+</span>        getTypeForAttrName: function(attrName) {
+            var retval = dr.View.ATTR_TYPES[attrName];
+            return retval ? retval : this.callSuper();
+        },
+        
+<span id='dr-view-method-getAbsolutePosition'>        /** Gets the x and y position of the underlying dom element relative to
+</span>            the page. Transforms are not supported.
+            @returns object with &#39;x&#39; and &#39;y&#39; keys or null if no position could
+                be determined. */
+        getAbsolutePosition: function(ancestorView) {
+            return this.sprite.getAbsolutePosition(ancestorView);
+        },
+        
+        getBoundsRelativeToParent: function() {
+            var xanchor = this.xanchor,
+                yanchor = this.yanchor,
+                w = this.width,
+                h = this.height;
+            
+            if (xanchor === &#39;left&#39;) {
+                xanchor = 0;
+            } else if (xanchor === &#39;center&#39;) {
+                xanchor = w / 2;
+            } else if (xanchor === &#39;right&#39;) {
+                xanchor = w;
+            } else {
+                xanchor = Number(xanchor);
+            }
+            
+            if (yanchor === &#39;top&#39;) {
+                yanchor = 0;
+            } else if (yanchor === &#39;center&#39;) {
+                yanchor = h / 2;
+            } else if (yanchor === &#39;bottom&#39;) {
+                yanchor = h;
+            } else {
+                yanchor = Number(yanchor);
+            }
+            
+            // Create a path from the 4 corners of the normal view box and then apply
+            // the transform to get the bounding box.
+            var x1 = this.x,
+                x2 = x1 + w,
+                y1 = this.y,
+                y2 = y1 + h;
+            return (new dr.Path([x1,y1,x2,y1,x2,y2,x1,y2])).transformAroundOrigin(
+                this.xscale, this.yscale, this.rotation, xanchor + x1, yanchor + y1
+            ).getBoundingBox()
+        },
+        
+<span id='dr-view-method-isVisible'>        /** Checks if this view is visible and each view in the parent chain to
+</span>            the root view is also visible. Dom elements are not explicitly
+            checked. If you need to check that use dr.DomElementProxy.isDomElementVisible.
+            @returns true if this view is visible, false otherwise. */
+        isVisible: function() {
+            return this.searchAncestorsOrSelf(function(v) {return !v.visible;}) === null;
+        },
+        
+<span id='dr-view-method-doSubnodeAdded'>        /** @overrides dr.Node
+</span>            Calls this.doSubviewAdded if the added subnode is a dr.View. 
+            @fires subviewAdded event with the provided Node if it&#39;s a View. 
+            @fires layoutAdded event with the provided node if it&#39;s a Layout. */
+        doSubnodeAdded: function(node) {
+            if (node instanceof dr.View) {
+                this.sprite.appendSprite(node.sprite);
+                this.getSubviews().push(node);
+                this.sendEvent(&#39;onsubviewAdded&#39;, node);
+                this.doSubviewAdded(node);
+            } else if (node instanceof dr.Layout) {
+                this.getLayouts().push(node);
+                this.sendEvent(&#39;onlayoutAdded&#39;, node);
+                this.doLayoutAdded(node);
+            }
+        },
+        
+<span id='dr-view-method-doSubnodeRemoved'>        /** @overrides dr.Node
+</span>            Calls this.doSubviewRemoved if the remove subnode is a dr.View.
+            @fires subviewRemoved event with the provided Node if it&#39;s a View
+                and removal succeeds. 
+            @fires layoutRemoved event with the provided Node if it&#39;s a Layout
+                and removal succeeds. */
+        doSubnodeRemoved: function(node) {
+            var idx;
+            if (node instanceof dr.View) {
+                idx = this.getSubviewIndex(node);
+                if (idx !== -1) {
+                    this.sendEvent(&#39;onsubviewRemoved&#39;, node);
+                    this.sprite.removeSprite(node.sprite);
+                    this.subviews.splice(idx, 1);
+                    this.doSubviewRemoved(node);
+                }
+            } else if (node instanceof dr.Layout) {
+                idx = this.getLayoutIndex(node);
+                if (idx !== -1) {
+                    this.sendEvent(&#39;onlayoutRemoved&#39;, node);
+                    this.layouts.splice(idx, 1);
+                    this.doLayoutRemoved(node);
+                }
+            }
+        },
+        
+        // Siblings //
+<span id='dr-view-method-getNextSiblingView'>        /** Gets the next sibling view of this view. */
+</span>        getNextSiblingView: function() {
+            return this.sprite.getNextSiblingView();
+        },
+        
+<span id='dr-view-method-getLastSiblingView'>        /** Gets the last sibling view. */
+</span>        getLastSiblingView: function() {
+            return this.sprite.getLastSiblingView();
+        },
+        
+<span id='dr-view-method-getPrevSiblingView'>        /** Gets the previous sibling view. */
+</span>        getPrevSiblingView: function() {
+            return this.sprite.getPrevSiblingView();
+        },
+        
+<span id='dr-view-method-getFirstSiblingView'>        /** Gets the first sibling view. */
+</span>        getFirstSiblingView: function() {
+            return this.sprite.getFirstSiblingView();
+        },
+        
+        // Subviews //
+<span id='dr-view-method-hasSubview'>        /** Checks if this View has the provided View in the subviews array.
+</span>            @param sv:View the view to look for.
+            @returns true if the subview is found, false otherwise. */
+        hasSubview: function(sv) {
+            return this.getSubviewIndex(sv) !== -1;
+        },
+        
+<span id='dr-view-method-getSubviewIndex'>        /** Gets the index of the provided View in the subviews array.
+</span>            @param sv:View the view to look for.
+            @returns the index of the subview or -1 if not found. */
+        getSubviewIndex: function(sv) {
+            return this.getSubviews().indexOf(sv);
+        },
+        
+<span id='dr-view-method-getSubviewAtIndex'>        /** Gets the subview at the provided index. */
+</span>        getSubviewAtIndex: function(index) {
+            var subviews = this.getSubviews();
+            if (subviews.length &gt; index) return subviews[index];
+            return null;
+        },
+        
+<span id='dr-view-method-doSubviewAdded'>        /** Called when a View is added to this View. Do not call this method to 
+</span>            add a View. Instead call addSubnode or set_parent.
+            @param sv:View the view that was added.
+            @returns void */
+        doSubviewAdded: function(sv) {},
+        
+<span id='dr-view-method-doSubviewRemoved'>        /** Called when a View is removed from this View. Do not call this method 
+</span>            to remove a View. Instead call removeSubnode or set_parent.
+            @param sv:View the view that was removed.
+            @returns void */
+        doSubviewRemoved: function(sv) {},
+        
+        // Layouts //
+<span id='dr-view-method-hasLayout'>        /** Checks if this View has the provided Layout in the layouts array.
+</span>            @param layout:Layout the layout to look for.
+            @returns true if the layout is found, false otherwise. */
+        hasLayout: function(layout) {
+            return this.getLayoutIndex(layout) !== -1;
+        },
+        
+<span id='dr-view-method-getLayoutIndex'>        /** Gets the index of the provided Layout in the layouts array.
+</span>            @param layout:Layout the layout to look for.
+            @returns the index of the layout or -1 if not found. */
+        getLayoutIndex: function(layout) {
+            return this.getLayouts().indexOf(layout);
+        },
+        
+<span id='dr-view-method-doLayoutAdded'>        /** Called when a Layout is added to this View. Do not call this method to 
+</span>            add a Layout. Instead call addSubnode or set_parent.
+            @param layout:Layout the layout that was added.
+            @returns void */
+        doLayoutAdded: function(layout) {},
+        
+<span id='dr-view-method-doLayoutRemoved'>        /** Called when a Layout is removed from this View. Do not call this 
+</span>            method to remove a Layout. Instead call removeSubnode or set_parent.
+            @param layout:Layout the layout that was removed.
+            @returns void */
+        doLayoutRemoved: function(layout) {},
+        
+<span id='dr-view-method-getLayoutHint'>        /** Gets the value of a named layout hint.
+</span>            @param layoutName:string The name of the layout to match.
+            @param hintName:string The name of the hint to match.
+            @return * The value of the hint or undefined if not found. */
+        getLayoutHint: function(layoutName, hintName) {
+            return dr.View.getLayoutHint(this.layouthint, layoutName, hintName);
+        },
+        
+        // Focus //
+<span id='dr-view-method-getFocusTrap'>        /** Finds the youngest ancestor (or self) that is a focustrap or focuscage.
+</span>            @param ignoreFocusTrap:boolean indicates focustraps should be
+                ignored.
+            @returns a View with focustrap set to true or null if not found. */
+        getFocusTrap: function(ignoreFocusTrap) {
+            return this.searchAncestorsOrSelf(
+                function(v) {
+                    return v.focuscage || (v.focustrap &amp;&amp; !ignoreFocusTrap);
+                }
+            );
+        },
+        
+<span id='dr-view-method-isFocusable'>        /** Tests if this view is in a state where it can receive focus.
+</span>            @returns boolean True if this view is visible, enabled, focusable and
+                not focus masked, false otherwise. */
+        isFocusable: function() {
+            return this.focusable &amp;&amp; !this.disabled &amp;&amp; this.isVisible() &amp;&amp; 
+                this.searchAncestorsOrSelf(function(n) {return n.maskfocus === true;}) === null;
+        },
+        
+<span id='dr-view-method-giveAwayFocus'>        /** Gives the focus to the next focusable element or, if nothing else
+</span>            is focusable, blurs away from this element.
+            @returns void */
+        giveAwayFocus: function() {
+            if (this.focused) {
+                // Try to go to next focusable element.
+                dr.global.focus.next();
+                
+                // If focus loops around to ourself make sure we don&#39;t keep it.
+                if (this.focused) this.blur();
+            }
+        },
+        
+<span id='dr-view-method-__handleFocus'>        /** @private */
+</span>        __handleFocus: function(event) {
+            if (!this.focused) {
+                this.set_focused(true);
+                this.doFocus();
+            }
+        },
+        
+<span id='dr-view-method-__handleBlur'>        /** @private */
+</span>        __handleBlur: function(event) {
+            if (this.focused) {
+                this.doBlur();
+                this.set_focused(false);
+            }
+        },
+        
+        doFocus: function() {
+            if (this.focusembellishment) {
+                this.showFocusEmbellishment();
+            } else {
+                this.hideFocusEmbellishment();
+            }
+        },
+        
+        doBlur: function() {
+            if (this.focusembellishment) this.hideFocusEmbellishment();
+        },
+        
+        showFocusEmbellishment: function() {
+            this.sprite.showFocusEmbellishment();
+        },
+        
+        hideFocusEmbellishment: function() {
+            this.sprite.hideFocusEmbellishment();
+        },
+        
+<span id='dr-view-method-focus'>        /** Calling this method will set focus onto this view if it is focusable.
+</span>            @param noScroll:boolean (optional) if true is provided no auto-scrolling
+                will occur when focus is set.
+            @returns void */
+        focus: function(noScroll) {
+            if (this.isFocusable()) this.sprite.focus(noScroll);
+        },
+        
+<span id='dr-view-method-blur'>        /** Removes the focus from this view. Do not call this method directly.
+</span>            @private
+            @returns void */
+        blur: function() {
+            this.sprite.blur();
+        },
+        
+<span id='dr-view-method-getNextFocus'>        /** Implement this method to return the next view that should have focus.
+</span>            If null/undefined is returned or the method is not implemented, 
+            normal dom traversal will occur. */
+        getNextFocus: function() {},
+        
+<span id='dr-view-method-getPrevFocus'>        /** Implement this method to return the previous view that should have 
+</span>            focus. If null/undefined is returned or the method is not implemented, 
+            normal dom traversal will occur. */
+        getPrevFocus: function() {},
+        
+        // Paint and Focus Cycle Ordering
+<span id='dr-view-method-isBehind'>        /** Tests if the provided view is behind this view. The view to test 
+</span>            can be anywhere in the screen.
+            @param view:dr.View the view to check.
+            @returns boolean: true if the view is behind this view, 
+                false otherwise. */
+        isBehind: function(view) {
+            return view &amp;&amp; view.isA(dr.View) ? this.sprite.isBehind(view) : false;
+        },
+        
+<span id='dr-view-method-isInFrontOf'>        /** Tests if the provided view is front of this view. The view to test 
+</span>            can be anywhere in the screen.
+            @param view:dr.View the view to check.
+            @returns boolean: true if the view is in front of this view, 
+                false otherwise. */
+        isInFrontOf: function(view) {
+            return view &amp;&amp; view.isA(dr.View) ? this.sprite.isInFrontOf(view) : false;
+        },
+        
+<span id='dr-view-method-moveToFront'>        /** Moves this view in front of all other sibling views.
+</span>            @returns This object for chainability. */
+        moveToFront: function() {
+            if (this.sprite.moveToFront()) {
+                // Reorder parent subviews
+                var parent = this.parent;
+                if (parent) {
+                    var svs = parent.subviews, i = svs.length;
+                    while (i) {
+                        if (svs[--i] === this) {
+                            svs.splice(i, 1);
+                            svs.push(this);
+                            break;
+                        }
+                    }
+                    parent.sendEvent(&#39;onsubvieworderchange&#39;, this);
+                }
+            }
+            return this;
+        },
+        
+<span id='dr-view-method-moveToBack'>        /** Moves this view behind all other sibling views.
+</span>            @returns This object for chainability. */
+        moveToBack: function() {
+            if (this.sprite.moveToBack()) {
+                // Reorder parent subviews
+                var parent = this.parent;
+                if (parent) {
+                    var svs = parent.subviews, i = svs.length;
+                    while (i) {
+                        if (svs[--i] === this) {
+                            svs.splice(i, 1);
+                            svs.unshift(this);
+                            break;
+                        }
+                    }
+                    parent.sendEvent(&#39;onsubvieworderchange&#39;, this);
+                }
+            }
+            return this;
+        },
+        
+        moveForward: function() {
+            var nextSibling = this.getNextSiblingView();
+            if (nextSibling) this.moveInFrontOf(nextSibling);
+        },
+        
+        moveBackward: function() {
+            var prevSibling = this.getPrevSiblingView();
+            if (prevSibling) this.moveBehind(prevSibling);
+        },
+        
+<span id='dr-view-method-moveInFrontOf'>        /** Moves this view in front of the provided sibling view.
+</span>            @param {dr.view} The view to move in front of.
+            @returns This object for chainability. */
+        moveInFrontOf: function(siblingView) {
+            var parent = this.parent;
+            if (siblingView &amp;&amp; siblingView.isA(dr.View) &amp;&amp; siblingView.parent === parent) {
+                if (this.sprite.moveInFrontOf(siblingView)) {
+                    // Reorder parent subviews
+                    var svs = parent.subviews, i = svs.length, sv;
+                    while (i) {
+                        if (svs[--i] === this) {
+                            svs.splice(i, 1);
+                            break;
+                        }
+                    }
+                    i = svs.length
+                    while (i) {
+                        if (svs[--i] === siblingView) {
+                            svs.splice(i + 1, 0, this);
+                            break;
+                        }
+                    }
+                    
+                    parent.sendEvent(&#39;onsubvieworderchange&#39;, this);
+                }
+            }
+            return this;
+        },
+        
+<span id='dr-view-method-moveBehind'>        /** Moves this view behind the provided sibling view.
+</span>            @param {dr.view} The view to move behind.
+            @returns This object for chainability. */
+        moveBehind: function(siblingView) {
+            var parent = this.parent;
+            if (siblingView &amp;&amp; siblingView.isA(dr.View) &amp;&amp; siblingView.parent === parent) {
+                if (this.sprite.moveBehind(siblingView)) {
+                    // Reorder parent subviews
+                    var svs = parent.subviews, i = svs.length, sv;
+                    while (i) {
+                        if (svs[--i] === this) {
+                            svs.splice(i, 1);
+                            break;
+                        }
+                    }
+                    i = svs.length
+                    while (i) {
+                        if (svs[--i] === siblingView) {
+                            svs.splice(i, 0, this);
+                            break;
+                        }
+                    }
+                    parent.sendEvent(&#39;onsubvieworderchange&#39;, this);
+                }
+            }
+            return this;
+        },
+        
+        // Hit Testing //
+<span id='dr-view-method-containsPoint'>        /** Checks if the provided location is inside this view or not.
+</span>            @param locX:number the x position to test.
+            @param locY:number the y position to test.
+            @param referenceFrameView:dr.view (optional) The view
+                the locX and locY are relative to. If not provided the page is
+                assumed.
+            @returns boolean True if the location is inside this view, false 
+                if not. */
+        containsPoint: function(locX, locY, referenceFrameView) {
+            if (this.destroyed) return false;
+            var pos = this.getAbsolutePosition(referenceFrameView);
+            return this.rectContainsPoint(locX, locY, pos.x, pos.y, this.width, this.height);
+        },
+        
+<span id='dr-view-method-rectContainsPoint'>        /** Checks if the provided point is inside or on the edge of the provided 
+</span>            rectangle.
+            @param pX:number the x coordinate of the point to test.
+            @param pY:number the y coordinate of the point to test.
+            @param rX:number the x coordinate of the rectangle.
+            @param rY:number the y coordinate of the rectangle.
+            @param rW:number the width of the rectangle.
+            @param rH:number the height of the rectangle.
+            
+            Alternate Params:
+            @param pX:object a point object with properties x and y.
+            @param rX:object a rect object with properties x, y, width and height.
+            
+            @returns boolean True if the point is inside or on the rectangle. */
+        rectContainsPoint: function(pX, pY, rX, rY, rW, rH) {
+            if (typeof pX === &#39;object&#39;) {
+                rH = rW;
+                rW = rY;
+                rY = rX;
+                rX = pY;
+                pY = pX.y;
+                pX = pX.x;
+            }
+            
+            if (typeof rX === &#39;object&#39;) {
+                rH = rX.height;
+                rW = rX.width;
+                rY = rX.y;
+                rX = rX.x;
+            }
+            
+            return pX &gt;= rX &amp;&amp; pY &gt;= rY &amp;&amp; pX &lt;= rX + rW &amp;&amp; pY &lt;= rY + rH;
+        },
+        
+<span id='dr-view-method-isPointVisible'>        /** Checks if the provided location is visible on this view and is not
+</span>            masked by the bounding box of the view or any of its ancestor views.
+            @returns boolean: true if visible, false otherwise. */
+        isPointVisible: function(locX, locY) {
+            var pos = this.getAbsolutePosition();
+            this.calculateEffectiveScale();
+            return this.__isPointVisible(locX - pos.x, locY - pos.y);
+        },
+        
+<span id='dr-view-method-__isPointVisible'>        /** @private */
+</span>        __isPointVisible: function(x, y) {
+            var effectiveScale = this.__effectiveScale;
+            
+            if (this.rectContainsPoint(x, y, 0, 0, this.width * effectiveScale, this.height * effectiveScale)) {
+                var p = this.parent;
+                if (p) {
+                    var parentSprite = p.sprite, pScale = p.__effectiveScale;
+                    return p.__isPointVisible(x + (this.x - parentSprite.getScrollX()) * pScale, y + (this.y - parentSprite.getScrollY()) * pScale);
+                }
+                return true;
+            }
+            return false;
+        },
+        
+        calculateEffectiveScale: function() {
+            var ancestors = this.getAncestors(), i = ancestors.length, ancestor,
+                effectiveScale = 1;
+            while (i) {
+                ancestor = ancestors[--i];
+                effectiveScale *= ancestor.xscale || 1;
+                ancestor.__effectiveScale = effectiveScale;
+            }
+        },
+        
+        getEffectiveScale: function() {
+            this.calculateEffectiveScale();
+            return this.__effectiveScale;
+        },
+        
+        // Editor Support //
+        __layoutDomainInUseForView: function(domain) {
+            // Check for management by parent (sibling) layouts of this view
+            var parent = this.parent,
+                layouts = parent.getLayouts(),
+                i = layouts.length, layout;
+            while (i) {
+                layout = layouts[--i];
+                if (layout.__layoutDomainInUseForView(domain, this)) return true;
+            }
+            
+            // Checked for management by child layouts of this view
+            layouts = this.getLayouts();
+            i = layouts.length;
+            while (i) {
+                layout = layouts[--i];
+                if (layout.updateparent &amp;&amp; layout.__getLayoutParentDomains()[domain]) return true;
+            }
+            
+            return false;
+        },
+        
+        __layoutDomainUsedByHintForView: function(domain) {
+            // Check for management by parent (sibling) layouts of this view
+            var parent = this.parent,
+                layouts = parent.getLayouts(),
+                i = layouts.length, layout;
+            while (i) {
+                layout = layouts[--i];
+                if (layout.hasSubview(this) &amp;&amp; layout.__layoutDomainUsedByHintForView(domain, this)) return true;
+            }
+            
+            return false;
+        },
+        
+        __shouldRestoreForLayoutHint: function(domain, from, to) {
+            // Check for management by parent (sibling) layouts of this view
+            var parent = this.parent,
+                layouts = parent.getLayouts(),
+                i = layouts.length, layout;
+            while (i) {
+                layout = layouts[--i];
+                if (layout.hasSubview(this) &amp;&amp; layout.__shouldRestoreForLayoutHint(domain, from, to)) return true;
+            }
+            
+            return false;
+        }
+    });
+});
 </pre>
 </body>
 </html>
