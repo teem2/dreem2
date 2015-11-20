@@ -377,7 +377,15 @@ console.log('main_file', main_file);
         
         console.log("** loading Dali")
         global.dali = require('./dalinode/dali')(options);
-
+        console.log("** loading Dali")
+	try {
+	    var exists = fs.statSync('/etc/tizen-release').isFile();
+	    console.log('Running Tizen, requiring dali from: /usr/lib/node_modules/npm/node_modules/dali/dali')
+	    global.dali = require('/usr/lib/node_modules/npm/node_modules/dali/dali')(options)
+	} catch (err) {
+	    console.log('Running Ubuntu, requiring dali from ./dalinode/dali')
+	    global.dali = require('.dalinode/dali')(options)
+	}
 		// Show/hide a loading page
 		global.show_loading_page = function() {
 			var sz = dali.stage.getSize();
