@@ -11,7 +11,7 @@ either express or implied. See the License for the specific language governing p
   * A mixin that provides functionality necessary for views to respond to 
   * undo/redo changes in the previewer.
   */-->
-<mixin name="previewable" requires="resizelayout, alignlayout, wrappinglayout, behavior-scale, behavior-shift, behavior-overborder">
+<mixin name="previewable" requires="text, bitmap, resizelayout, alignlayout, wrappinglayout, behavior-scale, behavior-shift, behavior-overborder">
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="restoreAttrToModel" args="attrName, model">
     if (model) {
