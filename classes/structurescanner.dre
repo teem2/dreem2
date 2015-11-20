@@ -29,39 +29,38 @@ SOFTWARE. -->
       return obj.__type
     }
 
-    var type, sep, i;
+    var type, i;
 
     var counts = {};
+    var detected = [];
 
     if (Array.isArray(obj)) {
-      var detectd = [];
       for (i=0; i < obj.length;i++) {
         var t = this.detectType(obj[i]);
         if (!counts[t]) {
           counts[t] = 0
         }
         counts[t] = counts[t] + 1;
-        detectd.push(t)
+        detected.push(t)
       }
       obj.__counts = counts;
 
-      detectd = detectd.filter(function (item, pos) {return detectd.indexOf(item) == pos}).sort();
+      detected = detected.filter(function (item, pos) {return detected.indexOf(item) == pos}).sort();
 
-      type = '[' + detectd.join(',') + ']';
+      type = '[' + detected.join(',') + ']';
 
     } else if (typeof(obj) === 'object') {
-      type = '{'
-      sep = ''
       var keys = Object.keys(obj).sort();
       for (i=0; i < keys.length; i++) {
         var k = keys[i].toString();
         if (!k.startsWith('__')) {
           var v = obj[k];
-          type = type + sep + k + ":" + this.detectType(v)
-          sep = ','
+          detected.push(k + ":" + this.detectType(v))
         }
       }
-      type = type + '}'
+      detected = detected.filter(function (item, pos) {return detected.indexOf(item) == pos}).sort();
+
+      type = '{' + detected.join(',') + '}';
 
     } else if (typeof(obj) === 'string') {
       type = 's';
@@ -83,10 +82,11 @@ SOFTWARE. -->
     var types = [];
     var edge = true;
 
+    var v, vtype;
     if (Array.isArray(obj)) {
       for (var i=0; i < obj.length;i++) {
-        var v = obj[i];
-        var vtype = typeof(v);
+        v = obj[i];
+        vtype = typeof(v);
         if (vtype !== 'string' && vtype !== 'number' && vtype !== 'boolean') {
           edge = false;
         }
@@ -96,8 +96,8 @@ SOFTWARE. -->
     } else if (typeof(obj) === 'object') {
       for (var k in obj) {
         if (obj.hasOwnProperty(k) && !k.toString().startsWith('__')) {
-          var v = obj[k];
-          var vtype = typeof(v);
+          v = obj[k];
+          vtype = typeof(v);
           if (vtype !== 'string' && vtype !== 'number' && vtype !== 'boolean') {
             edge = false;
           }
@@ -120,14 +120,14 @@ SOFTWARE. -->
       e2:{a:1,b:"b"},
       b:'b',
       c:[1,2,3],
-      c3:['a','b', 3],
-      c2:[1,2,3,'a','b', {e:'f'}],
+      c3:['a','b',3],
+      c2:[1,2,3,'a','b',{e:'f'}],
       d:['one'],
       e:{a:1,b:"b"},
       f:{a:1,b:"b"},
-      g:{a:1, b:"b", c:{k:'f'}, d:{__typename:'special', k:'f'}},
+      g:{a:1, b:"b",c:{k:'f'},d:{__typename:'special',k:'f'}},
       h:[{a:1,b:"b"},{a:1,b:"b"},{a:1,b:"b"}],
-      i:[{__type:'zz', a:1,b:"b"},{__type:'zz',a:1,b:"b"},{__type:'zz',a:1,b:"b"}]
+      i:[{__type:'zz',a:1,b:"b"},{__type:'zz',a:1,b:"b"},{__type:'zz',a:1,b:"b"}]
     }
 
     var types = this.detectEdges(leafs)
