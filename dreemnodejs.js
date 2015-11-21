@@ -359,8 +359,8 @@ console.log('main_file', main_file);
             x: 0,
             y: 0,
 	    // NOTE: I'm using a smaller size while debugging dynamic editing
-            width: 1067, //1920,
-            height: 600, //1080,
+            width: 1920, //1067,
+            height: 1080, //600,
             transparent: false,
             name: 'Dreem Dali Runtime: ' + composition
         };
