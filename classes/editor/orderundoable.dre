@@ -84,8 +84,8 @@
     */-->
   <method name="deserialize" args="data">
     // Retrieve objects via the serialized IDs.
-    var retrieveFunc = dr.sprite.retrieveGlobal;
-    if (data.target) data.target = retrieveFunc(data.target);
+    var retrieveFunc = dr.editor.undoable.retrieveById;
+    data.target = dr.editor.undoable.retrieveById(data.target);
     
     if (!data.target) {
       dr.global.error.notifyWarn('deserialization', "Target could not be found for orderundoable: " + data.target);

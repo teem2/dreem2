@@ -122,8 +122,7 @@
     */-->
   <method name="deserialize" args="data">
     // Get parent to create new object on.
-    var parent;
-    if (data.parent) parent = dr.sprite.retrieveGlobal(data.parent);
+    var parent = dr.editor.undoable.retrieveById(data.parent);
     if (!parent) {
       dr.global.error.notifyWarn('deserialization', "Parent could not be found for createundoable: " + data.parent);
       return null;
