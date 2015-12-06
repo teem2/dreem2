@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dreem 2 Dynamic Editing</title>
+</head>
+<body>
+
+<h1>Dynamic Editing in Dreem 2</h1>
+
+<p>Dynamic editing allows you to see changes made during editing in one or more
+preview clients immediately. The editor itself gives you a lot of feedback
+about your changes, but sometimes you will want to see how your changes will
+look and feel across multiple clients at once. In particular if you're dealing
+with an application that must work with multiple screen sizes. Dynamic editing
+is ideal for this since you can visualize your changes on multiple clients at once.</p>
+
+<h2>A Few More Technical Details</h2>
+
+<p>Both the editor and the previewer have an undoable stack which can do, undo and
+redo changes made to a composition. In dynamic editing the undoables from the
+editor are serialized, sent to the dreem server and then broadcast to all the
+previewer clients listening. Each previewer client then deserializes the
+undoable and performs the appropriate operation on the runtime state of the composition.</p>
+
+<p>Previewer clients don't load the same composition as the editor. Instead they
+load a "preview" composition from the &lt;dreem root>/preview/... directory. The
+purpose of the preview composition is to provide a composition without the
+editor since the editor is directly injected into the composition being edited.
+Without this preview composition the previewer clients would also show the editor.</p>
+
+<h2>How to use Dynamic Editing</h2>
+
+<ol>
+  <li>
+    <b>Determine which composition you want to edit.</b> The URL for that composition will be of the form:<br/>
+    <br/>
+    <code>&lt;dreem server url>/compositions/&lt;composition>.dre</code><br/>
+    <br/>
+    Where <code>&lt;dreem server url></code> is the fully qualified URL to your dreem server.<br/>
+    Something like: <code>http://localhost:8080</code><br/>
+    <br/>
+    And where <code>&lt;composition></code> is the path to your composition.<br/>
+    Something like: <code>myproject</code> or <code>something/in/a/directory</code><br/>
+    <br/>
+  </li>
+  <li>
+    <b>Start a previewer client.</b> Open a new web browser or tab and enter a previewer URL:<br/>
+    <br/>
+    <code>&lt;dreem server url>/compositions/&lt;composition>.dre?preview=1</code><br/>
+    <br/>
+    Your browser will then redirect to the actual previewer URL which is the same url with a preview/ prefix and the preview=1 query removed.<br/>
+    <br/>
+    <code>&lt;dreem server url>/preview/compositions/&lt;composition>.dre</code><br/>
+    <br/>
+    (Note: entering the acutal previewer URL directly is completely fine)<br/>
+    <br/>
+    You should now see the composition displayed in your browser. If you are creating a new composition, so the composition dre file does not exist yet you will see a composition with the text "Waiting for edits".<br/>
+    <br/>
+  </li>
+  <li>
+    <b>Start an editor client.</b> Open a new web browser or tab and enter an edit URL:<br/>
+    <br/>
+    <code>&lt;dreem server url>/compositions/&lt;composition>.dre?edit=1</code><br/>
+    <br/>
+    (Note: It's just fine to enter the composition url without the edit=1 query param and then change the URL afterwards.)<br/>
+    <br/>
+    You will now see the composition displayed in the editor. You will also see the previewer client(s) refresh themselves.<br/>
+    <br/>
+  </li>
+  <li>
+    <b>Begin making changes</b> to the composition in the editor. As you make changes they will be reflected in the previewer client(s).<br/>
+    <br/>
+  </li>
+  <li>
+    <b>Save your changes.</b> You will see the previewer client(s) refresh as well once the editor reloads after the save.
+  </li>
+</ol>
+
+<h2>Things that can go wrong</h2>
+
+<ul>
+  <li>An error occurs in the previewer client because a class wasn't found. This is probably a bug on our side, but one way to work around this is to save the composition so that a tag in the dre will exist for the missing class. Then let the previewer reload, or refresh the browser/tab if it doesn't refresh itself. The trick to the work around is to get the auto class inclusion to work by having a tag based on that class exist in the composition when the previewer initially loads. The long term fix is to get the class into the requires attribute of the previewable class declaration which is found in <code>&lt;dreem root>/editor/previewable.dre</code></li>
+  <li>Opening a previewer after editing has already begun typically won't work because all the intervening changes won't exist in the preview composition. Saving the composition will often let you recover.</li>
+  <li>Ineracting with the preview composition can result in changes that will make edits throw errors. This is definitely possible in compositions that create or destroy views or allow repositioning or modification during  normal operation. These normal runitme modifications compete with the changes coming from the editor thus resulting in errors.</li>
+</ul>
+</body>
+</html>
