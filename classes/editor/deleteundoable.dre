@@ -113,7 +113,7 @@
     // createundoable, previewinfo is not necessary since we begin by
     // deleting an existing node/view and thus never need to create anything
     // from scratch.
-    if (data.target) data.target = dr.sprite.retrieveGlobal(data.target);
+    data.target = dr.editor.undoable.retrieveById(data.target);
     
     if (!data.target) {
       dr.global.error.notifyWarn('deserialization', "Target could not be found for deleteundoable: " + data.target);

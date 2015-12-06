@@ -25,7 +25,7 @@ either express or implied. See the License for the specific language governing p
       isBehavior = target.isA(dr.behavior.behavior);
     
     var layouts, len, i;
-    if (isView) {
+    if (isView && target.parent) {
       layouts = target.parent.getLayouts();
       len = layouts.length;
       i = len;
@@ -68,7 +68,7 @@ either express or implied. See the License for the specific language governing p
       isBehavior = target.isA(dr.behavior.behavior);
     
     var layouts, len, i;
-    if (isView) {
+    if (isView && target.parent) {
       layouts = target.parent.getLayouts();
       len = layouts.length;
       i = len;

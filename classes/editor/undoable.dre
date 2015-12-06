@@ -127,4 +127,20 @@
   <method name="deserialize" args="obj">
     if (obj) for (var key in obj) this[key] = obj[key];
   </method>
+
+  <!--/**
+    * @method retrieveById
+    * Used by previewer clients during deserialization to get a node from the 
+    * tree that has the provided ID.
+    * @param {String} id The id to get the node for.
+    * @returns {Node}
+    */-->
+  <method name="retrieveById" args="id" allocation="class">
+    if (id === null) {
+      // Special case for changes on the root view. In the editor the "root" 
+      // view will not have an id so it gets serialized as a null target.
+      return dr.global.roots.getRoots()[2];
+    }
+    return dr.sprite.retrieveGlobal(id);
+  </method>
 </class>
