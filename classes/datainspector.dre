@@ -1,0 +1,139 @@
+<!-- The MIT License (MIT)
+
+Copyright ( c ) 2014 Teem2 LLC
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE. -->
+
+<class name="datainspector" extends="view">
+
+  <!--/**
+  * @attribute {Object} data
+  * The data inside the dataset
+  */-->
+  <attribute name="data" type="expression" value="undefined"></attribute>
+
+  <!--/**
+  * @attribute {Object} data
+  * The data inside the dataset
+  */-->
+  <attribute name="structure" type="expression" value="undefined"></attribute>
+
+  <method name="crunch" args="obj">
+    var memo = {
+      __type: 'u'
+    }
+
+    var t, i, j, types = [];
+    if (Array.isArray(obj)) {
+      var idx = 0;
+      for (i = 0;i < obj.length; i++) {
+        var item = obj[i];
+        t = this.crunch(item);
+        if (memo[t.__type]) {
+          memo[t.__type].__count++;
+        } else {
+          t.__count = 1;
+          memo[t.__type] = t;
+          types.push(t.__type)
+        }
+      }
+
+      memo.__type = '[' + types.sort().join(',') + ']';
+    } else if (typeof(obj) === 'object') {
+
+      var keys = Object.keys(obj).sort();
+      for (i=0; i < keys.length; i++) {
+        var k = keys[i];
+        if (!k.startsWith('__')) {
+          var v = obj[k];
+          t = this.crunch(v);
+
+          memo[k] = t;
+          types.push(k + ":" + t.__type)
+        }
+      }
+
+      memo.__type = '{' + types.sort().join(',') + '}';
+    } else if (typeof(obj) === 'string') {
+      memo.__type = 's';
+    } else if (typeof(obj) === 'number') {
+      memo.__type = 'i';
+    } else if (typeof(obj) === 'boolean') {
+      memo.__type = 'b';
+    }
+
+    return memo;
+
+  </method>
+
+  <handler event="ondata" args="data">
+     this.setAttribute('structure', this.crunch(data));
+  </handler>
+
+  <handler event="onstructure" args="structure">
+    console.log('X>', structure)
+
+    //todo:
+    //      move into editor
+    //      make leaf read from some object, isntea dof this goop:
+
+    function buildItems(parent) {
+      var items = [];
+
+      var keys = Object.keys(parent).sort();
+      for (var i=0; i < keys.length; i++) {
+        var k = keys[i];
+        if (!k.startsWith('__')) {
+          var v = parent[k];
+
+          var label = k;
+          if (v.__type[0] == '[') {
+            label = '[' + label + ']'
+          } else if (v.__type[0] == '{') {
+            label = '{' + label + '}'
+          } else if (parent.__type[0] == '[') {
+            label = ' &lt;' + label + '&gt;'
+          } else {
+            label = label + ' &lt;' + v.__type[0] + '&gt;'
+          }
+
+          if (v.__count) {
+            label = label + ' (' + v.__count + ')'
+          }
+
+          items.push({ label:label, items:buildItems(v) })
+        }
+      }
+
+      return items;
+
+    }
+
+    var root = {label: '', items: buildItems(structure) }
+
+    this.tree.setAttribute('data', root)
+
+  </handler>
+
+  <spacedlayout axis="y"></spacedlayout>
+
+  <tree name="tree" height="${this.parent.height}" width="${this.parent.width}" bgcolor="orange">
+  </tree>
+
+</class>
