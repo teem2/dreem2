@@ -8,14 +8,19 @@ either express or implied. See the License for the specific language governing p
   focusable="false" allowabort="true"
 >
   <!--// Class Methods //////////////////////////////////////////////////////-->
-  <method name="calculateDropLocation" args="target, droptarget" allocation="class">
-    var targetPos = target.getAbsolutePosition(editor),
-      newParentPos = droptarget.getAbsolutePosition(editor),
-      sprite = droptarget.sprite;
-    return {
-      x:targetPos.x - newParentPos.x - droptarget.leftpadding - droptarget.leftborder + sprite.getScrollX(),
-      y:targetPos.y - newParentPos.y - droptarget.toppadding - droptarget.topborder + sprite.getScrollY()
-    };
+  <method name="calculateDropLocation" args="target, droptarget, isTreeDrop" allocation="class">
+    var x, y;
+    if (isTreeDrop) {
+      x = 0;
+      y = 0;
+    } else {
+      var targetPos = target.getAbsolutePosition(editor),
+        newParentPos = droptarget.getAbsolutePosition(editor),
+        sprite = droptarget.sprite;
+      x = targetPos.x - newParentPos.x - droptarget.leftpadding - droptarget.leftborder + sprite.getScrollX();
+      y = targetPos.y - newParentPos.y - droptarget.toppadding - droptarget.topborder + sprite.getScrollY();
+    }
+    return {x:x, y:y};
   </method>
 
 
@@ -41,12 +46,16 @@ either express or implied. See the License for the specific language governing p
     this.super();
     
     if (!this.dropfailed && !isAbort) {
+      // Determine if this is a tree drop or a canvas drop
+      var isTreeDrop = droptarget.isA(dr.treeitem);
+      if (isTreeDrop) droptarget = droptarget.treecontainer.data.ref;
+      
       var attrs = dr.extend({}, this.instanceattrs);
       attrs.id = editormodel.generateModelId();
       
       if (!this.islayout && !this.isbehavior && !this.isanimation) {
         if (attrs.x == null || attrs.y == null) {
-          var loc = dr.componentdropable.calculateDropLocation(this, droptarget);
+          var loc = dr.componentdropable.calculateDropLocation(this, droptarget, isTreeDrop);
           if (attrs.x == null) attrs.x = loc.x;
           if (attrs.y == null) attrs.y = loc.y;
         }

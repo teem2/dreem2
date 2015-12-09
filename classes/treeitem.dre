@@ -33,29 +33,34 @@
   
   <method name="drawHoverState">
     var tc = this.treecontainer;
-    this.setAttribute('color', tc.textcolor);
-    this.setAttribute('bgcolor', tc.root.hovercolor);
+    this._draw(tc.textcolor, tc.root.hovercolor);
   </method>
 
   <method name="drawActiveState">
     var tc = this.treecontainer;
-    this.setAttribute('color', tc.textcolor);
-    this.setAttribute('bgcolor', tc.root.activecolor);
+    this._draw(tc.textcolor, tc.root.activecolor);
   </method>
 
   <method name="drawReadyState">
-    var tc = this.treecontainer, selected = tc.selected, root = tc.root;
-    this.setAttribute('color', selected ? root.selecttextcolor : tc.textcolor);
-    this.setAttribute('bgcolor', selected ? root.selectcolor : 'transparent');
+    var tc = this.treecontainer;
+    if (tc.selected) {
+      this._draw(tc.root.selecttextcolor, tc.root.selectcolor);
+    } else {
+      this._draw(tc.textcolor, 'transparent');
+    }
+  </method>
+
+  <method name="_draw" args="color, bgcolor">
+    this.setAttribute('color', color);
+    this.setAttribute('bgcolor', bgcolor);
   </method>
 
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <text name="toggle" with="button" focusembellishment="false"
-    visible="false" focusable="false"
+  <text name="toggle" with="button"
+    visible="false" focusable="false" focusembellishment="false"
     x="${this.parent.treecontainer.indentwidth * (this.parent.treecontainer.depth - 1) + 5}" y="6"
-    text="${this.parent.treecontainer.collapsed ? '▶' : '▼'}"
-    fontsize="12"
+    text="${this.parent.treecontainer.collapsed ? '▶' : '▼'}" fontsize="12"
     disabled="${this.parent.disabled}"
   >
     <method name="doActivated">
@@ -66,14 +71,17 @@
     <method name="drawHoverState">
       this.parent.drawHoverState();
     </method>
+    
     <method name="drawActiveState">
       this.parent.drawActiveState();
     </method>
+    
     <method name="drawReadyState">
       this.parent.drawReadyState();
     </method>
   </text>
-  
+
   <bitmap name="image" visible="false" x="${this.parent.toggle.x + 15}" y="5" width="15" height="15"/>
+
   <text name="label" x="${this.parent.image.x + (this.parent.image.visible ? 20 : 0)}" y="5" fontsize="14"/>
 </class>

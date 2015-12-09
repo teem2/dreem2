@@ -19,11 +19,26 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="willAcceptDrop" args="dropable">
-    // Leaf views do not support children so no dropping.
-    if (!dropable.isbehavior && !dropable.isanimation && this.isLeaf(dropable)) return false;
+    var data = this.treecontainer.data;
+    if (Array.isArray(data)) return false;
+    var targetComponent = data.ref;
+    
+    // Determine Leaf Combinations
+    if (targetComponent.isA(dr.Animator)) {
+      // Animators are always leaves
+      return false;
+    } else if (targetComponent.isA(dr.AnimGroup)) {
+      // Only Animators and AnimGroups can be dropped on AnimGroups
+      if (!dropable.isanimation) return false;
+    } else if (targetComponent.isA(dr.View)) {
+      if (!dropable.isbehavior && !dropable.isanimation && targetComponent.isLeaf(dropable)) return false;
+    } else {
+      // Don't allow dropping on unexpected tree items.
+      return false;
+    }
     
     // No dropping on descendants of self
-    if (this.isDescendantOf(dropable.target)) return false;
+    if (targetComponent.isDescendantOf(dropable.target)) return false;
     
     return this.super();
   </method>
@@ -162,7 +177,11 @@ either express or implied. See the License for the specific language governing p
             // Keep all child nodes that are not layouts, behaviors or animators.
             if (id) {
               var view = self._getEditable(id);
-              if (view && !view.isA(dr.Layout) && !view.isA(dr.behavior.behavior)) m.push(object);
+              if (view && !view.isA(dr.Layout) && !view.isA(dr.behavior.behavior)) {
+                m.push(object);
+                
+                object.ref = view.isRoot() ? editor.content_bg.content.inner : view;
+              }
             }
           }
         }

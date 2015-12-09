@@ -35,23 +35,24 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="drawDisabledState">
-    this.setActualAttribute('opacity', 0.5);
-    this.labelView.setActualAttribute('visible', false);
+    this._draw(0.5, false);
   </method>
 
   <method name="drawHoverState">
-    this.setActualAttribute('opacity', 1);
-    this.labelView.setActualAttribute('visible', true);
+    this._draw(1, true);
   </method>
 
   <method name="drawActiveState">
-    this.setActualAttribute('opacity', 1);
-    this.labelView.setActualAttribute('visible', true);
+    this._draw(1, true);
   </method>
 
   <method name="drawReadyState">
-    this.setActualAttribute('opacity', 1);
-    this.labelView.setActualAttribute('visible', false);
+    this._draw(1, false);
+  </method>
+
+  <method name="_draw" args="opacity, visible">
+    this.setActualAttribute('opacity', opacity);
+    this.labelView.setActualAttribute('visible', visible);
   </method>
 
 
