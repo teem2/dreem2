@@ -10,7 +10,14 @@ either express or implied. See the License for the specific language governing p
   <attribute name="selected" type="expression" value="${null}"/>
   <setter name="selected" args="v">
     if (editor.inited) this.setActualAttribute('isrootselection', v === editor.content_bg.content.inner);
-    this.setActualAttribute('selectedview', v && v.isA(dr.View) ? v : null);
+    
+    var isView = !!(v && v.isA(dr.View));
+    this.setActualAttribute('selectedview', isView ? v : null);
+    
+    // Layout and Behavior panels should only be visible if a view is selected.
+    layouts_subhead.setAttribute('visible', isView);
+    behaviors_subhead.setAttribute('visible', isView);
+    
     return v;
   </setter>
 

@@ -25,8 +25,6 @@ either express or implied. See the License for the specific language governing p
         var target = this.classroot.data, E = dr.editor, undoClass;
         if (target.isA(dr.Layout)) {
           undoClass = E.deletelayoutundoable;
-        } else if (target.isA(dr.AnimBase)) {
-          undoClass = E.deleteanimatorundoable;
         } else {
           undoClass = E.deletebehaviorundoable;
         }

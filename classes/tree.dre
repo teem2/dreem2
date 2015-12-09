@@ -19,7 +19,9 @@
    *      data='[{"label":"first", "items": [1, 2, 3]}]'></tree>
    *
    */-->
-<class name="tree" extends="view" width="${Math.max(this.maxwidth + 12, this.parent.innerwidth)}">
+<class name="tree" requires="treeitem"
+  width="${Math.max(this.maxwidth + 12, this.parent.innerwidth)}"
+>
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="strict" type="boolean" value="true"/>
 
@@ -55,6 +57,12 @@
     }
     
     this.super();
+    
+    this.createChild({
+      class:this.getTreeItemClassname(), 
+      name:'item',
+      treecontainer:this
+    });
   </method>
 
 
@@ -157,6 +165,7 @@
     }
     
     if (Array.isArray(d)) {
+      this.nodes.setAttribute('classname', this.getReplicatorClassname());
       this.nodes.setAttribute('data', d);
       item.toggle.setAttribute('visible', !this.isroot && d.length > 0);
     }
@@ -175,6 +184,9 @@
   </method>
 
   <method name="selectHandler" args="selecting, data">
+    // Bubble up to the selectHandler implementation closest to the root of the
+    // tree. Typically you will override this method in the root node of the
+    // tree.
     if (this.parent.selectHandler) this.parent.selectHandler(selecting, data);
   </method>
 
@@ -185,61 +197,16 @@
     this.selectHandler(this.selected, this.data);
   </method>
 
+  <method name="getReplicatorClassname">
+    return 'tree';
+  </method>
+
+  <method name="getTreeItemClassname">
+    return 'treeitem';
+  </method>
+
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <view name="item" with="button" height="${this.parent.isroot ? 0 : 25}"
-    width="${this.parent.root.width}"
-    focusembellishment="false" focusable="false"
-    disabled="${this.parent.root.disabled}"
-  >
-    <method name="doActivated">
-      var classroot = this.classroot;
-      classroot.triggerSelection(!classroot.selected);
-    </method>
-    
-    <method name="drawHoverState">
-      var cr = this.classroot;
-      this.setAttribute('color', cr.textcolor);
-      this.setAttribute('bgcolor', cr.root.hovercolor);
-    </method>
-    <method name="drawActiveState">
-      var cr = this.classroot;
-      this.setAttribute('color', cr.textcolor);
-      this.setAttribute('bgcolor', cr.root.activecolor);
-    </method>
-    <method name="drawReadyState">
-      var cr = this.classroot, selected = cr.selected, root = cr.root;
-      this.setAttribute('color', selected ? root.selecttextcolor : cr.textcolor);
-      this.setAttribute('bgcolor', selected ? root.selectcolor : 'transparent');
-    </method>
-    
-    <text name="toggle" with="button" focusembellishment="false"
-      visible="false" focusable="false"
-      x="${this.classroot.indentwidth * (this.classroot.depth - 1) + 5}" y="6"
-      text="${this.classroot.collapsed ? '▶' : '▼'}"
-      fontsize="12"
-      disabled="${this.parent.disabled}"
-    >
-      <method name="doActivated">
-        var classroot = this.classroot;
-        classroot.setAttribute('collapsed', !classroot.collapsed);
-      </method>
-      
-      <method name="drawHoverState">
-        this.parent.drawHoverState();
-      </method>
-      <method name="drawActiveState">
-        this.parent.drawActiveState();
-      </method>
-      <method name="drawReadyState">
-        this.parent.drawReadyState();
-      </method>
-    </text>
-    
-    <bitmap name="image" visible="false" x="${this.parent.toggle.x + 15}" y="5" width="15" height="15"/>
-    <text name="label" x="${this.parent.image.x + (this.parent.image.visible ? 20 : 0)}" y="5" fontsize="14"/>
-  </view>
-
   <replicator name="nodes" classname="tree">
     <handler event="onreplicated" args="r">
       var children = r.children, len = children.length, i = 0;

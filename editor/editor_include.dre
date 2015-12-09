@@ -4,8 +4,6 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-
-
 <include href='./keyboarddraggable.dre'/>
 <include href='./previewable.dre'/>
 <include href='./editable.dre'/>
@@ -987,7 +985,7 @@ either express or implied. See the License for the specific language governing p
         </view>
       </view>
       
-      <subhead width="100%" text="Layouts"/>
+      <subhead id="layouts_subhead" width="100%" text="Layouts"/>
       
       <view id="layouts_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true">
@@ -1007,19 +1005,7 @@ either express or implied. See the License for the specific language governing p
         <replicator name="repl" classname="subnodeeditor"/>
       </view>
       
-      <subhead width="100%" text="Animators"/>
-      
-      <view id="animators_panel" width="100%" clip="true">
-        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
-        
-        <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
-          this.repl.setActualAttribute('data', selectedview ? selectedview.getAnimators() : []);
-        </handler>
-        
-        <replicator name="repl" classname="subnodeeditor"/>
-      </view>
-      
-      <subhead width="100%" text="Behaviors"/>
+      <subhead id="behaviors_subhead" width="100%" text="Behaviors"/>
       
       <view id="behaviors_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>

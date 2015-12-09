@@ -4,8 +4,6 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-
-
 <mixin name="componentdropable" with="button, dropable"
   focusable="false" allowabort="true"
 >
@@ -23,7 +21,9 @@ either express or implied. See the License for the specific language governing p
 
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="instanceattrs" type="expression" value="null"/>
-  
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="notifyDropAborted">
     this.notifyDropFailed();
   </method>
@@ -40,7 +40,7 @@ either express or implied. See the License for the specific language governing p
   <method name="notifyDrop" args="droptarget, isAbort">
     this.super();
     
-    if (!this.dropfailed) {
+    if (!this.dropfailed && !isAbort) {
       var attrs = dr.extend({}, this.instanceattrs);
       attrs.id = editormodel.generateModelId();
       
@@ -115,14 +115,17 @@ either express or implied. See the License for the specific language governing p
       
       // Create undoable and "do" it. The previewinfo is also provided so
       // previewers receiving messages can instantiate the new node/view.
+      var E = dr.editor,
+        undoableAttrs = {target:instance, previewinfo:previewerAttrs};
       if (this.islayout) {
-        actions.do(new dr.editor.createlayoutundoable({target:instance, previewinfo:previewerAttrs}));
+        actions.do(new E.createlayoutundoable(undoableAttrs));
       } else if (this.isbehavior) {
-        actions.do(new dr.editor.createbehaviorundoable({target:instance, previewinfo:previewerAttrs}));
+        actions.do(new E.createbehaviorundoable(undoableAttrs));
       } else if (this.isanimation) {
-        actions.do(new dr.editor.createanimatorundoable({target:instance, previewinfo:previewerAttrs}));
+        actions.do(new E.createanimatorundoable(undoableAttrs));
+        selectionmanager.select(instance);
       } else {
-        actions.do(new dr.editor.createundoable({target:instance, previewinfo:previewerAttrs}));
+        actions.do(new E.createundoable(undoableAttrs));
         selectionmanager.select(instance);
       }
       

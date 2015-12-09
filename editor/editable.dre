@@ -395,15 +395,6 @@ either express or implied. See the License for the specific language governing p
     return attrs;
   </method>
 
-  <method name="getAnimators">
-    var children = this.getSubnodes(), i = children.length, child, retval = [];
-    while (i) {
-      child = children[--i];
-      if (child.isA(dr.AnimBase)) retval.push(child);
-    }
-    return retval;
-  </method>
-
   <!--// Behavior Support //-->
   <method name="getBehaviors">
     var children = this.getSubnodes(), i = children.length, child, retval = [];

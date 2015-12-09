@@ -8,33 +8,4 @@
 <class name="editor-deleteanimatorundoable" extends="editor-deleteundoable"
   undodescription='Undo delete animator.'
   redodescription='Redo delete animator.'
->
-  <!--// METHODS ////////////////////////////////////////////////////////////-->
-  <!--/**
-    * @method undo
-    * @overrides
-    * Re-inserts the target animator into its parent.
-    */-->
-  <method name="undo" args="callback">
-    var retval = this.super();
-    
-    // Only do this if undeletion succeeded
-    if (!this.done) dr.editor.createanimatorundoable.refresh(this._targetParent);
-    
-    return retval;
-  </method>
-
-  <!--/**
-    * @method redo
-    * @overrides
-    * Removes the target animator from the target parent.
-    */-->
-  <method name="redo" args="callback">
-    var retval = this.super();
-    
-    // Only do this if undeletion succeeded
-    if (this.done) dr.editor.createanimatorundoable.refresh(this._targetParent);
-    
-    return retval;
-  </method>
-</class>
+/>

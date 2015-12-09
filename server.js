@@ -105,8 +105,23 @@ function main() {
 
   // Try to make a build dir. If it fails for any reason other than that it
   // already exists then exit.
+  var deleteFolderRecursive = function(path) {
+      if (fs.existsSync(path)) {
+        fs.readdirSync(path).forEach(function(file, index) {
+          var curPath = path + "/" + file;
+          if (fs.lstatSync(curPath).isDirectory()) { // recurse
+            deleteFolderRecursive(curPath);
+          } else {
+            fs.unlinkSync(curPath);
+          }
+        });
+        fs.rmdirSync(path);
+      }
+    },
+    buildDir = define.expandVariables(define.BUILD);
   try {
-    fs.mkdirSync(define.expandVariables(define.BUILD));
+    deleteFolderRecursive(buildDir);
+    fs.mkdirSync(buildDir);
   } catch(e) {
     if (e.code !== 'EEXIST') {
       console.color('~br~Could not make build directory. ' + e + '~~\n');

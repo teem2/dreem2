@@ -4,8 +4,6 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-
-
 <node id="actions">
   <method name="_undoRedoCallback" args="undoable">
     // Prevents the callback from executing multiple times, once for each 
@@ -16,7 +14,7 @@ either express or implied. See the License for the specific language governing p
     if (!undoable.isA(dr.editor.compoundundoable)) {
       var target = undoable.target;
       if (target) {
-        if (target.isA(dr.View)) {
+        if (target.isA(dr.View) || target.isA(dr.AnimBase)) {
           if (target.parent) {
             if (selectionmanager.selected !== target) selectionmanager.select(target);
           } else {
@@ -162,7 +160,14 @@ either express or implied. See the License for the specific language governing p
   
   <method name="deleteSelected">
     if (this._isEditableSelection()) {
-      actions.do(new dr.editor.deleteundoable({target:selectionmanager.selected}));
+      var target = selectionmanager.selected,
+        E = dr.editor, undoClass;
+      if (target.isA(dr.AnimBase)) {
+        undoClass = E.deleteanimatorundoable;
+      } else {
+        undoClass = E.deleteundoable;
+      }
+      actions.do(new undoClass({target:target}));
       selectionmanager.clear();
     }
   </method>
