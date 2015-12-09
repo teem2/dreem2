@@ -40,7 +40,7 @@ either express or implied. See the License for the specific language governing p
   <method name="notifyDrop" args="droptarget, isAbort">
     this.super();
     
-    if (!this.dropfailed) {
+    if (!this.dropfailed && !isAbort) {
       var attrs = dr.extend({}, this.instanceattrs);
       attrs.id = editormodel.generateModelId();
       
