@@ -4,15 +4,17 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-
-
-<class name="reticle" with="button, keyboarddraggable" visible="false"
+<class name="reticle" with="button, keyboarddraggable"
+  visible="false"
   distancebeforedrag="5" clickable="false"
   draggroups="{editable:true}"
   isdraggable="${!selectionmanager.isrootselection}"
 >
+  <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="draglockthresh" type="number" value="20"/>
 
+
+  <!--// Handlers ///////////////////////////////////////////////////////////-->
   <!-- clickable:false is because the mousedown/up events are in fact
        simulated from the editable. This prevents the reticle from covering
        but still allows it to behave as draggable. -->
@@ -29,6 +31,34 @@ either express or implied. See the License for the specific language governing p
       this.setActualAttribute('visible', false);
     }
   </handler>
+
+  <handler event="onx" args="x">
+    this._updateTarget('x', x + this.dx);
+  </handler>
+
+  <handler event="ony" args="y">
+    this._updateTarget('y', y + this.dy);
+  </handler>
+
+  <handler event="onwidth" args="width">
+    this._updateTarget('width', width);
+    this.resizer.setActualAttribute('x', this.width - 5)
+  </handler>
+
+  <handler event="onheight" args="height">
+    this._updateTarget('height', height);
+    this.resizer.setActualAttribute('y', this.height - 5)
+  </handler>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <!-- Syncs an attribute on the target to one on the reticle. -->
+  <method name="_updateTarget" args="attr, value">
+    if (!this._isSync) {
+      var target = this.target;
+      if (target) target.setAttribute(attr, value, true); // 3rd arg enables model update
+    }
+  </method>
 
   <!-- Syncs the position and size of this reticle to the position and
        size of the target view. Also updates the vertical and horizontal
@@ -100,6 +130,7 @@ either express or implied. See the License for the specific language governing p
     return +(v.toFixed(2));
   </method>
 
+  <!-- Button Methods -->
   <method name="drawFocusedState">
     this.fill.setActualAttribute('boxshadow', this.ismouseover ? config.boxshadow_normal : config.boxshadow_large);
   </method>
@@ -112,33 +143,7 @@ either express or implied. See the License for the specific language governing p
   <method name="drawReadyState">
     this.fill.setActualAttribute('boxshadow', config.boxshadow_normal);
   </method>
-  
-  <!-- Syncs an attribute on the target to one on the reticle. -->
-  <method name="_updateTarget" args="attr, value">
-    if (!this._isSync) {
-      var target = this.target;
-      if (target) target.setAttribute(attr, value, true); // 3rd arg enables model update
-    }
-  </method>
-  
-  <handler event="onx" args="x">
-    this._updateTarget('x', x + this.dx);
-  </handler>
-  
-  <handler event="ony" args="y">
-    this._updateTarget('y', y + this.dy);
-  </handler>
-  
-  <handler event="onwidth" args="width">
-    this._updateTarget('width', width);
-    this.resizer.setActualAttribute('x', this.width - 5)
-  </handler>
-  
-  <handler event="onheight" args="height">
-    this._updateTarget('height', height);
-    this.resizer.setActualAttribute('y', this.height - 5)
-  </handler>
-  
+
   <method name="updatePosition" args="x, y">
     if (!this.disabled && this.isdraggable) {
       if (!this._isArrowAdj) {
@@ -334,6 +339,7 @@ either express or implied. See the License for the specific language governing p
     });
   </method>
 
+  <!-- Drag and Drop -->
   <method name="willPermitDrop" args="droptarget">
     return true;
   </method>
@@ -419,7 +425,11 @@ either express or implied. See the License for the specific language governing p
       undoH.newvalue = '' + target.getAttribute('height'); // Coerce to string for consistent comparison
       undoX.newvalue = '' + target.getAttribute('x'); // Coerce to string for consistent comparison
       undoY.newvalue = '' + target.getAttribute('y'); // Coerce to string for consistent comparison
-     
+      
+      // Determine if this is a tree drop or a canvas drop
+      var isTreeDrop = droptarget && droptarget.isA(dr.treeitem);
+      if (isTreeDrop) droptarget = droptarget.treecontainer.data.ref;
+      
       // TODO: remove check for _isInReplicator() when we have a true class editor. For 
       // now, it prevents attempts to reparent child views inside replicated classes. 
       if (!this._isArrowAdj && !this.target._isInReplicator()) {
@@ -428,7 +438,7 @@ either express or implied. See the License for the specific language governing p
           undoP = new E.editorattrundoable({target:target, attribute:'parent', oldvalue:target.parent, newvalue:droptarget});
           undoO = new E.orderundoable({target:target, oldprevsibling:target.getPrevSiblingView()});
           
-          var loc = dr.componentdropable.calculateDropLocation(target, droptarget);
+          var loc = dr.componentdropable.calculateDropLocation(target, droptarget, isTreeDrop);
           undoX.newvalue = '' + loc.x;
           undoY.newvalue = '' + loc.y;
         }
@@ -718,7 +728,7 @@ either express or implied. See the License for the specific language governing p
   </method>
 
 
-  <!--// Views //////////////////////////////////////////////////////////////-->
+  <!--// Nodes/Views ////////////////////////////////////////////////////////-->
   <!-- This view allows the reticle to visually appear zero width/height while
        still supporting borders. -->
   <view name="fill" width="100%" height="100%" clip="true">

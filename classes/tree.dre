@@ -207,7 +207,7 @@
 
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <replicator name="nodes" classname="tree">
+  <replicator name="nodes" classname="view">
     <handler event="onreplicated" args="r">
       var children = r.children, len = children.length, i = 0;
       for (; len > i; i++) children[i].setAttribute('name', 'treenode_' + i);

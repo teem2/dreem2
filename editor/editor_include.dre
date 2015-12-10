@@ -7,7 +7,6 @@ either express or implied. See the License for the specific language governing p
 <include href='./keyboarddraggable.dre'/>
 <include href='./previewable.dre'/>
 <include href='./editable.dre'/>
-<include href='./editableanimation.dre'/>
 <include href='./controlhandle.dre'/>
 <include href='./reticle.dre'/>
 <include href='./toolbarbutton.dre'/>

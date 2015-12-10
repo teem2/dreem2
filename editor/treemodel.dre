@@ -24,21 +24,21 @@ either express or implied. See the License for the specific language governing p
     var targetComponent = data.ref;
     
     // Determine Leaf Combinations
-    if (targetComponent.isA(dr.Animator)) {
+    if (targetComponent.isA(dr.View)) {
+      if (!dropable.isbehavior && !dropable.isanimation && targetComponent.isLeaf(dropable)) return false;
+    } else if (targetComponent.isA(dr.Animator)) {
       // Animators are always leaves
       return false;
     } else if (targetComponent.isA(dr.AnimGroup)) {
       // Only Animators and AnimGroups can be dropped on AnimGroups
       if (!dropable.isanimation) return false;
-    } else if (targetComponent.isA(dr.View)) {
-      if (!dropable.isbehavior && !dropable.isanimation && targetComponent.isLeaf(dropable)) return false;
     } else {
       // Don't allow dropping on unexpected tree items.
       return false;
     }
     
-    // No dropping on descendants of self
-    if (targetComponent.isDescendantOf(dropable.target)) return false;
+    // No dropping on descendants of self or our parent
+    if (dropable.target && (targetComponent.isDescendantOf(dropable.target) || dropable.target.parent === targetComponent)) return false;
     
     return this.super();
   </method>

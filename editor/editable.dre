@@ -38,14 +38,17 @@ either express or implied. See the License for the specific language governing p
   <method name="initNode" args="parent, attrs">
     this.super();
     
-    var isView = false, isText = false;
+    var isView = false, isText = false, isAnim = false;
     if (this.isA(dr.text)) {
       isView = isText = true;
     } else if (this.isA(dr.View)) {
       isView = true;
+    } else if (this.isA(dr.AnimBase)) {
+      isAnim = true;
     }
     this.__isView = isView;
     this.__isText = isText;
+    this.__isAnim = isAnim;
     
     if (isView) {
       // Set up mousedown/up handlers which send simulated events to the
@@ -62,6 +65,9 @@ either express or implied. See the License for the specific language governing p
     }
     
     if (isText) this.setAttribute('focusembellishment', false);
+    
+    // Do nothing so animation is supressed in the editor.
+    if (isAnim) this.__update = function(idleEvent) {};
   </method>
 
 
