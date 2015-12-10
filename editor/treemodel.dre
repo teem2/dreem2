@@ -4,24 +4,93 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-<class name="editortreeitem" extends="treeitem" with="droptarget"
+<class name="editortreeitem" extends="treeitem" with="dropable, droptarget"
   draggroups="{editable:true}"
+  allowabort="true" distancebeforedrag="1"
 >
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    // Don't allow dragging of root view
+    var targetComponent = this._getTargetComponent();
+    if (targetComponent) {
+      if (targetComponent === editor.content_bg.content.inner) {
+        this.setAttribute('isdraggable', false);
+      } else if (targetComponent.isA(dr.AnimBase)) {
+        this.isanimation = true;
+      }
+    }
+  </method>
+
+
   <!--// Methods ////////////////////////////////////////////////////////////-->
-  <!--// Drag and Drop //-->
+  <!--// Drag Support //-->
+  <method name="startDrag" args="event">
+    //this._start();
+    this.super();
+    
+    // Make half opacity during drag
+    var target = this.treecontainer;
+    this._origY = this.y;
+    this._origParent = target;
+    var pos = target.getAbsolutePosition(target.root.parent.parent);
+    target.setActualAttribute('visible', false);
+    this.setAttribute('parent', target.root.parent.parent);
+    this.setAttribute('dragoffsety', pos.y);
+    this.setAttribute('opacity', 0.5);
+    this.setAttribute('clickable', false);
+  </method>
+  
+  <method name="updatePosition" args="x, y">
+    if (!this.disabled && this.isdraggable) this.super(0, y);
+  </method>
+
+  <method name="notifyDropFailed">
+    this._abort();
+  </method>
+
+  <method name="notifyDropAborted">
+    this._abort();
+  </method>
+
+  <method name="_abort">
+    this.setAttribute('y', this._origY);
+    this.setAttribute('parent', this._origParent);
+    this.moveToBack();
+  </method>
+
+  <method name="stopDrag" args="event, isAbort">
+    this.super();
+    
+    // Restore opacity after drag
+    this.treecontainer.setActualAttribute('visible', true);
+    this.setAttribute('opacity', 1);
+    this.setAttribute('clickable', true);
+  </method>
+
+  <!--// Drop Support //-->
   <method name="notifyDragEnter" args="dropable">
+    if (this.isdragging) return;
+    
     this.__origBoxShadow = this.getActualAttribute('boxshadow');
     this.setActualAttribute('boxshadow', [0, 0, 6, 1, '#009900']);
   </method>
 
   <method name="notifyDragLeave" args="dropable">
+    if (this.isdragging) return;
+    
     this.setActualAttribute('boxshadow', this.__origBoxShadow);
   </method>
 
   <method name="willAcceptDrop" args="dropable">
-    var data = this.treecontainer.data;
-    if (Array.isArray(data)) return false;
-    var targetComponent = data.ref;
+    if (this.isdragging) return false;
+    
+    // Tree on tree case
+    if (dropable === this || (dropable._origParent && dropable._origParent.parent === this.treecontainer)) return false;
+    
+    var targetComponent = this._getTargetComponent();
+    if (!targetComponent) return false;
     
     // Determine Leaf Combinations
     if (targetComponent.isA(dr.View)) {
@@ -42,6 +111,11 @@ either express or implied. See the License for the specific language governing p
     
     return this.super();
   </method>
+
+  <method name="_getTargetComponent">
+    var data = this.treecontainer.data;
+    if (!Array.isArray(data)) return data.ref;
+  </method>
 </class>
 
 <class name="editortree" extends="tree">
@@ -55,7 +129,7 @@ either express or implied. See the License for the specific language governing p
 </class>
 
 <editortree id="treemodel" multipleselection="false"
-  y="28" selectcolor="${config.selection_color}"
+  selectcolor="${config.selection_color}"
   disabled="${!editor.editmode}"
 >
   <handler name="updateSelection" event="onselected" args="view" reference="selectionmanager">

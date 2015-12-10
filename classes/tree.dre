@@ -32,7 +32,7 @@
   <attribute name="selected" type="boolean" value="false"/>
   <attribute name="collapsed" type="boolean" value="false"/>
 
-  <attribute name="indentwidth" type="number" value="16"/>
+  <attribute name="indentwidth" type="number" value="19"/>
   <attribute name="depth" type="number" value="0"/>
   
   <attribute name="selectcolor" type="color" value="#999"/>

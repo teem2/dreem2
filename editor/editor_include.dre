@@ -861,7 +861,7 @@ either express or implied. See the License for the specific language governing p
   </view>
 
   <!--// Left Panel //-->
-  <view name="leftbar" ignoreplacement="true" bgcolor="white" scrollable="true"
+  <view name="leftbar" ignoreplacement="true" bgcolor="white"
     y="${config.topbar_height}"
     width="${this.parent.divider_left.x}"
     height="${this.parent.innerheight - this.y}"
@@ -881,7 +881,9 @@ either express or implied. See the License for the specific language governing p
       <view width="100%" y="bottom" height="1" bgcolor="#cccccc"/>
     </view>
     
-    <include href='./treemodel.dre'/>
+    <view with="autoscroller" y="28" width="100%" height="${this.parent.innerheight - this.y}">
+      <include href='./treemodel.dre'/>
+    </view>
   </view>
 
   <!--// Right Panel //-->
