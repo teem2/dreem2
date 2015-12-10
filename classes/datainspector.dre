@@ -87,12 +87,6 @@ SOFTWARE. -->
   </handler>
 
   <handler event="onstructure" args="structure">
-    console.log('X>', structure)
-
-    //todo:
-    //      move into editor
-    //      make leaf read from some object, isntea dof this goop:
-
     function buildItems(parent) {
       var items = [];
 
@@ -106,7 +100,9 @@ SOFTWARE. -->
           if (v.__type[0] == '[') {
             label = '[' + label + ']'
           } else if (v.__type[0] == '{') {
-            label = '{' + label + '}'
+            if (label[0] != '{') {
+              label = '{' + label + '}'
+            }
           } else if (parent.__type[0] == '[') {
             label = ' &lt;' + label + '&gt;'
           } else {
