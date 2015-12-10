@@ -382,7 +382,7 @@ console.log('main_file', main_file);
 	    global.dali = require('/usr/lib/node_modules/npm/node_modules/dali/dali')(options)
 	} catch (err) {
 	    console.log('Running Ubuntu, requiring dali from ./dalinode/dali')
-	    global.dali = require('.dalinode/dali')(options)
+	    global.dali = require('./dalinode/dali')(options)
 	}
 		// Show/hide a loading page
 		global.show_loading_page = function() {
