@@ -680,10 +680,13 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="_generateUniqueName" args="target">
-    var count = 0,
-      name = 'layer_' + count++,
-      parent = target.parent;
+    // Put count on the parent layer so multiple unique names can be generated
+    // during one constraint setup pass
+    var parent = target.parent,
+      count = parent.__LAYER_COUNT || 0,
+      name = 'layer_' + count++;
     while (parent[name]) name = 'layer_' + count++;
+    parent.__LAYER_COUNT = count;
     return name;
   </method>
 
