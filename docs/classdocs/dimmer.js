@@ -1,5 +1,5 @@
 /**
-   * @class dr.dimmer {UI Component}
+   * @class dr.dimmer {UI Components}
    * A dimmer that can be placed on another dr.view to obscure the subviews of
    * that view.
    */

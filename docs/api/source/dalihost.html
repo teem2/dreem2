@@ -218,8 +218,18 @@ define(function(require, exports, module) {
                     return localref;
                 }
                 else {
-                    // Server resource. Remove any preview references
-                    localref = define.ROOTSERVER + filename; // COMPOSITIONROOT + filename;
+                    // Server resource. Remove any preview references, and
+                    // handle relative vs. absolute reference
+                    if (filename &amp;&amp; filename[0] == &#39;/&#39;) {
+                        // absolute
+                        localref = define.ROOTSERVER + filename;
+                    }
+                    else {
+                        // relative
+                        var prefix = define.COMPOSITIONROOT.replace(/\.\//g, &#39;/&#39;);
+                        localref = define.ROOTSERVER + prefix + filename;
+                    }
+
                     localref = localref.replace(/preview\//g, &#39;&#39;);
                     localref = this.retrieveUrl(localref, callback);
                     return localref;
@@ -556,7 +566,9 @@ define(function(require, exports, module) {
                     fontDetection: true // default is true
                 }
                 if (!this.fontsize) this.fontsize = 20;
-                var t1 = new dali.Control(&quot;TextField&quot;);
+
+                // Either create or reuse the actor
+                var t1 = (this.textactor) ? this.textactor : new dali.Control(&quot;TextField&quot;);
                 t1.widthResizePolicy = &quot;USE_NATURAL_SIZE&quot;;
                 t1.heightResizePolicy = &quot;USE_NATURAL_SIZE&quot;;
                 t1.text = this.text? this.text:&quot;&quot;;
@@ -570,8 +582,11 @@ define(function(require, exports, module) {
                 //t1.sizeMode = dali.USE_OWN_SIZE;
                 //t1.HorizontalAlignment = &quot;BEGIN&quot;;
                 
-                this.insideactor.add(t1);
-                this.textactor = t1;
+                if (!this.textactor){
+                    this.insideactor.add(t1);
+                    this.textactor = t1;
+                }
+
                 this.setSize(this.lastsetsize[0], this.lastsetsize[1]);
                 this.updateInside();
                 

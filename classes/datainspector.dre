@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. -->
 
 <!--/**
-      * @class dr.datainspector {UI}
+      * @class dr.datainspector {UI Components, Data}
       * @extends dr.view
       * The datainspector extracts the underlying structure from a JSON document
       * and displays it as a visual tree.  The structure tree can be manipulated

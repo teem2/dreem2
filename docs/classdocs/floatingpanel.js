@@ -1,5 +1,5 @@
 /**
-   * @class dr.floatingpanel {UI Component}
+   * @class dr.floatingpanel {UI Components}
    * A panel that floats above everything else.
    *
    * Configured as visible false since panels will always begin by not being

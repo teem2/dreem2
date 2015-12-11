@@ -337,6 +337,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
 <a href="#n183" name="n183">183</a>
 <a href="#n184" name="n184">184</a>
 <a href="#n185" name="n185">185</a>
+<a href="#n186" name="n186">186</a>
 </pre></td>
   <td class="code"><pre><span class="comment">&lt;!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the &quot;License&quot;); you may not use this file except in compliance with the License.
  You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
@@ -506,7 +507,8 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">deserialize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     // Retrieve objects via the serialized IDs.
-    if (data.target) data.target = dr.sprite.retrieveGlobal(data.target);
+    var retrieveFunc = dr.editor.undoable.retrieveById;
+    data.target = retrieveFunc(data.target);
     
     if (!data.target) {
       dr.global.error.notifyWarn('deserialization', &quot;Target could not be found for attrundoable: &quot; + data.target);
@@ -516,8 +518,8 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     // The parent attr is a special case where the old and new values are
     // node/view references.
     if (data.attribute === 'parent') {
-      data.oldvalue = dr.sprite.retrieveGlobal(data.oldvalue);
-      data.newvalue = dr.sprite.retrieveGlobal(data.newvalue);
+      data.oldvalue = retrieveFunc(data.oldvalue);
+      data.newvalue = retrieveFunc(data.newvalue);
     }
     
     return this.super(data);

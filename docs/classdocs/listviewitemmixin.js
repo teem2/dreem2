@@ -1,5 +1,5 @@
 /**
-   * @mixin dr.listviewitemmixin {UI Component}
+   * @mixin dr.listviewitemmixin {UI Components}
    * Defines the interface list view items must support.
    */
 /**

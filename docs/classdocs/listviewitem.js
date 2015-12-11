@@ -1,5 +1,5 @@
 /**
-   * @class dr.listviewitem {UI Component}
+   * @class dr.listviewitem {UI Components}
    * An item in a dr.listview.
    */
 /**
