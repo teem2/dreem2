@@ -25,7 +25,7 @@ either express or implied. See the License for the specific language governing p
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
-  <!--// Drag Support //-->
+  <!--// Drag and Drop Support //-->
   <method name="startDrag" args="event">
     //this._start();
     this.super();
@@ -45,6 +45,39 @@ either express or implied. See the License for the specific language governing p
   <method name="updatePosition" args="x, y">
     if (!this.disabled && this.isdraggable) this.super(0, y);
   </method>
+  
+  <method name="notifyDrop" args="dropable, isAbort">
+    this.super();
+    
+    // Checking for undefined tells us we're in the over view version of notifyDrop
+    if (isAbort === undefined && dropable && dropable.isA(dr.treeitem)) {
+      this._stop(this._getTargetComponent(), dropable._getTargetComponent());
+    }
+  </method>
+
+  <method name="_stop" args="droptarget, target">
+    // TODO: remove check for _isInReplicator() when we have a true class editor. For 
+    // now, it prevents attempts to reparent child views inside replicated classes. 
+    if (target._isInReplicator()) return;
+    
+    // started dragging, create compound for target with current values
+    var E = dr.editor,
+      EAU = E.editorattrundoable;
+      undoX = new EAU({target:target, attribute:'x', oldvalue:target.getAttribute('x'), newvalue:'0'}),
+      undoY = new EAU({target:target, attribute:'y', oldvalue:target.getAttribute('y'), newvalue:'0'}),
+      undoP = new E.editorattrundoable({target:target, attribute:'parent', oldvalue:target.parent, newvalue:droptarget}),
+      undoO = new E.orderundoable({target:target, oldprevsibling:target.getPrevSiblingView()}),
+      compound = new E.compoundundoable();
+    
+    compound.add(undoX).add(undoY);
+    
+    // Must be last so that dragging into a parent that already has a layout works as expected. To repro,
+    // but a view at x=10, drag it into a view with only an x-spacedlayout, undo the drag and then
+    // notice the view did not get put back at 10, but instead at 0.
+    compound.add(undoO).add(undoP);
+    
+    actions.do(compound);
+  </method>
 
   <method name="notifyDropFailed">
     this._abort();
@@ -55,21 +88,26 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="_abort">
-    this.setAttribute('y', this._origY);
-    this.setAttribute('parent', this._origParent);
-    this.moveToBack();
+    if (this._origParent.destroyed) {
+      this.destroy();
+    } else {
+      this.setAttribute('y', this._origY);
+      this.setAttribute('parent', this._origParent);
+      this.moveToBack();
+    }
   </method>
 
   <method name="stopDrag" args="event, isAbort">
     this.super();
     
     // Restore opacity after drag
-    this.treecontainer.setActualAttribute('visible', true);
-    this.setAttribute('opacity', 1);
-    this.setAttribute('clickable', true);
+    if (!this.destroyed) {
+      this.treecontainer.setActualAttribute('visible', true);
+      this.setAttribute('opacity', 1);
+      this.setAttribute('clickable', true);
+    }
   </method>
 
-  <!--// Drop Support //-->
   <method name="notifyDragEnter" args="dropable">
     if (this.isdragging) return;
     
@@ -114,6 +152,7 @@ either express or implied. See the License for the specific language governing p
 
   <method name="_getTargetComponent">
     var data = this.treecontainer.data;
+    if (!data) return null;
     if (!Array.isArray(data)) return data.ref;
   </method>
 </class>
@@ -214,7 +253,7 @@ either express or implied. See the License for the specific language governing p
         for (; len > s;) {
           scr = o[s++];
           tag = scr.tag;
-          if (tag && tag[0] != '$') {
+          if (tag && tag[0] !== '$' && tag !== 'include') {
             title = name = id = '';
             attr = scr.attr;
             img = config.img_root;

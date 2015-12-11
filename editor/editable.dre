@@ -85,6 +85,9 @@ either express or implied. See the License for the specific language governing p
   </method>
   
   <method name="willAcceptDrop" args="dropable">
+    // Do not accept drops from the tree
+    if (dropable && dropable.isA(dr.treeitem)) return false;
+    
     // Non-views will never accept a drop.
     if (!this.__isView) return false;
     
