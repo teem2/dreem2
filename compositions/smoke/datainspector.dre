@@ -6,32 +6,43 @@
   <screens>
     <screen type='browser' name='default' title='Smoke Test - Data Inspector'>
       <include href='./includes/boilerplate.dre'/>
-      <view width='100%' height='100%' padding='25' id='lzeditor_0'>
-        <include href='/editor/editor_include.dre'/>
-        <datainspector x='0' y='300' data='${this.typename.data}' id='lzeditor_7' placement='editor' with='editable'>
-          <dataset name='typename' id='lzeditor_8' with='editable'>
+      <view width='100%' height='100%' padding='25'>
+        <datainspector x='0' y='300' data='${this.typename.data}'>
+          <dataset name='typename'>
             [{
               "__typename": "newname",
               "firstName":"Jane",
-              "lastName":"Doe"
+              "lastName":"Doe",
+              "home": {
+                "__type": "address",
+                "street": "123 Fake Steet",
+                "city": "Portland",
+                "state": "OR"
+              }
             }]
           </dataset>
           <handler event='oninit'>
             var expected = {
-              __type: '[{firstName:s,lastName:s}]',
-              '{firstName:s,lastName:s}': {
+              __type: '[{firstName:s,home:address,lastName:s}]',
+              '{firstName:s,home:address,lastName:s}': {
                 __count: 1,
-                __type: '{firstName:s,lastName:s}',
+                __type: '{firstName:s,home:address,lastName:s}',
                 __typename: 'newname',
-                firstName: { __type: 's' },
-                lastName: { __type: 's' }
+                firstName: {__type: 's'},
+                lastName: {__type: 's'},
+                home: {
+                  __type: 'address',
+                  city: {__type: 's'},
+                  state: {__type: 's'},
+                  street: {__type: 's'}
+                }
               }
             }
             assert.deepEqual(expected, this.structure)
           </handler>
         </datainspector>
-        <datainspector x='0' y='0' data='${this.array.data}' id='lzeditor_4' placement='editor' with='editable'>
-          <dataset name='array' id='lzeditor_5' with='editable'>
+        <datainspector x='0' y='0' data='${this.array.data}'>
+          <dataset name='array'>
             [
               { "firstName":"John",  "lastName":"Upton", "address":{ "street":"123 Fake Street", "city":"Chicago", "state":"TN" } },
               { "firstName":"Sally", "lastName":"Upton", "address":{ "street":"123 Fake Street", "city":"Chicago", "state":"TN" } },
@@ -57,8 +68,8 @@
             assert.deepEqual(expected, this.structure)
           </handler>
         </datainspector>
-        <datainspector x='400' y='0' data='${this.object.data}' id='lzeditor_1' placement='editor' with='editable'>
-          <dataset name='object' id='lzeditor_2' with='editable'>
+        <datainspector x='400' y='0' data='${this.object.data}'>
+          <dataset name='object'>
             {
               "int":        1,
               "bool":       true,
@@ -68,7 +79,7 @@
               "arrint":     [1, 2, 3],
               "arrstr":     ["one", "two"],
               "arrobj":     [{"a": 8, "b": "g"}],
-              "arrall":     [1, 2, "a", "b", "c", "d", false, true, false],
+              "arrall":     [1, 2, "a", "b", "c", "d", false, true, false, null],
               "arrmixwobj": [1, 2, 3, "a", "b", {"e": "f"}],
               "arrwobjmix": [{"a": 1, "b": "b"}, {"b": 1, "c": "b"}, {"c": 1, "d": "b"}],
               "arrcpx":     [{"l": [{"a": 1, "b": "b"}, {"a": 2, "b": "b"}, {"a": 3, "b": "b"}], "m": [{"a": 5, "b": "b"}, {"a": 6, "b": "b"}, {"a": 7, "b": "b"}]},
@@ -79,24 +90,17 @@
             }
           </dataset>
           <handler event='oninit'>
+
             var expected = {
-              __type: '{arrall:[b,i,s],arrcpx:[{l:[{a:i,b:s}],m:[{a:i,b:s}]}],arrint:[i],arrmixwobj:[i,s,{e:s}],arrobj:[{a:i,b:s}],arrstr:[s],arrwobjmix:[{a:i,b:s},{b:i,c:s},{c:i,d:s}],bool:b,int:i,obj:{a:i,b:s},objwobjs:{a:i,b:s,c:{k:s},d:{k:s}},str:s}',
-              arrall:     {
-                __type: '[b,i,s]',
-                b: {
-                  __count: 3,
-                  __type: 'b'
-                },
-                i: {
-                  __count: 2,
-                  __type: 'i'
-                },
-                s: {
-                  __count: 4,
-                  __type: 's'
-                }
+              __type: '{arrall:[b,i,s,u],arrcpx:[{l:[{a:i,b:s}],m:[{a:i,b:s}]}],arrint:[i],arrmixwobj:[i,s,{e:s}],arrobj:[{a:i,b:s}],arrstr:[s],arrwobjmix:[{a:i,b:s},{b:i,c:s},{c:i,d:s}],bool:b,int:i,obj:{a:i,b:s},objwobjs:{a:i,b:s,c:{k:s},d:{k:s}},str:s}',
+              arrall: {
+                __type: '[b,i,s,u]',
+                b: {__count: 3, __type: 'b'},
+                i: {__count: 2, __type: 'i'},
+                s: {__count: 4, __type: 's'},
+                u: {__count: 1, __type: 'u'}
               },
-              arrcpx:     {
+              arrcpx: {
                 __type: '[{l:[{a:i,b:s}],m:[{a:i,b:s}]}]',
                 '{l:[{a:i,b:s}],m:[{a:i,b:s}]}': {
                   __count: 4,
@@ -106,12 +110,8 @@
                     '{a:i,b:s}': {
                       __count: 3,
                       __type: '{a:i,b:s}',
-                      a: {
-                        __type: 'i'
-                      },
-                      b: {
-                        __type: 's'
-                      }
+                      a: {__type: 'i'},
+                      b: {__type: 's'}
                     }
                   },
                   m: {
@@ -119,17 +119,13 @@
                     '{a:i,b:s}': {
                       __count: 3,
                       __type: '{a:i,b:s}',
-                      a: {
-                        __type: 'i'
-                      },
-                      b: {
-                        __type: 's'
-                      }
+                      a: {__type: 'i'},
+                      b: {__type: 's'}
                     }
                   }
                 }
               },
-              arrint:     {
+              arrint: {
                 __type: '[i]',
                 i: {
                   __count: 3,
@@ -142,32 +138,26 @@
                   __count: 3,
                   __type: 'i'
                 },
-                s:{
+                s: {
                   __count: 2,
                   __type: 's'
                 },
                 '{e:s}': {
                   __count: 1,
                   __type: '{e:s}',
-                  e: {
-                    __type: 's'
-                  }
+                  e: {__type: 's'}
                 }
               },
-              arrobj:     {
+              arrobj: {
                 __type: '[{a:i,b:s}]',
-                '{a:i,b:s}' : {
+                '{a:i,b:s}': {
                   __type: '{a:i,b:s}',
                   __count: 1,
-                  a: {
-                    __type: 'i'
-                  },
-                  b: {
-                    __type: 's'
-                  }
+                  a: {__type: 'i'},
+                  b: {__type: 's'}
                 }
               },
-              arrstr:     {
+              arrstr: {
                 __type: '[s]',
                 s: {
                   __count: 2,
@@ -179,70 +169,45 @@
                 '{a:i,b:s}': {
                   __count: 1,
                   __type: '{a:i,b:s}',
-                  a: {
-                    __type: 'i'
-                  },
-                  b: {
-                    __type: 's'
-                  }
+                  a: {__type: 'i'},
+                  b: {__type: 's'}
                 },
                 '{b:i,c:s}': {
                   __count: 1,
                   __type: '{b:i,c:s}',
-                  b: {
-                    __type: 'i'
-                  },
-                  c: {
-                    __type: 's'
-                  }
+                  b: {__type: 'i'},
+                  c: {__type: 's'}
                 },
-                '{c:i,d:s}' : {
+                '{c:i,d:s}': {
                   __count: 1,
                   __type: '{c:i,d:s}',
-                  c: {
-                    __type: 'i'
-                  },
-                  d: {
-                    __type: 's'
-                  }
+                  c: {__type: 'i'},
+                  d: {__type: 's'}
 
                 }
               },
-              bool:       { __type: 'b' },
-              int:        { __type: 'i' },
-              obj:        {
+              bool: {__type: 'b'},
+              int: {__type: 'i'},
+              obj: {
                 __type: '{a:i,b:s}',
-                a: {
-                  __type: 'i'
-                },
-                b: {
-                  __type: 's'
-                }
+                a: {__type: 'i'},
+                b: {__type: 's'}
               },
-              objwobjs:   {
+              objwobjs: {
                 __type: '{a:i,b:s,c:{k:s},d:{k:s}}',
-                a: {
-                  __type: 'i'
-                },
-                b: {
-                  __type: 's'
-                },
+                a: {__type: 'i'},
+                b: {__type: 's'},
                 c: {
                   __type: '{k:s}',
-                  k: {
-                    __type: 's'
-                  }
+                  k: {__type: 's'}
                 },
                 d: {
                   __type: '{k:s}',
-                  k: {
-                    __type: 's'
-                  }
+                  k: {__type: 's'}
                 }
               },
-              str:        { __type: 's' }
+              str: {__type: 's'}
             }
-
             assert.deepEqual(expected, this.structure)
           </handler>
         </datainspector>
