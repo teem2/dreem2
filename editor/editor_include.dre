@@ -78,26 +78,26 @@ either express or implied. See the License for the specific language governing p
       switch (keyCode) {
         case 66: // B: Reorder backward
           sprite.preventDefault(platformEvent); // Prevent browser show bookmarks bar functionality
-          actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
+          if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
           break;
         case 70: // F: Reorder forward
           sprite.preventDefault(platformEvent); // Prevent browser find functionality
-          actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
+          if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
           break;
         case 83: // S: Save document
           sprite.preventDefault(platformEvent); // Prevent browser save functionality
-          saveButton.doActivated();
+          if (this._actionsPermitted()) saveButton.doActivated();
           break;
         case 90: // Z: Undo/Redo
           sprite.preventDefault(platformEvent); // Prevent browser undo/redo functionality
-          actions[(isShiftKeyDown ? 'redo' : 'undo')]();
+          if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'redo' : 'undo')]();
           break;
       }
     } else {
       var GK = sprite.GlobalKeys;
       switch (keyCode) {
         case GK.KEYCODE_BACKSPACE: // Delete selected view
-          actions.deleteSelected();
+          if (this._actionsPermitted()) actions.deleteSelected();
           break;
         case GK.KEYCODE_ESC: // Clear selection
           if (!reticle.isStarted) selectionmanager.clear();
@@ -105,6 +105,11 @@ either express or implied. See the License for the specific language governing p
       }
     }
   </handler>
+  
+  <method name="_actionsPermitted">
+    if (dr.global.dragManager.dragview) return false;
+    return true;
+  </method>
 
   <handler name="updateLocationMarkers" event="onmousemove" reference="dr.mouse" args="event">
     if (event) {
