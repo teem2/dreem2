@@ -1,4 +1,4 @@
 /**
-   * @class dr.simplebutton {UI Component}
+   * @class dr.simplebutton {UI Components}
    * An extension of dr.text that provides basic button functionality.
    */

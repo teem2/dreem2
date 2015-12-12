@@ -1,5 +1,5 @@
 /**
-   * @class dr.listview {UI Component}
+   * @class dr.listview {UI Components}
    * A floating panel that contains a list of items.
    */
 /**

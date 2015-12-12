@@ -393,7 +393,7 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     // createundoable, previewinfo is not necessary since we begin by
     // deleting an existing node/view and thus never need to create anything
     // from scratch.
-    if (data.target) data.target = dr.sprite.retrieveGlobal(data.target);
+    data.target = dr.editor.undoable.retrieveById(data.target);
     
     if (!data.target) {
       dr.global.error.notifyWarn('deserialization', &quot;Target could not be found for deleteundoable: &quot; + data.target);

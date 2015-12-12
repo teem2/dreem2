@@ -339,8 +339,8 @@ table.CodeRay td { padding: 2px 4px; vertical-align: top; }
     */--&gt;</span>
   <span class="tag">&lt;method</span> <span class="attribute-name">name</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">deserialize</span><span class="delimiter">&quot;</span></span> <span class="attribute-name">args</span>=<span class="string"><span class="delimiter">&quot;</span><span class="content">data</span><span class="delimiter">&quot;</span></span><span class="tag">&gt;</span>
     // Retrieve objects via the serialized IDs.
-    var retrieveFunc = dr.sprite.retrieveGlobal;
-    if (data.target) data.target = retrieveFunc(data.target);
+    var retrieveFunc = dr.editor.undoable.retrieveById;
+    data.target = dr.editor.undoable.retrieveById(data.target);
     
     if (!data.target) {
       dr.global.error.notifyWarn('deserialization', &quot;Target could not be found for orderundoable: &quot; + data.target);

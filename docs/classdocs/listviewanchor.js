@@ -1,5 +1,5 @@
 /**
-   * @mixin dr.listviewanchor {UI Component}
+   * @mixin dr.listviewanchor {UI Components}
    * The anchor for a dr.listview
    */
 /**

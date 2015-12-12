@@ -1,4 +1,4 @@
 /**
-   * @class dr.listviewseparator {UI Component}
+   * @class dr.listviewseparator {UI Components}
    * A separator in a dr.listview.
    */
