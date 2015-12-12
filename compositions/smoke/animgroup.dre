@@ -1367,7 +1367,7 @@ Clobbering global reference: koala3</expectedoutput>
           <animgroup duration="1000">
             <animgroup to='200' bounce="true" parallel='true'>
               <handler event='onend'>
-                assert.equal(this.parent.x, 200, 'In tests from dreem 1.')
+                assert.equal(this.parent.parent.x, 200, 'In tests from dreem 1.')
               </handler>
               <animator attribute="x" repeat='1' bounce='true' motion="inOutExpo"></animator>
             </animgroup>
