@@ -218,13 +218,14 @@ either express or implied. See the License for the specific language governing p
     var d = editormodel.model;
     if (d) {
       var model = [],
+        tagsWithIcons = {text:true, bitmap:true, replicator:true, dataset:true, animator:true, animgroup:true},
         screenname = editormodel.screenname,
         self = this;
       
       (function parser(m, o) {
-        // if we're at the root node, so parse down through until we find the
-        // screen with a matching name
-        if (o.tag == '$root') {
+        // If we're at the root node, parse down until we find the screen with 
+        // a matching name
+        if (o.tag === '$root') {
           for (var i=0; o.child.length > i; i++) {
             var composition = o.child[i];
             if (composition.tag == 'composition') {
@@ -248,52 +249,49 @@ either express or implied. See the License for the specific language governing p
         }
         
         // for each child, build a normalized representation of the object 
-        // that looks like { title:'foo', image:imageid, id:'editor_id', items:[child,ren]}
-        var title, name, id, scr, tag, attr, img, object, s = 0, len = o.length;
+        // that looks like {title:'foo', image:imageid, id:'editor_id', items:[child,ren]}
+        var name, id, scr, tag, attr, object, s = 0, len = o.length;
         for (; len > s;) {
           scr = o[s++];
           tag = scr.tag;
-          if (tag && tag[0] !== '$' && tag !== 'include') {
-            title = name = id = '';
+          if (tag && tag[0] !== '$') {
             attr = scr.attr;
-            img = config.img_root;
-            if (["text", "bitmap", "replicator", "dataset", "animator", "animgroup"].indexOf(tag) >= 0) {
-              img += tag + '.png';
-            } else {
-              img += 'view.png';
-            }
-            
-            if (attr) {
-              id = attr.id;
-              
-              if (attr.title) {
-                name = attr.title
-              } else if (attr.name) {
-                name = attr.name;
-              } else if (attr.event) {
-                name = attr.event;
-              } else if (attr.text) {
-                name = '"' + attr.text + '"';
-              }
-            }
-            
-            title = name ? name : tag.charAt(0).toUpperCase() + tag.slice(1);
-            
-            object = {title:title, image:img};
-            if (id) object.id = id;
-            if (scr.child) {
-              var items = [];
-              parser(items, scr.child);
-              if (items.length) object.items = items;
-            }
+            id = attr ? attr.id : '';
             
             // Keep all child nodes that are not layouts, behaviors or animators.
             if (id) {
               var view = self._getEditable(id);
+              
               if (view && !view.isA(dr.Layout) && !view.isA(dr.behavior.behavior)) {
-                m.push(object);
+                if (attr.title) {
+                  name = attr.title
+                } else if (attr.name) {
+                  name = attr.name;
+                } else if (attr.event) {
+                  name = attr.event;
+                } else if (attr.text) {
+                  name = '"' + attr.text + '"';
+                } else {
+                  name = tag.charAt(0).toUpperCase() + tag.slice(1);
+                }
                 
-                object.ref = view.isRoot() ? editor.content_bg.content.inner : view;
+                var nameLen = name.length;
+                if (nameLen > 35) name = name.substring(0, 16) + '...' + name.substring(nameLen - 16, nameLen);
+                
+                object = {
+                  title:name, 
+                  image:config.img_root + (tagsWithIcons[tag] ? tag : 'view') + '.png', 
+                  id:id,
+                  ref:view.isRoot() ? editor.content_bg.content.inner : view
+                };
+                
+                if (scr.child) {
+                  var items = [];
+                  parser(items, scr.child);
+                  if (items.length) object.items = items;
+                }
+                
+                m.push(object);
               }
             }
           }
