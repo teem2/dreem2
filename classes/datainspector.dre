@@ -175,8 +175,7 @@
 
   <spacedlayout axis="y"></spacedlayout>
 
-  <tree name="tree" height="${this.parent.height / 2}" width="${this.parent.width}"></tree>
+  <tree name="tree" height="${this.parent.height}" width="${this.parent.width}"></tree>
 
-  <view name="" y="${this.parent.tree.height}" height="${this.parent.height - this.height}" width="${this.parent.width}"></view>
 
 </class>
