@@ -209,7 +209,7 @@ Clobbering global reference: koala3</expectedoutput>
             </handler>
             <handler event="onend">
               this.parent.output.push('onend ' + this.name);
-              assert.equal(this.getActualAttribute('target').x, 200);
+              assert.equal(this.getActualAttribute('target').x, 200, 'in animgroup1.anim1');
             </handler>
           </animator>
           
@@ -350,7 +350,7 @@ Clobbering global reference: koala3</expectedoutput>
             
             assert.equal(this.output.join(','), expected.join(','));
             
-            assert.equal(this.getActualAttribute('target').x, 200);
+            assert.equal(this.getActualAttribute('target').x, 200, 'In animgroup1 onend handler.');
             assert.equal(this.getActualAttribute('target').y, 0);
           </handler>
           
@@ -526,7 +526,7 @@ Clobbering global reference: koala3</expectedoutput>
             assert.equal(this.output.join(','), expected.join(','));
             
             assert.equal(this.getActualAttribute('target').x, 0);
-            assert.equal(this.getActualAttribute('target').y, 200);
+            assert.equal(this.getActualAttribute('target').y, 200, 'In bounced sequential animation.');
           </handler>
           
           <handler event="oninit">
@@ -700,8 +700,8 @@ Clobbering global reference: koala3</expectedoutput>
             
             assert.equal(this.output.join(','), expected.join(','));
             
-            assert.equal(this.getActualAttribute('target').x, 200);
-            assert.equal(this.getActualAttribute('target').y, 200);
+            assert.equal(this.getActualAttribute('target').x, 200, 'X value in reversed and bounced sequential animation.');
+            assert.equal(this.getActualAttribute('target').y, 200, 'Y value in reversed and bounced sequential animation.');
           </handler>
           
           <handler event="oninit">
@@ -1367,7 +1367,7 @@ Clobbering global reference: koala3</expectedoutput>
           <animgroup duration="1000">
             <animgroup to='200' bounce="true" parallel='true'>
               <handler event='onend'>
-                assert.equal(this.parent.x, 200)
+                assert.equal(this.parent.x, 200, 'In tests from dreem 1.')
               </handler>
               <animator attribute="x" repeat='1' bounce='true' motion="inOutExpo"></animator>
             </animgroup>
