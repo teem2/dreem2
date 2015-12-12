@@ -80,3 +80,10 @@
     * via direct assignment.
     * @returns {void}
     */
+/**
+    * @method retrieveById
+    * Used by previewer clients during deserialization to get a node from the 
+    * tree that has the provided ID.
+    * @param {String} id The id to get the node for.
+    * @returns {Node}
+    */

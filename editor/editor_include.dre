@@ -567,11 +567,11 @@ either express or implied. See the License for the specific language governing p
     scrollable="true"
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
-    
+
     <view x="69" y="36" color="#999999">
       <spacedlayout spacing="8"/>
       <constantlayout attribute="y" value="'middle'"/>
-      
+
       <listviewbutton with="tooltip" floatingpanelid="screensizes" fontsize="12"
         listviewattrs="{maxheight:340}"
         tooltip="Change the viewport size. This allows you to emulate different screen sizes during editing."
@@ -579,108 +579,108 @@ either express or implied. See the License for the specific language governing p
         <method name="initNode" args="parent, attrs">
           this.cfg = [
             {attrs:{name:'custom', text:'custom'}},
-            
+
             {klass:dr.listviewseparator},
-            
+
             {attrs:{name:'4k', text:'4K', w:4096, h:2160}},
             {attrs:{name:'2k', text:'2K', w:2048, h:1080}},
-            
+
             {klass:dr.listviewseparator},
-            
+
             {attrs:{name:'hdtv', text:'HDTV', w:1920, h:1080}},
             {attrs:{name:'pal',  text:'PAL',  w:720,  h:576}},
             {attrs:{name:'ntsc', text:'NTSC', w:720,  h:486}},
-            
+
             {klass:dr.listviewseparator},
-            
+
             {attrs:{name:'xvga', text:'XVGA', w:1024, h:768}},
             {attrs:{name:'svga', text:'SVGA', w:800,  h:600}},
             {attrs:{name:'vga',  text:'VGA',  w:640,  h:480}},
-            
+
             {klass:dr.listviewseparator},
-            
+
             {attrs:{name:'iphonetall', text:'iphone (Portrait)',                w:320, h:480}},
             {attrs:{name:'iphonewide', text:'iphone (Landscape)',               w:480, h:320}},
-            
+
             {attrs:{name:'iphone4tall', text:'iphone 4 (Portrait)',             w:Math.round(640  * 163/326), h:Math.round(960  * 163/326)}},
             {attrs:{name:'iphone4wide', text:'iphone 4 (Landscape)',            w:Math.round(960  * 163/326), h:Math.round(640  * 163/326)}},
-            
+
             {attrs:{name:'iphone5tall', text:'iphone 5 (Portrait)',             w:Math.round(640  * 163/326), h:Math.round(1135 * 163/326)}},
             {attrs:{name:'iphone5wide', text:'iphone 5 (Landscape)',            w:Math.round(1135 * 163/326), h:Math.round(640  * 163/326)}},
-            
+
             {attrs:{name:'iphone6tall', text:'iphone 6 (Portrait)',             w:Math.round(750  * 163/326), h:Math.round(1334 * 163/326)}},
             {attrs:{name:'iphone6wide', text:'iphone 6 (Landscape)',            w:Math.round(1334 * 163/326), h:Math.round(750  * 163/326)}},
-            
+
             {attrs:{name:'iphone6plustall', text:'iphone 6 Plus (Portrait)',    w:Math.round(1080 * 163/401), h:Math.round(1920 * 163/401)}},
             {attrs:{name:'iphone6pluswide', text:'iphone 6 Plus (Landscape)',   w:Math.round(1920 * 163/401), h:Math.round(1080 * 163/401)}},
-            
+
             {klass:dr.listviewseparator},
-            
+
             {attrs:{name:'galaxystall', text:'Galaxy S (Portrait)',             w:Math.round(480 * 163/233), h:Math.round(800 * 163/233)}},
             {attrs:{name:'galaxyswide', text:'Galaxy S (Landscape)',            w:Math.round(800 * 163/233), h:Math.round(480 * 163/233)}},
-            
+
             {attrs:{name:'galaxys2tall', text:'Galaxy S2 (Portrait)',           w:Math.round(480 * 163/217), h:Math.round(800 * 163/217)}},
             {attrs:{name:'galaxys2wide', text:'Galaxy S2 (Landscape)',          w:Math.round(800 * 163/217), h:Math.round(480 * 163/217)}},
-            
+
             {attrs:{name:'galaxys2ltetall', text:'Galaxy S2 LTE (Portrait)',    w:Math.round(720  * 163/318), h:Math.round(1280 * 163/318)}},
             {attrs:{name:'galaxys2ltewide', text:'Galaxy S2 LTE (Landscape)',   w:Math.round(1280 * 163/318), h:Math.round(720  * 163/318)}},
-            
+
             {attrs:{name:'galaxys3minitall', text:'Galaxy S3 Mini (Portrait)',  w:Math.round(480 * 163/233), h:Math.round(800 * 163/233)}},
             {attrs:{name:'galaxys3miniwide', text:'Galaxy S3 Mini (Landscape)', w:Math.round(800 * 163/233), h:Math.round(480 * 163/233)}},
-            
+
             {attrs:{name:'galaxys3slimtall', text:'Galaxy S3 Slim (Portrait)',  w:Math.round(540 * 163/244), h:Math.round(960 * 163/244)}},
             {attrs:{name:'galaxys3slimwide', text:'Galaxy S3 Slim (Landscape)', w:Math.round(960 * 163/244), h:Math.round(540 * 163/244)}},
-            
+
             {attrs:{name:'galaxys3tall', text:'Galaxy S3 (Portrait)',           w:Math.round(720  * 163/306), h:Math.round(1280 * 163/306)}},
             {attrs:{name:'galaxys3wide', text:'Galaxy S3 (Landscape)',          w:Math.round(1280 * 163/306), h:Math.round(720  * 163/306)}},
-            
+
             {attrs:{name:'galaxys4minitall', text:'Galaxy S4 Mini (Portrait)',  w:Math.round(540 * 163/256), h:Math.round(960 * 163/256)}},
             {attrs:{name:'galaxys4miniwide', text:'Galaxy S4 Mini (Landscape)', w:Math.round(960 * 163/256), h:Math.round(540 * 163/256)}},
-            
+
             {attrs:{name:'galaxys4tall', text:'Galaxy S4 (Portrait)',           w:Math.round(1080 * 163/441), h:Math.round(1920 * 163/441)}},
             {attrs:{name:'galaxys4wide', text:'Galaxy S4 (Landscape)',          w:Math.round(1920 * 163/441), h:Math.round(1080 * 163/441)}},
-            
+
             {attrs:{name:'galaxys5minitall', text:'Galaxy S5 Mini (Portrait)',  w:Math.round(720 *  163/326), h:Math.round(1280 * 163/326)}},
             {attrs:{name:'galaxys5miniwide', text:'Galaxy S5 Mini (Landscape)', w:Math.round(1280 * 163/326), h:Math.round(720 *  163/326)}},
-            
+
             {attrs:{name:'galaxys5tall', text:'Galaxy S5 (Portrait)',           w:Math.round(1080 * 163/432), h:Math.round(1920 * 163/432)}},
             {attrs:{name:'galaxys5wide', text:'Galaxy S5 (Landscape)',          w:Math.round(1920 * 163/432), h:Math.round(1080 * 163/432)}},
-            
+
             {attrs:{name:'galaxys6tall', text:'Galaxy S6 (Portrait)',           w:Math.round(1440 * 163/576), h:Math.round(2560 * 163/576)}},
             {attrs:{name:'galaxys6wide', text:'Galaxy S6 (Landscape)',          w:Math.round(2560 * 163/576), h:Math.round(1440 * 163/576)}},
-            
+
             {klass:dr.listviewseparator},
-            
+
             {attrs:{name:'nexus4tall', text:'Nexus 4 (Portrait)',               w:Math.round(768 * 163/318), h:Math.round(1280 * 163/318)}},
             {attrs:{name:'nexus4wide', text:'Nexus 4 (Landscape)',              w:Math.round(1280 * 163/318), h:Math.round(768 * 163/318)}},
-            
+
             {attrs:{name:'nexus5tall', text:'Nexus 5 (Portrait)',               w:Math.round(1080 * 163/445), h:Math.round(1920 * 163/445)}},
             {attrs:{name:'nexus5wide', text:'Nexus 5 (Landscape)',              w:Math.round(1920 * 163/445), h:Math.round(1080 * 163/445)}}
           ];
-          
+
           this.super();
-          
+
           // Set initial value
           var cfgKey = dr.global.clientstorage.getItem('_editor_screensize') || 'hdtv';
           this.setAttribute('selecteditem', this._getConfigAttrsByName(cfgKey));
         </method>
-        
+
         <attribute name="selecteditem" type="expression" value="null"/>
         <handler event="onselecteditem" args="selecteditem">
           if (selecteditem) {
             this.setActualAttribute('label', selecteditem.text);
-            
+
             var isCustom = selecteditem.name === 'custom';
             this.parent.custom.setActualAttribute('visible', isCustom);
             if (!isCustom) {
               screensizew.setActualAttribute('value', selecteditem.w);
               screensizeh.setActualAttribute('value', selecteditem.h);
             }
-            
+
             dr.global.clientstorage.setItem('_editor_screensize', selecteditem.name);
           }
         </handler>
-        
+
         <method name="_getConfigAttrsByName" args="name">
           if (name) {
             var cfg = this.cfg, i = cfg.length, attrs;
@@ -690,7 +690,7 @@ either express or implied. See the License for the specific language governing p
             }
           }
         </method>
-        
+
         <method name="drawDisabledState">
           this.setActualAttribute('color', this.selected ? '#000000' : '#cccccc');
         </method>
@@ -707,24 +707,24 @@ either express or implied. See the License for the specific language governing p
           this.setActualAttribute('color', this.selected ? '#000000' : '#999999');
         </method>
         <method name="doActivated">
-          var cfg = this.cfg, 
+          var cfg = this.cfg,
             i = cfg.length, attrs, selecteditemname = this.selecteditem.name;
           while (i) {
             attrs = cfg[--i].attrs;
             if (attrs) attrs.disabled = attrs.name === selecteditemname;
           }
-          
+
           this.setActualAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
-          
+
           this.toggleFloatingPanel();
         </method>
-        
+
         <method name="doItemActivated" args="itemview">
           this.setActualAttribute('selecteditem', itemview);
           this.super();
         </method>
       </listviewbutton>
-      
+
       <view name="custom" height="18" visible="false">
         <spacedlayout spacing="4" updateparent="true"></spacedlayout>
         <editor_text text="w:" y="2" fontsize="12"/>
@@ -755,7 +755,7 @@ either express or implied. See the License for the specific language governing p
         </editor_inputtext>
       </view>
     </view>
-    
+
     <view name="content"
       x="${config.content_inset}"
       y="${config.content_inset}"
@@ -769,7 +769,7 @@ either express or implied. See the License for the specific language governing p
         height="${screensizeh.value}"
         repeat="repeat" stretches="none" src="/editor/img/transparent_pattern.png"
       />
-      
+
       <!-- Use an additional inner view so that scrollbars show up inside the
            "page" rather than over the boxshadow. -->
       <view name="inner" with="editable"
@@ -779,29 +779,29 @@ either express or implied. See the License for the specific language governing p
       >
         <method name="initNode" args="parent, attrs">
           this.super();
-          
+
           this.setAttribute('bgcolor', editor.parent.bgcolor);
         </method>
-        
+
         <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
-        
+
         <method name="notifyDragEnter" args="dropable">
           this.__origBoxShadow = this.getActualAttribute('boxshadow');
           this.setActualAttribute('boxshadow', [0, 0, 12, 1, '#00ff00']);
         </method>
-        
+
         <method name="notifyDragLeave" args="dropable">
           this.setActualAttribute('boxshadow', this.__origBoxShadow);
         </method>
       </view>
     </view>
-    
+
     <!-- Creates extra space to the bottom and right of the content view. -->
     <view
       x="${this.parent.content.x + this.parent.content.width}" width="${config.content_inset}"
       y="${this.parent.content.y + this.parent.content.height}" height="${config.content_inset}"
     />
-    
+
     <webpage id="preview" visible="false"
       x="${this.parent.content.x - 2}" y="${this.parent.content.y - 2}"
       width="${this.parent.content.width + 4}" height="${this.parent.content.height + 4}"
@@ -1019,6 +1019,23 @@ either express or implied. See the License for the specific language governing p
         </handler>
         
         <replicator name="repl" classname="subnodeeditor"/>
+      </view>
+
+      <subhead width="100%" text="Data"/>
+
+      <view id="data_panel" width="100%" height="100%" clip="true">
+        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
+
+        <handler name="refresh" event="onselected" args="selectedview" reference="selectionmanager">
+          var data;
+          if (selectedview && selectedview.data) {
+            data = selectedview.data;
+          }
+          this.dinspect.setAttribute('data', data)
+        </handler>
+
+        <datainspector name="dinspect" width="100%" height="100%">
+        </datainspector>
       </view>
     </view>
     
