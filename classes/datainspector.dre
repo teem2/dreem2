@@ -23,21 +23,19 @@
       *     </datainspector>
       *
       */-->
-
-<class name="datainspector" extends="view">
-
+<class name="datainspector" extends="view" width="auto" height="auto">
   <!--/**
   * @attribute {Object} data
   * The data to extract structure from.
   */-->
-  <attribute name="data" type="expression" value="undefined"></attribute>
+  <attribute name="data" type="expression" value="undefined"/>
 
   <!--/**
   * @attribute {Object} structure
   * The structure tree extracted from the data attribute.
   *
   */-->
-  <attribute name="structure" type="expression" value="undefined"></attribute>
+  <attribute name="structure" type="expression" value="undefined"/>
 
 
   <!--/**
@@ -67,7 +65,6 @@
   *
   */-->
   <method name="inspect" args="obj">
-
     var memo = {
       __type: 'u'
     }
@@ -122,7 +119,6 @@
     }
 
     return memo;
-
   </method>
 
   <handler event="ondata" args="data">
@@ -164,18 +160,12 @@
       }
 
       return items;
-
     }
 
     var root = {label: '', items: buildItems(structure) }
 
     this.tree.setAttribute('data', root)
-
   </handler>
 
-  <spacedlayout axis="y"></spacedlayout>
-
-  <tree name="tree" height="${this.parent.height}" width="${this.parent.width}"></tree>
-
-
+  <tree name="tree"/>
 </class>

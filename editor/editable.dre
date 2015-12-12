@@ -256,8 +256,14 @@ either express or implied. See the License for the specific language governing p
     
     if (isModelUpdate && editor.editmode && name !== 'parent') {
       var retval = this.super(name, value);
-      var parent = this.parent;
-      if (parent && parent.inited) editormodel.updateAttr(this, name, this.getAttribute(name));
+      
+      editormodel.updateAttr(this, name, this.getAttribute(name));
+      
+      // FIXME: Why were we checking for parent and parent.inited
+      if (parent && parent.inited) console.log('PARENT NOT INITED');
+      //var parent = this.parent;
+      //if (parent && parent.inited) editormodel.updateAttr(this, name, this.getAttribute(name));
+      
       return retval;
     } else {
       return this.super(name, value);

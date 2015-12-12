@@ -282,7 +282,7 @@ either express or implied. See the License for the specific language governing p
                   title:name, 
                   image:config.img_root + (tagsWithIcons[tag] ? tag : 'view') + '.png', 
                   id:id,
-                  ref:view.isRoot() ? editor.content_bg.content.inner : view
+                  ref:view.isRoot() && view.isA(dr.View) ? editor.content_bg.content.inner : view
                 };
                 
                 if (scr.child) {

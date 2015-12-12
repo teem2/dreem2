@@ -1023,21 +1023,16 @@ either express or implied. See the License for the specific language governing p
         <replicator name="repl" classname="subnodeeditor"/>
       </view>
 
-      <subhead width="100%" text="Data"/>
+      <subhead id="data_subhead" width="100%" text="Data"/>
 
-      <view id="data_panel" width="100%" height="100%" clip="true">
+      <view id="data_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
 
         <handler name="refresh" event="onselected" args="selectedview" reference="selectionmanager">
-          var data;
-          if (selectedview && selectedview.data) {
-            data = selectedview.data;
-          }
-          this.dinspect.setAttribute('data', data)
+          this.dinspect.setAttribute('data', selectedview ? selectedview.data : undefined);
         </handler>
 
-        <datainspector name="dinspect" width="100%" height="100%">
-        </datainspector>
+        <datainspector name="dinspect"/>
       </view>
     </view>
     
@@ -1049,7 +1044,7 @@ either express or implied. See the License for the specific language governing p
     />
     
     <view name="divider_top" with="keyboarddraggable" cursor="row-resize"
-      x="0" y="123" width="100%" height="${config.divider_width}"
+      y="123" width="100%" height="${config.divider_width}"
     >
       <method name="updatePosition" args="x, y">
         if (!this.disabled) this.setActualAttribute('y', Math.max(123, Math.min(290, y)));
