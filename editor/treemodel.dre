@@ -15,7 +15,7 @@ either express or implied. See the License for the specific language governing p
     // Don't allow dragging of root view
     var targetComponent = this._getTargetComponent();
     if (targetComponent) {
-      if (targetComponent === editor.content_bg.content.inner) {
+      if (targetComponent === editor.content_bg.content.inner || targetComponent.isRoot()) {
         this.setAttribute('isdraggable', false);
       } else if (targetComponent.isA(dr.AnimBase)) {
         this.isanimation = true;
