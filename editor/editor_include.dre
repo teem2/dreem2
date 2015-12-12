@@ -4,8 +4,6 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-
-
 <include href='./keyboarddraggable.dre'/>
 <include href='./previewable.dre'/>
 <include href='./editable.dre'/>
@@ -22,6 +20,8 @@ either express or implied. See the License for the specific language governing p
 <include href='./undo/deletelayoutundoable.dre'/>
 <include href='./undo/createbehaviorundoable.dre'/>
 <include href='./undo/deletebehaviorundoable.dre'/>
+<include href='./undo/createanimatorundoable.dre'/>
+<include href='./undo/deleteanimatorundoable.dre'/>
 <include href='./undo/editorattrundoable.dre'/>
 
 <view name="editor" id="editor"
@@ -866,7 +866,7 @@ either express or implied. See the License for the specific language governing p
   </view>
 
   <!--// Left Panel //-->
-  <view name="leftbar" ignoreplacement="true" bgcolor="white" scrollable="true"
+  <view name="leftbar" ignoreplacement="true" bgcolor="white"
     y="${config.topbar_height}"
     width="${this.parent.divider_left.x}"
     height="${this.parent.innerheight - this.y}"
@@ -886,7 +886,9 @@ either express or implied. See the License for the specific language governing p
       <view width="100%" y="bottom" height="1" bgcolor="#cccccc"/>
     </view>
     
-    <include href='./treemodel.dre'/>
+    <view with="autoscroller" y="28" width="100%" height="${this.parent.innerheight - this.y}">
+      <include href='./treemodel.dre'/>
+    </view>
   </view>
 
   <!--// Right Panel //-->
@@ -989,7 +991,7 @@ either express or implied. See the License for the specific language governing p
         </view>
       </view>
       
-      <subhead width="100%" text="Layouts"/>
+      <subhead id="layouts_subhead" width="100%" text="Layouts"/>
       
       <view id="layouts_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true">
@@ -1009,7 +1011,7 @@ either express or implied. See the License for the specific language governing p
         <replicator name="repl" classname="subnodeeditor"/>
       </view>
       
-      <subhead width="100%" text="Behaviors"/>
+      <subhead id="behaviors_subhead" width="100%" text="Behaviors"/>
       
       <view id="behaviors_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
@@ -1021,21 +1023,16 @@ either express or implied. See the License for the specific language governing p
         <replicator name="repl" classname="subnodeeditor"/>
       </view>
 
-      <subhead width="100%" text="Data"/>
+      <subhead id="data_subhead" width="100%" text="Data"/>
 
-      <view id="data_panel" width="100%" height="100%" clip="true">
+      <view id="data_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
 
         <handler name="refresh" event="onselected" args="selectedview" reference="selectionmanager">
-          var data;
-          if (selectedview && selectedview.data) {
-            data = selectedview.data;
-          }
-          this.dinspect.setAttribute('data', data)
+          this.dinspect.setAttribute('data', selectedview ? selectedview.data : undefined);
         </handler>
 
-        <datainspector name="dinspect" width="100%" height="100%">
-        </datainspector>
+        <datainspector name="dinspect"/>
       </view>
     </view>
     
@@ -1047,7 +1044,7 @@ either express or implied. See the License for the specific language governing p
     />
     
     <view name="divider_top" with="keyboarddraggable" cursor="row-resize"
-      x="0" y="123" width="100%" height="${config.divider_width}"
+      y="123" width="100%" height="${config.divider_width}"
     >
       <method name="updatePosition" args="x, y">
         if (!this.disabled) this.setActualAttribute('y', Math.max(123, Math.min(290, y)));

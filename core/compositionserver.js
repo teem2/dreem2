@@ -949,6 +949,8 @@ define(function(require, exports, module) {
                 children.unshift({tag:'include', attr:{href:'/editor/undo/deletelayoutundoable.dre'}});
                 children.unshift({tag:'include', attr:{href:'/editor/undo/createbehaviorundoable.dre'}});
                 children.unshift({tag:'include', attr:{href:'/editor/undo/deletebehaviorundoable.dre'}});
+                children.unshift({tag:'include', attr:{href:'/editor/undo/createanimatorundoable.dre'}});
+                children.unshift({tag:'include', attr:{href:'/editor/undo/deleteanimatorundoable.dre'}});
                 children.unshift({tag:'include', attr:{href:'/editor/undo/editorattrundoable.dre'}});
                 
                 // Explicitly include previewable since it does not reside in

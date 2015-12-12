@@ -1,0 +1,87 @@
+<!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
+<!--/**
+   * @class dr.treeitem {UI Components}
+   * @extends dr.view
+   * A visual component used by a tree to render the look and feel of a
+   * single node in the tree.
+   */-->
+<class name="treeitem" with="button"
+  width="${this.treecontainer.root.width}"
+  focusembellishment="false" focusable="false"
+  disabled="${this.treecontainer.root.disabled}"
+>
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="treecontainer" type="object"/>
+
+
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    this.setAttribute('height', this.treecontainer.isroot ? 0 : 25);
+  </method>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="doActivated">
+    var tc = this.treecontainer;
+    tc.triggerSelection(!tc.selected);
+  </method>
+  
+  <method name="drawHoverState">
+    var tc = this.treecontainer;
+    this._draw(tc.textcolor, tc.root.hovercolor);
+  </method>
+
+  <method name="drawActiveState">
+    var tc = this.treecontainer;
+    this._draw(tc.textcolor, tc.root.activecolor);
+  </method>
+
+  <method name="drawReadyState">
+    var tc = this.treecontainer;
+    if (tc.selected) {
+      this._draw(tc.root.selecttextcolor, tc.root.selectcolor);
+    } else {
+      this._draw(tc.textcolor, 'transparent');
+    }
+  </method>
+
+  <method name="_draw" args="color, bgcolor">
+    this.setAttribute('color', color);
+    this.setAttribute('bgcolor', bgcolor);
+  </method>
+
+
+  <!--// Views/Nodes ////////////////////////////////////////////////////////-->
+  <text name="toggle" with="button"
+    visible="false" focusable="false" focusembellishment="false"
+    x="${this.parent.treecontainer.indentwidth * (this.parent.treecontainer.depth - 1) + 5}" y="6"
+    text="${this.parent.treecontainer.collapsed ? '▶' : '▼'}" fontsize="12"
+    disabled="${this.parent.disabled}"
+  >
+    <method name="doActivated">
+      var tc = this.parent.treecontainer;
+      tc.setAttribute('collapsed', !tc.collapsed);
+    </method>
+    
+    <method name="drawHoverState">
+      this.parent.drawHoverState();
+    </method>
+    
+    <method name="drawActiveState">
+      this.parent.drawActiveState();
+    </method>
+    
+    <method name="drawReadyState">
+      this.parent.drawReadyState();
+    </method>
+  </text>
+
+  <bitmap name="image" visible="false" x="${this.parent.toggle.x + 17}" y="5" width="15" height="15"/>
+
+  <text name="label" x="${this.parent.image.x + (this.parent.image.visible ? 21 : 0)}" y="5" fontsize="14"/>
+</class>

@@ -60,6 +60,21 @@ either express or implied. See the License for the specific language governing p
     //this._addLayout('variablelayout', {label:'variable layout'}, {class:'variablelayout'});
     //this._addLayout('constantlayout', {label:'constant layout'}, {class:'constantlayout'});
     
+    // Animators
+    this._addComponent({
+      label:'animator',
+      iconname:'animator',
+      dropclass:'bitmap',
+      dropclassattrs:{width:'30', height:30, isanimation:true, src:config.img_root + 'animator.png', instanceattrs:{class:'animator'}}
+    }, true);
+    
+    this._addComponent({
+      label:'animator group',
+      iconname:'animgroup',
+      dropclass:'bitmap',
+      dropclassattrs:{width:'30', height:30, isanimation:true, src:config.img_root + 'animgroup.png', instanceattrs:{class:'animgroup'}}
+    });
+    
     // Behaviors
     this._addBehavior('scale', true);
     this._addBehavior('shift');
