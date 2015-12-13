@@ -10,7 +10,7 @@
     <include href="./includes/boilerplate.dre"></include>
     
     <!-- InputText smoke tests. See spec/features/inputtext_spec.rb for interactive tests -->
-    <view width="auto" height="auto" padding="25">
+    <view width="100%" height="auto" padding="25" bgcolor="#eeeeee">
       <testingtimer>500</testingtimer>
       
       <spacedlayout axis="y" spacing="15"></spacedlayout>
@@ -193,7 +193,7 @@
           x="${(this.parent.v1.x === 0 ? 50 : 25) + this.parent.v1.inner.height}"
           y="${(this.parent.v1.inner.x === 0 ? 50 : 25) + (this.parent.v1.width / 2)}"
           width="25" height="25" bgcolor="green"
-        ></view>
+        />
         
         <handler event="oninit">
           assert.equal(this.v2.x, 75);
@@ -222,6 +222,49 @@
           assert.equal(this.clickable, true);
         </handler>
       </view>
+      
+      <!-- Test isPointVisible method -->
+      <view name="pointvisibility" ignorelayout="true" x="200" y="0" width="50" height="50" bgcolor="red">
+        <view name="simplein" x="5" y="5" width="10" height="10" bgcolor="green"/>
+        <view name="offtoright" x="55" y="5" width="10" height="10" bgcolor="green"/>
+      </view>
+      
+      <view name="pointvisibility_clipped" ignorelayout="true" x="200" y="100" width="50" height="50" bgcolor="red" clip="true">
+        <view name="simplein" x="5" y="5" width="10" height="10" bgcolor="green"/>
+        <view name="offtoright" x="55" y="5" width="10" height="10" bgcolor="green"/>
+      </view>
+      
+      <handler event="oninit">
+        // Don't forget there is 25px of padding
+        var pv = this.pointvisibility,
+          simplein = pv.simplein,
+          offtoright = pv.offtoright;
+        
+        assert.isFalse(pv.isPointVisible(224, 25), 'Just outside to the left.');
+        assert.isTrue(pv.isPointVisible(225, 25), 'On the top left corner/edge');
+        assert.isTrue(pv.isPointVisible(226, 26), 'Just inside the corner/edge');
+        
+        assert.isFalse(simplein.isPointVisible(225, 25), 'Not inside simple');
+        assert.isTrue(simplein.isPointVisible(230, 30), 'Inside simple');
+        
+        assert.isFalse(offtoright.isPointVisible(275, 25), 'Not inside off to right');
+        assert.isTrue(offtoright.isPointVisible(280, 30), 'Inside off to right');
+        
+        // Clipped parent view
+        var pv2 = this.pointvisibility_clipped,
+          simplein2 = pv2.simplein,
+          offtoright2 = pv2.offtoright;
+        
+        assert.isFalse(pv2.isPointVisible(224, 125), 'Just outside to the left.');
+        assert.isTrue(pv2.isPointVisible(225, 125), 'On the top left corner/edge');
+        assert.isTrue(pv2.isPointVisible(226, 126), 'Just inside the corner/edge');
+        
+        assert.isFalse(simplein2.isPointVisible(225, 125), 'Not inside simple');
+        assert.isTrue(simplein2.isPointVisible(230, 130), 'Inside simple');
+        
+        assert.isFalse(offtoright2.isPointVisible(275, 125), 'Not inside off to right');
+        assert.isFalse(offtoright2.isPointVisible(280, 130), 'Inside off to right');
+      </handler>
     </view>
   </screen>
 </screens>
