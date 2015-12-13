@@ -234,6 +234,13 @@
         <view name="offtoright" x="55" y="5" width="10" height="10" bgcolor="green"/>
       </view>
       
+      <view name="pointvisibility_scroll" ignorelayout="true" x="200" y="200" width="50" height="50" bgcolor="red" scrollable="true">
+        <view name="inner" x="20" width="115" height="50" bgcolor="yellow">
+          <view name="simplein" x="5" y="5" width="10" height="10" bgcolor="green"/>
+          <view name="offtoright" x="105" y="5" width="10" height="10" bgcolor="green"/>
+        </view>
+      </view>
+      
       <handler event="oninit">
         // Don't forget there is 25px of padding
         var pv = this.pointvisibility,
@@ -264,6 +271,34 @@
         
         assert.isFalse(offtoright2.isPointVisible(275, 125), 'Not inside off to right');
         assert.isFalse(offtoright2.isPointVisible(280, 130), 'Inside off to right');
+        
+        // Scrollable parent view
+        var pv3 = this.pointvisibility_scroll,
+          simplein3 = pv3.inner.simplein,
+          offtoright3 = pv3.inner.offtoright;
+        
+        assert.isFalse(pv3.isPointVisible(224, 225), 'Scrollable: Just outside to the left.');
+        assert.isTrue(pv3.isPointVisible(225, 225), 'Scrollable: On the top left corner/edge');
+        assert.isTrue(pv3.isPointVisible(226, 226), 'Scrollable: Just inside the corner/edge');
+        
+        assert.isFalse(simplein3.isPointVisible(245, 225), 'Scrollable: Not inside simple');
+        assert.isTrue(simplein3.isPointVisible(250, 230), 'Scrollable: Inside simple');
+        
+        assert.isFalse(offtoright3.isPointVisible(345, 225), 'Scrollable: Not inside off to right');
+        assert.isFalse(offtoright3.isPointVisible(350, 230), 'Scrollable: Inside off to right');
+        
+        // Scroll the view
+        pv3.setAttribute('scrollx', 85);
+        
+        assert.isFalse(pv3.isPointVisible(224, 225), 'Scrolled: Just outside to the left.');
+        assert.isTrue(pv3.isPointVisible(225, 225), 'Scrolled: On the top left corner/edge');
+        assert.isTrue(pv3.isPointVisible(226, 226), 'Scrolled: Just inside the corner/edge');
+        
+        assert.isFalse(simplein3.isPointVisible(160, 225), 'Scrolled: Not inside simple');
+        assert.isFalse(simplein3.isPointVisible(165, 230), 'Scrolled: Inside simple');
+        
+        assert.isFalse(offtoright3.isPointVisible(260, 225), 'Scrolled: Not inside off to right');
+        assert.isTrue(offtoright3.isPointVisible(265, 230), 'Scrolled: Inside off to right');
       </handler>
     </view>
   </screen>
