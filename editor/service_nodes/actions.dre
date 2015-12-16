@@ -20,6 +20,8 @@ either express or implied. See the License for the specific language governing p
           } else {
             selectionmanager.clear();
           }
+        } else if (target.isA(dr.dataset)) {
+          if (selectionmanager.selected !== target) selectionmanager.select(target);
         } else {
           // Should be handled by the undoable itself
         }

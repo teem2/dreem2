@@ -4,15 +4,17 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-
-
 <node id="editormodel">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
   <!-- @private
        Flag that indicates if changes to a replicated view have 
        occurred or not. -->
   <attribute name="_replicatorchanges" value="false" type="boolean"/>
+
   <attribute name="screenname" type="string" value="default"/>
 
+
+  <!--// Handlers ///////////////////////////////////////////////////////////-->
   <handler name="_showReplicationWarning" event="on_replicatorchanges">
     if (this.inited && preview.visible !== true) {
       messages.addMessage('Changes to replicated classes may require a save or preview to show changes accurately.');
@@ -24,6 +26,8 @@ either express or implied. See the License for the specific language governing p
     if (this._replicatorchanges && selected) this._showReplicationWarning();
   </handler>
 
+
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
     this.super();
     
@@ -49,32 +53,53 @@ either express or implied. See the License for the specific language governing p
     dr.global.requestor.fetch(this._getPath() + '?raw=1').success(
       function(data, status) {
         var parser = new dr.htmlparser();
-        self.setAttribute('model', parser.parse(data));
+        
+        var model = parser.parse(data);
+        self.setAttribute('model', model);
+        
+        // Store screenmodel for future use
+        var curScreenName = self.screenname,
+          i,
+          screensModel = self._findChildByTag('screens', model);
+        if (screensModel) {
+          var children = screensModel.child, childModel;
+          i = children.length;
+          while (i) {
+            childModel = children[--i]
+            if (childModel.tag === 'screen' && childModel.attr.name === curScreenName) {
+              self.setAttribute('screenmodel', childModel);
+              break;
+            }
+          }
+        }
+        
         self.sendEvent('onmodelchange', self);
         
         // Update screenname chooser
-        var cfg = [], curName = self.screenname,
-          screennames = self.getScreenNames(), i = screennames.length, screenname;
+        var cfg = [], screennames = self.getScreenNames(), screenname;
+        i = screennames.length;
         while (i) {
           screenname = screennames[--i];
-          cfg.unshift({attrs:{name:screenname, text:screenname, disabled:screenname === curName}});
+          cfg.unshift({attrs:{name:screenname, text:screenname, disabled:screenname === curScreenName}});
         }
         var screennameChooser = dr.sprite.retrieveGlobal('screennamechooser');
         screennameChooser.setAttribute('itemconfig', cfg);
-        screennameChooser.setAttribute('label', 'current screen: ' + curName);
+        screennameChooser.setAttribute('label', 'current screen: ' + curScreenName);
         
         // Refresh previewer clients
         // Send the current state of the composition to the server so the previewer clients will refresh
-        if (self.model) {
+        if (model) {
           var baseUrl = self._getBaseUrl(),
             url = baseUrl + (baseUrl.indexOf('?') === -1) ? '?' : '&';
           url += 'edit=1&notifyPreviewers=1';
-          dr.global.requestor.send(url, JSON.stringify(self.model));
+          dr.global.requestor.send(url, JSON.stringify(model));
         }
       }
     );
   </method>
 
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
   <!-- @private -->
   <method name="_setLocation" args="url">
     window.location = url;
@@ -138,27 +163,59 @@ either express or implied. See the License for the specific language governing p
   <method name="deleteNode" args="childView, oldParentView">
     var model = this.model;
     if (model) {
-      var childModel = this._findChildById(childView.id, model);
-      if (oldParentView.__replicator) {
-        // special case for new instance in root of class tag
-        var classModel = this._findClassInModel(oldParentView.__replicator.classname, model);
-        if (childView && classModel) {
-          var idx = this._findChildIndex(classModel, childModel);
-          if (idx >= 0) {
-            childView.__editorModel = classModel.child[idx];
-            classModel.child.splice(idx, 1);
-            this.sendEvent('onmodelchange', this);
+      var childModel;
+      
+      if (oldParentView) {
+        childModel = this._findChildById(childView.id, model);
+        
+        if (oldParentView.__replicator) {
+          // special case for new instance in root of class tag
+          var classModel = this._findClassInModel(oldParentView.__replicator.classname, model);
+          if (childView && classModel) {
+            var idx = this._findChildIndex(classModel, childModel);
+            if (idx >= 0) {
+              // Store the model on the now orphaned view
+              childView.__editorModel = classModel.child[idx];
+              
+              // Remove the view's model from the composition model
+              classModel.child.splice(idx, 1);
+              
+              this.sendEvent('onmodelchange', this);
+            }
+          }
+        } else {
+          var parentModel = this._findChildById(this._getId(oldParentView), model);
+          if (childModel && parentModel) {
+            var idx = this._findChildIndex(parentModel, childModel);
+            if (idx >= 0) {
+              // Store the model on the now orphaned view
+              childView.__editorModel = parentModel.child[idx];
+              
+              // Remove the view's model from the composition model
+              parentModel.child.splice(idx, 1);
+              
+              this.sendEvent('onmodelchange', this);
+            }
           }
         }
       } else {
-        var parentModel = this._findChildById(this._getId(oldParentView), model);
-        if (childModel && parentModel) {
+        // Dataset deletion happens here since they are root nodes
+        
+        // Find the parent model of the dataset model
+        childModel = this._findChildById(childView.id, model, true);
+        if (childModel) {
+          var parentModel = childModel[0];
+          childModel = childModel[1];
+          
           var idx = this._findChildIndex(parentModel, childModel);
-          if (idx >= 0) {
-            childView.__editorModel = parentModel.child[idx];
-            parentModel.child.splice(idx, 1);
-            this.sendEvent('onmodelchange', this);
-          }
+          
+          // Store the model on the now orphaned view
+          childView.__editorModel = parentModel.child[idx];
+          
+          // Remove the view's model from the composition model
+          parentModel.child.splice(idx, 1);
+          
+          this.sendEvent('onmodelchange', this);
         }
       }
     }
@@ -168,32 +225,42 @@ either express or implied. See the License for the specific language governing p
     var model = this.model;
     if (model) {
       var parentView = childView.parent;
-      if (parentView.__replicator) {
-        // special case for new instance in root of class tag
-        var classModel = this._findClassInModel(parentView.__replicator.classname, model);
-        if (childView && classModel) {
-          if (!classModel.child) classModel.child = [];
-          classModel.child.push(this._objectify(childView));
-          this.setAttribute('_replicatorchanges', true);
-          this.sendEvent('onmodelchange', this);
-        }
-      } else {
-        var parentModel = this._findChildById(this._getId(parentView), model);
-        if (childView && parentModel) {
-          if (!parentModel.child) parentModel.child = [];
-          
-          if (childView.isA(dr.View)) {
-            var prevSiblingView = childView.getPrevSiblingView(),
-              prevSiblingModel = prevSiblingView ? this._findChildById(prevSiblingView.id, model) : null,
-              idx = prevSiblingModel ? this._findChildIndex(parentModel, prevSiblingModel) : -1;
-            
-            // Convert childView (and tree) to object structure and insert
-            parentModel.child.splice(idx + 1, 0, this._objectify(childView));
-            this.sendEvent('onmodelchange', this);
-          } else {
-            parentModel.child.push(this._objectify(childView));
+      if (parentView) {
+        if (parentView.__replicator) {
+          // special case for new instance in root of class tag
+          var classModel = this._findClassInModel(parentView.__replicator.classname, model);
+          if (childView && classModel) {
+            if (!classModel.child) classModel.child = [];
+            classModel.child.push(this._objectify(childView));
+            this.setAttribute('_replicatorchanges', true);
             this.sendEvent('onmodelchange', this);
           }
+        } else {
+          var parentModel = this._findChildById(this._getId(parentView), model);
+          if (childView && parentModel) {
+            if (!parentModel.child) parentModel.child = [];
+            
+            if (childView.isA(dr.View)) {
+              var prevSiblingView = childView.getPrevSiblingView(),
+                prevSiblingModel = prevSiblingView ? this._findChildById(prevSiblingView.id, model) : null,
+                idx = prevSiblingModel ? this._findChildIndex(parentModel, prevSiblingModel) : -1;
+              
+              // Convert childView (and tree) to object structure and insert
+              parentModel.child.splice(idx + 1, 0, this._objectify(childView));
+              this.sendEvent('onmodelchange', this);
+            } else {
+              parentModel.child.push(this._objectify(childView));
+              this.sendEvent('onmodelchange', this);
+            }
+          }
+        }
+      } else {
+        // Dataset creation happens here since they are root nodes
+        var parentModel = this.screenmodel;
+        if (childView && parentModel) {
+          if (!parentModel.child) parentModel.child = [];
+          parentModel.child.push(this._objectify(childView));
+          this.sendEvent('onmodelchange', this);
         }
       }
     }
@@ -321,15 +388,15 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <!-- @private -->
-  <method name="_findChildById" args="id, model">
+  <method name="_findChildById" args="id, model, returnParent">
     if (id) {
       var children = model.child, i = children.length, childModel;
       while (i) {
         childModel = children[--i]
         if (childModel.attr && childModel.attr.id === id) {
-          return childModel;
+          return returnParent ? [model, childModel] : childModel;
         } else if (childModel.child) {
-          var newChildModel = this._findChildById(id, childModel);
+          var newChildModel = this._findChildById(id, childModel, returnParent);
           if (newChildModel) return newChildModel;
         }
       }
@@ -382,7 +449,7 @@ either express or implied. See the License for the specific language governing p
   <method name="changeScreen" args="screenname">
     this._setLocation(this._getPath() + '?edit=1&screen=' + screenname);
   </method>
-  
+
   <method name="getScreenNames">
     var retval = [], screensModel = this._findChildByTag('screens', this.model);
     if (screensModel) {
