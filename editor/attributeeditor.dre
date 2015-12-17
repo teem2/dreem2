@@ -85,6 +85,7 @@ either express or implied. See the License for the specific language governing p
   </handler>
 </class>
 
+
 <class name="booleaneditor" height="20">
   <handler event="onvalue" args="value">
     this.field.setActualAttribute('selected', value);
@@ -102,6 +103,71 @@ either express or implied. See the License for the specific language governing p
     </handler>
   </checkbox>
 </class>
+
+
+<class name="listvieweditor" height="20">
+  <handler event="onvalue" args="value">
+    this.field.setAttribute('selecteditem', this.field._getConfigAttrsByName(value));
+  </handler>
+  
+  <method name="initNode" args="parent, attrs">
+    var cfg = attrs.cfg,
+      floatingpanelid = attrs.floatingpanelid;
+    delete attrs.cfg;
+    delete attrs.floatingpanelid;
+    
+    this.super();
+    
+    this.field.setAttribute('floatingpanelid', floatingpanelid);
+    this.field.cfg = cfg;
+  </method>
+  
+  <listviewbutton name="field" y="3" listviewattrs="{maxheight:340}">
+    <attribute name="selecteditem" type="expression" value="null"/>
+    <handler event="onselecteditem" args="selecteditem">
+      if (selecteditem) this.setActualAttribute('label', selecteditem.text);
+    </handler>
+    
+    <method name="_getConfigAttrsByName" args="name">
+      if (name) {
+        var cfg = this.cfg, i = cfg.length, attrs;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs && attrs.name === name) return attrs;
+        }
+      }
+    </method>
+    
+    <method name="doActivated">
+      var cfg = this.cfg,
+        i = cfg.length, attrs, 
+        selecteditemname = this.selecteditem.name;
+      while (i) {
+        attrs = cfg[--i].attrs;
+        if (attrs) attrs.disabled = attrs.name === selecteditemname;
+      }
+      this.setActualAttribute('itemconfig', cfg.concat()); // Concat to work around equality test.
+      this.toggleFloatingPanel();
+    </method>
+    
+    <method name="doItemActivated" args="itemview">
+      this.setActualAttribute('selecteditem', itemview);
+      
+      this.super();
+      
+      var newvalue = itemview.name,
+        parent = this.parent,
+        targetattr = parent.targetattr,
+        target = parent.target;
+      if (!parent._isSync && target && ('' + target['__cfg_' + targetattr]) !== ('' + newvalue)) {
+        actions.do(new dr.editor.editorattrundoable({
+          target:target, attribute:targetattr, newvalue:newvalue
+        }));
+      }
+    </method>
+  </listviewbutton>
+</class>
+
 
 <class name="coloreditor" with="floatingpanelanchor, button"
   floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
@@ -151,6 +217,7 @@ either express or implied. See the License for the specific language governing p
   </method>
 </class>
 
+
 <class name="attributeeditor" height="auto" width="100%">
   <method name="initNode" args="parent, attrs">
     this.super();
@@ -175,6 +242,53 @@ either express or implied. See the License for the specific language governing p
         break;
       case 'boolean':
         attrs.class = 'booleaneditor';
+        break;
+      case 'motion':
+        attrs.class = 'listvieweditor';
+        attrs.floatingpanelid = 'motions';
+        attrs.cfg = [
+          {attrs:{name:'linear', text:'linear'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inQuad', text:'Quadratic in'}},
+          {attrs:{name:'outQuad', text:'Quadratic out'}},
+          {attrs:{name:'inOutQuad', text:'Quadratic in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inCubic', text:'Cubic in'}},
+          {attrs:{name:'outCubic', text:'Cubic out'}},
+          {attrs:{name:'inOutCubic', text:'Cubic in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inQuart', text:'Quartic in'}},
+          {attrs:{name:'outQuart', text:'Quartic out'}},
+          {attrs:{name:'inOutQuart', text:'Quartic in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inQuint', text:'Quintic in'}},
+          {attrs:{name:'outQuint', text:'Quintic out'}},
+          {attrs:{name:'inOutQuint', text:'Quintic in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inSine', text:'Sine in'}},
+          {attrs:{name:'outSine', text:'Sine out'}},
+          {attrs:{name:'inOutSine', text:'Sine  in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inExpo', text:'Exponential in'}},
+          {attrs:{name:'outExpo', text:'Exponential out'}},
+          {attrs:{name:'inOutExpo', text:'Exponential in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inCirc', text:'Circular in'}},
+          {attrs:{name:'outCirc', text:'Circular out'}},
+          {attrs:{name:'inOutCirc', text:'Circular in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inElastic', text:'Elastic in'}},
+          {attrs:{name:'outElastic', text:'Elastic out'}},
+          {attrs:{name:'inOutElastic', text:'Elastic in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inBack', text:'Back in'}},
+          {attrs:{name:'outBack', text:'Back out'}},
+          {attrs:{name:'inOutBack', text:'Back in &amp; out'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'inBounce', text:'Bounce in'}},
+          {attrs:{name:'outBounce', text:'Bounce out'}},
+          {attrs:{name:'inOutBounce', text:'Bounce in &amp; out'}}
+        ];
         break;
       case 'string':
         if (targetAttrName === 'text') {
@@ -210,12 +324,16 @@ either express or implied. See the License for the specific language governing p
       this.setActualAttribute('width', w - this.x - self.actual.width - 8); // 8 is 4 pixel spacing before and after
     });
     
-    this.actual.syncTo(target, 'on' + targetAttrName, function(val) {
-      // Allow at most 2 decimal places to be shown for "actual" numbers.
-      if (type === 'number') val = +(+(val || 0).toFixed(2));
-      this.setActualAttribute('text', val);
-      self._checkActualIsDifferent();
-    });
+    // Setup actual value for all attributes except motion since there is no
+    // point in showing the text content of a function.
+    if (type !== 'motion') {
+      this.actual.syncTo(target, 'on' + targetAttrName, function(val) {
+        // Allow at most 2 decimal places to be shown for "actual" numbers.
+        if (type === 'number') val = +(+(val || 0).toFixed(2));
+        this.setActualAttribute('text', val);
+        self._checkActualIsDifferent();
+      });
+    }
     
     this.label.setActualAttribute('text', targetAttrName);
   </method>
