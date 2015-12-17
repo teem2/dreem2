@@ -886,7 +886,18 @@ either express or implied. See the License for the specific language governing p
       <view width="100%" y="bottom" height="1" bgcolor="#cccccc"/>
     </view>
     
-    <view with="autoscroller" y="28" width="100%" height="${this.parent.innerheight - this.y}">
+    <view with="autoscroller, droptarget" draggroups="{rootonly:true}"
+      y="28" width="100%" height="${this.parent.innerheight - this.y}"
+    >
+      <method name="notifyDragEnter" args="dropable">
+        this.__origBoxShadow = this.getActualAttribute('boxshadow');
+        this.setActualAttribute('boxshadow', [0, 0, 6, 1, '#009900', true]);
+      </method>
+      
+      <method name="notifyDragLeave" args="dropable">
+        this.setActualAttribute('boxshadow', this.__origBoxShadow);
+      </method>
+      
       <include href='./treemodel.dre'/>
     </view>
   </view>

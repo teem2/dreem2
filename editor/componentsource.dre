@@ -15,12 +15,20 @@ either express or implied. See the License for the specific language governing p
 
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
+    var draggroups = {};
+    if (attrs.isrootonly) {
+      draggroups.rootonly = true;
+      delete attrs.isrootonly;
+    } else {
+      draggroups.editable = true;
+    }
+    
     this.super();
     
     var dropclassattrs = this.dropclassattrs;
     dropclassattrs.with = 'componentdropable';
     dropclassattrs.centeronmouse = true;
-    dropclassattrs.draggroups = {editable:true};
+    dropclassattrs.draggroups = draggroups;
     dropclassattrs.opacity = 0.5;
     
     this.icon.setActualAttribute('src', config.img_root + this.iconname + '.png');

@@ -31,13 +31,19 @@
     */-->
   <attribute name="target" type="expression" value=""/>
 
-  <!--/** Holds attribute values needed by previewer clients to create the new 
+  <!--/** 
+    * Holds attribute values needed by previewer clients to create the new 
     * node/view. In the editor new node/views are created first and then an
     * undoable is created for them. In a previewer we actually have to create
     * the object so we need to know what attrs to use during instantiation.
     * This previewinfo object is what contains that information.
     */-->
   <attribute name="previewinfo" type="expression" value=""/>
+
+  <!--/** 
+    * If true then the new node will be a root.
+    */-->
+  <attribute name="isroot" type="boolean" value="false"/>
 
 
   <!--// METHODS ////////////////////////////////////////////////////////////-->
@@ -81,7 +87,7 @@
       var target = this.target;
       if (target) {
         if (this._notFirstTime) {
-          target.setAttribute('parent', this._targetParent);
+          target.setAttribute('parent', this.isroot ? undefined : this._targetParent);
           if (target.isA(dr.View)) {
             if (this._targetWasVisible === true) target.setAttribute('visible', true);
             if (this._prevSibling) {
@@ -108,7 +114,8 @@
     if (!obj) obj = {};
     
     // We need to know which parent to create the new object on.
-    obj.parent = this.target.parent.id || null;
+    obj.parent = (!this.isroot && this.target.parent.id) || null;
+    obj.isroot = this.isroot;
     
     // Store the attrs used for instantiation.
     obj.target = this.previewinfo || null;
@@ -122,15 +129,18 @@
     */-->
   <method name="deserialize" args="data">
     // Get parent to create new object on.
-    var parent = dr.editor.undoable.retrieveById(data.parent);
-    if (!parent) {
-      dr.global.error.notifyWarn('deserialization', "Parent could not be found for createundoable: " + data.parent);
-      return null;
+    var parent;
+    if (!data.isroot) {
+      parent = dr.editor.undoable.retrieveById(data.parent);
+      if (!parent) {
+        dr.global.error.notifyWarn('deserialization', "Parent could not be found for createundoable: " + data.parent);
+        return null;
+      }
     }
     
     // Create new instance on the parent using the previeinfo which was 
     // stored on data.target.
-    var instance = parent.createChild(data.target);
+    var instance = dr.Node.createChild(parent, data.target);
     if (!instance) {
       dr.global.error.notifyWarn('deserialization', "Instance could not be found for createundoable: " + data.target);
       return null;

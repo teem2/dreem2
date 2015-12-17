@@ -237,6 +237,7 @@ either express or implied. See the License for the specific language governing p
         } else if (inited && parent === null && this.isA(dr.dataset)) {
           editormodel.deleteNode(this);
         }
+        
         if (hasNew) {
           editormodel.createNode(this);
         } else if (inited && parent === undefined && this.isA(dr.dataset)) {

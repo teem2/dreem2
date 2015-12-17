@@ -27,7 +27,6 @@ either express or implied. See the License for the specific language governing p
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <!--// Drag and Drop Support //-->
   <method name="startDrag" args="event">
-    //this._start();
     this.super();
     
     // Make half opacity during drag
@@ -41,11 +40,11 @@ either express or implied. See the License for the specific language governing p
     this.setAttribute('opacity', 0.5);
     this.setAttribute('clickable', false);
   </method>
-  
+
   <method name="updatePosition" args="x, y">
     if (!this.disabled && this.isdraggable) this.super(0, y);
   </method>
-  
+
   <method name="notifyDrop" args="dropable, isAbort">
     this.super();
     
@@ -112,7 +111,7 @@ either express or implied. See the License for the specific language governing p
     if (this.isdragging) return;
     
     this.__origBoxShadow = this.getActualAttribute('boxshadow');
-    this.setActualAttribute('boxshadow', [0, 0, 6, 1, '#009900']);
+    this.setActualAttribute('boxshadow', [0, 0, 6, 1, '#009900', true]);
   </method>
 
   <method name="notifyDragLeave" args="dropable">

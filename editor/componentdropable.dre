@@ -45,100 +45,111 @@ either express or implied. See the License for the specific language governing p
   <method name="notifyDrop" args="droptarget, isAbort">
     this.super();
     
-    if (!this.dropfailed && !isAbort) {
-      // Determine if this is a tree drop or a canvas drop
-      var isTreeDrop = droptarget.isA(dr.treeitem);
-      if (isTreeDrop) droptarget = droptarget.treecontainer.data.ref;
-      
-      var attrs = dr.extend({}, this.instanceattrs);
-      attrs.id = editormodel.generateModelId();
-      
-      if (!this.islayout && !this.isbehavior && !this.isanimation) {
-        if (attrs.x == null || attrs.y == null) {
-          var loc = dr.componentdropable.calculateDropLocation(this, droptarget, isTreeDrop);
-          if (attrs.x == null) attrs.x = loc.x;
-          if (attrs.y == null) attrs.y = loc.y;
-        }
+    if (this.dropfailed || isAbort) return;
+    
+    // Determine if this is a tree drop or a canvas drop
+    var isTreeDrop = droptarget.isA(dr.treeitem);
+    if (isTreeDrop) droptarget = droptarget.treecontainer.data.ref;
+    
+    // Determine if this is a drop on the "root" container.
+    var isRootDrop = droptarget.draggroups.rootonly;
+    
+    var attrs = dr.extend({}, this.instanceattrs);
+    attrs.id = editormodel.generateModelId();
+    
+    if (!this.islayout && !this.isbehavior && !this.isanimation && !isRootDrop) {
+      if (attrs.x == null || attrs.y == null) {
+        var loc = dr.componentdropable.calculateDropLocation(this, droptarget, isTreeDrop);
+        if (attrs.x == null) attrs.x = loc.x;
+        if (attrs.y == null) attrs.y = loc.y;
       }
-      
-      // Make a copy of the attrs needed to instantiate this view in a previewer
-      var previewerAttrs = dr.extend({}, attrs);
-      // Push on previewable since all nodes/views in a previewer must be previewable.
-      if (previewerAttrs.with) {
-        previewerAttrs.with += ' previewable';
-      } else {
-        previewerAttrs.with = 'previewable';
-      }
-      
-      // Remember which attrs to objectify for the model
-      var objectifyAttrs = dr.extend({}, attrs);
-      delete objectifyAttrs.class;
-      if (this.islayout) delete objectifyAttrs.locked;
-      attrs.__objectify_attrs_list = Object.keys(objectifyAttrs);
-      
-      attrs.with = 'editable';
-      var instance = droptarget.createChild(attrs);
-      
-      var i;
-      if (this.islayout) {
-        // Make sure layout domains do not conflict
-        var layouts = droptarget.getLayouts(), layout;
-        i = layouts.length;
-        while (i) {
-          layout = layouts[--i];
-          if (layout !== instance && (layout.__hasCommonLayoutDomain(instance) || layout.__hasCommonLayoutParentDomain(instance))) {
-            instance.destroy();
-            this.destroy();
-            
-            messages.addMessage('The layout you are trying to add conflicts with an existing layout.');
-            return;
-          }
-        }
-      } else if (this.isbehavior) {
-        // Make sure behaviors that make children are not put on leaf nodes
-        if (droptarget.isLeaf() && instance.__behaviorMakesViews()) {
+    }
+    
+    // Make a copy of the attrs needed to instantiate this view in a previewer
+    var previewerAttrs = dr.extend({}, attrs);
+    // Push on previewable since all nodes/views in a previewer must be previewable.
+    if (previewerAttrs.with) {
+      previewerAttrs.with += ' previewable';
+    } else {
+      previewerAttrs.with = 'previewable';
+    }
+    
+    // Remember which attrs to objectify for the model
+    var objectifyAttrs = dr.extend({}, attrs);
+    delete objectifyAttrs.class;
+    if (this.islayout) delete objectifyAttrs.locked;
+    attrs.__objectify_attrs_list = Object.keys(objectifyAttrs);
+    
+    attrs.with = 'editable';
+    
+    if (isRootDrop) {
+      attrs.parent = previewerAttrs.parent = 'screen';
+      attrs.with += ' RootNode';
+      previewerAttrs.with += ' RootNode';
+    }
+    var instance = droptarget.createChild(attrs);
+    if (isRootDrop) editormodel.createNode(instance);
+    
+    var i;
+    if (this.islayout) {
+      // Make sure layout domains do not conflict
+      var layouts = droptarget.getLayouts(), layout;
+      i = layouts.length;
+      while (i) {
+        layout = layouts[--i];
+        if (layout !== instance && (layout.__hasCommonLayoutDomain(instance) || layout.__hasCommonLayoutParentDomain(instance))) {
           instance.destroy();
           this.destroy();
           
-          messages.addMessage("The behavior \"" + instance.klass.__displayName.substring(9) + "\" can't be added to leaf boxes.");
+          messages.addMessage('The layout you are trying to add conflicts with an existing layout.');
           return;
         }
+      }
+    } else if (this.isbehavior) {
+      // Make sure behaviors that make children are not put on leaf nodes
+      if (droptarget.isLeaf() && instance.__behaviorMakesViews()) {
+        instance.destroy();
+        this.destroy();
         
-        // Make sure behavior domains do not conflict
-        var behaviors = droptarget.getBehaviors(), behavior;
-        i = behaviors.length;
-        while (i) {
-          behavior = behaviors[--i];
-          if (behavior !== instance && behavior.__hasCommonBehaviorDomain(instance)) {
-            instance.destroy();
-            this.destroy();
-            
-            messages.addMessage('The behavior you are trying to add conflicts with an existing behavior.');
-            return;
-          }
+        messages.addMessage("The behavior \"" + instance.klass.__displayName.substring(9) + "\" can't be added to leaf boxes.");
+        return;
+      }
+      
+      // Make sure behavior domains do not conflict
+      var behaviors = droptarget.getBehaviors(), behavior;
+      i = behaviors.length;
+      while (i) {
+        behavior = behaviors[--i];
+        if (behavior !== instance && behavior.__hasCommonBehaviorDomain(instance)) {
+          instance.destroy();
+          this.destroy();
+          
+          messages.addMessage('The behavior you are trying to add conflicts with an existing behavior.');
+          return;
         }
       }
-      
-      // Mark an instance as "new" so we know it needs serialization.
-      instance.__NEW = true;
-      
-      // Create undoable and "do" it. The previewinfo is also provided so
-      // previewers receiving messages can instantiate the new node/view.
-      var E = dr.editor,
-        undoableAttrs = {target:instance, previewinfo:previewerAttrs};
-      if (this.islayout) {
-        actions.do(new E.createlayoutundoable(undoableAttrs));
-      } else if (this.isbehavior) {
-        actions.do(new E.createbehaviorundoable(undoableAttrs));
-      } else if (this.isanimation) {
-        actions.do(new E.createanimatorundoable(undoableAttrs));
-        selectionmanager.select(instance);
-      } else {
-        actions.do(new E.createundoable(undoableAttrs));
-        selectionmanager.select(instance);
-      }
-      
-      this.destroy();
     }
+    
+    // Mark an instance as "new" so we know it needs serialization.
+    instance.__NEW = true;
+    
+    // Create undoable and "do" it. The previewinfo is also provided so
+    // previewers receiving messages can instantiate the new node/view.
+    var E = dr.editor,
+      undoableAttrs = {target:instance, previewinfo:previewerAttrs};
+    if (this.islayout) {
+      actions.do(new E.createlayoutundoable(undoableAttrs));
+    } else if (this.isbehavior) {
+      actions.do(new E.createbehaviorundoable(undoableAttrs));
+    } else if (this.isanimation) {
+      actions.do(new E.createanimatorundoable(undoableAttrs));
+      selectionmanager.select(instance);
+    } else {
+      if (isRootDrop) undoableAttrs.isroot = true;
+      actions.do(new E.createundoable(undoableAttrs));
+      selectionmanager.select(instance);
+    }
+    
+    this.destroy();
   </method>
 </mixin>

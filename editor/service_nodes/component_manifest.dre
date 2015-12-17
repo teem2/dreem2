@@ -4,8 +4,6 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-
-
 <node>
   <!-- Important: add required classes to the previewable mixin since the
        previewer clients will also need access to the components. -->
@@ -79,6 +77,15 @@ either express or implied. See the License for the specific language governing p
     this._addBehavior('scale', true);
     this._addBehavior('shift');
     this._addBehavior('overborder');
+    
+    // Misc
+    this._addComponent({
+      isrootonly:true,
+      label:'dataset',
+      iconname:'dataset',
+      dropclass:'bitmap',
+      dropclassattrs:{width:'30', height:30, src:config.img_root + 'dataset.png', instanceattrs:{class:'dataset'}}
+    }, true);
   </method>
 
   <!-- @private -->

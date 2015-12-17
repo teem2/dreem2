@@ -21,7 +21,12 @@ either express or implied. See the License for the specific language governing p
             selectionmanager.clear();
           }
         } else if (target.isA(dr.dataset)) {
-          if (selectionmanager.selected !== target) selectionmanager.select(target);
+          if (target.parent === null) {
+            // When datasets are "deleted" their parent is set to null rather than undefined.
+            selectionmanager.clear();
+          } else {
+            if (selectionmanager.selected !== target) selectionmanager.select(target);
+          }
         } else {
           // Should be handled by the undoable itself
         }
@@ -30,11 +35,11 @@ either express or implied. See the License for the specific language governing p
       }
     }
   </method>
-  
+
   <method name="_undoRedoErrorHandler" args="error">
     console.error(error);
   </method>
-  
+
   <method name="do" args="undoable">
     if (editor.editmode) {
       undo.do(undoable, null, function(error) {
@@ -43,7 +48,7 @@ either express or implied. See the License for the specific language governing p
       });
     }
   </method>
-  
+
   <method name="undo">
     if (editor.editmode) {
       this._callbackAlreadyCalled = false;
@@ -57,7 +62,7 @@ either express or implied. See the License for the specific language governing p
       undo.redo(this._undoRedoCallback.bind(this), this._undoRedoErrorHandler);
     }
   </method>
-  
+
   <method name="bringToFront">
     if (this._isEditableSelection()) {
       var selectedview = selectionmanager.selectedview,
@@ -65,7 +70,7 @@ either express or implied. See the License for the specific language governing p
       if (newprevsibling) this._updateOrder(selectedview, selectedview.getPrevSiblingView(), newprevsibling);
     }
   </method>
-  
+
   <method name="bringForward">
     if (this._isEditableSelection()) {
       var selectedview = selectionmanager.selectedview,
@@ -73,7 +78,7 @@ either express or implied. See the License for the specific language governing p
       if (newprevsibling) this._updateOrder(selectedview, selectedview.getPrevSiblingView(), newprevsibling);
     }
   </method>
-  
+
   <method name="sendToBack">
     if (this._isEditableSelection()) {
       var selectedview = selectionmanager.selectedview,
@@ -81,7 +86,7 @@ either express or implied. See the License for the specific language governing p
       if (oldprevsibling) this._updateOrder(selectedview, oldprevsibling, null);
     }
   </method>
-  
+
   <method name="sendBackward">
     if (this._isEditableSelection()) {
       var selectedview = selectionmanager.selectedview,
@@ -89,11 +94,11 @@ either express or implied. See the License for the specific language governing p
       if (oldprevsibling) this._updateOrder(selectedview, oldprevsibling, oldprevsibling.getPrevSiblingView());
     }
   </method>
-  
+
   <method name="_updateOrder" args="target, oldprevsib, newprevsib">
     actions.do(new dr.editor.orderundoable({target:target, oldprevsibling:oldprevsib, newprevsibling:newprevsib}));
   </method>
-  
+
   <method name="save">
     editormodel.save();
     undo.reset();
@@ -133,7 +138,7 @@ either express or implied. See the License for the specific language governing p
       editormodel.changeScreen(screenname);
     }
   </method>
-  
+
   <method name="editPreview">
     if (editor.editmode) {
       if (dr.keyboard.isAltKeyDown()) { // Use alt since shift forces a new window in chrome
@@ -159,7 +164,7 @@ either express or implied. See the License for the specific language governing p
       preview.setAttribute('src', '/iframe_stub.html');
     }
   </method>
-  
+
   <method name="deleteSelected">
     if (this._isEditableSelection()) {
       var target = selectionmanager.selected,
@@ -173,7 +178,7 @@ either express or implied. See the License for the specific language governing p
       selectionmanager.clear();
     }
   </method>
-  
+
   <method name="_isEditableSelection">
     var selected = selectionmanager.selected;
     return editor.editmode && selected && !selected.isInlineEdit() && !selectionmanager.isrootselection;
