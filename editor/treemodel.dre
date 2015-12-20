@@ -45,11 +45,10 @@ either express or implied. See the License for the specific language governing p
     if (!this.disabled && this.isdraggable) this.super(0, y);
   </method>
 
-  <method name="notifyDrop" args="dropable, isAbort">
+  <method name="notifyDrop" args="dropable">
     this.super();
     
-    // Checking for undefined tells us we're in the over view version of notifyDrop
-    if (isAbort === undefined && dropable && dropable.isA(dr.treeitem)) {
+    if (dropable && dropable.isA(dr.treeitem)) {
       this._stop(this._getTargetComponent(), dropable._getTargetComponent());
     }
   </method>
@@ -61,19 +60,23 @@ either express or implied. See the License for the specific language governing p
     
     // started dragging, create compound for target with current values
     var E = dr.editor,
-      EAU = E.editorattrundoable;
+      EAU = E.editorattrundoable,
       undoX = new EAU({target:target, attribute:'x', oldvalue:target.getAttribute('x'), newvalue:'0'}),
       undoY = new EAU({target:target, attribute:'y', oldvalue:target.getAttribute('y'), newvalue:'0'}),
       undoP = new E.editorattrundoable({target:target, attribute:'parent', oldvalue:target.parent, newvalue:droptarget}),
-      undoO = new E.orderundoable({target:target, oldprevsibling:target.getPrevSiblingView()}),
-      compound = new E.compoundundoable();
+      undoO,
+      compound = new E.compoundundoable(),
+      targetIsView = target.isA(dr.View);
+    
+    if (targetIsView) undoO = new E.orderundoable({target:target, oldprevsibling:target.getPrevSiblingView()}),
     
     compound.add(undoX).add(undoY);
     
     // Must be last so that dragging into a parent that already has a layout works as expected. To repro,
     // but a view at x=10, drag it into a view with only an x-spacedlayout, undo the drag and then
     // notice the view did not get put back at 10, but instead at 0.
-    compound.add(undoO).add(undoP);
+    if (targetIsView) compound.add(undoO);
+    compound.add(undoP);
     
     actions.do(compound);
   </method>

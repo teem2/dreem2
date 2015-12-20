@@ -42,7 +42,7 @@ either express or implied. See the License for the specific language governing p
     );
   </method>
   
-  <method name="notifyDrop" args="droptarget, isAbort">
+  <method name="notifyDropped" args="droptarget, isAbort">
     this.super();
     
     if (this.dropfailed || isAbort) return;

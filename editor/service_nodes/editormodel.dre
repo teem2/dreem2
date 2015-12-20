@@ -283,13 +283,16 @@ either express or implied. See the License for the specific language governing p
           
           var newParentModel = this._findChildById(this._getId(childView.parent), model);
           if (newParentModel) {
-            var prevSiblingView = childView.getPrevSiblingView(),
-              prevSiblingModel = prevSiblingView ? this._findChildById(prevSiblingView.id, model) : null,
-              newIdx = prevSiblingModel ? this._findChildIndex(newParentModel, prevSiblingModel) : -1;
-            
             if (!newParentModel.child) newParentModel.child = [];
             
-            newParentModel.child.splice(newIdx + 1, 0, childModel);
+            if (childView.isA(dr.View)) {
+              var prevSiblingView = childView.getPrevSiblingView(),
+                prevSiblingModel = prevSiblingView ? this._findChildById(prevSiblingView.id, model) : null,
+                newIdx = prevSiblingModel ? this._findChildIndex(newParentModel, prevSiblingModel) : -1;
+              newParentModel.child.splice(newIdx + 1, 0, childModel);
+            } else {
+              newParentModel.child.push(childModel);
+            }
           }
           this.sendEvent('onmodelchange', this);
         }

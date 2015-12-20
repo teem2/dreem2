@@ -354,7 +354,7 @@ either express or implied. See the License for the specific language governing p
     target.setActualAttribute('opacity', this._origOpacity / 2);
   </method>
 
-  <method name="notifyDrop" args="droptarget, isAbort">
+  <method name="notifyDropped" args="droptarget, isAbort">
     this.super();
     
     if (isAbort) {

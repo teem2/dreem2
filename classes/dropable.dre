@@ -101,7 +101,7 @@
   </method>
 
   <!--/**
-    * @method notifyDrop
+    * @method notifyDropped
     * Called by dr.GlobalDragManager when this view is dropped.
     * @param {dr.droptarget} droptarget The target that was dropped on. Will
     *     be undefined if this dropable was dropped on no drop target.
@@ -109,7 +109,7 @@
     *     abort or a normal drop.
     * @returns {void}
     */-->
-  <method name="notifyDrop" args="droptarget, isAbort">
+  <method name="notifyDropped" args="droptarget, isAbort">
     this.set_dropped(true);
     
     if (!this.droptarget) this.set_dropfailed(true);
