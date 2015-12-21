@@ -23,7 +23,7 @@
       *     </datainspector>
       *
       */-->
-<class name="datainspector" extends="view" width="auto" height="auto" requires="button,text,inspectornode">
+<class name="datainspector" extends="view" width="auto" height="auto" requires="button,text,inspectornode" fontsize="14">
   <!--/**
   * @attribute {Object} data
   * The data to extract structure from.
@@ -187,6 +187,9 @@
       iparent:parent,
       iname:struct.name,
       itype:struct.type,
+      icount:struct.count,
+      itotal:struct.total,
+      fontsize:this.fontsize,
       inspector:this
     });
 
@@ -202,7 +205,7 @@
     }
   </method>
 
-  <handler event="onstructure" args="structure">
+  <handler event="onstructure,onrootname">
     for (var i = 0;i< this.children.length;i++) {
       var child = this.children[i];
       child.destroy();
@@ -210,11 +213,13 @@
     this.setAttribute('children', []);
     this.xpath.setAttribute('text', '');
 
-    this.layoutStructure(this.buildstructure('', structure), -1)
+    if (this.structure) {
+      this.layoutStructure(this.buildstructure(this.rootname, this.structure), -1)
+    }
 
   </handler>
 
-  <spacedlayout axis="y"></spacedlayout>
-  <text name="xpath" width="${this.parent.width}"></text>
+  <spacedlayout axis="y" spacing="5"></spacedlayout>
+  <text name="xpath" visible="false" width="100%" height="30" padding="5" fontsize="${this.parent.fontsize}"></text>
 
 </class>
