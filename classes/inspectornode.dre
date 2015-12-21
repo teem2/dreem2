@@ -9,7 +9,31 @@
   <method name="initNode" args="parent, attrs">
     this.super();
     this.setAttribute('dropclass', 'text');
-    this.setAttribute('dropclassattrs', {bgcolor:'white', opacity:0.5, padding:5, cornerradius:8, with:'dropable', text:this.getXPath()});
+    this.setAttribute('dropclassattrs', {
+      bgcolor:'white',
+      isxpath:true,
+      opacity:0.5,
+      padding:5,
+      cornerradius:8,
+      with:'dropable',
+      notifyDropFailed: function() {
+        this.destroy();
+      },
+      notifyDropAborted: function() {
+        this.destroy();
+      },
+      notifyDropped: function(droptarget, isAbort) {
+        if (droptarget && droptarget.isA(dr.editortreeitem)) {
+          var data = droptarget.treecontainer.data;
+          if (!data || !data.ref || !data.ref.isA(dr.replicator)) {
+            this.destroy();
+          }
+        } else {
+          this.destroy();
+        }
+      },
+      text:this.getXPath()
+    });
   </method>
 
   <attribute name="itype" type="string" value=""></attribute>
@@ -20,7 +44,7 @@
   <attribute name="iname" type="string" value=""></attribute>
   <setter name="iname" args="n">
     if (n && n.startsWith('{')) {
-      n = '(object)'
+      n = '{object}'
     }
     this.setActual('iname', n, 'string', '')
   </setter>
@@ -32,7 +56,7 @@
     var at = this;
     var paths = [];
     while (at && at.iname) {
-      if (at.iname && !at.iname.startsWith('(')) {
+      if (at.iname && !at.iname.startsWith('{')) {
         if (at.itype == 'array') {
           paths.push(at.iname + '[*]');
         } else {

@@ -47,8 +47,13 @@ either express or implied. See the License for the specific language governing p
 
   <method name="notifyDrop" args="dropable">
     this.super();
-    
-    if (dropable && dropable.isA(dr.treeitem)) {
+    var target = this._getTargetComponent();
+
+    if (dropable && dropable.isxpath && target.isA(dr.replicator)) {
+      var xpath = dropable.text;
+      dropable.destroy();
+      target.setAttribute('datapath', xpath);
+    } else if (dropable && dropable.isA(dr.treeitem)) {
       this._stop(this._getTargetComponent(), dropable._getTargetComponent());
     }
   </method>
@@ -125,13 +130,12 @@ either express or implied. See the License for the specific language governing p
 
   <method name="willAcceptDrop" args="dropable">
     if (this.isdragging) return false;
-    
     // Tree on tree case
     if (dropable === this || (dropable._origParent && dropable._origParent.parent === this.treecontainer)) return false;
     
     var targetComponent = this._getTargetComponent();
     if (!targetComponent) return false;
-    
+
     // Determine Leaf Combinations
     if (targetComponent.isA(dr.View)) {
       if (!dropable.isbehavior && !dropable.isanimation && targetComponent.isLeaf(dropable)) return false;
@@ -141,6 +145,8 @@ either express or implied. See the License for the specific language governing p
     } else if (targetComponent.isA(dr.AnimGroup)) {
       // Only Animators and AnimGroups can be dropped on AnimGroups
       if (!dropable.isanimation) return false;
+    } else if (targetComponent.isA(dr.replicator)) {
+      if (!dropable.isxpath) return false;
     } else {
       // Don't allow dropping on unexpected tree items.
       return false;
