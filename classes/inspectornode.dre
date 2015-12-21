@@ -22,12 +22,14 @@
         this.destroy();
       },
       notifyDropped: function(droptarget, isAbort) {
-        if (droptarget && droptarget.isA(dr.editortreeitem)) {
+        if (isAbort) {
+          this.destroy();
+        } else if (droptarget && droptarget.isA(dr.editortreeitem)) {
           var data = droptarget.treecontainer.data;
           if (!data || !data.ref || !data.ref.isA(dr.replicator)) {
             this.destroy();
           }
-        } else {
+        } else if (!droptarget.__replicator) {
           this.destroy();
         }
       },

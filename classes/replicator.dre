@@ -276,6 +276,13 @@
     if 'editable' of dr and shouldedit?
       attrs.with = 'editable'
       attrs.__objectify_attrs_list = []
+      attrs.willAcceptDrop = (dropable) ->
+        return dropable && dropable.isxpath;
+      attrs.notifyDrop = (dropable) ->
+        xpath = dropable.text;
+        dropable.destroy();
+        @.__replicator.setAttribute('datapath', xpath);
+
     child = @createChild(attrs)
     # Work around ondata event not firing
     @children.push(child)
