@@ -34,7 +34,7 @@
     */-->
   <method name="willAcceptDrop" args="dropable">
     // Handle the common case of a disabled or not visible component.
-    if (this.disabled || (this.isVisible && !this.isVisible())) return false;
+    if (this.disabled || !this.isVisible()) return false;
     
     return true;
   </method>
