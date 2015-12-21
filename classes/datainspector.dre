@@ -23,21 +23,23 @@
       *     </datainspector>
       *
       */-->
-<class name="datainspector" extends="view" width="auto" height="auto">
+<class name="datainspector" extends="view" width="auto" height="auto" requires="button,text,inspectornode">
   <!--/**
   * @attribute {Object} data
   * The data to extract structure from.
   */-->
-  <attribute name="data" type="expression" value="undefined"/>
+  <attribute name="data" type="expression" value="undefined"></attribute>
 
   <!--/**
   * @attribute {Object} structure
+  * @readonly
   * The structure tree extracted from the data attribute.
   *
   */-->
-  <attribute name="structure" type="expression" value="undefined"/>
+  <attribute name="structure" type="expression" value="undefined"></attribute>
 
-
+  <attribute name="rootname" type="string" value=""></attribute>
+  <attribute name="children" type="expression" value="[]"></attribute>
   <!--/**
   * @method inspect
   * Inspects an object and returns it's structure.
@@ -119,53 +121,100 @@
     }
 
     return memo;
+
   </method>
 
   <handler event="ondata" args="data">
      this.setAttribute('structure', this.inspect(data));
   </handler>
 
-  <handler event="onstructure" args="structure">
-    function buildItems(parent) {
-      var items = [];
+  <method name="buildstructure" args="name, obj">
+    if (!obj) {
+      return;
+    }
 
-      var keys = Object.keys(parent).sort();
+    var struct = {
+      name: name,
+      type: obj.__type
+    }
+
+    if (obj.__typename) {
+      struct.name = obj.__typename
+    }
+
+    if (obj.__type[0] == '[') {
+      struct.type = 'array'
+      struct.total = 0
+      struct.children = {}
+
+      var keys = Object.keys(obj).sort();
       for (var i=0; i < keys.length; i++) {
         var k = keys[i];
         if (!k.startsWith('__')) {
-          var v = parent[k];
-
-          var label = k;
-          if (v.__typename) {
-            label = v.__typename;
-          }
-          if (v.__type[0] == '[') {
-            label = '[' + label + ']'
-          } else if (v.__type[0] == '{') {
-            if (label[0] != '{') {
-              label = '{' + label + '}'
-            }
-          } else if (parent.__type[0] == '[') {
-            label = ' &lt;' + label + '&gt;'
-          } else {
-            label = label + ' &lt;' + v.__type[0] + '&gt;'
-          }
-
+          var v = obj[k];
           if (v.__count) {
-            label = label + ' (' + v.__count + ')'
+            struct.total += v.__count
           }
-
-          items.push({ label:label, items:buildItems(v) })
+          struct.children[k] = this.buildstructure(k, v)
         }
       }
-
-      return items;
+    } else if (obj.__type[0] == '{') {
+      struct.type = 'object'
+      struct.children = {}
+      var keys = Object.keys(obj).sort();
+      for (var i=0; i < keys.length; i++) {
+        var k = keys[i];
+        if (!k.startsWith('__')) {
+          struct.children[k] = this.buildstructure(k, obj[k])
+        }
+      }
     }
 
-    var root = {label: '', items: buildItems(structure) }
+    if (obj.__count) {
+      struct.count = obj.__count
+    }
 
-    this.tree.setAttribute('data', root)
+    return struct;
+
+  </method>
+
+  <method name="layoutStructure" args="struct, depth, parent">
+    var self = this;
+
+    var rent = this.createChild({
+      class:'inspectornode',
+      x:depth * 20,
+      iparent:parent,
+      iname:struct.name,
+      itype:struct.type,
+      inspector:this
+    });
+
+    this.children.push(rent);
+
+    if (struct.children) {
+      var keys = Object.keys(struct.children)
+      for (var i=0; i < keys.length;i++) {
+        var key = keys[i];
+        var child = struct.children[key];
+        this.layoutStructure(child, depth + 1, rent)
+      }
+    }
+  </method>
+
+  <handler event="onstructure" args="structure">
+    for (var i = 0;i< this.children.length;i++) {
+      var child = this.children[i];
+      child.destroy();
+    }
+    this.setAttribute('children', []);
+    this.xpath.setAttribute('text', '');
+
+    this.layoutStructure(this.buildstructure('', structure), -1)
+
   </handler>
 
-  <tree name="tree"/>
+  <spacedlayout axis="y"></spacedlayout>
+  <text name="xpath" width="${this.parent.width}"></text>
+
 </class>

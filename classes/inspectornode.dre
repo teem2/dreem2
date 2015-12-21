@@ -3,7 +3,54 @@
  software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
 
-<class name="inspectornode" extends="view">
+<class name="inspectornode" extends="view" with="button,dropsource" height="auto" width="auto">
+  <spacedlayout axis="x"></spacedlayout>
 
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    this.setAttribute('dropclass', 'text');
+    this.setAttribute('dropclassattrs', {bgcolor:'white', opacity:0.5, padding:5, cornerradius:8, with:'dropable', text:this.getXPath()});
+  </method>
+
+  <attribute name="itype" type="string" value=""></attribute>
+  <setter name="itype" args="t">
+    this.setActual('itype', t, 'string', '')
+  </setter>
+
+  <attribute name="iname" type="string" value=""></attribute>
+  <setter name="iname" args="n">
+    if (n && n.startsWith('{')) {
+      n = '(object)'
+    }
+    this.setActual('iname', n, 'string', '')
+  </setter>
+
+  <attribute name="iparent" type="expression" value="undefined"></attribute>
+  <attribute name="inspector" type="expression" value="undefined"></attribute>
+
+  <method name="getXPath">
+    var at = this;
+    var paths = [];
+    while (at && at.iname) {
+      if (at.iname && !at.iname.startsWith('(')) {
+        if (at.itype == 'array') {
+          paths.push(at.iname + '[*]');
+        } else {
+          paths.push(at.iname);
+        }
+      }
+      at = at.iparent;
+    }
+    var path = this.inspector.rootname + '/' + paths.reverse().join('/')
+    return path;
+  </method>
+
+  <handler event="onactivated">
+    this.inspector.xpath.setAttribute('text', this.getXPath())
+  </handler>
+
+  <text name="label" text="${this.parent.iname}"></text>
+  <bitmap name="image"></bitmap>
+  <text name="count"></text>
 
 </class>

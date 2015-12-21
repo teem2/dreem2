@@ -1044,6 +1044,7 @@ either express or implied. See the License for the specific language governing p
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
 
         <handler name="refresh" event="onselected" args="selectedview" reference="selectionmanager">
+          this.dinspect.setAttribute('rootname', selectedview ? '$' + selectedview.name : '$root');
           this.dinspect.setAttribute('data', selectedview ? selectedview.data : undefined);
         </handler>
 
