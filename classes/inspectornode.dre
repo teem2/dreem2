@@ -70,9 +70,9 @@
         this.icon.setAttribute('color', 'purple');
 
       }
-      this.icon.setAttribute('visible', true);
     } else {
-      this.icon.setAttribute('visible', false);
+      this.icon.setAttribute('text', '?');
+      this.icon.setAttribute('color', '#888');
     }
   </method>
 
