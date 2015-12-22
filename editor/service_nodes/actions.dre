@@ -152,7 +152,7 @@ either express or implied. See the License for the specific language governing p
         editPreviewButton.setAttribute('iconname', 'edit');
         editPreviewButton.setAttribute('tooltip', 'Stop previewing and change back to edit mode.');
         preview.setAttribute('visible', true);
-        preview.setAttribute('src', '/editor/preview.dre');
+        preview.setAttribute('src', '/editor/preview.dre?spinner=false');
       }
     } else {
       editor.setAttribute('editmode', true);

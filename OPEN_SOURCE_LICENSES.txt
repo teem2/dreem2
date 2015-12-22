@@ -18,11 +18,15 @@ Atomic.js
     Copyright(c) 2014, Todd Motto
     MIT License
     Based on a fork by Rene Hernandez found at: https://github.com/renehernandez/atomic/blob/develop/src/atomic.js
-    
+
 two.js
-    Copyright (c)2012 - 2013, jonobr1 / http://jonobr1.com
+    Copyright (c) 2012 - 2013, jonobr1 / http://jonobr1.com
     MIT License
-    
+
+Spin.js - v2.3.2
+    Copyright (c) 2015, Felix Gnass / [fgnass at neteye dot de]
+    MIT License
+
 jsclass
     Copyright (c) 2007-2013 James Coglan and contributors
     MIT License
