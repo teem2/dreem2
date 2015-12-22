@@ -299,7 +299,7 @@ define(function(require, exports, module) {
     };
     
     this.__getSpinnerCode = function() {
-      return "<div id='__spinner' style='position:absolute;top:50%;left:50%;z-index:16777271;'>\n" +
+        return "<div id='__spinner' style='position:absolute;top:50%;left:50%;margin-top:-36px;margin-left:-36px;z-index:16777271;'>\n" +
         "  <img src='/img/logo_128_round.png' width='64' height='64' alt='teem logo'>\n" +
         "</div>\n"+
         "<script type='text/javascript'>"+
