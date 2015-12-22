@@ -281,7 +281,8 @@
       attrs.notifyDrop = (dropable) ->
         xpath = dropable.text;
         dropable.destroy();
-        @.__replicator.setAttribute('datapath', xpath);
+        undo = new dr.editor.editorattrundoable({target:@.__replicator, attribute:'datapath', newvalue:xpath});
+        actions.do(undo);
 
     child = @createChild(attrs)
     # Work around ondata event not firing
