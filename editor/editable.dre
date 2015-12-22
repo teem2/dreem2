@@ -96,6 +96,9 @@ either express or implied. See the License for the specific language governing p
     
     // No dropping on descendants of self
     if (this.isDescendantOf(dropable.target)) return false;
+
+    //can only drop xpaths onto replicators and replicated views
+    if (dropable.isxpath && !this.__replicator) return false
     
     return this.super();
   </method>

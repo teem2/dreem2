@@ -1041,13 +1041,21 @@ either express or implied. See the License for the specific language governing p
       <subhead id="data_subhead" width="100%" text="Data"/>
 
       <view id="data_panel" width="100%" clip="true">
-        <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
+        <spacedlayout axis="y" updateparent="true"/>
 
         <handler name="refresh" event="onselected" args="selectedview" reference="selectionmanager">
-          this.dinspect.setAttribute('data', selectedview ? selectedview.data : undefined);
+          if (selectedview && selectedview.data) {
+            this.dinspect.setAttribute('rootname', '$' + selectedview.name);
+            this.dinspect.setAttribute('data', selectedview.data);
+            this.dinspect.setAttribute('visible', true);
+          } else {
+            this.dinspect.setAttribute('rootname', '$root');
+            this.dinspect.setAttribute('data', undefined);
+            this.dinspect.setAttribute('visible', false);
+          }
         </handler>
 
-        <datainspector name="dinspect"/>
+        <datainspector name="dinspect" x="20" padding="10"/>
       </view>
     </view>
     

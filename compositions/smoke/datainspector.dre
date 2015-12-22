@@ -7,7 +7,7 @@
     <screen type='browser' name='default' title='Smoke Test - Data Inspector'>
       <include href='./includes/boilerplate.dre'/>
       <view width='100%' height='100%' padding='25'>
-        <datainspector x='0' y='300' data='${this.typename.data}'>
+        <datainspector x='0' y='400' data='${this.typename.data}'>
           <dataset name='typename'>
             [{
               "__typename": "newname",
@@ -46,12 +46,14 @@
             [
               { "firstName":"John",  "lastName":"Upton", "address":{ "street":"123 Fake Street", "city":"Chicago", "state":"TN" } },
               { "firstName":"Sally", "lastName":"Upton", "address":{ "street":"123 Fake Street", "city":"Chicago", "state":"TN" } },
-              { "firstName":"Jane",  "lastName":"Doe",   "address":{ "street":"123 Real Street", "city":"Paris",   "state":"FR" } }
+              { "firstName":"Jane",  "lastName":"Doe",   "address":{ "street":"123 Real Street", "city":"Paris",   "state":"FR" } },
+              { "firstName":"Mr. No",  "lastName":"Address" },
+              { "firstName":"Mrs. No",  "lastName":"Address" }
             ]
           </dataset>
           <handler event='oninit'>
             var expected = {
-              __type: '[{address:{city:s,state:s,street:s},firstName:s,lastName:s}]',
+              __type: '[{address:{city:s,state:s,street:s},firstName:s,lastName:s},{firstName:s,lastName:s}]',
               '{address:{city:s,state:s,street:s},firstName:s,lastName:s}': {
                 __count: 3,
                 __type: '{address:{city:s,state:s,street:s},firstName:s,lastName:s}',
@@ -63,8 +65,15 @@
                 },
                 firstName: { __type: 's' },
                 lastName: { __type: 's' }
+              },
+              '{firstName:s,lastName:s}' : {
+                __count: 2,
+                __type: '{firstName:s,lastName:s}',
+                firstName: { __type: 's' },
+                lastName: { __type: 's' }
               }
             }
+            assert.equal(expected.__type, this.structure.__type)
             assert.deepEqual(expected, this.structure)
           </handler>
         </datainspector>

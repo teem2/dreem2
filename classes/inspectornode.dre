@@ -3,7 +3,119 @@
  software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
 
-<class name="inspectornode" extends="view">
+<class name="inspectornode" extends="view" with="button,dropsource" height="auto" width="auto" fontsize="14">
 
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    this.setAttribute('dropclass', 'text');
+    this.setAttribute('dropclassattrs', {
+      bgcolor:'white',
+      isxpath:true,
+      opacity:0.5,
+      padding:5,
+      cornerradius:8,
+      draggroups:{editable:true},
+      with:'dropable',
+      notifyDropFailed: function() {
+        this.destroy();
+      },
+      notifyDropAborted: function() {
+        this.destroy();
+      },
+      notifyDropped: function(droptarget, isAbort) {
+        if (isAbort) {
+          this.destroy();
+        } else if (droptarget && droptarget.isA(dr.editortreeitem)) {
+          var data = droptarget.treecontainer.data;
+          if (!data || !data.ref || !data.ref.isA(dr.replicator)) {
+            this.destroy();
+          }
+        } else if (!droptarget || !droptarget.__replicator) {
+          this.destroy();
+        }
+      },
+      text:this.getXPath()
+    });
+  </method>
+
+  <attribute name="itype" type="string" value=""></attribute>
+  <handler event="onitype, oninit" method="configureIcon"></handler>
+
+  <method name="configureIcon">
+    var t = this.itype;
+    if (t) {
+      if (t == 'array') {
+        this.icon.setAttribute('text', '[ ]');
+        this.icon.setAttribute('color', 'yellow');
+        this.icon.setAttribute('bgcolor', '#A9A9A9');
+
+      } else if (t == 'object') {
+        this.icon.setAttribute('text', '{ }');
+        this.icon.setAttribute('color', 'lightblue');
+        this.icon.setAttribute('bgcolor', '#A9A9A9');
+
+      } else if (t == 's') {
+        this.icon.setAttribute('text', t);
+        this.icon.setAttribute('color', 'red');
+
+      } else if (t == 'i') {
+        this.icon.setAttribute('text', t);
+        this.icon.setAttribute('color', 'green');
+
+      } else if (t == 'b') {
+        this.icon.setAttribute('text', t);
+        this.icon.setAttribute('color', 'blue');
+
+      } else if (t == 'u') {
+        this.icon.setAttribute('text', t);
+        this.icon.setAttribute('color', 'purple');
+
+      }
+    } else {
+      this.icon.setAttribute('text', '?');
+      this.icon.setAttribute('color', '#888');
+    }
+  </method>
+
+  <attribute name="iname" type="string" value=""></attribute>
+  <setter name="iname" args="n">
+    if (n && n.startsWith('{')) {
+      n = ''
+    }
+    this.setActual('iname', n, 'string', '')
+  </setter>
+  <attribute name="icount" type="number" value="0"></attribute>
+  <attribute name="itotal" type="number" value="0"></attribute>
+
+  <attribute name="iparent" type="expression" value="undefined"></attribute>
+  <attribute name="inspector" type="expression" value="undefined"></attribute>
+
+  <method name="getXPath">
+    var at = this;
+    var paths = [];
+    while (at) {
+      if (at.iname) {
+        if (at.itype == 'array') {
+          paths.push(at.iname + '[*]');
+        } else {
+          paths.push(at.iname);
+        }
+      }
+      at = at.iparent;
+    }
+    var path = paths.reverse().join('/')
+    return path;
+  </method>
+
+  <handler event="onactivated">
+    this.inspector.xpath.setAttribute('text', this.getXPath())
+  </handler>
+
+  <spacedlayout axis="x" spacing="2"></spacedlayout>
+
+  <text name="icon"  text="?" fontsize="${this.parent.fontsize}" bold="true" width="30" padding="5" cornerradius="${this.width / 2.0}" textalign="center" color="#888" bgcolor="#EEE"></text>
+  <text name="label" y="${this.parent.icon.height / 2 - this.height / 2}" text="${this.parent.iname}" fontsize="${this.parent.fontsize}" padding="5"></text>
+  <text name="count" y="${this.parent.icon.height / 2 - this.height / 2}" text="${this.parent.icount + ' of type '}" fontsize="${this.parent.fontsize - 2}" padding="4" visible="${this.parent.icount > 0}" textalign="center" border="0" bordercolor="#aaa" color="#888" cornerradius="20"></text>
+  <text name="total" y="${this.parent.icon.height / 2 - this.height / 2}" text="${this.parent.itotal + ' total '}" fontsize="${this.parent.fontsize - 3}" padding="4" visible="${this.parent.itotal > 0}" textalign="center" border="1" bordercolor="#a00" color="#800" cornerradius="20"></text>
 
 </class>

@@ -5,6 +5,7 @@ software distributed under the License is distributed on an "AS IS" BASIS, WITHO
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
 <node id="selectionmanager">
+  <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="selected" type="expression" value="${null}"/>
   <setter name="selected" args="v">
     if (editor.inited) this.setActualAttribute('isrootselection', v === editor.content_bg.content.inner);
@@ -16,9 +17,6 @@ either express or implied. See the License for the specific language governing p
     layouts_subhead.setAttribute('visible', isView);
     behaviors_subhead.setAttribute('visible', isView);
     
-    // Data panel should only be visible if a dataset is selected
-    data_subhead.setAttribute('visible', !!(v && v.isA(dr.dataset)));
-    
     return v;
   </setter>
 
@@ -26,15 +24,17 @@ either express or implied. See the License for the specific language governing p
 
   <attribute name="isrootselection" type="boolean" value="false"/>
 
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="clear" args="restoreable">
     if (restoreable) this._oldSelection = this.selected;
     this.select(null);
   </method>
-  
+
   <method name="restore">
     if (this._oldSelection && this._oldSelection.parent) this.select(this._oldSelection);
   </method>
-  
+
   <method name="select" args="newSelection">
     var curSelection = this.selected;
     
