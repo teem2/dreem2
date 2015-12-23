@@ -47,15 +47,19 @@ either express or implied. See the License for the specific language governing p
 
   <method name="notifyDrop" args="dropable">
     this.super();
-    var target = this._getTargetComponent();
-
-    if (dropable && dropable.isxpath && target.isA(dr.replicator)) {
-      var xpath = dropable.text;
-      dropable.destroy();
-      var undo = new dr.editor.editorattrundoable({target:target, attribute:'datapath', newvalue:xpath});
-      actions.do(undo);
-    } else if (dropable && dropable.isA(dr.treeitem)) {
-      this._stop(this._getTargetComponent(), dropable._getTargetComponent());
+    
+    if (dropable) {
+      if (dropable.isxpath) {
+        var target = this._getTargetComponent();
+        if (target.isA(dr.replicator)) {
+          var xpath = dropable.text;
+          dropable.destroy();
+          var undo = new dr.editor.editorattrundoable({target:target, attribute:'datapath', newvalue:xpath});
+          actions.do(undo);
+        }
+      } else if (dropable.isA(dr.treeitem)) {
+        this._stop(this._getTargetComponent(), dropable._getTargetComponent());
+      }
     }
   </method>
 
