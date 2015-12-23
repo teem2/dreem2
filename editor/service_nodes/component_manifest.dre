@@ -86,6 +86,13 @@ either express or implied. See the License for the specific language governing p
       dropclass:'bitmap',
       dropclassattrs:{width:'30', height:30, src:config.img_root + 'dataset.png', instanceattrs:{class:'dataset'}}
     }, true);
+    
+    this._addComponent({
+      label:'replicator',
+      iconname:'replicator',
+      dropclass:'bitmap',
+      dropclassattrs:{width:'30', height:30, isreplicator:true, src:config.img_root + 'replicator.png', instanceattrs:{class:'replicator', classname:'view'}}
+    });
   </method>
 
   <!-- @private -->
