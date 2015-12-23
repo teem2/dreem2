@@ -2,38 +2,22 @@
  You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
  software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
-
-<class name="inspectornode" extends="view" with="button,dropsource" height="auto" width="auto" fontsize="14">
-
+<class name="inspectornode" extends="view" with="button,dropsource"
+  requires="inspectornodedropablemixin"
+  height="auto" width="auto" fontsize="14"
+>
   <method name="initNode" args="parent, attrs">
     this.super();
     this.setAttribute('dropclass', 'text');
     this.setAttribute('dropclassattrs', {
-      bgcolor:'white',
+      with:'inspectornodedropablemixin dropable',
+      draggroups:{editable:true},
+      allowabort:true,
       isxpath:true,
+      bgcolor:'white',
       opacity:0.5,
       padding:5,
       cornerradius:8,
-      draggroups:{editable:true},
-      with:'dropable',
-      notifyDropFailed: function() {
-        this.destroy();
-      },
-      notifyDropAborted: function() {
-        this.destroy();
-      },
-      notifyDropped: function(droptarget, isAbort) {
-        if (isAbort) {
-          this.destroy();
-        } else if (droptarget && droptarget.isA(dr.editortreeitem)) {
-          var data = droptarget.treecontainer.data;
-          if (!data || !data.ref || !data.ref.isA(dr.replicator)) {
-            this.destroy();
-          }
-        } else if (!droptarget || !droptarget.__replicator) {
-          this.destroy();
-        }
-      },
       text:this.getXPath()
     });
   </method>
@@ -117,5 +101,4 @@
   <text name="label" y="${this.parent.icon.height / 2 - this.height / 2}" text="${this.parent.iname}" fontsize="${this.parent.fontsize}" padding="5"></text>
   <text name="count" y="${this.parent.icon.height / 2 - this.height / 2}" text="${this.parent.icount + ' of type '}" fontsize="${this.parent.fontsize - 2}" padding="4" visible="${this.parent.icount > 0}" textalign="center" border="0" bordercolor="#aaa" color="#888" cornerradius="20"></text>
   <text name="total" y="${this.parent.icon.height / 2 - this.height / 2}" text="${this.parent.itotal + ' total '}" fontsize="${this.parent.fontsize - 3}" padding="4" visible="${this.parent.itotal > 0}" textalign="center" border="1" bordercolor="#a00" color="#800" cornerradius="20"></text>
-
 </class>
