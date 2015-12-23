@@ -32,12 +32,23 @@ either express or implied. See the License for the specific language governing p
     this.super();
     
     // Make half opacity during drag
-    var target = this.treecontainer;
+    var target = this.treecontainer,
+        autoscrollerView = target.root.parent,
+        pos = target.getAbsolutePosition(autoscrollerView);
     this._origY = this.y;
     this._origParent = target;
-    var pos = target.getAbsolutePosition(target.root.parent.parent);
+    
+    // Make sure nothing is selected once drag starts.
+    // Another options would be to select on mousedown, but that is a bit
+    // trickier to implement since we would get multiple calls to doActivated,
+    // so we will try this option first.
+    selectionmanager.clear();
+    
+    // Hide the descendants of this item during drag
     target.setActualAttribute('visible', false);
-    this.setAttribute('parent', target.root.parent.parent);
+    
+    // Reparent to autoscrollerView during drag
+    this.setAttribute('parent', autoscrollerView);
     this.setAttribute('dragoffsety', pos.y);
     this.setAttribute('opacity', 0.5);
     this.setAttribute('clickable', false);
@@ -153,7 +164,7 @@ either express or implied. See the License for the specific language governing p
       // Only Animators and AnimGroups can be dropped on AnimGroups
       if (!dropable.isanimation) return false;
     } else if (targetComponent.isA(dr.replicator)) {
-      if (!dropable.isreplicator && !dropable.isxpath) return false;
+      if (!dropable.isxpath) return false;
     } else if (targetComponent.isA(dr.View)) {
       if (dropable.isxpath) return false;
       if (!dropable.isbehavior && !dropable.isanimation && targetComponent.isLeaf(dropable)) return false;
@@ -222,7 +233,7 @@ either express or implied. See the License for the specific language governing p
         var view = this._getEditable(viewid);
         if (view !== selectionmanager.selected) selectionmanager.select(view);
       } else {
-        selectionmanager.select(null);
+        selectionmanager.clear();
       }
     }
   </method>

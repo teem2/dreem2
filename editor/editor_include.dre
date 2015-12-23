@@ -827,22 +827,24 @@ either express or implied. See the License for the specific language governing p
         listviewattrs="{maxheight:300}"
       >
         <method name="doActivated">
-          var editorPlaying = !editor.editmode;
-          var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
-          var cfg = [
-            {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
-            {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
-            {klass:dr.listviewseparator},
-            {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
-            {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
-            {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
-            {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
-            {klass:dr.listviewseparator},
-            {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
-          ];
-          this.setActualAttribute('itemconfig', cfg);
-          
-          this.toggleFloatingPanel();
+          if (!this.disabled && !dr.global.dragManager.dragview) {
+            var editorPlaying = !editor.editmode;
+            var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
+            var cfg = [
+              {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
+              {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
+              {klass:dr.listviewseparator},
+              {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
+              {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
+              {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
+              {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
+              {klass:dr.listviewseparator},
+              {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
+            ];
+            this.setActualAttribute('itemconfig', cfg);
+            
+            this.toggleFloatingPanel();
+          }
         </method>
         
         <method name="doItemActivated" args="itemview">

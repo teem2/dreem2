@@ -27,7 +27,7 @@ either express or implied. See the License for the specific language governing p
   </handler>
 
   <method name="_shiftPos" args="isX, increase">
-    if (!this.isdragging) {
+    if (!dr.global.dragManager.dragview) {
       var amount = dr.keyboard.isShiftKeyDown() ? 10 : 1,
         gridAmt = Math.max(1, isX ? gridsizex.value : gridsizey.value),
         event = {x:this.x, y:this.y};
