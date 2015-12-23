@@ -148,23 +148,23 @@
    * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
    */-->
 <class name="replicator" type="coffee" extends="node" requires="datapath">
-  <attribute name="_arrayidentity" type="expression" value="[]" allocation="class"></attribute>
+  <attribute name="_arrayidentity" type="expression" value="[]" allocation="class"/>
   <!--/**
     * @attribute {Boolean} [pooling=false]
     * If true, reuse views when replicating.
     */-->
-  <attribute name="pooling" value="false" type="boolean"></attribute>
+  <attribute name="pooling" value="false" type="boolean"/>
 
   <!--/**
     * @attribute {Array} [data=[]]
     * A list of items to replicate. If {@link #path path} is set, a {@link #datapath datapath} will be used to look up the value.
     */-->
-  <attribute name="data" value="dr.replicator._arrayidentity" type="expression"></attribute>
+  <attribute name="data" value="dr.replicator._arrayidentity" type="expression"/>
   <!--/**
     * @attribute {String} [path=]
     * If set, a {@link #datapath datapath} will be used to look up the value.
     */-->
-  <attribute name="datapath" value="" type="string"></attribute>
+  <attribute name="datapath" value="" type="string"/>
   <handler event="ondatapath" args="datapath">
     if datapath
       unless @_datapath?
@@ -181,9 +181,9 @@
     * @attribute {String} classname (required)
     * The name of the class to be replicated.
     */-->
-  <attribute name="classname" value="" type="string"></attribute>
+  <attribute name="classname" value="" type="string"/>
 
-  <handler event="ondestroy" method="clear"></handler>
+  <handler event="ondestroy" method="clear"/>
 
   <method name="updateData" args="data">
     # remove dataset declaration
@@ -204,7 +204,7 @@
   </method>
 
   <method name="_lockLayouts" args="locked">
-    if @parent.layouts
+    if @parent and @parent.layouts
       for layout in @parent.layouts
         layout.setAttribute('locked', locked)
   </method>

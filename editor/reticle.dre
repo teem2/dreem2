@@ -345,6 +345,10 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="startDrag" args="event">
+    // Abort immediatly if nothing is selected. This can occur if ESC is
+    // pressed after mouse down, but before dragging has actually begun.
+    if (!this.visible) return;
+    
     this._start();
     this.super();
     
@@ -386,8 +390,6 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="_start">
-    this.isStarted = true;
-    
     delete this.__lastGuidePos;
     delete this.resizer.__lastGuidePos;
     
@@ -686,7 +688,6 @@ either express or implied. See the License for the specific language governing p
     }
     
     this.stopListening(dr.keyboard, 'onkeydown, onkeyup', this._handleKeyChange);
-    this.isStarted = false;
   </method>
 
   <method name="_generateUniqueName" args="target">
@@ -710,7 +711,6 @@ either express or implied. See the License for the specific language governing p
     }
     
     this.stopListening(dr.keyboard, 'onkeydown, onkeyup', this._handleKeyChange);
-    this.isStarted = false;
   </method>
 
   <method name="_handleKeyChange" args="platformEvent">

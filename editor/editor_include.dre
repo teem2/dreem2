@@ -100,7 +100,7 @@ either express or implied. See the License for the specific language governing p
           if (this._actionsPermitted()) actions.deleteSelected();
           break;
         case GK.KEYCODE_ESC: // Clear selection
-          if (!reticle.isStarted) selectionmanager.clear();
+          if (this._actionsPermitted()) selectionmanager.clear();
           break;
       }
     }

@@ -14,7 +14,7 @@ either express or implied. See the License for the specific language governing p
     if (!undoable.isA(dr.editor.compoundundoable)) {
       var target = undoable.target;
       if (target) {
-        if (target.isA(dr.View) || target.isA(dr.AnimBase)) {
+        if (target.isA(dr.View) || target.isA(dr.AnimBase) || target.isA(dr.replicator)) {
           if (target.parent) {
             if (selectionmanager.selected !== target) selectionmanager.select(target);
           } else {

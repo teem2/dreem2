@@ -19,6 +19,8 @@ either express or implied. See the License for the specific language governing p
         this.setAttribute('isdraggable', false);
       } else if (targetComponent.isA(dr.AnimBase)) {
         this.isanimation = true;
+      } else if (targetComponent.isA(dr.replicator)) {
+        this.isreplicator = true;
       }
     }
   </method>
@@ -56,6 +58,7 @@ either express or implied. See the License for the specific language governing p
           dropable.destroy();
           var undo = new dr.editor.editorattrundoable({target:target, attribute:'datapath', newvalue:xpath});
           actions.do(undo);
+          selectionmanager.select(target);
         }
       } else if (dropable.isA(dr.treeitem)) {
         this._stop(this._getTargetComponent(), dropable._getTargetComponent());
@@ -135,6 +138,7 @@ either express or implied. See the License for the specific language governing p
 
   <method name="willAcceptDrop" args="dropable">
     if (this.isdragging) return false;
+    
     // Tree on tree case
     if (dropable === this || (dropable._origParent && dropable._origParent.parent === this.treecontainer)) return false;
 
@@ -148,18 +152,19 @@ either express or implied. See the License for the specific language governing p
     } else if (targetComponent.isA(dr.AnimGroup)) {
       // Only Animators and AnimGroups can be dropped on AnimGroups
       if (!dropable.isanimation) return false;
-    } else if (dropable.isxpath) {
-      if (!targetComponent.isA(dr.replicator)) return false;
+    } else if (targetComponent.isA(dr.replicator)) {
+      if (!dropable.isreplicator && !dropable.isxpath) return false;
     } else if (targetComponent.isA(dr.View)) {
+      if (dropable.isxpath) return false;
       if (!dropable.isbehavior && !dropable.isanimation && targetComponent.isLeaf(dropable)) return false;
     } else {
       // Don't allow dropping on unexpected tree items.
       return false;
     }
-
+    
     // No dropping on descendants of self or our parent
     if (dropable.target && (targetComponent.isDescendantOf(dropable.target) || dropable.target.parent === targetComponent)) return false;
-
+    
     return this.super();
   </method>
 
