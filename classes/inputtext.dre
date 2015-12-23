@@ -90,6 +90,15 @@
   <!-- The maximum number of characters that can be entered. -->
   <attribute name="maxlength" type="number" value="-1"/>
 
+  <!-- If true, this field will behave as a password field. -->
+  <attribute name="password" type="boolean" value="false"/>
+  <setter name="password" args="v">
+    # Only allow the password property to be set during initialization since
+    # runtime changes to the password property will have no effect on the
+    # underlying platform object.
+    if @initing then @setActual('password', v, 'boolean', false)
+  </setter>
+
   <!--// Handlers //-->
   <handler event="onchange">
     return unless @replicator

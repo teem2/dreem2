@@ -111,7 +111,7 @@
         <inputtext bgcolor="lightgreen" text="${this.parent.text}">
           <handler event="oninit">
             assert.testCaseLabel = 'Setting text with a constraint';
-            assert.equal(this.sprite.get_value(), 'some text')
+            assert.equal(this.sprite.get_value(), 'some text');
             assert.equal(this.text, "some text");
           </handler>
         </inputtext>
@@ -125,7 +125,7 @@
       <view width="auto" height="auto" padding="2" bgcolor="red">
         <inputtext bgcolor="lightyellow" text="${this.parent.text}">
           <handler event="oninit">
-            assert.equal(this.sprite.get_value(), '')
+            assert.equal(this.sprite.get_value(), '');
             assert.equal(this.text, '');
           </handler>
         </inputtext>
@@ -260,6 +260,27 @@
         Test content heres some more test content to make this a lot bigger
         <handler event="oninit">
           assert.equal(this.multiline, false)
+        </handler>
+      </inputtext>
+      
+      <!-- Password Fields -->
+      <inputtext password="true" width="100" bgcolor="white">
+        <handler event="oninit">
+          assert.testCaseLabel = 'Password fields';
+          assert.equal(this.password, true, "password should be true");
+          assert.equal(this.sprite.platformObject.type, 'password');
+          
+          // Changing the password attribute at runtime should not effect the underlying dom element
+          this.setAttribute('password', false);
+          assert.equal(this.password, true, "password can not be changed once initing is false.");
+          assert.equal(this.sprite.platformObject.type, 'password');
+        </handler>
+      </inputtext>
+      
+      <inputtext password="true" multiline="true" width="100" bgcolor="white">
+        <handler event="oninit">
+          assert.equal(this.password, true, "password should be true");
+          assert.equal(this.multiline, false, "multiline should be false even when set to true for password fields.");
         </handler>
       </inputtext>
     </view>
