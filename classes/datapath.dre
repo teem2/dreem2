@@ -61,6 +61,7 @@
       <attribute name="path" value="" type="string"></attribute>
       <setter name="path" args="path">
         unless path
+          @_datasetname = null
           @_parsedpath = null
           @_findDataset()
           return path 
@@ -71,7 +72,8 @@
         match = path.match(dr.datapath.datasetmatcher)
         if match and match[1]
           # found absolute path, e.g. $mydataset/, store name for lookup
-          @_findDataset(match[1])
+          @_datasetname = match[1]
+          @_findDataset()
 
           # remove dataset declaration from the path
           newpath = path.replace(dr.datapath.datasetmatcher, '')
@@ -83,7 +85,7 @@
         return path
       </setter>
 
-      <method name="_findDataset" args="datasetname">
+      <method name="_findDataset">
         @_datasetupdater ?= (data) =>
           # console.log('callback', @, data)
           @setAttribute('data', data)
@@ -92,11 +94,11 @@
           @stopListening(@dataset, 'ondata', @_datasetupdater)
           @dataset = null
 
-        if datasetname
-          @dataset = dr.dataset.datasets[datasetname]
+        if @_datasetname
+          @dataset = dr.dataset.datasets[@_datasetname]
 
           if @dataset?
-            # console.log('listening to dataset', datasetname, @dataset.name, @dataset.data)
+            # console.log('listening to dataset', @_datasetname, @dataset.name, @dataset.data)
             @listenTo(@dataset, 'ondata', @_datasetupdater)
             @setAttribute('data', @dataset.data)
       </method>
@@ -129,6 +131,8 @@
         return regex
       </setter>
 
+      <attribute name="isconstraint" type="boolean" value="false"/>
+      
       <handler event="onsortfield,onsortasc">
         @_buildsortfunc()
         @_processData()
@@ -196,6 +200,10 @@
               rundata = parentdata.data
             else unless @dataset
               console.warn('No parent data found for', @path, @)
+              
+              # Retry finding the dataset just in case
+              @_findDataset()
+              rundata = @data
 
           if rundata
             # console.log('executing selector', @path, rundata, @_parsedpath)
@@ -212,6 +220,12 @@
         else
           @_origresult = if Array.isArray(result) then result else [result]
 
+        if @isconstraint
+          if @_origresult.length is 0
+            @_origresult = null
+          else if @_origresult.length is 1
+            @_origresult = @_origresult[0]
+        
         @_processData()
       </method>
 
@@ -227,7 +241,7 @@
           @result.sort(@sortfunc)
 
         @sendEvent('onresult', @result)
-        # console.log('result', @path, @result)
+        #console.log('result', @path, @result)
       </method>
 
       <method name="updateData" args="data">

@@ -92,6 +92,7 @@
           <link url="./smoke/classroot">Classroot</link>
           <link url="./smoke/client_storage">Client Storage</link>
           <link url="./smoke/datapath">Datapath</link>
+          <link url="./smoke/datapath_constraints">Datapath Constraints</link>
           <link url="./smoke/dataset">Dataset</link>
           <link url="./smoke/dre_parser">Dre Parser</link>
           <link url="./smoke/dre">Dre Misc</link>

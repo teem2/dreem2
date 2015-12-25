@@ -147,7 +147,7 @@
    *
    * See [https://github.com/flitbit/json-path](https://github.com/flitbit/json-path) for more details.
    */-->
-<class name="replicator" type="coffee" extends="node" requires="datapath">
+<class name="replicator" type="coffee" extends="node" requires="dataset">
   <attribute name="_arrayidentity" type="expression" value="[]" allocation="class"/>
   <!--/**
     * @attribute {Boolean} [pooling=false]

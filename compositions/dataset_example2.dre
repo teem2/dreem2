@@ -1,0 +1,126 @@
+<!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
+<composition>
+  <screens>
+    <screen type='browser' name='default' title='Dataset Example'>
+      <view width='100%' height='100%' bgcolor='#cccccc'>
+        <!-- Existing replicator functionality plus proposed $datapath constraints -->
+        <view id="item1" bgcolor='$datapath{$foo/color}' width='auto' height='auto'
+          x="${this.shift ? 100 : 0}"
+          shift="$datapath{$foo/shift}"
+        >
+          <attribute name="shift" type="boolean" value="false"/>
+          <replicator classname='text' datapath='$foo/info[*]/name'/>
+          <spacedlayout/>
+        </view>
+        
+        <!-- Existing replicator functionality plus proposed $datapath constraints -->
+        <view bgcolor='$datapath{$bar/color}' width='auto' height='auto'
+          x="${this.shift ? 100 : 0}"
+          shift="$datapath{$bar/shift}"
+        >
+          <attribute name="shift" type="boolean" value="false"/>
+          <replicator classname='text' datapath='$bar/info[*]/more[*]/name'/>
+          <spacedlayout/>
+        </view>
+        
+        <simplebutton text="update">
+          <method name="doActivated">
+            if (!this.count) this.count = 0;
+            this.count++;
+            dr.dataset.datasets.foo.setAttribute('data', {
+              "color": this.count % 2 === 0 ? "#ff99cc" : "#cc99ff",
+              "shift": this.count % 2 === 0,
+              "info": [
+                {
+                  "name": "Title A",
+                  "bgcolor": "#ff0000",
+                  "position":10
+                },{
+                  "name": "Title B",
+                  "bgcolor": "#00ff00",
+                  "position":20
+                },{
+                  "name": "Title C",
+                  "bgcolor": "#0000ff",
+                  "position":30
+                }
+              ]
+            });
+          </method>
+        </simplebutton>
+        
+        <simplebutton text="clear constraint">
+          <method name="doActivated">
+            item1.setAttribute('bgcolor', '#ffffff');
+          </method>
+        </simplebutton>
+        
+        <simplebutton text="setup constraint">
+          <method name="doActivated">
+            item1.setAttribute('bgcolor', '$datapath{$foo/color}');
+          </method>
+        </simplebutton>
+        
+        <spacedlayout axis='y'/>
+      </view>
+      
+      <dataset name='foo'>
+        {
+          "color": "#ff99cc",
+          "shift": true,
+          "info": [
+            {
+              "name": "Title A",
+              "bgcolor": "#ff0000",
+              "position":10
+            },{
+              "name": "Title B",
+              "bgcolor": "#00ff00",
+              "position":20
+            },{
+              "name": "Title C",
+              "bgcolor": "#0000ff",
+              "position":30
+            }
+          ]
+        }
+      </dataset>
+      <dataset name='bar'>
+        {
+          "color": "#99ffcc",
+          "shift": false,
+          "info": [
+            {
+              "name": "Title A",
+              "bgcolor": "#ff0000",
+              "position":10,
+              "more":[
+                {"name":"hey"},
+                {"name":"there"}
+              ]
+            },{
+              "name": "Title B",
+              "bgcolor": "#00ff00",
+              "position":20,
+              "more":[
+                {"name":"good"},
+                {"name":"things"}
+              ]
+            },{
+              "name": "Title C",
+              "bgcolor": "#0000ff",
+              "position":30,
+              "more":[
+                {"name":"what"},
+                {"name":"ever"}
+              ]
+            }
+          ]
+        }
+      </dataset>
+    </screen>
+  </screens>
+</composition>
