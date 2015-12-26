@@ -12,6 +12,46 @@
       <view width="100%" height="100%" padding="25">
         <spacedlayout axis="y" spacing="15"></spacedlayout>
 
+        <tree>
+          <handler event="oninit">
+            var a = {
+              onlyina: true,
+              objina: { some:'object' },
+              array: [1,2,3,5],
+              objinboth: { same:'object', ina:'onlyina', changed:'aversion' },
+              inboth:true
+            };
+            var b = {
+              onlyinb: true,
+              objinb: { some:'object' },
+              array: [0,2,3,4,6],
+              objinboth: { same:'object', inb:'onlyinb', changed:'bversion' },
+              inboth:true
+            };
+            var patch = this.diff(a,b);
+            var expected = [
+              {action:'DEL', path:'/onlyina'},
+              {action:'DEL', path:'/objina'},
+              {action:'DEL', path:'/array[3]'},
+              {action:'DEL', path:'/array[0]'},
+              {action:'SET', path:'/array[0]', value:0},
+              {action:'SET', path:'/array[3]', value:4},
+              {action:'SET', path:'/array[4]', value:6},
+              {action:'DEL', path:'/objinboth/ina'},
+              {action:'SET', path:'/objinboth/changed', value:'bversion'},
+              {action:'SET', path:'/objinboth/inb', value:'onlyinb'},
+              {action:'SET', path:'/onlyinb', value:true},
+              {action:'SET', path:'/objinb', value:{ some:'object' }},
+            ];
+            assert.deepEqual(expected, patch);
+
+            var c = JSON.parse(JSON.stringify(a));
+            assert.notDeepEqual(b, c);
+            this.patch(c, patch);
+            assert.deepEqual(b, c);
+          </handler>
+        </tree>
+
         <tree id="q" name="simple" height="200" width="200" border="1" bordercolor="#eee"
           data='[{"label":"first", "items": [1, 2, 3]}]'>
           <handler event="oninit">

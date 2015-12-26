@@ -88,6 +88,117 @@
     }
   </handler>
 
+  <method name="patch" args="obj,pch">
+    if (Array.isArray(pch)) {
+      for (var i=0; i < pch.length; i++) {
+        this.patch(obj, pch[i]);
+      }
+    } else {
+      var o = obj;
+      var path = pch.path.split('/');
+      path.shift();
+
+      var p, index;
+      while (path.length > 0) {
+        if (p) {
+          o = o[p];
+        }
+        if (index) {
+          o = o[index]
+          index = undefined;
+        }
+
+        p = path.shift();
+        if (p.slice(-1) == ']') {
+          var match = /^([^\[]*)\[(\d+)\]$/.exec(p);
+          p = match[1];
+          index = match[2];
+        }
+      }
+
+      if (pch.action == 'DEL') {
+        if (index) {
+          delete o[p].splice(index, 1);
+        } else {
+          delete o[p]
+        }
+      } else if (pch.action == 'SET') {
+        if (index) {
+          o[p].splice(index, 0, pch.value);
+        } else {
+          o[p] = pch.value;
+        }
+      }
+    }
+
+  </method>
+
+  <method name="diff" args="a,b,path">
+    if (!path) {
+      path = '';
+    }
+    var patch = [];
+
+    var atype = typeof(a);
+    var btype = typeof(b);
+
+    if (atype === 'undefined' && btype !== 'undefined') {
+      patch.push({action:'SET', path:path, value:b})
+
+    } else if (atype !== 'undefined' && btype === 'undefined') {
+      patch.push({action:'DEL', path:path})
+    } else if (atype !== btype || Array.isArray(a) != Array.isArray(b)) {
+      patch.push({action:'SET', path:path, value:b})
+
+    } else if ((atype === 'string' || atype === 'boolean' || atype === 'number') && a !== b) {
+      patch.push({action:'SET', path:path, value:b})
+
+
+    } else if (Array.isArray(a)) {
+      var dupa = a.slice();
+      var i, idx = 0;
+
+      for (i = dupa.length - 1; i >= 0; i--) {
+        aval = dupa[i];
+        if (b.indexOf(aval) < 0) {
+          patch.push({action:'DEL', path:path + '[' + i + ']'})
+          dupa.splice(i, 1);
+        }
+      }
+      for (i = 0; i < b.length; i++) {
+        bval = b[i];
+        if (a.indexOf(bval) < 0) {
+          patch.push({action:'SET', path:path + '[' + idx + ']', value:bval})
+        }
+        idx++;
+      }
+
+    } else if (atype == 'object') {
+      var aval, bval;
+
+      for (var akey in a) {
+        if (a.hasOwnProperty(akey)) {
+          aval = a[akey];
+          bval = b[akey];
+          patch = patch.concat(this.diff(aval, bval, path + '/' + akey))
+        }
+      }
+
+      for (var bkey in b) {
+        if (b.hasOwnProperty(bkey)) {
+          aval = a[bkey];
+          bval = b[bkey];
+          if (!aval) {
+            patch.push({action:'SET', path:path + '/' + bkey, value:bval})
+          }
+        }
+      }
+
+
+    }
+
+    return patch;
+  </method>
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="populate">
