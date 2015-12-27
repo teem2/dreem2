@@ -1,0 +1,130 @@
+<!--  Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+ either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
+<composition>
+<screens>
+  <screen type="browser" name="default" title='Smoke Test - Replicator Body Class'>
+    <include href="./includes/boilerplate.dre"></include>
+    
+    <testingtimer>1000</testingtimer>
+    
+    <expectedoutput>idle ran
+idle ran
+idle ran
+idle ran</expectedoutput>
+    
+    <view width="100%" height="100%" clip="true">
+      <view width='auto' height='auto'>
+        <replicator datapath='$bar/info[*]'>
+          <view x='$datapath{/position}' width='auto' height='auto' bgcolor='$datapath{/bgcolor}'>
+            <text name="label" text='$datapath{/name}'/>
+            <view name="inner" width='auto' height='auto'>
+              <replicator datapath='/more[*]'>
+                <text text='$datapath{/name}'/>
+                
+                <handler event="onreplicated" args="replicated">
+                  if (this.onreplicated) console.log('Too many onreplicated events fired in nested replicator.');
+                  
+                  this.onreplicated = true;
+                  assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
+                  assert.equal(this.parent.subviews.length, 2, 'Replication should have increased the number of subviews');
+                </handler>
+                <handler event="oninit">
+                  var self = this;
+                  dr.idle.callOnIdle(function() {
+                    console.log('idle ran');
+                    assert.equal(true, self.onreplicated, 'There should be an onreplicated event')
+                  });
+                </handler>
+              </replicator>
+              <spacedlayout/>
+            </view>
+            <spacedlayout axis='y'/>
+          </view>
+          
+          <handler event="onreplicated" args="replicated">
+            if (this.onreplicated) console.log('Too many onreplicated events fired.');
+            
+            this.onreplicated = true;
+            assert.equal(this.children.length, this.data.length, 'There number of children should match the number of items in the data array');
+            assert.equal(this.parent.subviews.length, 3, 'Replication should have increased the number of subviews');
+          </handler>
+          <handler event="oninit">
+            var self = this;
+            dr.idle.callOnIdle(function() {
+              console.log('idle ran');
+              assert.equal(true, self.onreplicated, 'There should be an onreplicated event')
+            });
+          </handler>
+        </replicator>
+        <spacedlayout axis='y'/>
+        
+        <handler event="oninit">
+          var svs = this.getSubviews();
+          assert.equal(svs.length, 3);
+          
+          var sv1 = svs[0],
+            sv2 = svs[1],
+            sv3 = svs[2];
+          
+          assert.equal(sv1.label.text, 'Title A');
+          assert.equal(sv2.label.text, 'Title B');
+          assert.equal(sv3.label.text, 'Title C');
+          
+          assert.equal(sv1.x, 10);
+          assert.equal(sv2.x, 20);
+          assert.equal(sv3.x, 30);
+          
+          assert.equal(sv1.bgcolor, '#ff0000');
+          assert.equal(sv2.bgcolor, '#00ff00');
+          assert.equal(sv3.bgcolor, '#0000ff');
+          
+          assert.equal(sv1.inner.getSubviews()[0].text, "hey");
+          assert.equal(sv1.inner.getSubviews()[1].text, "there");
+          
+          assert.equal(sv2.inner.getSubviews()[0].text, "good");
+          assert.equal(sv2.inner.getSubviews()[1].text, "things");
+          
+          assert.equal(sv3.inner.getSubviews()[0].text, "what");
+          assert.equal(sv3.inner.getSubviews()[1].text, "ever");
+        </handler>
+      </view>
+      
+      <dataset name='bar'>
+        {
+          "color": "#99ffcc",
+          "spacing":8,
+          "info": [
+            {
+              "name": "Title A",
+              "bgcolor": "#ff0000",
+              "position":10,
+              "more":[
+                {"name":"hey"},
+                {"name":"there"}
+              ]
+            },{
+              "name": "Title B",
+              "bgcolor": "#00ff00",
+              "position":20,
+              "more":[
+                {"name":"good"},
+                {"name":"things"}
+              ]
+            },{
+              "name": "Title C",
+              "bgcolor": "#0000ff",
+              "position":30,
+              "more":[
+                {"name":"what"},
+                {"name":"ever"}
+              ]
+            }
+          ]
+        }
+      </dataset>
+    </view>
+  </screen>
+</screens>
+</composition>

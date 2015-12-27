@@ -199,11 +199,10 @@
               # execute selectors relative to parent data
               rundata = parentdata.data
             else unless @dataset
-              console.warn('No parent data found for', @path, @)
-              
               # Retry finding the dataset just in case
               @_findDataset()
-              rundata = @data
+              console.warn('No parent data found for', @path, @) unless @dataset 
+              return
 
           if rundata
             # console.log('executing selector', @path, rundata, @_parsedpath)
