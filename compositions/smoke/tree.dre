@@ -14,6 +14,25 @@
 
         <tree name="diff_patch_test">
           <handler event="oninit">
+
+            assert.isTrue(this.deepCompare('a', 'a'))
+            assert.isTrue(this.deepCompare(true, true))
+            assert.isTrue(this.deepCompare(false, false))
+            assert.isTrue(this.deepCompare(0, 0))
+            assert.isTrue(this.deepCompare(1, 1))
+
+            assert.isTrue(this.deepCompare([1,2,3,[4,5]], [1,2,3,[4,5]]))
+            assert.isTrue(this.deepCompare({a:1,b:{c:2,d:3}},{a:1,b:{c:2,d:3}}), 'if?')
+
+            assert.isFalse(this.deepCompare('a', 'b'))
+            assert.isFalse(this.deepCompare(true, false))
+            assert.isFalse(this.deepCompare(1, 2))
+            assert.isFalse(this.deepCompare(1, '1'))
+
+            assert.isFalse(this.deepCompare([1,2,3], [1,3,2]))
+            assert.isFalse(this.deepCompare({a:1,b:{c:2,d:3}},{a:1,b:{c:2,d:5}}))
+
+
             var a = {
               onlyina: true,
               objina: { some:'object' },
@@ -67,7 +86,7 @@
           </handler>
         </tree>
 
-        <tree name="simple" height="200" width="200" data='{ "label":"default", nodes:[{ "label":"child1", nodes:[{ "label":"child1child1", nodes:[] }] }, { "label":"child2", nodes:[] }] }'>
+        <tree id='tre' name="simple" height="200" width="200" data='{ "label":"default", nodes:[{ "label":"child1", nodes:[{ "label":"child1child1", nodes:[] }] }, { "label":"child2", nodes:[] }] }'>
         </tree>
 
         <tree height="200" width="200" border="1" bordercolor="#eee" multipleselection="false" branchselection="true"

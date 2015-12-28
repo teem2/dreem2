@@ -49,7 +49,7 @@ either express or implied. See the License for the specific language governing p
     
     // Determine if this is a tree drop or a canvas drop
     var isTreeDrop = droptarget.isA(dr.treeitem);
-    if (isTreeDrop) droptarget = droptarget.treecontainer.data.ref;
+    if (isTreeDrop) droptarget = droptarget.treecontainer.data.ref; //xxxx wrong now
     
     // Determine if this is a drop on the "root" container.
     var isRootDrop = droptarget.draggroups.rootonly;

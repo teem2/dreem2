@@ -31,6 +31,9 @@
     if (typeof(d) === 'string' && ((d[0] == '[' && d[d.length - 1] == ']') || (d[0] == '{' && d[d.length - 1] == '}'))) {
       try {
         d = JSON.parse(d);
+        if (Array.isArray(d)) {
+          d = {nodes:d}
+        }
       } catch (e) {
         console.log('String looked like JSON but had error parsing', e, d);
         return;
@@ -38,7 +41,9 @@
     }
 
     if (d) {
-      var dff = this.diff(this.model, d)
+      var dff = this.diff(this.model, d);
+      console.log('patch is', dff)
+
       this.patch(dff);
     }
     this.layoutTree();
@@ -47,8 +52,8 @@
 
   <attribute name="indentwidth" type="number" value="20"/>
 
-  <attribute name="nodes" type="expression" value="[]"></attribute>
-  <attribute name="selectednodes" type="expression" value="[]"></attribute>
+  <attribute name="nodes" type="expression" value="[]"/>
+  <attribute name="selectednodes" type="expression" value="[]"/>
   <attribute name="multipleselection" type="boolean" value="false"/>
   <attribute name="branchselection" type="boolean" value="false"/>
 
@@ -108,6 +113,87 @@
 
   </method>
 
+  <method name="deepCompare" args="a,b">
+    var match = true;
+    var atype = typeof(a);
+    var btype = typeof(b);
+
+    if (atype !== btype) {
+      match = false;
+    } else if (['number', 'string', 'boolean', 'undefined'].indexOf(atype) > -1) {
+      if (a !== b) {
+        match = false;
+      }
+    } else if ((Array.isArray(a) && !Array.isArray(b)) || (!Array.isArray(a) && Array.isArray(b))) {
+      console.log('c')
+      match = false;
+    } else if (Array.isArray(a)) {
+
+      if (a.length === b.length) {
+        for (var i=0;i < a.length; i++) {
+          if (!this.deepCompare(a[i], b[i])) {
+            match = false;
+            break;
+          }
+        }
+      } else {
+        match = false;
+      }
+    } else {
+
+      var aval, bval, prop;
+      for (prop in a) {
+        if (!prop.startsWith('__')) {
+          if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
+            aval = a[prop];
+            bval = b[prop];
+            if (!this.deepCompare(aval, bval)) {
+              match = false;
+              break;
+            }
+          } else {
+            match = false;
+            break;
+          }
+        }
+      }
+      for (prop in b) {
+        if (!prop.startsWith('__')) {
+          if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
+            aval = a[prop];
+            bval = b[prop];
+            if (!this.deepCompare(aval, bval)) {
+              match = false;
+              break;
+            }
+          } else {
+            match = false;
+            break;
+          }
+        }
+      }
+
+    }
+    return match;
+
+  </method>
+
+  <method name="findInArray" args="a, obj">
+    var t = typeof(obj);
+    if (t === 'number' || t === 'string' || t === 'boolean' || t === 'undefined') {
+      return a.indexOf(obj) > -1;
+    } else {
+      for (var i = 0; i < a.length; i++) {
+        if (this.deepCompare(obj, a[i])) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+
+  </method>
+
   <method name="diff" args="a,b,path">
     if (!path) {
       path = '';
@@ -136,14 +222,14 @@
 
       for (i = dupa.length - 1; i >= 0; i--) {
         aval = dupa[i];
-        if (b.indexOf(aval) < 0) {
+        if (!this.findInArray(b, aval)) {
           patch.push({action:'DEL', path:path + '[' + i + ']'})
           dupa.splice(i, 1);
         }
       }
       for (i = 0; i < b.length; i++) {
         bval = b[i];
-        if (a.indexOf(bval) < 0) {
+        if (!this.findInArray(a, bval)) {
           patch.push({action:'SET', path:path + '[' + idx + ']', value:bval})
         }
         idx++;
@@ -208,7 +294,7 @@
           var child = objnodes[i];
           var created = this.layoutNode(child, depth + 1, node)
           siblings.push(created);
-          created.__treesibs = siblings;
+          created.__treesiblings = siblings;
         }
       }
     }
@@ -251,9 +337,9 @@
       var treenode = node;
       while (treenode) {
         if (this.multipleselection && !state) {
-          if (treenode.__treesibs) {
-            for (var i = 0; i < treenode.__treesibs.length;i++) {
-              var sibling = treenode.__treesibs[i];
+          if (treenode.__treesiblingss) {
+            for (var i = 0; i < treenode.__treesiblings.length;i++) {
+              var sibling = treenode.__treesiblings[i];
               if (sibling.__treemodel.__selected) {
                 treenode = undefined;
                 break;
