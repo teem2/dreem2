@@ -19,79 +19,45 @@
    *      data='[{"label":"first", "items": [1, 2, 3]}]'></tree>
    *
    */-->
-<class name="tree" requires="treeitem"
-  width="${Math.max(this.maxwidth + 12, this.parent.innerwidth)}"
->
+<class name="tree" requires="treeitem" extends="view" height="auto" width="auto">
+
   <!--// Attributes /////////////////////////////////////////////////////////-->
-  <attribute name="strict" type="boolean" value="true"/>
+  <attribute name="model" type="expression" value="{}"/>
+  <attribute name="data" type="expression" value="undefined"/>
+  <handler event="ondata">
 
-  <attribute name="data" type="object" value=""/>
+    var d = this.data;
 
-  <attribute name="multipleselection" type="boolean" value="true"/>
-  <attribute name="branchselection" type="boolean" value="false"/>
-  <attribute name="selected" type="boolean" value="false"/>
-  <attribute name="collapsed" type="boolean" value="false"/>
-
-  <attribute name="indentwidth" type="number" value="19"/>
-  <attribute name="depth" type="number" value="0"/>
-  
-  <attribute name="selectcolor" type="color" value="#999"/>
-  <attribute name="hovercolor" type="color" value="#eee"/>
-  <attribute name="activecolor" type="color" value="#ccc"/>
-  <attribute name="selecttextcolor" type="color" value="white"/>
-  <attribute name="textcolor" type="color" value="#333"/>
-  
-  <attribute name="maxwidth" type="number" value="0"/>
-
-
-  <!--// Life Cycle /////////////////////////////////////////////////////////-->
-  <method name="initNode" args="parent, attrs">
-    if (parent.root) {
-      this.root = parent.root;
-      this.isroot = false;
-      attrs.depth = parent.depth + 1;
-    } else {
-      this.root = this;
-      this.isroot = true;
-      attrs.depth = 0;
+    if (typeof(d) === 'string' && ((d[0] == '[' && d[d.length - 1] == ']') || (d[0] == '{' && d[d.length - 1] == '}'))) {
+      try {
+        d = JSON.parse(d);
+      } catch (e) {
+        console.log('String looked like JSON but had error parsing', e, d);
+        return;
+      }
     }
-    
-    this.super();
-    
-    this.createChild({
-      class:this.getTreeItemClassname(), 
-      name:'item',
-      treecontainer:this
-    });
-  </method>
 
+    if (d) {
+      var dff = this.diff(this.model, d)
+      this.patch(dff);
+    }
+    this.layoutTree();
 
-  <!--// Handlers ///////////////////////////////////////////////////////////-->
-  <handler event="ondata" method="populate"/>
-
-  <handler event="onselected">
-    var item = this.item,
-      selected = this.selected;
-    item.setAttribute('bgcolor', selected ? this.root.selectcolor : 'transparent');
-    item.setAttribute('color', selected ? this.root.selecttextcolor : this.textcolor);
-    
-    if (this.root.branchselection && !this.isroot) this.parent.setAttribute('selected', selected);
   </handler>
 
-  <handler event="oncollapsed">
-    var children = this.nodes.children;
-    if (children) {
-      var i = 0,
-        len = children.length,
-        newCollapsedValue = !this.collapsed;
-      for (; len > i; i++) children[i].setAttribute('visible', newCollapsedValue)
-    }
-  </handler>
+  <attribute name="indentwidth" type="number" value="20"/>
 
-  <method name="patch" args="obj,pch">
+  <attribute name="nodes" type="expression" value="[]"></attribute>
+
+  <attribute name="treeitemclass" type="string" value="treeitem"/>
+
+  <method name="patch" args="pch, obj">
+    if (!obj) {
+      obj = this.model;
+    }
     if (Array.isArray(pch)) {
       for (var i=0; i < pch.length; i++) {
-        this.patch(obj, pch[i]);
+        this.patch(pch[i], obj);
       }
     } else {
       var o = obj;
@@ -147,14 +113,15 @@
 
     } else if (atype !== 'undefined' && btype === 'undefined') {
       patch.push({action:'DEL', path:path})
-    } else if (atype !== btype || Array.isArray(a) != Array.isArray(b)) {
+
+    } else if (atype !== btype || (Array.isArray(a) && !Array.isArray(b)) || (!Array.isArray(a) && Array.isArray(b))) {
       patch.push({action:'SET', path:path, value:b})
 
     } else if ((atype === 'string' || atype === 'boolean' || atype === 'number') && a !== b) {
       patch.push({action:'SET', path:path, value:b})
 
-
     } else if (Array.isArray(a)) {
+
       var dupa = a.slice();
       var i, idx = 0;
 
@@ -174,6 +141,7 @@
       }
 
     } else if (atype == 'object') {
+
       var aval, bval;
 
       for (var akey in a) {
@@ -193,137 +161,68 @@
           }
         }
       }
-
-
     }
 
     return patch;
   </method>
 
-  <!--// Methods ////////////////////////////////////////////////////////////-->
-  <method name="populate">
-    var d = this.data;
-    if (typeof(d) === 'undefined') return;
-    
-    if (typeof(d) === 'string' && ((d[0] == '[' && d[d.length - 1] == ']') || (d[0] == '{' && d[d.length - 1] == '}'))) {
-      try {
-        d = this.data = JSON.parse(d);
-      } catch (e) {
-        console.log('String looked like JSON but had error parsing', e, d);
-      }
+  <method name="layoutNode" args="obj, depth, parent">
+    if (!depth) {
+      depth = 0;
     }
-    
-    if (typeof(d) === 'number') d = d.toString();
-    
-    var item = this.item,
-      label = item.label,
-      image = item.image;
-    if (typeof(d) === 'string') {
-      label.setAttribute('text', d);
-    } else if (!Array.isArray(d)) {
-      if (d.image) {
-        image.setAttribute('src', d.image);
-        image.setAttribute('visible', true);
-      }
-      
-      if (d.title) {
-        label.setAttribute('text', d.title)
-      } else if (d.label) {
-        label.setAttribute('text', d.label)
-      } else if (d.text) {
-        label.setAttribute('text', d.text)
-      } else if (d.name) {
-        label.setAttribute('text', d.name)
-      } else if (d.tag) {
-        label.setAttribute('text', d.tag)
-      } else {
-        label.setAttribute('visible', false);
-      }
-      
-      if (Array.isArray(d.items)) {
-        d = d.items;
-      } else if (Array.isArray(d.nodes)) {
-        d = d.nodes;
-      } else if (Array.isArray(d.children)) {
-        d = d.children;
-      } else if (Array.isArray(d.child)) {
-        d = d.child;
-      } else if (!this.strict) { //be fancy
-        var found = [],
-          props = Object.getOwnPropertyNames(d),
-          i = 0, len = props.length, name, value;
-        for (; len > i; i++) {
-          name = props[i];
-          if (name == 'title' || name == 'text' || name == 'label' || name == 'name' || name == 'tag') continue;
-          value = d[name];
-          if (!Array.isArray(value)) value = [value];
-          found.push({name:name, items:value});
+
+    var data = obj.data || obj.node || obj;
+
+    var node = this.createChild({
+      class:this.treeitemclass,
+      x:depth * this.indentwidth,
+      height:25,
+      fontsize:this.fontsize,
+      tree:this,
+      collapsed:!!(obj.__collapsed),
+      data:data
+    });
+
+    node.__treeparent = parent;
+    node.__treemodel = obj;
+    node.__treedepth = depth;
+
+    this.nodes.push(node);
+
+    if (!obj.__collapsed) {
+      var objnodes = obj.nodes || obj.items || obj.children || obj.child;
+
+      if (objnodes) {
+        for (var i=0; i < objnodes.length;i++) {
+          var child = objnodes[i];
+          this.layoutNode(child, depth + 1, node)
         }
-        if (found.length) d = found;
       }
     }
-    
-    if (d.title) {
-      label.setAttribute('text', d.title)
-    } else if (d.label) {
-      label.setAttribute('text', d.label)
-    } else if (d.text) {
-      label.setAttribute('text', d.text)
-    } else if (d.name) {
-      label.setAttribute('text', d.name)
-    } else if (d.tag) {
-      label.setAttribute('text', d.tag)
+
+  </method>
+
+  <method name="layoutTree">
+    for (var i = 0;i< this.nodes.length;i++) {
+      var child = this.nodes[i];
+      child.destroy();
     }
-    
-    if (Array.isArray(d)) {
-      this.nodes.setAttribute('classname', this.getReplicatorClassname());
-      this.nodes.setAttribute('data', d);
-      item.toggle.setAttribute('visible', !this.isroot && d.length > 0);
+    this.setAttribute('nodes', []);
+
+    this.layoutNode(this.model)
+  </method>
+
+  <method name="setCollapsedState" args="node,state">
+    if (node.__treemodel) {
+      node.__treemodel.__collapsed = state;
     }
-    
-    var mw = label.x + label.width;
-    if (mw > this.root.maxwidth) this.root.setAttribute('maxwidth', mw);
-  </method>
+    this.layoutTree();
 
-  <method name="clearSelection">
-    this.setAttribute('selected', false);
-    var svs = this.getSubviews(), i = 0, len = svs.length, sv;
-    for (; len > i; i++) {
-      sv = svs[i];
-      if (sv.clearSelection) sv.clearSelection();
-    }
   </method>
-
-  <method name="selectHandler" args="selecting, data">
-    // Bubble up to the selectHandler implementation closest to the root of the
-    // tree. Typically you will override this method in the root node of the
-    // tree.
-    if (this.parent.selectHandler) this.parent.selectHandler(selecting, data);
-  </method>
-
-  <method name="triggerSelection" args="sel">
-    if (!this.root.multipleselection) this.root.clearSelection();
-    
-    this.setAttribute('selected', sel);
-    this.selectHandler(this.selected, this.data);
-  </method>
-
-  <method name="getReplicatorClassname">
-    return 'tree';
-  </method>
-
-  <method name="getTreeItemClassname">
-    return 'treeitem';
-  </method>
-
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <replicator name="nodes" classname="view">
-    <handler event="onreplicated" args="r">
-      var children = r.children, len = children.length, i = 0;
-      for (; len > i; i++) children[i].setAttribute('name', 'treenode_' + i);
-    </handler>
-  </replicator>
-
   <spacedlayout axis="y" updateparent="true"/>
+
+
+
 </class>

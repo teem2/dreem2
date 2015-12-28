@@ -8,64 +8,68 @@
    * A visual component used by a tree to render the look and feel of a
    * single node in the tree.
    */-->
-<class name="treeitem" with="button"
-  width="${this.treecontainer.root.width}"
-  focusembellishment="false" focusable="false"
-  disabled="${this.treecontainer.root.disabled}"
->
+<class name="treeitem" with="button" focusembellishment="false" focusable="false" extends="view" width="100%" border="1" bordercolor="blue">
+
   <!--// Attributes /////////////////////////////////////////////////////////-->
-  <attribute name="treecontainer" type="object"/>
+  <attribute name="tree" type="object" value=""/>
+  <attribute name="collapsed" type="boolean" value="false"/>
 
-
-  <!--// Life Cycle /////////////////////////////////////////////////////////-->
-  <method name="initNode" args="parent, attrs">
+  <method name="initNode" args="parent,attrs">
     this.super();
-    
-    this.setAttribute('height', this.treecontainer.isroot ? 0 : 25);
-  </method>
 
+    this.setAttribute('tree', attrs.tree)
+    this.setAttribute('collapsed', attrs.collapsed)
 
-  <!--// Methods ////////////////////////////////////////////////////////////-->
-  <method name="doActivated">
-    var tc = this.treecontainer;
-    tc.triggerSelection(!tc.selected);
-  </method>
-  
-  <method name="drawHoverState">
-    var tc = this.treecontainer;
-    this._draw(tc.textcolor, tc.root.hovercolor);
-  </method>
+    var d = attrs.data;
+    if (d) {
+      var label = d.label || d.title || d.text || d.name || d.tag;
+      var image = d.image || d.bitmap || d.src;
 
-  <method name="drawActiveState">
-    var tc = this.treecontainer;
-    this._draw(tc.textcolor, tc.root.activecolor);
-  </method>
-
-  <method name="drawReadyState">
-    var tc = this.treecontainer;
-    if (tc.selected) {
-      this._draw(tc.root.selecttextcolor, tc.root.selectcolor);
-    } else {
-      this._draw(tc.textcolor, 'transparent');
+      this.label.setAttribute('text', label)
+      this.image.setAttribute('src', image)
+      this.image.setAttribute('visible', !!(image))
     }
   </method>
 
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="doActivated">
+    //var tc = this.treecontainer;
+    //tc.triggerSelection(!tc.selected);
+  </method>
+  
+  <method name="drawHoverState">
+    //var tc = this.treecontainer;
+    //this._draw(tc.textcolor, tc.root.hovercolor);
+  </method>
+
+  <method name="drawActiveState">
+    //var tc = this.treecontainer;
+    //this._draw(tc.textcolor, tc.root.activecolor);
+  </method>
+
+  <method name="drawReadyState">
+    //var tc = this.treecontainer;
+    //if (tc.selected) {
+    //  this._draw(tc.root.selecttextcolor, tc.root.selectcolor);
+    //} else {
+    //  this._draw(tc.textcolor, 'transparent');
+    //}
+  </method>
+
   <method name="_draw" args="color, bgcolor">
-    this.setAttribute('color', color);
-    this.setAttribute('bgcolor', bgcolor);
+    //this.setAttribute('color', color);
+    //this.setAttribute('bgcolor', bgcolor);
   </method>
 
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <text name="toggle" with="button"
-    visible="false" focusable="false" focusembellishment="false"
-    x="${this.parent.treecontainer.indentwidth * (this.parent.treecontainer.depth - 1) + 5}" y="6"
-    text="${this.parent.treecontainer.collapsed ? '▶' : '▼'}" fontsize="12"
-    disabled="${this.parent.disabled}"
-  >
+
+  <spacedlayout axis="x" spacing="5"></spacedlayout>
+
+  <text name="toggle" with="button" visible="true" focusable="false" focusembellishment="false" text="${this.parent.collapsed ? '▶' : '▼'}" fontsize="12">
+
     <method name="doActivated">
-      var tc = this.parent.treecontainer;
-      tc.setAttribute('collapsed', !tc.collapsed);
+      this.parent.tree.setCollapsedState(this.parent, !this.parent.collapsed);
     </method>
     
     <method name="drawHoverState">
@@ -81,7 +85,7 @@
     </method>
   </text>
 
-  <bitmap name="image" visible="false" x="${this.parent.toggle.x + 17}" y="5" width="15" height="15"/>
+  <bitmap name="image" visible="false" width="15" height="15"/>
 
-  <text name="label" x="${this.parent.image.x + (this.parent.image.visible ? 21 : 0)}" y="5" fontsize="14"/>
+  <text name="label" fontsize="14"/>
 </class>

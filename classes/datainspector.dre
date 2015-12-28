@@ -179,8 +179,6 @@
   </method>
 
   <method name="layoutStructure" args="struct, depth, parent">
-    var self = this;
-
     var rent = this.createChild({
       class:'inspectornode',
       x:depth * 20,

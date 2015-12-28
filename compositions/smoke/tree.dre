@@ -12,7 +12,10 @@
       <view width="100%" height="100%" padding="25">
         <spacedlayout axis="y" spacing="15"></spacedlayout>
 
-        <tree>
+        <tree name="simple" height="200" width="200" data='{ "label":"root", nodes:[{ "label":"child1", nodes:[{ "label":"child1child1", nodes:[] }] }, { "label":"child2", nodes:[] }] }'>
+        </tree>
+
+        <tree name="diff_patch_test">
           <handler event="oninit">
             var a = {
               onlyina: true,
@@ -47,35 +50,42 @@
 
             var c = JSON.parse(JSON.stringify(a));
             assert.notDeepEqual(b, c);
-            this.patch(c, patch);
+            this.patch(patch, c);
             assert.deepEqual(b, c);
+
+            var blankpatch = this.diff({},b);
+            var blankexpected = [
+              {action:'SET', path:'/onlyinb', value:true},
+              {action:'SET', path:'/objinb', value:{ some:'object' }},
+              {action:'SET', path:'/array', value:[0,2,3,4,6]},
+              {action:'SET', path:'/objinboth', value:{ same:'object', inb:'onlyinb', changed:'bversion' }},
+              {action:'SET', path:'/inboth', value:true}
+            ];
+            assert.deepEqual(blankexpected, blankpatch);
+
+            var d = {};
+            assert.notDeepEqual(b, d);
+            this.patch(blankpatch, d);
+            assert.deepEqual(b, d);
           </handler>
         </tree>
 
-        <tree id="q" name="simple" height="200" width="200" border="1" bordercolor="#eee"
-          data='[{"label":"first", "items": [1, 2, 3]}]'>
-          <handler event="oninit">
-            assert.deepEqual([{label: "first", items:[1, 2, 3]}], this.data);
-            assert.equal('first', this.treenode_0.item.label.text);
-          </handler>
-        </tree>
+        <!--<tree name="deeper" height="500" width="200" border="1" bordercolor="#eee"-->
+          <!--data='[{"label":"first", "items":[{"name":"first inner", "items":["a", "b", "c"]}, {"name":"second inner", "items":["a2", "b2", {"name":"much in", "items":[1, 2, 3, 4]}]}]}, "second", { "name": "third", "nodes": [4, 5, 6] }]'>-->
+          <!--<handler event="oninit" args="p">-->
+            <!--assert.deepEqual([{"label":"first", "items":[{"name":"first inner", "items":["a", "b", "c"]}, {"name":"second inner", "items":["a2", "b2", {"name":"much in", "items":[1, 2, 3, 4]}]}]}, "second", { "name": "third", "nodes": [4, 5, 6] }], this.data)-->
+            <!--assert.equal('first', this.treenode_0.item.label.text);-->
+            <!--assert.equal('second inner', this.treenode_0.treenode_1.item.label.text);-->
+            <!--assert.equal('much in', this.treenode_0.treenode_1.treenode_2.item.label.text);-->
+            <!--assert.equal('4', this.treenode_0.treenode_1.treenode_2.treenode_3.item.label.text);-->
+          <!--</handler>-->
+        <!--</tree>-->
 
-        <tree name="deeper" height="500" width="200" border="1" bordercolor="#eee"
-          data='[{"label":"first", "items":[{"name":"first inner", "items":["a", "b", "c"]}, {"name":"second inner", "items":["a2", "b2", {"name":"much in", "items":[1, 2, 3, 4]}]}]}, "second", { "name": "third", "nodes": [4, 5, 6] }]'>
-          <handler event="oninit" args="p">
-            assert.deepEqual([{"label":"first", "items":[{"name":"first inner", "items":["a", "b", "c"]}, {"name":"second inner", "items":["a2", "b2", {"name":"much in", "items":[1, 2, 3, 4]}]}]}, "second", { "name": "third", "nodes": [4, 5, 6] }], this.data)
-            assert.equal('first', this.treenode_0.item.label.text);
-            assert.equal('second inner', this.treenode_0.treenode_1.item.label.text);
-            assert.equal('much in', this.treenode_0.treenode_1.treenode_2.item.label.text);
-            assert.equal('4', this.treenode_0.treenode_1.treenode_2.treenode_3.item.label.text);
-          </handler>
-        </tree>
-
-        <tree id="a" name="selection" height="200" width="200" border="1" bordercolor="#eee" multipleselection="false" branchselection="true"
-          data='[{"label":"first", "items": [1, 2, 3]}, {"label":"second", "items": ["a", "b", "c"]}]'>
-          <handler event="oninit">
-          </handler>
-        </tree>
+        <!--<tree id="a" name="selection" height="200" width="200" border="1" bordercolor="#eee" multipleselection="false" branchselection="true"-->
+          <!--data='[{"label":"first", "items": [1, 2, 3]}, {"label":"second", "items": ["a", "b", "c"]}]'>-->
+          <!--<handler event="oninit">-->
+          <!--</handler>-->
+        <!--</tree>-->
 
         <!--<tree name="advanced" height="500" width="200" border="1" bordercolor="#eee"-->
           <!--data='[{"label":"first", "items":[{"name":"a", "items":["1", "2", "3"]}, "b", {"c":["d", "e"], "f":"g"}, {"h":"i"}]}, "second", {"title":"third"}, "3.5th", ["fourth", "fifth", ["sixth", "seventh"]]]'>-->
