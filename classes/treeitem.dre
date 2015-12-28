@@ -8,17 +8,21 @@
    * A visual component used by a tree to render the look and feel of a
    * single node in the tree.
    */-->
-<class name="treeitem" with="button" focusembellishment="false" focusable="false" extends="view" width="100%" border="1" bordercolor="blue">
+<class name="treeitem" with="button" focusembellishment="false" focusable="false" extends="view" width="100%">
 
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="tree" type="object" value=""/>
   <attribute name="collapsed" type="boolean" value="false"/>
+  <attribute name="selected" type="boolean" value="false"/>
+  <attribute name="data" type="object" value=""/>
 
   <method name="initNode" args="parent,attrs">
     this.super();
 
     this.setAttribute('tree', attrs.tree)
+    this.setAttribute('data', attrs.data)
     this.setAttribute('collapsed', attrs.collapsed)
+    this.setAttribute('selected', attrs.selected)
 
     var d = attrs.data;
     if (d) {
@@ -33,32 +37,31 @@
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="doActivated">
-    //var tc = this.treecontainer;
-    //tc.triggerSelection(!tc.selected);
+    this.tree.setSelectionState(this, !this.selected);
   </method>
   
   <method name="drawHoverState">
-    //var tc = this.treecontainer;
-    //this._draw(tc.textcolor, tc.root.hovercolor);
+    var tc = this.tree;
+    this._draw(tc.textcolor, tc.hovercolor);
   </method>
 
   <method name="drawActiveState">
-    //var tc = this.treecontainer;
-    //this._draw(tc.textcolor, tc.root.activecolor);
+    var tc = this.tree;
+    this._draw(tc.textcolor, tc.activecolor);
   </method>
 
   <method name="drawReadyState">
-    //var tc = this.treecontainer;
-    //if (tc.selected) {
-    //  this._draw(tc.root.selecttextcolor, tc.root.selectcolor);
-    //} else {
-    //  this._draw(tc.textcolor, 'transparent');
-    //}
+    var tc = this.tree;
+    if (this.selected) {
+      this._draw(tc.selecttextcolor, tc.selectcolor);
+    } else {
+      this._draw(tc.textcolor, 'transparent');
+    }
   </method>
 
   <method name="_draw" args="color, bgcolor">
-    //this.setAttribute('color', color);
-    //this.setAttribute('bgcolor', bgcolor);
+    this.setAttribute('color', color);
+    this.setAttribute('bgcolor', bgcolor);
   </method>
 
 

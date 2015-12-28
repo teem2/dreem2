@@ -48,6 +48,15 @@
   <attribute name="indentwidth" type="number" value="20"/>
 
   <attribute name="nodes" type="expression" value="[]"></attribute>
+  <attribute name="selectednodes" type="expression" value="[]"></attribute>
+  <attribute name="multipleselection" type="boolean" value="false"/>
+  <attribute name="branchselection" type="boolean" value="false"/>
+
+  <attribute name="selectcolor" type="color" value="#999"/>
+  <attribute name="hovercolor" type="color" value="#eee"/>
+  <attribute name="activecolor" type="color" value="#ccc"/>
+  <attribute name="selecttextcolor" type="color" value="white"/>
+  <attribute name="textcolor" type="color" value="#333"/>
 
   <attribute name="treeitemclass" type="string" value="treeitem"/>
 
@@ -180,6 +189,7 @@
       fontsize:this.fontsize,
       tree:this,
       collapsed:!!(obj.__collapsed),
+      selected:!!(obj.__selected),
       data:data
     });
 
@@ -193,12 +203,17 @@
       var objnodes = obj.nodes || obj.items || obj.children || obj.child;
 
       if (objnodes) {
+        var siblings = [];
         for (var i=0; i < objnodes.length;i++) {
           var child = objnodes[i];
-          this.layoutNode(child, depth + 1, node)
+          var created = this.layoutNode(child, depth + 1, node)
+          siblings.push(created);
+          created.__treesibs = siblings;
         }
       }
     }
+
+    return node;
 
   </method>
 
@@ -217,12 +232,70 @@
       node.__treemodel.__collapsed = state;
     }
     this.layoutTree();
+  </method>
 
+  <method name="setSelectionState" args="node,state">
+    if (!this.multipleselection) {
+      this.clearSelection();
+    }
+
+    if (node.__treemodel) {
+      node.__treemodel.__selected = state;
+      if (state) {
+        this.selectednodes.push(node.__treemodel)
+      } else if (this.selectednodes.indexOf(node.__treemodel) > -1) {
+        this.selectednodes.splice(this.selectednodes.indexOf(node.__treemodel),1);
+      }
+    }
+    if (this.branchselection) {
+      var treenode = node;
+      while (treenode) {
+        if (this.multipleselection && !state) {
+          if (treenode.__treesibs) {
+            for (var i = 0; i < treenode.__treesibs.length;i++) {
+              var sibling = treenode.__treesibs[i];
+              if (sibling.__treemodel.__selected) {
+                treenode = undefined;
+                break;
+              }
+            }
+
+          } else {
+            treenode.__treemodel.__selected = state;
+            if (state) {
+              this.selectednodes.push(treenode.__treemodel)
+            } else if (this.selectednodes.indexOf(treenode.__treemodel) > -1) {
+              this.selectednodes.splice(this.selectednodes.indexOf(treenode.__treemodel),1);
+            }
+
+          }
+
+        } else {
+          treenode.__treemodel.__selected = state;
+          if (state) {
+            this.selectednodes.push(treenode.__treemodel)
+          } else if (this.selectednodes.indexOf(treenode.__treemodel) > -1) {
+            this.selectednodes.splice(this.selectednodes.indexOf(treenode.__treemodel),1);
+          }
+        }
+
+        if (treenode) {
+          treenode = treenode.__treeparent
+        }
+      }
+    }
+    this.layoutTree();
+  </method>
+
+  <method name="clearSelection">
+    for (var i = 0; i < this.selectednodes.length; i++) {
+      var selected = this.selectednodes[i];
+      selected.__selected = false;
+    }
+    this.setAttribute('selectednodes', []);
   </method>
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
   <spacedlayout axis="y" updateparent="true"/>
-
-
 
 </class>
