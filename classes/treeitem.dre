@@ -16,6 +16,7 @@
   <attribute name="selected" type="boolean" value="false"/>
   <attribute name="data" type="object" value=""/>
   <attribute name="isleaf" type="boolean" value="false"/>
+  <attribute name="spacing" type="number" value="5"/>
 
   <handler event="onselected" method="handleSelection"/>
   <method name="handleSelection" args="selected"/>
@@ -71,12 +72,16 @@
     this.setAttribute('bgcolor', bgcolor);
   </method>
 
-
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
 
   <spacedlayout axis="x" spacing="5" updateparent="true"></spacedlayout>
 
-  <text name="toggle" with="button" visible="${!this.parent.isleaf}" focusable="false" focusembellishment="false" text="${this.parent.collapsed ? '▶' : '▼'}" fontsize="12" y="${this.parent.height / 2 - this.height / 2}">
+  <text name="toggle" with="button" visible="${!this.parent.isleaf}" focusable="false" focusembellishment="false"
+    width="15" height="15"
+    text="${this.parent.collapsed ? '▶' : '▼'}"
+    fontsize="13"
+    y="${this.parent.height / 2 - this.height / 2}"
+  >
 
     <method name="doActivated">
       this.parent.tree.setCollapsedState(this.parent, !this.parent.collapsed);
@@ -95,7 +100,12 @@
     </method>
   </text>
 
-  <bitmap name="image" visible="false" width="15" height="15" y="${this.parent.height / 2 - this.height / 2}"/>
+  <bitmap name="image" visible="false"
+    width="15" height="15"
+    y="${this.parent.height / 2 - this.height / 2}"
+  />
 
-  <text name="label" fontsize="14" y="${this.parent.height / 2 - this.height / 2}"/>
+  <text name="label" fontsize="14"
+    y="${this.parent.height / 2 - this.height / 2}"
+  />
 </class>
