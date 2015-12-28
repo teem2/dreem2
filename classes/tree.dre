@@ -142,6 +142,7 @@
     } else {
 
       var aval, bval, prop;
+      var checked = [];
       for (prop in a) {
         if (!prop.startsWith('__')) {
           if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
@@ -155,20 +156,23 @@
             match = false;
             break;
           }
+          checked.push(prop);
         }
       }
-      for (prop in b) {
-        if (!prop.startsWith('__')) {
-          if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
-            aval = a[prop];
-            bval = b[prop];
-            if (!this.deepCompare(aval, bval)) {
+      if (match) {
+        for (prop in b) {
+          if (!prop.startsWith('__') && checked.indexOf(prop) < 0) {
+            if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
+              aval = a[prop];
+              bval = b[prop];
+              if (!this.deepCompare(aval, bval)) {
+                match = false;
+                break;
+              }
+            } else {
               match = false;
               break;
             }
-          } else {
-            match = false;
-            break;
           }
         }
       }
@@ -285,10 +289,10 @@
 
     this.nodes.push(node);
 
-    if (!obj.__collapsed) {
-      var objnodes = obj.nodes || obj.items || obj.children || obj.child;
+    var objnodes = obj.nodes || obj.items || obj.children || obj.child;
+    if (objnodes && objnodes.length) {
+      if (!obj.__collapsed) {
 
-      if (objnodes) {
         var siblings = [];
         for (var i=0; i < objnodes.length;i++) {
           var child = objnodes[i];
@@ -296,7 +300,11 @@
           siblings.push(created);
           created.__treesiblings = siblings;
         }
+        node.__treechildren = siblings;
       }
+      node.setAttribute('isleaf', false);
+    } else {
+      node.setAttribute('isleaf', true);
     }
 
     return node;

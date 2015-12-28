@@ -25,6 +25,18 @@ either express or implied. See the License for the specific language governing p
     }
   </method>
 
+  <method name="handleSelection">
+    var viewid = this.data.id;
+    if (viewid) {
+      if (this.selected) {
+        var view = dr.sprite.retrieveGlobal(viewid);
+        if (view !== selectionmanager.selected) selectionmanager.select(view);
+      } else {
+        selectionmanager.clear();
+      }
+    }
+
+  </method>
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <!--// Drag and Drop Support //-->
@@ -32,20 +44,16 @@ either express or implied. See the License for the specific language governing p
     this.super();
     
     // Make half opacity during drag
-    var target = this,
-        autoscrollerView = target.root.parent,
-        pos = target.getAbsolutePosition(autoscrollerView);
+    var autoscrollerView = this.parent,
+        pos = this.getAbsolutePosition(autoscrollerView);
     this._origY = this.y;
-    this._origParent = target;
+    this._origParent = this;
     
     // Make sure nothing is selected once drag starts.
     // Another options would be to select on mousedown, but that is a bit
     // trickier to implement since we would get multiple calls to doActivated,
     // so we will try this option first.
     selectionmanager.clear();
-    
-    // Hide the descendants of this item during drag
-    target.setActualAttribute('visible', false);
     
     // Reparent to autoscrollerView during drag
     this.setAttribute('parent', autoscrollerView);
@@ -180,16 +188,13 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="_getTargetComponent">
-    var data = this.tree.data; //xxx wrong now
+    var data = this.__treemodel;
     if (!data) return null;
     if (!Array.isArray(data)) return data.ref;
   </method>
 </class>
 
-<class name="editortree" extends="tree" treeitemclass="editortreeitem">
-</class>
-
-<editortree id="treemodel" multipleselection="false"
+<tree id="treemodel" multipleselection="false" treeitemclass="editortreeitem"
   selectcolor="${config.selection_color}"
   disabled="${!editor.editmode}"
 >
@@ -218,22 +223,6 @@ either express or implied. See the License for the specific language governing p
     
     this.clearSelection();
   </handler>
-
-  <method name="selectHandler" args="sel, d">
-    var viewid = d.id;
-    if (viewid) {
-      if (sel) {
-        var view = this._getEditable(viewid);
-        if (view !== selectionmanager.selected) selectionmanager.select(view);
-      } else {
-        selectionmanager.clear();
-      }
-    }
-  </method>
-
-  <method name="_getEditable" args="id">
-    return dr.sprite.retrieveGlobal(id);
-  </method>
 
   <handler event="onmodelchange" reference="editormodel">
     // Reload tree
@@ -282,7 +271,7 @@ either express or implied. See the License for the specific language governing p
             
             // Keep all child nodes that are not layouts, behaviors or animators.
             if (id) {
-              var view = self._getEditable(id);
+              var view = dr.sprite.retrieveGlobal(id);
               
               if (view && !view.isA(dr.Layout) && !view.isA(dr.behavior.behavior)) {
                 if (attr.title) {
@@ -319,8 +308,8 @@ either express or implied. See the License for the specific language governing p
           }
         }
       })(model, d);
-      
-      this.setAttribute('data', model);
+
+      this.setAttribute('data',  {label:'composition', items:model});
       
       // Update the selection after model changes since the selection will
       // get cleared.
@@ -328,4 +317,4 @@ either express or implied. See the License for the specific language governing p
       if (selected) this.updateSelection(selected);
     }
   </handler>
-</editortree>
+</tree>

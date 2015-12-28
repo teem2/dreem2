@@ -15,6 +15,10 @@
   <attribute name="collapsed" type="boolean" value="false"/>
   <attribute name="selected" type="boolean" value="false"/>
   <attribute name="data" type="object" value=""/>
+  <attribute name="isleaf" type="boolean" value="false"/>
+
+  <handler event="onselected" method="handleSelection"/>
+  <method name="handleSelection" args="selected"/>
 
   <method name="initNode" args="parent,attrs">
     this.super();
@@ -23,6 +27,9 @@
     this.setAttribute('data', attrs.data)
     this.setAttribute('collapsed', attrs.collapsed)
     this.setAttribute('selected', attrs.selected)
+    if (attrs.selected) {
+      this.handleSelection(true)
+    }
 
     var d = attrs.data;
     if (d) {
@@ -67,9 +74,9 @@
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
 
-  <spacedlayout axis="x" spacing="5"></spacedlayout>
+  <spacedlayout axis="x" spacing="5" updateparent="true"></spacedlayout>
 
-  <text name="toggle" with="button" visible="true" focusable="false" focusembellishment="false" text="${this.parent.collapsed ? '▶' : '▼'}" fontsize="12">
+  <text name="toggle" with="button" visible="${!this.parent.isleaf}" focusable="false" focusembellishment="false" text="${this.parent.collapsed ? '▶' : '▼'}" fontsize="12" y="${this.parent.height / 2 - this.height / 2}">
 
     <method name="doActivated">
       this.parent.tree.setCollapsedState(this.parent, !this.parent.collapsed);
@@ -88,7 +95,7 @@
     </method>
   </text>
 
-  <bitmap name="image" visible="false" width="15" height="15"/>
+  <bitmap name="image" visible="false" width="15" height="15" y="${this.parent.height / 2 - this.height / 2}"/>
 
-  <text name="label" fontsize="14"/>
+  <text name="label" fontsize="14" y="${this.parent.height / 2 - this.height / 2}"/>
 </class>
