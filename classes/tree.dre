@@ -42,8 +42,6 @@
 
     if (d) {
       var dff = this.diff(this.model, d);
-      console.log('patch is', dff)
-
       this.patch(dff);
     }
     this.layoutTree();

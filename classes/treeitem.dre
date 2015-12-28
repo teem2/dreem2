@@ -13,13 +13,15 @@
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="tree" type="object" value=""/>
   <attribute name="collapsed" type="boolean" value="false"/>
-  <attribute name="selected" type="boolean" value="false"/>
   <attribute name="data" type="object" value=""/>
   <attribute name="isleaf" type="boolean" value="false"/>
   <attribute name="spacing" type="number" value="5"/>
 
+  <attribute name="selected" type="boolean" value="false"/>
   <handler event="onselected" method="handleSelection"/>
-  <method name="handleSelection" args="selected"/>
+  <method name="handleSelection" args="selected">
+    //implement in subclass
+  </method>
 
   <method name="initNode" args="parent,attrs">
     this.super();

@@ -188,7 +188,7 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="_getTargetComponent">
-    var data = this.__treemodel;
+    var data = this.data;
     if (!data) return null;
     if (!Array.isArray(data)) return data.ref;
   </method>
@@ -209,7 +209,9 @@ either express or implied. See the License for the specific language governing p
       if (viewId) {
         if ((function walk(v) {
           if (v.data && v.data.id === viewId) {
-            if (!v.selected) v.triggerSelection(true);
+            if (!v.selected) {
+              v.tree.setSelectionState(v, true);
+            }
             return true;
           }
           var svs = v.subviews, i = svs.length;
