@@ -315,8 +315,9 @@
 
     var node = this.createChild({
       class:this.treeitemclass,
-      x:depth * this.indentwidth,
+      indent:depth * this.indentwidth,
       height:25,
+      width:this.width,
       fontsize:this.fontsize,
       tree:this,
       collapsed:!!(obj.__collapsed),

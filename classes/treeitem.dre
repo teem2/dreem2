@@ -8,9 +8,10 @@
    * A visual component used by a tree to render the look and feel of a
    * single node in the tree.
    */-->
-<class name="treeitem" with="button" focusembellishment="false" focusable="false" extends="view" width="100%">
+<class name="treeitem" with="button" focusembellishment="false" focusable="false" extends="view" width="${this.tree.width}">
 
   <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="indent" type="number" value="0"/>
   <attribute name="tree" type="object" value=""/>
   <attribute name="collapsed" type="boolean" value="false"/>
   <attribute name="data" type="object" value=""/>
@@ -76,7 +77,7 @@
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
 
-  <spacedlayout axis="x" spacing="5" updateparent="true"></spacedlayout>
+  <spacedlayout inset="${this.parent.indent}" axis="x" spacing="5" updateparent="false"></spacedlayout>
 
   <text name="toggle" with="button" visible="${!this.parent.isleaf}" focusable="false" focusembellishment="false"
     width="15" height="15"

@@ -47,7 +47,7 @@ either express or implied. See the License for the specific language governing p
     var autoscrollerView = this.parent,
         pos = this.getAbsolutePosition(autoscrollerView);
     this._origY = this.y;
-    this._origParent = this;
+    this._origParent = this.tree;
     
     // Make sure nothing is selected once drag starts.
     // Another options would be to select on mousedown, but that is a bit
@@ -194,7 +194,7 @@ either express or implied. See the License for the specific language governing p
   </method>
 </class>
 
-<tree id="treemodel" multipleselection="false" treeitemclass="editortreeitem"
+<tree id="treemodel" multipleselection="false" treeitemclass="editortreeitem" width="100%"
   selectcolor="${config.selection_color}"
   disabled="${!editor.editmode}"
 >
