@@ -296,6 +296,9 @@ either express or implied. See the License for the specific language governing p
                   image:config.img_root + (tagsWithIcons[tag] ? tag : 'view') + '.png', 
                   id:id,
                   __ref:view.isRoot() && view.isA(dr.View) ? editor.content_bg.content.inner : view
+                  // Note, the tree ignores any attributes with names that start with '__', so in order to keep this
+                  // underlying Dreem object from being walked by the tree-diff (which is very slow and not necessary),
+                  // it has been renamed it to '__ref'.
                 };
                 
                 if (scr.child) {
