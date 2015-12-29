@@ -111,7 +111,35 @@
 
   </method>
 
-  <method name="deepCompare" args="a,b">
+  <method name="deepCompare" args="a,b,tested">
+    if (!tested) {
+      tested = {
+        a:[],
+        b:[],
+        results:[]
+      };
+    }
+
+    var i;
+    for (i = 0; i < tested.a.length; i++) {
+      var ta = tested.a[i];
+      if (ta === a) {
+        var tb = tested.b[i]
+        if (tb === b) {
+          var result = tested.results[i];
+          if (typeof(result) === 'undefined') {
+            // we went too down far into the recursion, so just call this a match for now to prune
+            // the execution and move on. The true result will be generated later.
+            return true;
+          }
+          return result;
+        }
+      }
+    }
+
+    tested.a.push(a)
+    tested.b.push(b)
+
     var match = true;
     var atype = typeof(a);
     var btype = typeof(b);
@@ -123,13 +151,12 @@
         match = false;
       }
     } else if ((Array.isArray(a) && !Array.isArray(b)) || (!Array.isArray(a) && Array.isArray(b))) {
-      console.log('c')
       match = false;
     } else if (Array.isArray(a)) {
 
       if (a.length === b.length) {
-        for (var i=0;i < a.length; i++) {
-          if (!this.deepCompare(a[i], b[i])) {
+        for (i=0;i < a.length; i++) {
+          if (!this.deepCompare(a[i], b[i]), tested) {
             match = false;
             break;
           }
@@ -137,8 +164,7 @@
       } else {
         match = false;
       }
-    } else {
-
+    } else if (atype !== 'function') {
       var aval, bval, prop;
       var checked = [];
       for (prop in a) {
@@ -146,7 +172,7 @@
           if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
             aval = a[prop];
             bval = b[prop];
-            if (!this.deepCompare(aval, bval)) {
+            if (!this.deepCompare(aval, bval), tested) {
               match = false;
               break;
             }
@@ -158,12 +184,13 @@
         }
       }
       if (match) {
+
         for (prop in b) {
           if (!prop.startsWith('__') && checked.indexOf(prop) < 0) {
             if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
               aval = a[prop];
               bval = b[prop];
-              if (!this.deepCompare(aval, bval)) {
+              if (!this.deepCompare(aval, bval), tested) {
                 match = false;
                 break;
               }
@@ -174,8 +201,10 @@
           }
         }
       }
-
     }
+
+    tested.results.push(match);
+
     return match;
 
   </method>
