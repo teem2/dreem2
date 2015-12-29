@@ -194,7 +194,13 @@ either express or implied. See the License for the specific language governing p
   </method>
 </class>
 
-<tree id="treemodel" multipleselection="false" treeitemclass="editortreeitem" width="100%"
+<tree id="treemodel"
+  multipleselection="false"
+  treeitemclass="editortreeitem"
+  width="100%"
+  toppadding="10"
+  leftpadding="10"
+  rootvisible="false"
   selectcolor="${config.selection_color}"
   disabled="${!editor.editmode}"
 >

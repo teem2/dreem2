@@ -49,6 +49,7 @@
   </handler>
 
   <attribute name="indentwidth" type="number" value="20"/>
+  <attribute name="itemheight" type="number" value="25"/>
 
   <attribute name="nodes" type="expression" value="[]"/>
   <attribute name="selectednodes" type="expression" value="[]"/>
@@ -62,6 +63,8 @@
   <attribute name="textcolor" type="color" value="#333"/>
 
   <attribute name="treeitemclass" type="string" value="treeitem"/>
+
+  <attribute name="rootvisible" type="boolean" value="true"/>
 
   <method name="patch" args="pch, obj">
     if (!obj) {
@@ -316,7 +319,7 @@
     var node = this.createChild({
       class:this.treeitemclass,
       indent:depth * this.indentwidth,
-      height:25,
+      height:this.itemheight,
       width:this.width,
       fontsize:this.fontsize,
       tree:this,
@@ -360,7 +363,25 @@
     }
     this.setAttribute('nodes', []);
 
-    this.layoutNode(this.model)
+    if (this.rootvisible) {
+      this.layoutNode(this.model)
+    } else {
+
+      this.__treedepth = -1;
+
+      var objnodes = this.model.nodes || this.model.items || this.model.children || this.model.child;
+
+      var siblings = [];
+      for (var i=0; i < objnodes.length;i++) {
+        var child = objnodes[i];
+        var created = this.layoutNode(child, 0, this)
+        siblings.push(created);
+        created.__treesiblings = siblings;
+      }
+      this.__treechildren = siblings;
+
+    }
+
   </method>
 
   <method name="setCollapsedState" args="node,state">
