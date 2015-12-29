@@ -12,7 +12,7 @@
 
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="indent" type="number" value="0"/>
-  <attribute name="leafindent" type="number" value="10"/>
+  <attribute name="leafindent" type="number" value="20"/>
   <attribute name="tree" type="object" value=""/>
   <attribute name="collapsed" type="boolean" value="false"/>
   <attribute name="data" type="object" value=""/>

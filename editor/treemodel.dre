@@ -11,7 +11,7 @@ either express or implied. See the License for the specific language governing p
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
     this.super();
-    
+
     // Don't allow dragging of root view
     var targetComponent = this._getTargetComponent();
     if (targetComponent) {
@@ -44,20 +44,15 @@ either express or implied. See the License for the specific language governing p
     this.super();
     
     // Make half opacity during drag
-    var autoscrollerView = this.parent,
-        pos = this.getAbsolutePosition(autoscrollerView);
     this._origY = this.y;
-    this._origParent = this.tree;
-    
+
     // Make sure nothing is selected once drag starts.
     // Another options would be to select on mousedown, but that is a bit
     // trickier to implement since we would get multiple calls to doActivated,
     // so we will try this option first.
     selectionmanager.clear();
-    
+
     // Reparent to autoscrollerView during drag
-    this.setAttribute('parent', autoscrollerView);
-    this.setAttribute('dragoffsety', pos.y);
     this.setAttribute('opacity', 0.5);
     this.setAttribute('clickable', false);
   </method>
@@ -122,13 +117,8 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="_abort">
-    if (this._origParent.destroyed) {
-      this.destroy();
-    } else {
-      this.setAttribute('y', this._origY);
-      this.setAttribute('parent', this._origParent);
-      this.moveToBack();
-    }
+    this.setAttribute('y', this._origY);
+    this.moveToBack();
   </method>
 
   <method name="stopDrag" args="event, isAbort">
@@ -159,7 +149,7 @@ either express or implied. See the License for the specific language governing p
     if (this.isdragging) return false;
     
     // Tree on tree case
-    if (dropable === this || (dropable._origParent && dropable._origParent.parent === this.tree)) return false;
+    if (dropable === this) return false;
 
     var targetComponent = this._getTargetComponent();
     if (!targetComponent) return false;
