@@ -100,6 +100,34 @@
             assert.notDeepEqual(b, d);
             this.patch(blankpatch, d);
             assert.deepEqual(b, d);
+
+            var innerobjects = {
+
+              array:[
+                {id:'obj1', value:'hello'},
+                {id:'obj2', value:'goodbye'},
+                {id:'obj3', value:'howdy'},
+              ]
+
+            }
+
+            var innerobjectsb = {
+
+              array:[
+                {id:'obj1', value:'hello'},
+                {id:'obj2', value:'changed'},
+                {id:'obj3', value:'howdy'},
+              ]
+
+            }
+
+            var innerpatch = this.diff(innerobjects, innerobjectsb);
+            var innerexpected = [
+              {action:'SET', path:'/array[1]/value', value:'changed'},
+            ];
+            console.log(innerpatch, innerexpected)
+            assert.deepEqual(innerexpected, innerpatch, 'inner array object change');
+
           </handler>
         </tree>
         <tree id='tre' name='simple' height='200' width='200' data='{ "label":"default", nodes:[{ "label":"child1", nodes:[{ "label":"child1child1", nodes:[] }] }, { "label":"child2", nodes:[] }] }'/>

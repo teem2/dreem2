@@ -430,7 +430,7 @@ either express or implied. See the License for the specific language governing p
       
       // Determine if this is a tree drop or a canvas drop
       var isTreeDrop = droptarget && droptarget.isA(dr.treeitem);
-      if (isTreeDrop) droptarget = droptarget.data.ref;
+      if (isTreeDrop) droptarget = droptarget.data.__ref;
       
       // TODO: remove check for _isInReplicator() when we have a true class editor. For 
       // now, it prevents attempts to reparent child views inside replicated classes. 
