@@ -46,7 +46,7 @@ either express or implied. See the License for the specific language governing p
     // Make half opacity during drag
     this._origY = this.y;
 
-    //    this.setAttribute('visible', false);
+    this.setAttribute('parent', this.tree.parent);
     if (this.__treechildren) {
       for (var i = 0; i < this.__treechildren.length; i++) {
         this.__treechildren[i].setAttribute('visible', false);
@@ -71,7 +71,7 @@ either express or implied. See the License for the specific language governing p
   <method name="notifyDrop" args="dropable">
     this.super();
 
-    this.setAttribute('visible', true);
+    this.setAttribute('parent', this.tree);
     if (this.__treechildren) {
       for (var i = 0; i < this.__treechildren.length; i++) {
         this.__treechildren[i].setAttribute('visible', true);
