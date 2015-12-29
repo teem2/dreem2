@@ -42,9 +42,16 @@ either express or implied. See the License for the specific language governing p
   <!--// Drag and Drop Support //-->
   <method name="startDrag" args="event">
     this.super();
-    
+
     // Make half opacity during drag
     this._origY = this.y;
+
+    //    this.setAttribute('visible', false);
+    if (this.__treechildren) {
+      for (var i = 0; i < this.__treechildren.length; i++) {
+        this.__treechildren[i].setAttribute('visible', false);
+      }
+    }
 
     // Make sure nothing is selected once drag starts.
     // Another options would be to select on mousedown, but that is a bit
@@ -63,7 +70,14 @@ either express or implied. See the License for the specific language governing p
 
   <method name="notifyDrop" args="dropable">
     this.super();
-    
+
+    this.setAttribute('visible', true);
+    if (this.__treechildren) {
+      for (var i = 0; i < this.__treechildren.length; i++) {
+        this.__treechildren[i].setAttribute('visible', true);
+      }
+    }
+
     if (dropable) {
       if (dropable.isxpath) {
         var target = this._getTargetComponent();

@@ -316,6 +316,15 @@
 
     var data = obj.data || obj.node || obj;
 
+    if (obj.__treeskiplayout) {
+      return {
+        __treeparent: parent,
+        __treemodel: obj,
+        __treedepth: depth,
+        data:data
+      }
+    }
+
     var node = this.createChild({
       class:this.treeitemclass,
       indent:depth * this.indentwidth,
@@ -357,8 +366,10 @@
   </method>
 
   <method name="layoutTree">
-    for (var i = 0;i< this.nodes.length;i++) {
-      var child = this.nodes[i];
+
+    var i, child;
+    for (i = 0;i< this.nodes.length;i++) {
+      child = this.nodes[i];
       child.destroy();
     }
     this.setAttribute('nodes', []);
@@ -372,14 +383,13 @@
       var objnodes = this.model.nodes || this.model.items || this.model.children || this.model.child;
 
       var siblings = [];
-      for (var i=0; i < objnodes.length;i++) {
-        var child = objnodes[i];
+      for (i=0; i < objnodes.length;i++) {
+        child = objnodes[i];
         var created = this.layoutNode(child, 0, this)
         siblings.push(created);
         created.__treesiblings = siblings;
       }
       this.__treechildren = siblings;
-
     }
 
   </method>

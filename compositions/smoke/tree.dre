@@ -125,7 +125,6 @@
             var innerexpected = [
               {action:'SET', path:'/array[1]/value', value:'changed'},
             ];
-            console.log(innerpatch, innerexpected)
             assert.deepEqual(innerexpected, innerpatch, 'inner array object change');
 
           </handler>
