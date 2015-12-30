@@ -44,11 +44,14 @@ either express or implied. See the License for the specific language governing p
     this.super();
 
     // Make half opacity during drag
-    this._origY = this.y;
+    var nonScrollingAncestorView = this.tree.parent.parent,
+      pos = this.tree.getAbsolutePosition(nonScrollingAncestorView);
+    this._origNextSibling = this.getNextSiblingView();
 
-    this.setAttribute('parent', this.tree.parent);
+    this.setAttribute('parent', nonScrollingAncestorView);
+
     if (this.__treechildren) {
-      for (var i = 0; i < this.__treechildren.length; i++) {
+      for (var i = 0; this.__treechildren.length > i; i++) {
         this.__treechildren[i].setAttribute('visible', false);
       }
     }
@@ -60,6 +63,7 @@ either express or implied. See the License for the specific language governing p
     selectionmanager.clear();
 
     // Reparent to autoscrollerView during drag
+    this.setAttribute('dragoffsety', pos.y);
     this.setAttribute('opacity', 0.5);
     this.setAttribute('clickable', false);
   </method>
@@ -73,7 +77,7 @@ either express or implied. See the License for the specific language governing p
 
     this.setAttribute('parent', this.tree);
     if (this.__treechildren) {
-      for (var i = 0; i < this.__treechildren.length; i++) {
+      for (var i = 0; this.__treechildren.length > i; i++) {
         this.__treechildren[i].setAttribute('visible', true);
       }
     }
@@ -131,8 +135,15 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="_abort">
-    this.setAttribute('y', this._origY);
-    this.moveToBack();
+    // Put back in the tree
+    this.setAttribute('parent', this.tree);
+    if (this._origNextSibling) this.moveBehind(this._origNextSibling);
+    
+    if (this.__treechildren) {
+      for (var i = 0; this.__treechildren.length > i; i++) {
+        this.__treechildren[i].setAttribute('visible', true);
+      }
+    }
   </method>
 
   <method name="stopDrag" args="event, isAbort">
