@@ -197,6 +197,7 @@
 
   <setter name="data" args="v">
     @setActualAttribute('text', v)
+    this.data = v;
   </setter>
 
   <setter name="$textcontent" args="v">

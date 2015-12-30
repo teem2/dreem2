@@ -2,22 +2,19 @@
  You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
  software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
-
-
 <composition>
 <screens>
   <screen type="browser" name="default" title='Smoke Test - Replicator'>
     <include href="./includes/boilerplate.dre"></include>
     <class name="testtext" extends="text">
-        <handler event="ondata" args="d">
-          this.ondatafired = true 
-        </handler>
-        <handler event="oninit">
-          setTimeout(function(){
-            // console.log('timeout ran');
-            assert.equal(true, this.ondatafired, 'There should be an ondata event');
-          }.bind(this), 750)
-        </handler>
+      <handler event="ondata" args="d">
+        this.ondatafired = true;
+      </handler>
+      <handler event="oninit">
+        setTimeout(function(){
+          assert.equal(true, this.ondatafired, 'There should be an ondata event');
+        }.bind(this), 750)
+      </handler>
     </class>
     
     <testingtimer>1000</testingtimer>
@@ -25,13 +22,15 @@
     <view width="100%" height="100%" clip="true">
       <expectedoutput>missing classname for replicator [object Object]
 timeout ran</expectedoutput>
+      
       <replicator>
         <handler event="oninit">
           assert.equal(this.parent.subviews.length, 1, 'Replication should not have increased the number of subviews');
         </handler>
       </replicator>
-
-      <wrappinglayout></wrappinglayout>
+      
+      <wrappinglayout/>
+      
       <!-- Replicate over the data array -->
       <replicator classname="testtext" data="[0,1,2,3]">
         <handler event="onreplicated" args="replicated">
@@ -43,8 +42,8 @@ timeout ran</expectedoutput>
           assert.equal(true, this.onreplicated, 'There should be an onreplicated event');
         </handler>
       </replicator>
-
-      <!-- Replicate over a datapath with a static dataset-->
+      
+      <!-- Replicate over a datapath with a static dataset -->
       <dataset name="static">
         {
           "store": {
@@ -83,6 +82,7 @@ timeout ran</expectedoutput>
           }
         }
       </dataset>
+      
       <replicator classname="testtext" datapath="$static/store/book[*]/title">
         <handler event="onreplicated" args="replicated">
           this.onreplicated = true;
@@ -97,8 +97,9 @@ timeout ran</expectedoutput>
         </handler>
       </replicator>
 
-      <!-- Replicate over a datapath with a dynamic dataset-->
+      <!-- Replicate over a datapath with a dynamic dataset -->
       <dataset name="dynamic"></dataset>
+      
       <replicator classname="testtext" datapath="$dynamic/store/book[*]/price">
         <handler event="onreplicated" args="replicated">
           if (this.onreplicated) {
