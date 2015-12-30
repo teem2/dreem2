@@ -165,17 +165,6 @@
     * If set, a {@link #datapath datapath} will be used to look up the value.
     */-->
   <attribute name="datapath" value="" type="string"/>
-  <handler event="ondatapath" args="datapath">
-    if datapath
-      unless @_datapath?
-        @_datapath = new dr.datapath(@parent)
-        @listenTo(@_datapath, 'onresult', (data) =>
-          @setAttribute('data', data) #unless data == dr.datapath._arrayidentity
-          # console.log('data callback', data, @)
-        )
-        # console.log('new datapath', @_datapath)
-      @_datapath.setAttribute('path', datapath)
-  </handler>
 
   <!--/**
     * @attribute {String} classname (required)
@@ -209,6 +198,20 @@
         layout.setAttribute('locked', locked)
   </method>
 
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    datapath = @datapath
+    if datapath
+      unless @_datapath?
+        @_datapath = new dr.datapath(@parent)
+        @listenTo(@_datapath, 'onresult', (data) =>
+          @setAttribute('data', data)
+          # console.log('data callback', data, @)
+        )
+      @_datapath.setAttribute('path', datapath)
+  </method>
+  
   <!--/**
     * @event onreplicated
     * Fired when the replicator is done
