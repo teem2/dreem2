@@ -8,16 +8,18 @@
    * A visual component used by a tree to render the look and feel of a
    * single node in the tree.
    */-->
-<class name="treeitem" with="button" focusembellishment="false" focusable="false" extends="view" height="auto" width="${this.tree.width}">
-
+<class name="treeitem" with="button"
+  focusembellishment="false" focusable="false" height="auto"
+>
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="indent" type="number" value="0"/>
-  <attribute name="leafindent" type="number" value="20"/>
+  <attribute name="leafindent" type="number" value="22"/>
   <attribute name="tree" type="object" value=""/>
   <attribute name="collapsed" type="boolean" value="false"/>
   <attribute name="data" type="object" value=""/>
   <attribute name="isleaf" type="boolean" value="false"/>
-  <attribute name="spacing" type="number" value="5"/>
+
+  <attribute name="requiredwidth" type="number" value="0"/>
 
   <attribute name="selected" type="boolean" value="false"/>
   <handler event="onselected" method="handleSelection"/>
@@ -25,27 +27,22 @@
     //implement in subclass
   </method>
 
-  <method name="initNode" args="parent,attrs">
+  <method name="initNode" args="parent, attrs">
     this.super();
-
-    this.setAttribute('tree', attrs.tree)
-    this.setAttribute('data', attrs.data)
-    this.setAttribute('collapsed', attrs.collapsed)
-    this.setAttribute('selected', attrs.selected)
-    if (attrs.selected) {
-      this.handleSelection(true)
-    }
-
-    var d = attrs.data;
+    
+    if (this.selected) this.handleSelection(true);
+    
+    var d = this.data;
     if (d) {
-      var label = d.label || d.title || d.text || d.name || d.tag;
-      var image = d.image || d.bitmap || d.src;
-
-      this.label.setAttribute('text', label)
-      this.image.setAttribute('src', image)
-      this.image.setAttribute('visible', !!(image))
+      this.label.setAttribute('text', d.label || d.title || d.text || d.name || d.tag);
+      var imageUrl = d.image || d.bitmap || d.src;
+      this.image.setAttribute('src', imageUrl);
+      this.image.setAttribute('visible', !!(imageUrl));
     }
+    
+    this.xlayout.setAttribute('locked', false);
   </method>
+
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="doActivated">
@@ -76,17 +73,28 @@
     this.setAttribute('bgcolor', bgcolor);
   </method>
 
-  <!--// Views/Nodes ////////////////////////////////////////////////////////-->
 
-  <spacedlayout inset="${this.parent.isleaf ? this.parent.indent + this.parent.leafindent : this.parent.indent}" axis="x" spacing="5" updateparent="false"></spacedlayout>
+  <!--// Views/Nodes ////////////////////////////////////////////////////////-->
+  <spacedlayout name="xlayout" locked="true" updateparent="true"
+    inset="${this.parent.indent + (this.parent.isleaf ? this.parent.leafindent : 5)}" spacing="2" outset="5"
+  >
+    <method name="updateParent" args="attribute, value, count">
+      var item = this.parent,
+        newRequiredWidth = Math.ceil(value + this.outset) || 0;
+      
+      if (item.requiredwidth !== newRequiredWidth) {
+        item.setAttribute('requiredwidth', newRequiredWidth);
+        item.tree.notifyItemWidth(item);
+      }
+    </method>
+  </spacedlayout>
 
   <text name="toggle" with="button" visible="${!this.parent.isleaf}" focusable="false" focusembellishment="false"
     width="15" height="15"
     text="${this.parent.collapsed ? '▶' : '▼'}"
     fontsize="13"
-    y="${this.parent.height / 2 - this.height / 2}"
+    y="${(this.parent.height - this.height) / 2}"
   >
-
     <method name="doActivated">
       this.parent.tree.setCollapsedState(this.parent, !this.parent.collapsed);
     </method>
@@ -104,12 +112,12 @@
     </method>
   </text>
 
-  <bitmap name="image" visible="false"
-    width="15" height="15"
-    y="${this.parent.height / 2 - this.height / 2}"
+  <bitmap name="image" visible="false" stretches="scale"
+    width="19" height="15"
+    y="${(this.parent.height - this.height) / 2}"
   />
 
   <text name="label" fontsize="14"
-    y="${this.parent.height / 2 - this.height / 2}"
+    y="${(this.parent.height - this.height) / 2}"
   />
 </class>

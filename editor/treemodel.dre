@@ -199,15 +199,16 @@ either express or implied. See the License for the specific language governing p
 </class>
 
 <tree id="treemodel"
-  multipleselection="false"
   treeitemclass="editortreeitem"
-  width="100%"
-  toppadding="10"
-  leftpadding="10"
   rootvisible="false"
   selectcolor="${config.selection_color}"
   disabled="${!editor.editmode}"
 >
+  <handler event="oninnerwidth" reference="parent" method="updateWidth"/>
+  <method name="updateWidth" args="value">
+    this.super(Math.max(value, this.parent.innerwidth));
+  </method>
+  
   <handler name="updateSelection" event="onselected" args="view" reference="selectionmanager">
     if (view) {
       // Map inner view to root since the inner view is what allows editing of

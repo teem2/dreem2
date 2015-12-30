@@ -2,9 +2,6 @@
  You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
  software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
-
-
-
 <!--/**
    * @class dr.tree {UI Components}
    * @extends dr.view
@@ -19,13 +16,11 @@
    *      data='[{"label":"first", "items": [1, 2, 3]}]'></tree>
    *
    */-->
-<class name="tree" requires="treeitem" extends="view" height="auto" width="auto">
-
+<class name="tree" requires="treeitem">
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="model" type="expression" value="{}"/>
   <attribute name="data" type="expression" value="undefined"/>
   <handler event="ondata">
-
     var d = this.data;
 
     if (typeof(d) === 'string' && ((d[0] == '[' && d[d.length - 1] == ']') || (d[0] == '{' && d[d.length - 1] == '}'))) {
@@ -45,7 +40,6 @@
       this.patch(dff);
     }
     this.layoutTree();
-
   </handler>
 
   <attribute name="indentwidth" type="number" value="20"/>
@@ -66,6 +60,8 @@
 
   <attribute name="rootvisible" type="boolean" value="true"/>
 
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="patch" args="pch, obj">
     if (!obj) {
       obj = this.model;
@@ -75,7 +71,6 @@
         this.patch(pch[i], obj);
       }
     } else {
-
       var o = obj;
       var path = pch.path.split('/');
       path.shift();
@@ -112,7 +107,6 @@
         }
       }
     }
-
   </method>
 
   <method name="deepCompare" args="a,b, parents">
@@ -137,8 +131,6 @@
     } else if ((Array.isArray(a) && !Array.isArray(b)) || (!Array.isArray(a) && Array.isArray(b))) {
       match = false;
     } else if (Array.isArray(a)) {
-
-
       if (a.length === b.length) {
         parents.push(a);
         for (var i=0;i < a.length; i++) {
@@ -173,7 +165,6 @@
         }
       }
       if (match) {
-
         parents.push(b);
         for (prop in b) {
           if (!prop.startsWith('__') && checked.indexOf(prop) < 0) {
@@ -194,7 +185,6 @@
     }
 
     return match;
-
   </method>
 
   <method name="foundInArray" args="array, obj">
@@ -211,7 +201,6 @@
     }
 
     return false;
-
   </method>
 
   <method name="diff" args="a,b,path">
@@ -346,11 +335,9 @@
     var objnodes = obj.nodes || obj.items || obj.children || obj.child;
     if (objnodes && objnodes.length) {
       if (!obj.__collapsed) {
-
-        var siblings = [];
-        for (var i=0; i < objnodes.length;i++) {
-          var child = objnodes[i];
-          var created = this.layoutNode(child, depth + 1, node)
+        var siblings = [], created;
+        for (var i=0; i < objnodes.length; i++) {
+          created = this.layoutNode(objnodes[i], depth + 1, node)
           siblings.push(created);
           created.__treesiblings = siblings;
         }
@@ -362,36 +349,34 @@
     }
 
     return node;
-
   </method>
 
   <method name="layoutTree">
-
-    var i, child;
-    for (i = 0;i< this.nodes.length;i++) {
-      child = this.nodes[i];
-      child.destroy();
-    }
+    this.layoutY.setAttribute('locked', true);
+    
+    var nodes = this.nodes, i = nodes.length;
+    while (i) nodes[--i].destroy();
     this.setAttribute('nodes', []);
 
     if (this.rootvisible) {
       this.layoutNode(this.model)
     } else {
-
       this.__treedepth = -1;
-
-      var objnodes = this.model.nodes || this.model.items || this.model.children || this.model.child;
-
-      var siblings = [];
-      for (i=0; i < objnodes.length;i++) {
-        child = objnodes[i];
-        var created = this.layoutNode(child, 0, this)
+      var model = this.model,
+        objnodes = model.nodes || model.items || model.children || model.child,
+        siblings = [], created,
+        len = objnodes.length;
+      for (i = 0; len > i; i++) {
+        created = this.layoutNode(objnodes[i], 0, this);
         siblings.push(created);
         created.__treesiblings = siblings;
       }
       this.__treechildren = siblings;
     }
-
+    
+    this._recalculateWidestWidth();
+    
+    this.layoutY.setAttribute('locked', false);
   </method>
 
   <method name="setCollapsedState" args="node,state">
@@ -434,7 +419,6 @@
             } else if (this.selectednodes.indexOf(treenode.__treemodel) > -1) {
               this.selectednodes.splice(this.selectednodes.indexOf(treenode.__treemodel),1);
             }
-
           }
 
         } else {
@@ -462,7 +446,44 @@
     this.setAttribute('selectednodes', []);
   </method>
 
-  <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <spacedlayout axis="y" updateparent="true"/>
+  <!--// Width Calculation //-->
+  <method name="notifyItemWidth" args="item">
+    var widestItem = this._widestItem,
+      widestWidth = this._widestWidth || 0;
+    if (item.requiredwidth >= widestWidth) {
+      this._widestWidth = item.requiredwidth;
+      this._widestItem = item;
+      this.updateWidth(this._widestWidth);
+    } else if (item === widestItem) {
+      // Must scan for widest item since the widest one just became smaller
+      this._recalculateWidestWidth();
+    }
+  </method>
 
+  <method name="_recalculateWidestWidth">
+    var widestItem = null,
+      widestWidth = 0,
+      svs = this.getSubviews(), i = svs.length, sv;
+    while (i) {
+      sv = svs[--i];
+      if (sv.requiredwidth > widestWidth) {
+        widestItem = sv;
+        widestWidth = sv.requiredwidth;
+      }
+    }
+    this._widestWidth = widestWidth;
+    this._widestItem = widestItem;
+    
+    this.updateWidth(this._widestWidth);
+  </method>
+
+  <method name="updateWidth" args="value">
+    this.setAttribute('width', value);
+    var svs = this.getSubviews(), i = svs.length;
+    while (i) svs[--i].setAttribute('width', value);
+  </method>
+
+
+  <!--// Views/Nodes ////////////////////////////////////////////////////////-->
+  <spacedlayout name="layoutY" axis="y" updateparent="true" locked="true"/>
 </class>
