@@ -73,8 +73,9 @@
     if (!obj) {
       obj = this.model;
     }
+    var i;
     if (Array.isArray(pch)) {
-      for (var i=0; pch.length > i; i++) {
+      for (i=0; pch.length > i; i++) {
         this.patch(pch[i], obj);
       }
     } else {
@@ -117,6 +118,12 @@
         var temp = o[p][index];
         o[p][index] = o[p][pch.with];
         o[p][pch.with] = temp;
+      } else if (pch.action == 'ORD') {
+        var order = [];
+        for (i = 0; i < pch.order.length; i++) {
+          order[i] = o[p][pch.order[i]];
+        }
+        o[p] = order;
       }
     }
   </method>
@@ -238,68 +245,60 @@
       patch.push({action:'SET', path:path, value:b})
 
     } else if (Array.isArray(a)) {
-      var i, j, found, idx = 0;
+      var i, j;
 
       var dupa = a.slice();
 
       var matching;
 
       var tested = [];
-      var swapped = [];
-
-      var swaps = [];
 
       for (i = dupa.length - 1; i >= 0; i--) {
         aval = dupa[i];
-        found = -1;
-        if (aval && aval.id) {
+        var found = -1;
+        if (aval && typeof(aval.id) !== 'undefined') {
           tested.push(aval.id);
           for (j=0; b.length > j; j++) {
             bval = b[j];
             if (bval && aval.id === bval.id) {
               found = j;
-              var patches = this.diff(aval, bval, path + '[' + i + ']')
-              if (patches.length) {
-                patch = patch.concat(patches);
-                found = i; //don't cause a SWP to generate for new items
-              }
+              patch = patch.concat(this.diff(aval, bval, path + '[' + i + ']'));
               break;
             }
           }
-          if (found == -1) {
-            patch.push({action:'DEL', path:path + '[' + i + ']'})
-            dupa.splice(i, 1);
-          }
-        } else {
-          found = this.findInArray(b, aval)
           if (found < 0) {
             patch.push({action:'DEL', path:path + '[' + i + ']'})
             dupa.splice(i, 1);
           }
         }
-
-        if (found >= 0 && found != i && swapped.indexOf(found) < 0 && swapped.indexOf(i) < 0) {
-          swaps.push({action:'SWP', path:path + '[' + i + ']', with:found})
-          swapped.push(found);
-          swapped.push(i);
-        }
       }
 
       for (i = 0; b.length > i; i++) {
         bval = b[i];
-        if (bval && bval.id) {
+        if (bval && typeof(bval.id) !== 'undefined') {
           if (tested.indexOf(bval.id) < 0) {
-            patch.push({action:'SET', path:path + '[' + idx + ']', value:bval})
-          }
-        } else {
-          if (this.findInArray(a, bval) < 0) {
-            patch.push({action:'SET', path:path + '[' + idx + ']', value:bval})
+            dupa.push(bval)
+            patch.push({action:'SET', path:path + '[' + dupa.indexOf(bval) + ']', value:bval})
           }
         }
-        idx++;
       }
 
-      patch = patch.concat(swaps)
+      var order = [];
+      for (i = 0; b.length > i; i++) {
+        bval = b[i];
+        if (bval && typeof(bval.id) !== 'undefined') {
+          for (j=0; dupa.length > j; j++) {
+            aval = dupa[j];
+            if (aval && aval.id === bval.id) {
+              order.push(j);
+              break;
+            }
+          }
+        }
+      }
+      if (order.length) {
+        patch.push({action:'ORD', path:path, order:order})
+      }
 
     } else if (atype === 'object') {
 
@@ -456,9 +455,6 @@
     
     var self = this;
     return (function walk(m) {
-      if (!m) {
-        return false;
-      }
       if (m.id === viewId) {
         if (!m.__selected) self.setSelectionState(m, true);
         return true;

@@ -53,16 +53,14 @@
             var a = {
               onlyina: true,
               objina: { some:'object' },
-              array: [1,2,3,5],
-              reorder:[{id:1},{id:3},{id:2},{id:4},{id:5},{id:6}],
+              array: [{id:1},{id:2},{id:3},{id:5}],
               objinboth: { same:'object', ina:'onlyina', changed:'aversion' },
               inboth:true
             };
             var b = {
               onlyinb: true,
               objinb: { some:'object' },
-              array: [0,2,3,4,6],
-              reorder:[{id:1},{id:2},{id:3},{id:5},{id:4},{id:6}],
+              array: [{id:0},{id:3},{id:2},{id:4},{id:6}],
               objinboth: { same:'object', inb:'onlyinb', changed:'bversion' },
               inboth:true
             };
@@ -72,11 +70,10 @@
               {action:'DEL', path:'/objina'},
               {action:'DEL', path:'/array[3]'},
               {action:'DEL', path:'/array[0]'},
-              {action:'SET', path:'/array[0]', value:0},
-              {action:'SET', path:'/array[3]', value:4},
-              {action:'SET', path:'/array[4]', value:6},
-              {action:'SWP', path:'/reorder[4]', with:3},
-              {action:'SWP', path:'/reorder[2]', with:1},
+              {action:'SET', path:'/array[2]', value:{id:0}},
+              {action:'SET', path:'/array[3]', value:{id:4}},
+              {action:'SET', path:'/array[4]', value:{id:6}},
+              {action:'ORD', path:'/array', order:[2,1,0,3,4]},
               {action:'DEL', path:'/objinboth/ina'},
               {action:'SET', path:'/objinboth/changed', value:'bversion'},
               {action:'SET', path:'/objinboth/inb', value:'onlyinb'},
@@ -94,8 +91,7 @@
             var blankexpected = [
               {action:'SET', path:'/onlyinb', value:true},
               {action:'SET', path:'/objinb', value:{ some:'object' }},
-              {action:'SET', path:'/array', value:[0,2,3,4,6]},
-              {action:'SET', path:'/reorder', value:[{id:1},{id:2},{id:3},{id:5},{id:4},{id:6}]},
+              {action:'SET', path:'/array', value:[{id:0},{id:3},{id:2},{id:4},{id:6}]},
               {action:'SET', path:'/objinboth', value:{ same:'object', inb:'onlyinb', changed:'bversion' }},
               {action:'SET', path:'/inboth', value:true}
             ];
@@ -127,8 +123,10 @@
             }
 
             var innerpatch = this.diff(innerobjects, innerobjectsb);
+
             var innerexpected = [
               {action:'SET', path:'/array[1]/value', value:'changed'},
+              {action:'ORD', path:'/array', order:[0,1,2]},
             ];
             assert.deepEqual(innerexpected, innerpatch, 'inner array object change');
 
