@@ -78,7 +78,7 @@
         this.patch(pch[i], obj);
       }
     } else {
-      // console.log("PATCH IS", pch);
+      //console.log("PATCH IS", pch);
       var o = obj;
       var path = pch.path.split('/');
       path.shift();
@@ -247,6 +247,8 @@
       var tested = [];
       var swapped = [];
 
+      var swaps = [];
+
       for (i = dupa.length - 1; i >= 0; i--) {
         aval = dupa[i];
         found = -1;
@@ -277,7 +279,7 @@
         }
 
         if (found >= 0 && found != i && swapped.indexOf(found) < 0 && swapped.indexOf(i) < 0) {
-          patch.push({action:'SWP', path:path + '[' + i + ']', with:found})
+          swaps.push({action:'SWP', path:path + '[' + i + ']', with:found})
           swapped.push(found);
           swapped.push(i);
         }
@@ -296,6 +298,8 @@
         }
         idx++;
       }
+
+      patch = patch.concat(swaps)
 
     } else if (atype === 'object') {
 
