@@ -200,7 +200,8 @@ either express or implied. See the License for the specific language governing p
     }
     
     // No dropping on descendants of self or our parent
-    var target = dropable.target || dropable.data.__ref;
+    var target = dropable.target;
+    if (!target && dropable.data) target = dropable.data.__ref;
     if (target && (targetComponent.isDescendantOf(target) || target.parent === targetComponent)) return false;
     
     return this.super();
