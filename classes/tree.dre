@@ -78,6 +78,7 @@
         this.patch(pch[i], obj);
       }
     } else {
+      // console.log("PATCH IS", pch);
       var o = obj;
       var path = pch.path.split('/');
       path.shift();
@@ -255,9 +256,17 @@
             bval = b[j];
             if (bval && aval.id === bval.id) {
               found = j;
-              patch = patch.concat(this.diff(aval, bval, path + '[' + i + ']'))
+              var patches = this.diff(aval, bval, path + '[' + i + ']')
+              if (patches.length) {
+                patch = patch.concat(patches);
+                found = i; //don't cause a SWP to generate for new items
+              }
               break;
             }
+          }
+          if (found == -1) {
+            patch.push({action:'DEL', path:path + '[' + i + ']'})
+            dupa.splice(i, 1);
           }
         } else {
           found = this.findInArray(b, aval)
@@ -315,6 +324,10 @@
   <!--// Layout //-->
   <method name="layoutNode" args="obj, depth, parent">
     if (!depth) depth = 0;
+
+    if (!obj) {
+      return;
+    }
     
     var data = obj.data || obj.node || obj;
 
@@ -353,8 +366,10 @@
         var siblings = [], created;
         for (var i=0; objnodes.length > i; i++) {
           created = this.layoutNode(objnodes[i], depth + 1, node)
-          siblings.push(created);
-          created.__treesiblings = siblings;
+          if (created) {
+            siblings.push(created);
+            created.__treesiblings = siblings;
+          }
         }
         node.__treechildren = siblings;
       }
@@ -396,6 +411,7 @@
   </method>
 
   <method name="getModelNodes" args="model">
+    if (!model) return false;
     return model.nodes || model.items || model.children || model.child;
   </method>
 
@@ -437,7 +453,7 @@
     
     var self = this;
     return (function walk(m) {
-      if (m.id === viewId) {
+      if (m && m.id === viewId) {
         if (!m.__selected) self.setSelectionState(m, true);
         return true;
       }
