@@ -32,7 +32,6 @@
     this.setActual('data', data, 'object');
     if (this.inited) {
       var d = this.data;
-      this.xlayout.setAttribute('locked', true);
       if (d) {
         this.label.setAttribute('text', d.label || d.title || d.text || d.name || d.tag);
         var imageUrl = d.image || d.bitmap || d.src;
@@ -46,6 +45,8 @@
 
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="clean">
+    this.xlayout.setAttribute('locked', true);
+    
     this.setAttribute('visible', false);
     this.setAttribute('collapsed', false);
     this.setAttribute('isleaf', false);
