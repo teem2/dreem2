@@ -48,7 +48,6 @@
   <attribute name="nodes" type="expression" value="[]"/>
   <attribute name="selectednodes" type="expression" value="[]"/>
   <attribute name="multipleselection" type="boolean" value="false"/>
-  <attribute name="branchselection" type="boolean" value="false"/>
 
   <attribute name="selectcolor" type="color" value="#999"/>
   <attribute name="hovercolor" type="color" value="#eee"/>
@@ -61,13 +60,21 @@
   <attribute name="rootvisible" type="boolean" value="true"/>
 
 
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    this.__pool = new dr.SimplePool(dr.lookupClass(this.treeitemclass), this);
+  </method>
+
+
   <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="patch" args="pch, obj">
     if (!obj) {
       obj = this.model;
     }
     if (Array.isArray(pch)) {
-      for (var i=0; i < pch.length; i++) {
+      for (var i=0; pch.length > i; i++) {
         this.patch(pch[i], obj);
       }
     } else {
@@ -133,7 +140,7 @@
     } else if (Array.isArray(a)) {
       if (a.length === b.length) {
         parents.push(a);
-        for (var i=0;i < a.length; i++) {
+        for (var i=0; a.length > i; i++) {
           if (!this.deepCompare(a[i], b[i], parents)) {
             match = false;
             break;
@@ -167,7 +174,7 @@
       if (match) {
         parents.push(b);
         for (prop in b) {
-          if (!prop.startsWith('__') && checked.indexOf(prop) < 0) {
+          if (!prop.startsWith('__') && 0 > checked.indexOf(prop)) {
             if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
               aval = a[prop];
               bval = b[prop];
@@ -192,7 +199,7 @@
     if (t === 'number' || t === 'string' || t === 'boolean' || t === 'undefined') {
       return array.indexOf(obj) > -1;
     } else {
-      for (var i = 0; i < array.length; i++) {
+      for (var i = 0; array.length > i; i++) {
         var searched = [array];
         if (this.deepCompare(obj, array[i], searched)) {
           return true;
@@ -239,7 +246,7 @@
         found = false;
         if (aval && aval.id) {
           tested.push(aval.id);
-          for (j=0;j < b.length; j++) {
+          for (j=0; b.length > j; j++) {
             bval = b[j];
             if (bval && aval.id === bval.id) {
               found = true;
@@ -256,7 +263,7 @@
         }
       }
 
-      for (i = 0; i < b.length; i++) {
+      for (i = 0; b.length > i; i++) {
         bval = b[i];
         found = false;
         if (bval && bval.id) {
@@ -298,11 +305,10 @@
     return patch;
   </method>
 
+  <!--// Layout //-->
   <method name="layoutNode" args="obj, depth, parent">
-    if (!depth) {
-      depth = 0;
-    }
-
+    if (!depth) depth = 0;
+    
     var data = obj.data || obj.node || obj;
 
     if (obj.__treeskiplayout) {
@@ -313,30 +319,32 @@
         data:data
       }
     }
-
-    var node = this.createChild({
-      class:this.treeitemclass,
+    
+    var node = this.__pool.getInstance();
+    node.setAttributes({
       indent:depth * this.indentwidth,
       height:this.itemheight,
-      width:this.width,
       fontsize:this.fontsize,
       tree:this,
-      collapsed:!!(obj.__collapsed),
-      selected:!!(obj.__selected),
-      data:data
+      collapsed:!!(obj.__collapsed)
     });
+    node.setAttribute('data', data);
+    node.setAttribute('selected', !!(obj.__selected));
+    node.setAttribute('visible', true);
 
     node.__treeparent = parent;
     node.__treemodel = obj;
     node.__treedepth = depth;
 
     this.nodes.push(node);
+    
+    obj.__view = node;
 
-    var objnodes = obj.nodes || obj.items || obj.children || obj.child;
+    var objnodes = this.getModelNodes(obj);
     if (objnodes && objnodes.length) {
       if (!obj.__collapsed) {
         var siblings = [], created;
-        for (var i=0; i < objnodes.length; i++) {
+        for (var i=0; objnodes.length > i; i++) {
           created = this.layoutNode(objnodes[i], depth + 1, node)
           siblings.push(created);
           created.__treesiblings = siblings;
@@ -354,17 +362,18 @@
   <method name="layoutTree">
     this.layoutY.setAttribute('locked', true);
     
-    var nodes = this.nodes, i = nodes.length;
-    while (i) nodes[--i].destroy();
+    var nodes = this.nodes, i = nodes.length,
+      pool = this.__pool;
+    while (i) pool.putInstance(nodes[--i]);
     this.setAttribute('nodes', []);
 
     if (this.rootvisible) {
       this.layoutNode(this.model)
     } else {
       this.__treedepth = -1;
-      var model = this.model,
-        objnodes = model.nodes || model.items || model.children || model.child,
-        siblings = [], created,
+      var objnodes = this.getModelNodes(this.model),
+        siblings = [], 
+        created,
         len = objnodes.length;
       for (i = 0; len > i; i++) {
         created = this.layoutNode(objnodes[i], 0, this);
@@ -379,71 +388,61 @@
     this.layoutY.setAttribute('locked', false);
   </method>
 
-  <method name="setCollapsedState" args="node,state">
-    if (node.__treemodel) {
-      node.__treemodel.__collapsed = state;
-    }
+  <method name="getModelNodes" args="model">
+    return model.nodes || model.items || model.children || model.child;
+  </method>
+
+  <method name="setCollapsedState" args="node, state">
+    if (node.__treemodel) node.__treemodel.__collapsed = state;
     this.layoutTree();
   </method>
 
-  <method name="setSelectionState" args="node,state">
-    if (!this.multipleselection) {
-      this.clearSelection();
-    }
-
-    if (node.__treemodel) {
-      node.__treemodel.__selected = state;
+  <!--// Selection //-->
+  <method name="setSelectionState" args="m, state">
+    if (!this.multipleselection) this.clearSelection();
+    
+    if (m) {
+      m.__selected = state;
+      if (m.__view) m.__view.setAttribute('selected', state);
+      
+      var selectedNodes = this.selectednodes;
       if (state) {
-        this.selectednodes.push(node.__treemodel)
-      } else if (this.selectednodes.indexOf(node.__treemodel) > -1) {
-        this.selectednodes.splice(this.selectednodes.indexOf(node.__treemodel),1);
+        selectedNodes.push(m);
+      } else {
+        var idx = selectedNodes.indexOf(m);
+        if (idx > -1) selectedNodes.splice(idx, 1);
       }
     }
-    if (this.branchselection) {
-      var treenode = node;
-      while (treenode) {
-        if (this.multipleselection && !state) {
-          if (treenode.__treesiblingss) {
-            for (var i = 0; i < treenode.__treesiblings.length;i++) {
-              var sibling = treenode.__treesiblings[i];
-              if (sibling.__treemodel.__selected) {
-                treenode = undefined;
-                break;
-              }
-            }
-
-          } else {
-            treenode.__treemodel.__selected = state;
-            if (state) {
-              this.selectednodes.push(treenode.__treemodel)
-            } else if (this.selectednodes.indexOf(treenode.__treemodel) > -1) {
-              this.selectednodes.splice(this.selectednodes.indexOf(treenode.__treemodel),1);
-            }
-          }
-
-        } else {
-          treenode.__treemodel.__selected = state;
-          if (state) {
-            this.selectednodes.push(treenode.__treemodel)
-          } else if (this.selectednodes.indexOf(treenode.__treemodel) > -1) {
-            this.selectednodes.splice(this.selectednodes.indexOf(treenode.__treemodel),1);
-          }
-        }
-
-        if (treenode) {
-          treenode = treenode.__treeparent
-        }
-      }
-    }
-    this.layoutTree();
   </method>
 
   <method name="clearSelection">
-    for (var i = 0; i < this.selectednodes.length; i++) {
-      var selected = this.selectednodes[i];
-      selected.__selected = false;
+    var selectedNodes = this.selectednodes, i = selectedNodes.length, selectedNode;
+    while (i) {
+      selectedNode = selectedNodes[--i];
+      selectedNode.__selected = false;
+      if (selectedNode.__view) selectedNode.__view.setAttribute('selected', false);
     }
     this.setAttribute('selectednodes', []);
+  </method>
+
+  <method name="selectModelNode" args="viewId">
+    if (!viewId) return false;
+    
+    var self = this;
+    return (function walk(m) {
+      if (m.id === viewId) {
+        if (!m.__selected) self.setSelectionState(m, true);
+        return true;
+      }
+      
+      var children = self.getModelNodes(m);
+      if (children) {
+        var i = children.length;
+        while (i) if (walk(children[--i])) return true;
+      }
+      
+      return false;
+    })(this.model);
   </method>
 
   <!--// Width Calculation //-->
