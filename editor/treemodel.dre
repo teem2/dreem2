@@ -34,7 +34,7 @@ either express or implied. See the License for the specific language governing p
       if (selected) {
         if (view !== curSelection) selectionmanager.select(view);
       } else {
-        if (view === curSelection) selectionmanager.select();
+        if (view === curSelection) selectionmanager.clear();
       }
     }
   </method>
