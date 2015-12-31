@@ -456,6 +456,9 @@
     
     var self = this;
     return (function walk(m) {
+      if (!m) {
+        return false;
+      }
       if (m.id === viewId) {
         if (!m.__selected) self.setSelectionState(m, true);
         return true;
