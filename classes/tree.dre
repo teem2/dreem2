@@ -112,6 +112,10 @@
         } else {
           o[p] = pch.value;
         }
+      } else if (pch.action == 'SWP') {
+        var temp = o[p][index];
+        o[p][index] = o[p][pch.with];
+        o[p][pch.with] = temp;
       }
     }
   </method>
@@ -194,20 +198,20 @@
     return match;
   </method>
 
-  <method name="foundInArray" args="array, obj">
+  <method name="findInArray" args="array, obj">
     var t = typeof(obj);
     if (t === 'number' || t === 'string' || t === 'boolean' || t === 'undefined') {
-      return array.indexOf(obj) > -1;
+      return array.indexOf(obj);
     } else {
       for (var i = 0; array.length > i; i++) {
         var searched = [array];
         if (this.deepCompare(obj, array[i], searched)) {
-          return true;
+          return i;
         }
       }
     }
 
-    return false;
+    return -1;
   </method>
 
   <method name="diff" args="a,b,path">
@@ -240,48 +244,51 @@
       var matching;
 
       var tested = [];
+      var swapped = [];
 
       for (i = dupa.length - 1; i >= 0; i--) {
         aval = dupa[i];
-        found = false;
+        found = -1;
         if (aval && aval.id) {
           tested.push(aval.id);
           for (j=0; b.length > j; j++) {
             bval = b[j];
             if (bval && aval.id === bval.id) {
-              found = true;
+              found = j;
               patch = patch.concat(this.diff(aval, bval, path + '[' + i + ']'))
               break;
             }
           }
-        }
-        if (!found) {
-          if (!this.foundInArray(b, aval)) {
+        } else {
+          found = this.findInArray(b, aval)
+          if (found < 0) {
             patch.push({action:'DEL', path:path + '[' + i + ']'})
             dupa.splice(i, 1);
           }
+        }
+
+        if (found >= 0 && found != i && swapped.indexOf(found) < 0 && swapped.indexOf(i) < 0) {
+          patch.push({action:'SWP', path:path + '[' + i + ']', with:found})
+          swapped.push(found);
+          swapped.push(i);
         }
       }
 
       for (i = 0; b.length > i; i++) {
         bval = b[i];
-        found = false;
         if (bval && bval.id) {
-          found = tested.indexOf(bval.id) >= 0;
-          if (!found) {
+          if (tested.indexOf(bval.id) < 0) {
             patch.push({action:'SET', path:path + '[' + idx + ']', value:bval})
-            found = true;
           }
-        }
-        if (!found) {
-          if (!this.foundInArray(a, bval)) {
+        } else {
+          if (this.findInArray(a, bval) < 0) {
             patch.push({action:'SET', path:path + '[' + idx + ']', value:bval})
           }
         }
         idx++;
       }
 
-    } else if (atype == 'object') {
+    } else if (atype === 'object') {
 
       for (var akey in a) {
         if (!akey.startsWith('__') && a.hasOwnProperty(akey)) {

@@ -8,7 +8,7 @@
       <include href='./includes/boilerplate.dre'/>
       <view width='100%' height='100%' padding='25'>
         <spacedlayout axis='y' spacing='15'/>
-        <tree name='diff_patch_test'>
+        <tree name='diff_patch_test' width="200">
           <handler event='oninit'>
 
             assert.isTrue(this.deepCompare('a', 'a'), 'a is a')
@@ -54,6 +54,7 @@
               onlyina: true,
               objina: { some:'object' },
               array: [1,2,3,5],
+              reorder:[{id:1},{id:3},{id:2},{id:4},{id:5},{id:6}],
               objinboth: { same:'object', ina:'onlyina', changed:'aversion' },
               inboth:true
             };
@@ -61,6 +62,7 @@
               onlyinb: true,
               objinb: { some:'object' },
               array: [0,2,3,4,6],
+              reorder:[{id:1},{id:2},{id:3},{id:5},{id:4},{id:6}],
               objinboth: { same:'object', inb:'onlyinb', changed:'bversion' },
               inboth:true
             };
@@ -73,33 +75,36 @@
               {action:'SET', path:'/array[0]', value:0},
               {action:'SET', path:'/array[3]', value:4},
               {action:'SET', path:'/array[4]', value:6},
+              {action:'SWP', path:'/reorder[4]', with:3},
+              {action:'SWP', path:'/reorder[2]', with:1},
               {action:'DEL', path:'/objinboth/ina'},
               {action:'SET', path:'/objinboth/changed', value:'bversion'},
               {action:'SET', path:'/objinboth/inb', value:'onlyinb'},
               {action:'SET', path:'/onlyinb', value:true},
               {action:'SET', path:'/objinb', value:{ some:'object' }},
             ];
-            assert.deepEqual(expected, patch);
+            assert.deepEqual(expected, patch, 'patch was wrong');
 
             var c = JSON.parse(JSON.stringify(a));
-            assert.notDeepEqual(b, c);
+            assert.notDeepEqual(b, c, 'nbc');
             this.patch(patch, c);
-            assert.deepEqual(b, c);
+            assert.deepEqual(b, c, 'bc');
 
             var blankpatch = this.diff({},b);
             var blankexpected = [
               {action:'SET', path:'/onlyinb', value:true},
               {action:'SET', path:'/objinb', value:{ some:'object' }},
               {action:'SET', path:'/array', value:[0,2,3,4,6]},
+              {action:'SET', path:'/reorder', value:[{id:1},{id:2},{id:3},{id:5},{id:4},{id:6}]},
               {action:'SET', path:'/objinboth', value:{ same:'object', inb:'onlyinb', changed:'bversion' }},
               {action:'SET', path:'/inboth', value:true}
             ];
-            assert.deepEqual(blankexpected, blankpatch);
+            assert.deepEqual(blankexpected, blankpatch, 'blank pactch');
 
             var d = {};
-            assert.notDeepEqual(b, d);
+            assert.notDeepEqual(b, d, 'nbd');
             this.patch(blankpatch, d);
-            assert.deepEqual(b, d);
+            assert.deepEqual(b, d, 'bd');
 
             var innerobjects = {
 
