@@ -225,7 +225,7 @@ either express or implied. See the License for the specific language governing p
     this.super(Math.max(value, this.parent.innerwidth));
   </method>
   
-  <handler name="updateSelection" event="onselected" args="view" reference="selectionmanager">
+  <handler name="updateSelection" event="ondelayedselected" args="view" reference="selectionmanager">
     if (view) {
       // Map inner view to root since the inner view is what allows editing of
       // the root view for the screen.

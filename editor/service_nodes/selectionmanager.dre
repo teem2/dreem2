@@ -8,24 +8,50 @@ either express or implied. See the License for the specific language governing p
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <attribute name="selected" type="expression" value="${null}"/>
   <setter name="selected" args="v">
-    if (editor.inited) this.setActualAttribute('isrootselection', v === editor.content_bg.content.inner);
-    
-    var isView = !!(v && v.isA(dr.View));
-    this.setActualAttribute('selectedview', isView ? v : null);
-    
-    // Layout and Behavior panels should only be visible if a view is selected.
-    layouts_subhead.setAttribute('visible', isView);
-    behaviors_subhead.setAttribute('visible', isView);
-    
-    return v;
+    if (this.setActual('selected', v, 'expression', null)) {
+      if (editor.inited) this.setActualAttribute('isrootselection', v === editor.content_bg.content.inner);
+      
+      var isView = !!(v && v.isA(dr.View));
+      this.setActualAttribute('selectedview', isView ? v : null);
+      
+      // Layout and Behavior panels should only be visible if a view is selected.
+      layouts_subhead.setAttribute('visible', isView);
+      behaviors_subhead.setAttribute('visible', isView);
+      
+      this._fireDelayedEvent('selected', v, 100);
+    }
   </setter>
 
-  <attribute name="selectedview" type="expression" value="null"/>
+  <attribute name="selectedview" type="expression" value="${null}"/>
+  <setter name="selectedview" args="v">
+    if (this.setActual('selectedview', v, 'expression', null)) this._fireDelayedEvent('selectedview', v, 100);
+  </setter>
 
   <attribute name="isrootselection" type="boolean" value="false"/>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="_fireDelayedEvent" args="name, value, delay">
+    // Fire a delayed event after 100 millis of inactivity. The first time the 
+    // event will fire immediately.
+    var self = this, 
+      immediate = true,
+      timerName = '_' + name + '_timerId',
+      eventName = 'ondelayed' + name;
+    
+    if (this[timerName]) {
+      clearTimeout(this[timerName]);
+      immediate = false;
+    }
+    
+    this[timerName] = setTimeout(function() {
+      if (!immediate) self.sendEvent(eventName, value);
+      self[timerName] = null;
+    }, delay);
+    
+    if (immediate) this.sendEvent(eventName, value);
+  </method>
+
   <method name="clear" args="restoreable">
     if (restoreable) this._oldSelection = this.selected;
     this.select(null);
