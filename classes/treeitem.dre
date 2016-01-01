@@ -8,43 +8,90 @@
    * A visual component used by a tree to render the look and feel of a
    * single node in the tree.
    */-->
-<class name="treeitem" with="button"
-  width="${this.treecontainer.root.width}"
+<class name="treeitem" with="button, reusable"
   focusembellishment="false" focusable="false"
-  disabled="${this.treecontainer.root.disabled}"
 >
   <!--// Attributes /////////////////////////////////////////////////////////-->
-  <attribute name="treecontainer" type="object"/>
+  <attribute name="indent" type="number" value="0"/>
+  <attribute name="leafindent" type="number" value="22"/>
+  <attribute name="tree" type="object" value=""/>
+  <attribute name="collapsed" type="boolean" value="false"/>
+  <attribute name="isleaf" type="boolean" value="false"/>
+
+  <attribute name="requiredwidth" type="number" value="0"/>
+
+  <attribute name="selected" type="boolean" value="false"/>
+  <setter name="selected" args="selected">
+    if (this.setActual('selected', selected, 'boolean', false)) this.handleSelection(this.selected);
+    
+    if (this.inited) this.updateUI();
+  </setter>
+
+  <attribute name="data" type="object" value=""/>
+  <setter name="data" args="data">
+    this.setActual('data', data, 'object');
+    if (this.inited) {
+      var d = this.data;
+      if (d) {
+        this.label.setAttribute('text', d.label || d.title || d.text || d.name || d.tag);
+        var imageUrl = d.image || d.bitmap || d.src;
+        this.image.setAttribute('src', imageUrl);
+        this.image.setAttribute('visible', !!(imageUrl));
+      }
+      this.xlayout.setAttribute('locked', false);
+    }
+  </setter>
 
 
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
-  <method name="initNode" args="parent, attrs">
-    this.super();
+  <method name="clean">
+    this.xlayout.setAttribute('locked', true);
     
-    this.setAttribute('height', this.treecontainer.isroot ? 0 : 25);
+    this.setAttribute('visible', false);
+    this.setAttribute('collapsed', false);
+    this.setAttribute('isleaf', false);
+    
+    this.__treechildren = null;
+    this.__treesiblings = null;
+    this.__treeparent = null;
+    this.__treemodel.__view = null;
+    this.__treemodel = null;
+    this.__treedepth = -1;
+    
+    this.selected = this.__cfg_selected = false;
+    this.data = this.__cfg_data = null;
+    
+    this.drawReadyState();
   </method>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
-  <method name="doActivated">
-    var tc = this.treecontainer;
-    tc.triggerSelection(!tc.selected);
+  <method name="handleSelection" args="selected">
+    // implement in subclass
   </method>
-  
+
+  <method name="doActivated">
+    this.tree.setSelectionState(this.__treemodel, !this.__treemodel.__selected);
+  </method>
+
   <method name="drawHoverState">
-    var tc = this.treecontainer;
-    this._draw(tc.textcolor, tc.root.hovercolor);
+    var tc = this.tree;
+    if (this.selected) {
+      this._draw(tc.selecttextcolor, tc.selectcolor);
+    } else {
+      this._draw(tc.textcolor, tc.hovercolor);
+    }
   </method>
 
   <method name="drawActiveState">
-    var tc = this.treecontainer;
-    this._draw(tc.textcolor, tc.root.activecolor);
+    var tc = this.tree;
+    this._draw(tc.textcolor, tc.activecolor);
   </method>
 
   <method name="drawReadyState">
-    var tc = this.treecontainer;
-    if (tc.selected) {
-      this._draw(tc.root.selecttextcolor, tc.root.selectcolor);
+    var tc = this.tree;
+    if (this.selected) {
+      this._draw(tc.selecttextcolor, tc.selectcolor);
     } else {
       this._draw(tc.textcolor, 'transparent');
     }
@@ -57,15 +104,28 @@
 
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <text name="toggle" with="button"
-    visible="false" focusable="false" focusembellishment="false"
-    x="${this.parent.treecontainer.indentwidth * (this.parent.treecontainer.depth - 1) + 5}" y="6"
-    text="${this.parent.treecontainer.collapsed ? '▶' : '▼'}" fontsize="12"
-    disabled="${this.parent.disabled}"
+  <spacedlayout name="xlayout" locked="true" updateparent="true"
+    inset="${this.parent.indent + (this.parent.isleaf ? this.parent.leafindent : 5)}" spacing="2" outset="5"
+  >
+    <method name="updateParent" args="attribute, value, count">
+      var item = this.parent,
+        newRequiredWidth = Math.ceil(value + this.outset) || 0;
+      
+      if (item.requiredwidth !== newRequiredWidth) {
+        item.setAttribute('requiredwidth', newRequiredWidth);
+        item.tree.notifyItemWidth(item);
+      }
+    </method>
+  </spacedlayout>
+
+  <text name="toggle" with="button" visible="${!this.parent.isleaf}"
+    focusable="false" focusembellishment="false"
+    width="15" height="15" y="middle"
+    text="${this.parent.collapsed ? '▶' : '▼'}" fontsize="13"
   >
     <method name="doActivated">
-      var tc = this.parent.treecontainer;
-      tc.setAttribute('collapsed', !tc.collapsed);
+      var parent = this.parent;
+      parent.tree.setCollapsedState(parent, !parent.collapsed);
     </method>
     
     <method name="drawHoverState">
@@ -81,7 +141,7 @@
     </method>
   </text>
 
-  <bitmap name="image" visible="false" x="${this.parent.toggle.x + 17}" y="5" width="15" height="15"/>
+  <bitmap name="image" visible="false" stretches="scale" width="19" height="15" y="middle"/>
 
-  <text name="label" x="${this.parent.image.x + (this.parent.image.visible ? 21 : 0)}" y="5" fontsize="14"/>
+  <text name="label" fontsize="14" y="middle"/>
 </class>

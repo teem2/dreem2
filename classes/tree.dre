@@ -2,9 +2,6 @@
  You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
  software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
  either express or implied. See the License for the specific language governing permissions and limitations under the License.  -->
-
-
-
 <!--/**
    * @class dr.tree {UI Components}
    * @extends dr.view
@@ -19,200 +16,498 @@
    *      data='[{"label":"first", "items": [1, 2, 3]}]'></tree>
    *
    */-->
-<class name="tree" requires="treeitem"
-  width="${Math.max(this.maxwidth + 12, this.parent.innerwidth)}"
->
+<class name="tree" requires="treeitem">
   <!--// Attributes /////////////////////////////////////////////////////////-->
-  <attribute name="strict" type="boolean" value="true"/>
+  <attribute name="model" type="expression" value="{}"/>
+  <attribute name="data" type="expression" value="undefined"/>
+  <handler event="ondata">
+    var d = this.data;
 
-  <attribute name="data" type="object" value=""/>
+    if (typeof(d) === 'string' && ((d[0] == '[' && d[d.length - 1] == ']') || (d[0] == '{' && d[d.length - 1] == '}'))) {
+      try {
+        d = JSON.parse(d);
+        if (Array.isArray(d)) {
+          d = {nodes:d}
+        }
+      } catch (e) {
+        console.log('String looked like JSON but had error parsing', e, d);
+        return;
+      }
+    }
 
-  <attribute name="multipleselection" type="boolean" value="true"/>
-  <attribute name="branchselection" type="boolean" value="false"/>
-  <attribute name="selected" type="boolean" value="false"/>
-  <attribute name="collapsed" type="boolean" value="false"/>
+    if (d) {
+      var dff = this.diff(this.model, d);
+      this.patch(dff);
+    }
+    this.layoutTree();
+  </handler>
 
-  <attribute name="indentwidth" type="number" value="19"/>
-  <attribute name="depth" type="number" value="0"/>
-  
+  <attribute name="indentwidth" type="number" value="20"/>
+  <attribute name="itemheight" type="number" value="25"/>
+
+  <attribute name="nodes" type="expression" value="[]"/>
+  <attribute name="selectednodes" type="expression" value="[]"/>
+  <attribute name="multipleselection" type="boolean" value="false"/>
+
   <attribute name="selectcolor" type="color" value="#999"/>
   <attribute name="hovercolor" type="color" value="#eee"/>
   <attribute name="activecolor" type="color" value="#ccc"/>
   <attribute name="selecttextcolor" type="color" value="white"/>
   <attribute name="textcolor" type="color" value="#333"/>
-  
-  <attribute name="maxwidth" type="number" value="0"/>
+
+  <attribute name="treeitemclass" type="string" value="treeitem"/>
+
+  <attribute name="rootvisible" type="boolean" value="true"/>
 
 
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
-    if (parent.root) {
-      this.root = parent.root;
-      this.isroot = false;
-      attrs.depth = parent.depth + 1;
-    } else {
-      this.root = this;
-      this.isroot = true;
-      attrs.depth = 0;
-    }
-    
     this.super();
     
-    this.createChild({
-      class:this.getTreeItemClassname(), 
-      name:'item',
-      treecontainer:this
-    });
+    this.__pool = new dr.SimplePool(dr.lookupClass(this.treeitemclass), this);
   </method>
-
-
-  <!--// Handlers ///////////////////////////////////////////////////////////-->
-  <handler event="ondata" method="populate"/>
-
-  <handler event="onselected">
-    var item = this.item,
-      selected = this.selected;
-    item.setAttribute('bgcolor', selected ? this.root.selectcolor : 'transparent');
-    item.setAttribute('color', selected ? this.root.selecttextcolor : this.textcolor);
-    
-    if (this.root.branchselection && !this.isroot) this.parent.setAttribute('selected', selected);
-  </handler>
-
-  <handler event="oncollapsed">
-    var children = this.nodes.children;
-    if (children) {
-      var i = 0,
-        len = children.length,
-        newCollapsedValue = !this.collapsed;
-      for (; len > i; i++) children[i].setAttribute('visible', newCollapsedValue)
-    }
-  </handler>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
-  <method name="populate">
-    var d = this.data;
-    if (typeof(d) === 'undefined') return;
-    
-    if (typeof(d) === 'string' && ((d[0] == '[' && d[d.length - 1] == ']') || (d[0] == '{' && d[d.length - 1] == '}'))) {
-      try {
-        d = this.data = JSON.parse(d);
-      } catch (e) {
-        console.log('String looked like JSON but had error parsing', e, d);
-      }
+  <method name="patch" args="pch, obj">
+    if (!obj) {
+      obj = this.model;
     }
-    
-    if (typeof(d) === 'number') d = d.toString();
-    
-    var item = this.item,
-      label = item.label,
-      image = item.image;
-    if (typeof(d) === 'string') {
-      label.setAttribute('text', d);
-    } else if (!Array.isArray(d)) {
-      if (d.image) {
-        image.setAttribute('src', d.image);
-        image.setAttribute('visible', true);
+    var i;
+    if (Array.isArray(pch)) {
+      for (i=0; pch.length > i; i++) {
+        this.patch(pch[i], obj);
       }
-      
-      if (d.title) {
-        label.setAttribute('text', d.title)
-      } else if (d.label) {
-        label.setAttribute('text', d.label)
-      } else if (d.text) {
-        label.setAttribute('text', d.text)
-      } else if (d.name) {
-        label.setAttribute('text', d.name)
-      } else if (d.tag) {
-        label.setAttribute('text', d.tag)
-      } else {
-        label.setAttribute('visible', false);
-      }
-      
-      if (Array.isArray(d.items)) {
-        d = d.items;
-      } else if (Array.isArray(d.nodes)) {
-        d = d.nodes;
-      } else if (Array.isArray(d.children)) {
-        d = d.children;
-      } else if (Array.isArray(d.child)) {
-        d = d.child;
-      } else if (!this.strict) { //be fancy
-        var found = [],
-          props = Object.getOwnPropertyNames(d),
-          i = 0, len = props.length, name, value;
-        for (; len > i; i++) {
-          name = props[i];
-          if (name == 'title' || name == 'text' || name == 'label' || name == 'name' || name == 'tag') continue;
-          value = d[name];
-          if (!Array.isArray(value)) value = [value];
-          found.push({name:name, items:value});
+    } else {
+      //console.log("PATCH IS", pch);
+      var o = obj;
+      var path = pch.path.split('/');
+      path.shift();
+
+      var p, index;
+      while (path.length > 0) {
+        if (p) {
+          o = o[p];
         }
-        if (found.length) d = found;
+        if (index) {
+          o = o[index]
+          index = undefined;
+        }
+
+        p = path.shift();
+        if (p.slice(-1) == ']') {
+          var match = /^([^\[]*)\[(\d+)\]$/.exec(p);
+          p = match[1];
+          index = match[2];
+        }
+      }
+
+      if (pch.action == 'DEL') {
+        if (index) {
+          delete o[p].splice(index, 1);
+        } else {
+          delete o[p]
+        }
+      } else if (pch.action == 'SET') {
+        if (index) {
+          o[p].splice(index, 0, pch.value);
+        } else {
+          o[p] = pch.value;
+        }
+      } else if (pch.action == 'SWP') {
+        var temp = o[p][index];
+        o[p][index] = o[p][pch.with];
+        o[p][pch.with] = temp;
+      } else if (pch.action == 'ORD') {
+        var order = [];
+        for (i = 0; i < pch.order.length; i++) {
+          order[i] = o[p][pch.order[i]];
+        }
+        o[p] = order;
+      }
+    }
+  </method>
+
+  <method name="deepCompare" args="a,b, parents">
+    if (!parents) {
+      parents = [];
+    }
+
+    if (parents.indexOf(a) > -1) {
+      return true;
+    }
+
+    var match = true;
+    var atype = typeof(a);
+    var btype = typeof(b);
+
+    if (atype !== btype) {
+      match = false;
+    } else if (['number', 'string', 'boolean', 'undefined'].indexOf(atype) > -1) {
+      if (a !== b) {
+        match = false;
+      }
+    } else if ((Array.isArray(a) && !Array.isArray(b)) || (!Array.isArray(a) && Array.isArray(b))) {
+      match = false;
+    } else if (Array.isArray(a)) {
+      if (a.length === b.length) {
+        parents.push(a);
+        for (var i=0; a.length > i; i++) {
+          if (!this.deepCompare(a[i], b[i], parents)) {
+            match = false;
+            break;
+          }
+        }
+      } else {
+        match = false;
+      }
+    } else if (atype !== 'function') {
+
+      var aval, bval, prop;
+      var checked = [];
+
+      parents.push(a);
+      for (prop in a) {
+        if (!prop.startsWith('__')) {
+          if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
+            aval = a[prop];
+            bval = b[prop];
+            if (!this.deepCompare(aval, bval, parents)) {
+              match = false;
+              break;
+            }
+          } else if ((a.hasOwnProperty(prop) && !b.hasOwnProperty(prop)) || (!a.hasOwnProperty(prop) && b.hasOwnProperty(prop))) {
+            match = false;
+            break;
+          }
+          checked.push(prop);
+        }
+      }
+      if (match) {
+        parents.push(b);
+        for (prop in b) {
+          if (!prop.startsWith('__') && 0 > checked.indexOf(prop)) {
+            if (a.hasOwnProperty(prop) && b.hasOwnProperty(prop)) {
+              aval = a[prop];
+              bval = b[prop];
+              if (!this.deepCompare(aval, bval, parents)) {
+                match = false;
+                break;
+              }
+            } else {
+              match = false;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    return match;
+  </method>
+
+  <method name="findInArray" args="array, obj">
+    var t = typeof(obj);
+    if (t === 'number' || t === 'string' || t === 'boolean' || t === 'undefined') {
+      return array.indexOf(obj);
+    } else {
+      for (var i = 0; array.length > i; i++) {
+        var searched = [array];
+        if (this.deepCompare(obj, array[i], searched)) {
+          return i;
+        }
+      }
+    }
+
+    return -1;
+  </method>
+
+  <method name="diff" args="a,b,path">
+    if (!path) {
+      path = '';
+    }
+    var patch = [];
+
+    var atype = typeof(a);
+    var btype = typeof(b);
+
+    var aval, bval;
+    if (atype === 'undefined' && btype !== 'undefined') {
+      patch.push({action:'SET', path:path, value:b})
+
+    } else if (atype !== 'undefined' && btype === 'undefined') {
+      patch.push({action:'DEL', path:path})
+
+    } else if (atype !== btype || (Array.isArray(a) && !Array.isArray(b)) || (!Array.isArray(a) && Array.isArray(b))) {
+      patch.push({action:'SET', path:path, value:b})
+
+    } else if ((atype === 'string' || atype === 'boolean' || atype === 'number') && a !== b) {
+      patch.push({action:'SET', path:path, value:b})
+
+    } else if (Array.isArray(a)) {
+      var i, j;
+
+      var dupa = a.slice();
+
+      var matching;
+
+      var tested = [];
+
+      for (i = dupa.length - 1; i >= 0; i--) {
+        aval = dupa[i];
+        var found = -1;
+        if (aval && typeof(aval.id) !== 'undefined') {
+          tested.push(aval.id);
+          for (j=0; b.length > j; j++) {
+            bval = b[j];
+            if (bval && aval.id === bval.id) {
+              found = j;
+              patch = patch.concat(this.diff(aval, bval, path + '[' + i + ']'));
+              break;
+            }
+          }
+          if (found < 0) {
+            patch.push({action:'DEL', path:path + '[' + i + ']'})
+            dupa.splice(i, 1);
+          }
+        }
+      }
+
+      for (i = 0; b.length > i; i++) {
+        bval = b[i];
+        if (bval && typeof(bval.id) !== 'undefined') {
+          if (tested.indexOf(bval.id) < 0) {
+            dupa.push(bval)
+            patch.push({action:'SET', path:path + '[' + dupa.indexOf(bval) + ']', value:bval})
+          }
+        }
+      }
+
+      var order = [];
+      for (i = 0; b.length > i; i++) {
+        bval = b[i];
+        if (bval && typeof(bval.id) !== 'undefined') {
+          for (j=0; dupa.length > j; j++) {
+            aval = dupa[j];
+            if (aval && aval.id === bval.id) {
+              order.push(j);
+              break;
+            }
+          }
+        }
+      }
+      if (order.length) {
+        patch.push({action:'ORD', path:path, order:order})
+      }
+
+    } else if (atype === 'object') {
+
+      for (var akey in a) {
+        if (!akey.startsWith('__') && a.hasOwnProperty(akey)) {
+          aval = a[akey];
+          bval = b[akey];
+          patch = patch.concat(this.diff(aval, bval, path + '/' + akey))
+        }
+      }
+
+      for (var bkey in b) {
+        if (!bkey.startsWith('__') && b.hasOwnProperty(bkey)) {
+          aval = a[bkey];
+          bval = b[bkey];
+          if (!aval) {
+            patch.push({action:'SET', path:path + '/' + bkey, value:bval})
+          }
+        }
+      }
+    }
+
+    return patch;
+  </method>
+
+  <!--// Layout //-->
+  <method name="layoutNode" args="obj, depth, parent">
+    if (!depth) depth = 0;
+
+    if (!obj) {
+      return;
+    }
+    
+    var data = obj.data || obj.node || obj;
+
+    if (obj.__treeskiplayout) {
+      return {
+        __treeparent: parent,
+        __treemodel: obj,
+        __treedepth: depth,
+        data:data
       }
     }
     
-    if (d.title) {
-      label.setAttribute('text', d.title)
-    } else if (d.label) {
-      label.setAttribute('text', d.label)
-    } else if (d.text) {
-      label.setAttribute('text', d.text)
-    } else if (d.name) {
-      label.setAttribute('text', d.name)
-    } else if (d.tag) {
-      label.setAttribute('text', d.tag)
+    var node = this.__pool.getInstance();
+    node.setAttributes({
+      indent:depth * this.indentwidth,
+      height:this.itemheight,
+      fontsize:this.fontsize,
+      tree:this,
+      collapsed:!!(obj.__collapsed)
+    });
+    node.setAttribute('data', data);
+    node.setAttribute('selected', !!(obj.__selected));
+    node.setAttribute('visible', true);
+
+    node.__treeparent = parent;
+    node.__treemodel = obj;
+    node.__treedepth = depth;
+
+    this.nodes.push(node);
+    
+    obj.__view = node;
+
+    var objnodes = this.getModelNodes(obj);
+    if (objnodes && objnodes.length) {
+      if (!obj.__collapsed) {
+        var siblings = [], created;
+        for (var i=0; objnodes.length > i; i++) {
+          created = this.layoutNode(objnodes[i], depth + 1, node)
+          if (created) {
+            siblings.push(created);
+            created.__treesiblings = siblings;
+          }
+        }
+        node.__treechildren = siblings;
+      }
+      node.setAttribute('isleaf', false);
+    } else {
+      node.setAttribute('isleaf', true);
+    }
+
+    return node;
+  </method>
+
+  <method name="layoutTree">
+    this.layoutY.setAttribute('locked', true);
+    
+    var nodes = this.nodes, i = nodes.length,
+      pool = this.__pool;
+    while (i) pool.putInstance(nodes[--i]);
+    this.setAttribute('nodes', []);
+
+    if (this.rootvisible) {
+      this.layoutNode(this.model)
+    } else {
+      this.__treedepth = -1;
+      var objnodes = this.getModelNodes(this.model),
+        siblings = [], 
+        created,
+        len = objnodes.length;
+      for (i = 0; len > i; i++) {
+        created = this.layoutNode(objnodes[i], 0, this);
+        siblings.push(created);
+        created.__treesiblings = siblings;
+      }
+      this.__treechildren = siblings;
     }
     
-    if (Array.isArray(d)) {
-      this.nodes.setAttribute('classname', this.getReplicatorClassname());
-      this.nodes.setAttribute('data', d);
-      item.toggle.setAttribute('visible', !this.isroot && d.length > 0);
-    }
+    this._recalculateWidestWidth();
     
-    var mw = label.x + label.width;
-    if (mw > this.root.maxwidth) this.root.setAttribute('maxwidth', mw);
+    this.layoutY.setAttribute('locked', false);
+  </method>
+
+  <method name="getModelNodes" args="model">
+    return model.nodes || model.items || model.children || model.child;
+  </method>
+
+  <method name="setCollapsedState" args="node, state">
+    if (node.__treemodel) node.__treemodel.__collapsed = state;
+    this.layoutTree();
+  </method>
+
+  <!--// Selection //-->
+  <method name="setSelectionState" args="m, state">
+    if (!this.multipleselection) this.clearSelection();
+    
+    if (m) {
+      m.__selected = state;
+      if (m.__view) m.__view.setAttribute('selected', state);
+      
+      var selectedNodes = this.selectednodes;
+      if (state) {
+        selectedNodes.push(m);
+      } else {
+        var idx = selectedNodes.indexOf(m);
+        if (idx > -1) selectedNodes.splice(idx, 1);
+      }
+    }
   </method>
 
   <method name="clearSelection">
-    this.setAttribute('selected', false);
-    var svs = this.getSubviews(), i = 0, len = svs.length, sv;
-    for (; len > i; i++) {
-      sv = svs[i];
-      if (sv.clearSelection) sv.clearSelection();
+    var selectedNodes = this.selectednodes, i = selectedNodes.length, selectedNode;
+    while (i) {
+      selectedNode = selectedNodes[--i];
+      selectedNode.__selected = false;
+      if (selectedNode.__view) selectedNode.__view.setAttribute('selected', false);
+    }
+    this.setAttribute('selectednodes', []);
+  </method>
+
+  <method name="selectModelNode" args="viewId">
+    if (!viewId) return false;
+    
+    var self = this;
+    return (function walk(m) {
+      if (m.id === viewId) {
+        if (!m.__selected) self.setSelectionState(m, true);
+        return true;
+      }
+      
+      var children = self.getModelNodes(m);
+      if (children) {
+        var i = children.length;
+        while (i) if (walk(children[--i])) return true;
+      }
+      
+      return false;
+    })(this.model);
+  </method>
+
+  <!--// Width Calculation //-->
+  <method name="notifyItemWidth" args="item">
+    var widestItem = this._widestItem,
+      widestWidth = this._widestWidth || 0;
+    if (item.requiredwidth >= widestWidth) {
+      this._widestWidth = item.requiredwidth;
+      this._widestItem = item;
+      this.updateWidth(this._widestWidth);
+    } else if (item === widestItem) {
+      // Must scan for widest item since the widest one just became smaller
+      this._recalculateWidestWidth();
     }
   </method>
 
-  <method name="selectHandler" args="selecting, data">
-    // Bubble up to the selectHandler implementation closest to the root of the
-    // tree. Typically you will override this method in the root node of the
-    // tree.
-    if (this.parent.selectHandler) this.parent.selectHandler(selecting, data);
-  </method>
-
-  <method name="triggerSelection" args="sel">
-    if (!this.root.multipleselection) this.root.clearSelection();
+  <method name="_recalculateWidestWidth">
+    var widestItem = null,
+      widestWidth = 0,
+      svs = this.getSubviews(), i = svs.length, sv;
+    while (i) {
+      sv = svs[--i];
+      if (sv.requiredwidth > widestWidth) {
+        widestItem = sv;
+        widestWidth = sv.requiredwidth;
+      }
+    }
+    this._widestWidth = widestWidth;
+    this._widestItem = widestItem;
     
-    this.setAttribute('selected', sel);
-    this.selectHandler(this.selected, this.data);
+    this.updateWidth(this._widestWidth);
   </method>
 
-  <method name="getReplicatorClassname">
-    return 'tree';
-  </method>
-
-  <method name="getTreeItemClassname">
-    return 'treeitem';
+  <method name="updateWidth" args="value">
+    this.setAttribute('width', value);
+    var svs = this.getSubviews(), i = svs.length;
+    while (i) svs[--i].setAttribute('width', value);
   </method>
 
 
   <!--// Views/Nodes ////////////////////////////////////////////////////////-->
-  <replicator name="nodes" classname="view">
-    <handler event="onreplicated" args="r">
-      var children = r.children, len = children.length, i = 0;
-      for (; len > i; i++) children[i].setAttribute('name', 'treenode_' + i);
-    </handler>
-  </replicator>
-
-  <spacedlayout axis="y" updateparent="true"/>
+  <spacedlayout name="layoutY" axis="y" updateparent="true" locked="true"/>
 </class>
