@@ -18,40 +18,19 @@ either express or implied. See the License for the specific language governing p
       layouts_subhead.setAttribute('visible', isView);
       behaviors_subhead.setAttribute('visible', isView);
       
-      this._fireDelayedEvent('selected', v, 100);
+      this.sendCollapsedEvent('ondelayedselected', v, 100, true);
     }
   </setter>
 
   <attribute name="selectedview" type="expression" value="${null}"/>
   <setter name="selectedview" args="v">
-    if (this.setActual('selectedview', v, 'expression', null)) this._fireDelayedEvent('selectedview', v, 100);
+    if (this.setActual('selectedview', v, 'expression', null)) this.sendCollapsedEvent('ondelayedselectedview', v, 100, true);
   </setter>
 
   <attribute name="isrootselection" type="boolean" value="false"/>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
-  <method name="_fireDelayedEvent" args="name, value, delay">
-    // Fire a delayed event after 100 millis of inactivity. The first time the 
-    // event will fire immediately.
-    var self = this, 
-      immediate = true,
-      timerName = '_' + name + '_timerId',
-      eventName = 'ondelayed' + name;
-    
-    if (this[timerName]) {
-      clearTimeout(this[timerName]);
-      immediate = false;
-    }
-    
-    this[timerName] = setTimeout(function() {
-      if (!immediate) self.sendEvent(eventName, value);
-      self[timerName] = null;
-    }, delay);
-    
-    if (immediate) this.sendEvent(eventName, value);
-  </method>
-
   <method name="clear" args="restoreable">
     if (restoreable) this._oldSelection = this.selected;
     this.select(null);
