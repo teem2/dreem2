@@ -21,7 +21,7 @@ either express or implied. See the License for the specific language governing p
     }
   </handler>
 
-  <handler event="onselectedview" args="selected" reference="selectionmanager">
+  <handler event="ondelayedselectedview" args="selected" reference="selectionmanager">
     // selection was lost and we have changes that would require a save
     if (this._replicatorchanges && selected) this._showReplicationWarning();
   </handler>

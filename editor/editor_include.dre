@@ -942,9 +942,11 @@ either express or implied. See the License for the specific language governing p
               if (isParent) this.speed = 0;
             </method>
           </spacedlayout>
-          <replicator classname="attributeeditor"
-            data="${selectionmanager.selected ? selectionmanager.selected.getAttrsListForDetails() : []}"
-          />
+          <replicator classname="attributeeditor">
+            <handler event="ondelayedselected" args="selected" reference="selectionmanager">
+              this.setAttribute('data', selected ? selected.getAttrsListForDetails() : []);
+            </handler>
+          </replicator>
         </view>
         
         <!-- More attrs subpanel. -->
@@ -958,7 +960,7 @@ either express or implied. See the License for the specific language governing p
             this.updateHeight();
           </handler>
           
-          <handler name="updateHeight" event="onselected" reference="selectionmanager">
+          <handler name="updateHeight" event="ondelayedselected" reference="selectionmanager">
             var animAttrs = {attribute:'height', to:0, duration:500};
             if (selectionmanager.selected) {
               var svs = this.content.getSubviews();
@@ -1001,9 +1003,11 @@ either express or implied. See the License for the specific language governing p
                 if (this.canUpdate()) this.parent.parent.updateHeight();
               </method>
             </spacedlayout>
-            <replicator classname="attributeeditor"
-              data="${selectionmanager.selected ? selectionmanager.selected.getMoreAttrsListForDetails() : []}"
-            />
+            <replicator classname="attributeeditor">
+              <handler event="ondelayedselected" args="selected" reference="selectionmanager">
+                this.setAttribute('data', selected ? selected.getMoreAttrsListForDetails() : []);
+              </handler>
+            </replicator>
           </view>
         </view>
       </view>
@@ -1021,7 +1025,7 @@ either express or implied. See the License for the specific language governing p
           </method>
         </spacedlayout>
         
-        <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
+        <handler name="refresh" event="ondelayedselectedview" args="selectedview" reference="selectionmanager">
           this.repl.setActualAttribute('data', selectedview ? selectedview.getLayouts(true) : []);
         </handler>
         
@@ -1033,7 +1037,7 @@ either express or implied. See the License for the specific language governing p
       <view id="behaviors_panel" width="100%" clip="true">
         <spacedlayout axis="y" inset="-1" spacing="5" updateparent="true"/>
         
-        <handler name="refresh" event="onselectedview" args="selectedview" reference="selectionmanager">
+        <handler name="refresh" event="ondelayedselectedview" args="selectedview" reference="selectionmanager">
           this.repl.setActualAttribute('data', selectedview ? selectedview.getBehaviors() : []);
         </handler>
         
@@ -1045,7 +1049,7 @@ either express or implied. See the License for the specific language governing p
       <view id="data_panel" width="100%" clip="true">
         <spacedlayout axis="y" updateparent="true"/>
 
-        <handler name="refresh" event="onselected" args="selectedview" reference="selectionmanager">
+        <handler name="refresh" event="ondelayedselected" args="selectedview" reference="selectionmanager">
           if (selectedview && selectedview.data) {
             this.dinspect.setAttribute('rootname', '$' + selectedview.name);
             this.dinspect.setAttribute('data', selectedview.data);
