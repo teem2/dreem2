@@ -127,7 +127,8 @@ either express or implied. See the License for the specific language governing p
 
 <class name="menubutton" with="listviewanchor, button"
   width="${this.labelview.width + 2*this.labelview.x}" height="21" y="2"
-  floatingvalignoffset="2" listviewattrs="{maxheight:640}"
+  floatingvalignoffset="2"
+  listviewattrs="{maxheight:640, defaultitemclass:dr.menuitem}"
   focusembellishment="false"
   floatingalign="insideleft" floatingvalign="outsidebottom"
   cornerradius="2" bgcolor="#cccccc"
@@ -184,6 +185,19 @@ either express or implied. See the License for the specific language governing p
   </method>
   
   <text name="labelview" text="${this.parent.label}" x="12" y="middle" fontsize="14" color="#333333"/>
+</class>
+
+<class name="menuitem" extends="listviewitem">
+  <attribute name="shortcut" type="string" value=""/>
+
+  <method name="getMinimumWidth">
+    return this.inset + this.label.width + 16 + this.shortcutView.width + this.outset;
+  </method>
+
+  <text name="shortcutView"
+    x="${this.parent.width - this.width - this.parent.outset}"
+    text="${this.parent.shortcut}" fontsize="${this.parent.fontsize}"
+  />
 </class>
 
 <class name="menufloatingpanelbutton" with="floatingpanelanchor, button"

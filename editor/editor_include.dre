@@ -80,11 +80,16 @@ either express or implied. See the License for the specific language governing p
           sprite.preventDefault(platformEvent); // Prevent browser show bookmarks bar functionality
           if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
           break;
+        case 69: // E: Exit Editor
+          sprite.preventDefault(platformEvent);
+          if (this._actionsPermitted()) actions.stop();
+          break;
         case 70: // F: Reorder forward
           sprite.preventDefault(platformEvent); // Prevent browser find functionality
           if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
           break;
         case 83: // S: Save document
+          console.log('save');
           sprite.preventDefault(platformEvent); // Prevent browser save functionality
           if (this._actionsPermitted()) actions.save();
           break;
@@ -1197,10 +1202,11 @@ either express or implied. See the License for the specific language governing p
       <handler event="onoktosave" reference="parent" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
+        var accChar = dr.global.keys.getAcceleratorChar();
         this.cfg = [
-          {attrs:{name:'stop', text:'exit'}},
+          {attrs:{name:'stop', text:'exit', shortcut:accChar + 'E'}},
           {klass:dr.listviewseparator},
-          {attrs:{name:'save', text:'save'}},
+          {attrs:{name:'save', text:'save', shortcut:accChar + 'S'}},
           {attrs:{name:'editPreview', text:'preview'}},
           {attrs:{name:'livePreview', text:'open a live preview'}}
         ];
@@ -1213,6 +1219,9 @@ either express or implied. See the License for the specific language governing p
           attrs = cfg[--i].attrs;
           if (attrs) {
             switch(attrs.name) {
+              case 'stop':
+                attrs.disabled = !editor.editmode;
+                break;
               case 'save':
                 attrs.disabled = !this.parent.oktosave;
                 break;
@@ -1235,15 +1244,16 @@ either express or implied. See the License for the specific language governing p
       <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
+        var accChar = dr.global.keys.getAcceleratorChar();
         this.cfg = [
-          {attrs:{name:'undo', text:'undo'}},
-          {attrs:{name:'redo', text:'redo'}},
+          {attrs:{name:'undo', text:'undo', shortcut:accChar + 'Z'}},
+          {attrs:{name:'redo', text:'redo', shortcut:accChar + '⇧Z'}},
           {klass:dr.listviewseparator},
-          {attrs:{name:'cut', text:'cut'}},
-          {attrs:{name:'copy', text:'copy'}},
-          {attrs:{name:'paste', text:'paste'}},
+          {attrs:{name:'cut', text:'cut', shortcut:accChar + 'X'}},
+          {attrs:{name:'copy', text:'copy', shortcut:accChar + 'C'}},
+          {attrs:{name:'paste', text:'paste', shortcut:accChar + 'V'}},
           {klass:dr.listviewseparator},
-          {attrs:{name:'deleteSelected', text:'delete'}}
+          {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}}
         ];
         this.super();
       </method>
@@ -1277,15 +1287,25 @@ either express or implied. See the License for the specific language governing p
       <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
+        var accChar = dr.global.keys.getAcceleratorChar();
         this.cfg = [
-          {attrs:{name:'bringToFront', text:'bring to front'}},
-          {attrs:{name:'bringForward', text:'bring forward'}},
-          {attrs:{name:'sendToBack', text:'send to back'}},
-          {attrs:{name:'sendBackward', text:'send backward'}},
+          {attrs:{name:'bringToFront', text:'bring to front', shortcut:accChar + 'F'}},
+          {attrs:{name:'bringForward', text:'bring forward',  shortcut:accChar + '⇧F'}},
+          {attrs:{name:'sendToBack',   text:'send to back',   shortcut:accChar + 'B'}},
+          {attrs:{name:'sendBackward', text:'send backward',  shortcut:accChar + '⇧B'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'shiftUp',       text:'move up x1',     shortcut:'↑'}},
+          {attrs:{name:'shiftUpBig',    text:'move up x10',    shortcut:'⇧↑'}},
+          {attrs:{name:'shiftDown',     text:'move down x1',   shortcut:'↓'}},
+          {attrs:{name:'shiftDownBig',  text:'move down x10',  shortcut:'⇧↓'}},
+          {attrs:{name:'shiftLeft',     text:'move left x1',   shortcut:'←'}},
+          {attrs:{name:'shiftLeftBig',  text:'move left x10',  shortcut:'⇧←'}},
+          {attrs:{name:'shiftRight',    text:'move right x1',  shortcut:'→'}},
+          {attrs:{name:'shiftRightBig', text:'move right x10', shortcut:'⇧→'}},
         ];
         this.super();
       </method>
-
+      
       <method name="prepareConfig" args="cfg">
         var i = cfg.length, attrs;
         while (i) {
@@ -1296,6 +1316,14 @@ either express or implied. See the License for the specific language governing p
               case 'bringForward':
               case 'sendToBack':
               case 'sendBackward':
+              case 'shiftUp':
+              case 'shiftUpBig':
+              case 'shiftDown':
+              case 'shiftDownBig':
+              case 'shiftLeft':
+              case 'shiftLeftBig':
+              case 'shiftRight':
+              case 'shiftRightBig':
                 attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
                 break;
             }

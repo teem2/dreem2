@@ -110,18 +110,20 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="stop">
-    if (editormenubar.oktosave) {
-      dialogmanager.showConfirm(
-        'You have unsaved changes. Are you sure you want to exit the editor and discard your changes?', null, null, function(dialog, success) {
-          if (success) {
-            editormodel.stop();
-          } else {
-            // Exit cancelled
+    if (editor.editmode) {
+      if (editormenubar.oktosave) {
+        dialogmanager.showConfirm(
+          'You have unsaved changes. Are you sure you want to exit the editor and discard your changes?', null, null, function(dialog, success) {
+            if (success) {
+              editormodel.stop();
+            } else {
+              // Exit cancelled
+            }
           }
-        }
-      );
-    } else {
-      editormodel.stop();
+        );
+      } else {
+        editormodel.stop();
+      }
     }
   </method>
 
@@ -193,6 +195,38 @@ either express or implied. See the License for the specific language governing p
     if (this._isEditableSelection()) {
       console.log('FIXME: implement paste');
     }
+  </method>
+
+  <method name="shiftUp">
+    if (this._isEditableSelection()) reticle.shiftPos(false, false, false);
+  </method>
+
+  <method name="shiftUpBig">
+    if (this._isEditableSelection()) reticle.shiftPos(false, false, true);
+  </method>
+
+  <method name="shiftDown">
+    if (this._isEditableSelection()) reticle.shiftPos(false, true, false);
+  </method>
+
+  <method name="shiftDownBig">
+    if (this._isEditableSelection()) reticle.shiftPos(false, true, true);
+  </method>
+
+  <method name="shiftLeft">
+    if (this._isEditableSelection()) reticle.shiftPos(true, false, false);
+  </method>
+
+  <method name="shiftLeftBig">
+    if (this._isEditableSelection()) reticle.shiftPos(true, false, true);
+  </method>
+
+  <method name="shiftRight">
+    if (this._isEditableSelection()) reticle.shiftPos(true, true, false);
+  </method>
+
+  <method name="shiftRightBig">
+    if (this._isEditableSelection()) reticle.shiftPos(true, true, true);
   </method>
 
   <method name="_isEditableSelection">
