@@ -86,7 +86,7 @@ either express or implied. See the License for the specific language governing p
           break;
         case 83: // S: Save document
           sprite.preventDefault(platformEvent); // Prevent browser save functionality
-          if (this._actionsPermitted()) saveButton.doActivated();
+          if (this._actionsPermitted()) actions.save();
           break;
         case 90: // Z: Undo/Redo
           sprite.preventDefault(platformEvent); // Prevent browser undo/redo functionality
@@ -815,58 +815,6 @@ either express or implied. See the License for the specific language governing p
   <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>
 
-  <!--// Top Panel //-->
-  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
-    width="100%" height="${config.topbar_height}"
-  >
-    <view name="left" padding="2" height="${config.topbar_height}">
-      <spacedlayout spacing="3" inset="9" outset="3" updateparent="true"/>
-      <constantlayout attribute="y" value="'middle'"/>
-      
-      <listviewiconbutton id="actionsButton" floatingpanelid="actions" label="actions" iconname="actions"
-        listviewattrs="{maxheight:300}"
-      >
-        <method name="doActivated">
-          if (!this.disabled && !dr.global.dragManager.dragview) {
-            var editorPlaying = !editor.editmode;
-            var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
-            var cfg = [
-              {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
-              {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
-              {klass:dr.listviewseparator},
-              {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
-              {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
-              {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
-              {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
-              {klass:dr.listviewseparator},
-              {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
-            ];
-            this.setActualAttribute('itemconfig', cfg);
-            
-            this.toggleFloatingPanel();
-          }
-        </method>
-        
-        <method name="doItemActivated" args="itemview">
-          actions[itemview.name]();
-          this.super();
-        </method>
-      </listviewiconbutton>
-      <floatingpaneliconbutton floatingpanelid="settings" label="settings" iconname="settings"/>
-    </view>
-    
-    <view name="right" padding="2" x="right" height="${config.topbar_height}">
-      <spacedlayout spacing="3" inset="3" outset="9" updateparent="true"/>
-      <constantlayout attribute="y" value="'middle'"/>
-      <toolbariconbutton with="tooltip" id="editPreviewButton" action="editPreview" label="preview" iconname="preview" width="54"
-        tooltip="${'Change the editing area to a preview of the screen.\nOpt-click to open a new live preview.'}" tipvalign="below"
-      />
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbariconbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}" label="save" iconname="save"/>
-      <toolbariconbutton id="stopButton" action="stop" disabled="${!editor.editmode}" label="exit" iconname="exit"/>
-    </view>
-  </view>
-
   <!--// Left Panel //-->
   <view name="leftbar" ignoreplacement="true" bgcolor="white"
     y="${config.topbar_height}"
@@ -1147,23 +1095,25 @@ either express or implied. See the License for the specific language governing p
     </method>
   </view>
 
-  <view id="messages" with="button" ignoreplacement="true" focusembellishment="false"
+  <!--// Top Panel //-->
+  <view id="messages" with="button" ignoreplacement="true"
+    focusable="false" focusembellishment="false"
     x="center" width="550" height="12"
     bgcolor="#bbbbbb" boxshadow="${config.boxshadow_large}"
     bottomleftcornerradius="12" bottomrightcornerradius="12"
   >
     <attribute name="selected" type="boolean" value="false"/>
-    <attribute name="useropened" type="boolean" value="false"/>
+    <attribute name="user_opened" type="boolean" value="false"/>
     <handler event="onselected" args="selected">
       this.stopActiveAnimators('height');
       this.animate({
         attribute:'height',
         to: 12 + (selected ? this.container.content.height : 0),
-        duration:selected || this.useropened ? 400 : 1000
+        duration:selected || this.user_opened ? 400 : 1000
       });
       
       // Animate closed after a delay
-      if (selected && !this.useropened) {
+      if (selected && !this.user_opened) {
         var self = this;
         if (this._timerId) clearTimeout(this._timerId);
         this._timerId = setTimeout(function() {
@@ -1172,12 +1122,8 @@ either express or implied. See the License for the specific language governing p
       }
     </handler>
     <method name="doActivated">
-      this.setActualAttribute('useropened', true);
+      this.setActualAttribute('user_opened', true);
       this.setActualAttribute('selected', !this.selected);
-    </method>
-    <method name="initNode" args="parent, attrs">
-      this.super();
-      this.addMessage('No Messages.', true, true);
     </method>
     <method name="drawDisabledState">
       this.setActualAttribute('bgcolor', '#bbbbbb');
@@ -1191,16 +1137,16 @@ either express or implied. See the License for the specific language governing p
     <method name="drawReadyState">
       this.setActualAttribute('bgcolor', '#bbbbbb');
     </method>
-    
     <method name="addMessage" args="msg, noopen, notime">
       if (msg) {
         var content = this.container.content;
         
-        // Remove and existing children that have the exact same message.
-        var svs = content.getSubviews(), i = svs.length, sv;
+        // Remove any existing children that have the exact same message.
+        var svs = content.getSubviews(), i = svs.length, sv,
+          isFirstMessage = i === 0;
         while (i) {
           sv = svs[--i];
-          if (sv.msg === msg || sv.msg === 'No Messages.') sv.destroy();
+          if (sv.msg === msg) sv.destroy();
         }
         
         // Create a new message.
@@ -1220,13 +1166,19 @@ either express or implied. See the License for the specific language governing p
         // Dim out all but the most recent message
         while (svs.length - 1 > i) svs[i++].setActualAttribute('color', '#aaaaaa');
         
+        // Move down now that we have at least one message
+        if (isFirstMessage) {
+          this.animate({attribute:'y', to:editormenubar.height, duration:400});
+          this.setAttribute('focusable', true);
+        }
+        
         // Open
         if (!noopen) {
           if (this.selected) {
             this.setActualAttribute('selected', false); // Force reanimation
             this.setActualAttribute('selected', true);
           } else {
-            this.setActualAttribute('useropened', false);
+            this.setActualAttribute('user_opened', false);
             this.setActualAttribute('selected', true);
           }
         }
@@ -1254,7 +1206,119 @@ either express or implied. See the License for the specific language governing p
       </view>
     </view>
   </view>
+
+  <!--// The menu bar at the top of the editor. //-->
+  <view id="editormenubar" ignoreplacement="true"
+    width="100%" height="${config.topbar_height}" bgcolor="#eeeeee" boxshadow="${config.boxshadow_large}"
+    oktosave="${undo.isundoable && editor.editmode}"
+  >
+    <attribute name="oktosave" type="boolean" value="false"/>
+    
+    <menubutton floatingpanelid="filemenu" label="File">
+      <handler event="onoktosave" reference="parent" method="updateConfig"/>
+      
+      <method name="initNode" args="parent, attrs">
+        this.cfg = [
+          {attrs:{name:'stop', text:'exit'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'save', text:'save'}},
+          {attrs:{name:'editPreview', text:'preview'}},
+          {attrs:{name:'livePreview', text:'open a live preview'}}
+        ];
+        this.super();
+      </method>
+
+      <method name="prepareConfig" args="cfg">
+        var i = cfg.length, attrs, name;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs) {
+            name = attrs.name;
+            if (name === 'save') {
+              attrs.disabled = !this.parent.oktosave;
+            } else if (name === 'editPreview') {
+              attrs.text = editor.editmode ? 'preview' : 'resume editing';
+            } else if (name === 'livePreview') {
+              attrs.disabled = !editor.editmode;
+            }
+          }
+        }
+        return this.super();
+      </method>
+    </menubutton>
+    
+    <menubutton floatingpanelid="editmenu" label="Edit" disabled="${!editor.editmode}">
+      <handler event="oneditmode" reference="editor" method="updateConfig"/>
+      <handler event="onisundoable onisredoable" reference="undo" method="updateConfig"/>
+      <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
+      
+      <method name="initNode" args="parent, attrs">
+        this.cfg = [
+          {attrs:{name:'undo', text:'undo'}},
+          {attrs:{name:'redo', text:'redo'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'cut', text:'cut'}},
+          {attrs:{name:'copy', text:'copy'}},
+          {attrs:{name:'paste', text:'paste'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'deleteSelected', text:'delete'}}
+        ];
+        this.super();
+      </method>
+      
+      <method name="prepareConfig" args="cfg">
+        var i = cfg.length, attrs, name;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs) {
+            name = attrs.name;
+            if (name === 'undo') {
+              attrs.disabled = !undo.isundoable || !editor.editmode;
+            } else if (name === 'redo') {
+              attrs.disabled = !undo.isredoable || !editor.editmode;
+            } else if (name === 'deleteSelected') {
+              attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+            }
+          }
+        }
+        return this.super();
+      </method>
+    </menubutton>
+    
+    <menubutton floatingpanelid="layermenu" label="Layer" disabled="${!editor.editmode}">
+      <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
+      
+      <method name="initNode" args="parent, attrs">
+        this.cfg = [
+          {attrs:{name:'bringToFront', text:'bring to front'}},
+          {attrs:{name:'bringForward', text:'bring forward'}},
+          {attrs:{name:'sendToBack', text:'send to back'}},
+          {attrs:{name:'sendBackward', text:'send backward'}},
+        ];
+        this.super();
+      </method>
+
+      <method name="prepareConfig" args="cfg">
+        var i = cfg.length, attrs, name;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs) {
+            name = attrs.name;
+            if (name === 'bringToFront' || name === 'bringForward' || name === 'sendToBack' || name === 'sendBackward') {
+              attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+            }
+          }
+        }
+        return this.super();
+      </method>
+    </menubutton>
+    
+    <menufloatingpanelbutton floatingpanelid="settings" label="Settings" disabled="${!editor.editmode}"/>
+    
+    <spacedlayout inset="2" spacing="1"/>
+  </view>
 </view>
+
 
 <!--// FLOATING PANEL VIEWS //-->
 <basefloatingpanel panelid="settings" width="auto" height="auto" padding="8" clickable="true" cornerradius="4">

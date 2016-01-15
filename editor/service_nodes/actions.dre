@@ -100,15 +100,17 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="save">
-    editormodel.save();
-    undo.reset();
-    var msgRef = dialogmanager.showMessage(
-      'Saving changes to screen "' + editormodel.screenname + '" of the composition...'
-    ); // FIXME: message only dialog
+    if (editormenubar.oktosave) {
+      editormodel.save();
+      undo.reset();
+      var msgRef = dialogmanager.showMessage(
+        'Saving changes to screen "' + editormodel.screenname + '" of the composition...'
+      ); // FIXME: message only dialog
+    }
   </method>
 
   <method name="stop">
-    if (!saveButton.disabled) {
+    if (editormenubar.oktosave) {
       dialogmanager.showConfirm(
         'You have unsaved changes. Are you sure you want to exit the editor and discard your changes?', null, null, function(dialog, success) {
           if (success) {
@@ -124,7 +126,7 @@ either express or implied. See the License for the specific language governing p
   </method>
 
   <method name="changeScreen" args="screenname">
-    if (!saveButton.disabled) {
+    if (editormenubar.oktosave) {
       dialogmanager.showConfirm(
         'You have unsaved changes. Are you sure you want to change screens and discard your changes?', null, null, function(dialog, success) {
           if (success) {
@@ -141,27 +143,23 @@ either express or implied. See the License for the specific language governing p
 
   <method name="editPreview">
     if (editor.editmode) {
-      if (dr.keyboard.isAltKeyDown()) { // Use alt since shift forces a new window in chrome
-        var win = window.open(editormodel.getPreviewerUrl(), '_blank');
-        win.blur();
-        window.focus();
-      } else {
-        editor.setAttribute('editmode', false);
-        selectionmanager.clear(true);
-        editPreviewButton.setAttribute('label', 'edit');
-        editPreviewButton.setAttribute('iconname', 'edit');
-        editPreviewButton.setAttribute('tooltip', 'Stop previewing and change back to edit mode.');
-        preview.setAttribute('visible', true);
-        preview.setAttribute('src', '/editor/preview.dre?spinner=false');
-      }
+      editor.setAttribute('editmode', false);
+      selectionmanager.clear(true);
+      preview.setAttribute('visible', true);
+      preview.setAttribute('src', '/editor/preview.dre?spinner=false');
     } else {
       editor.setAttribute('editmode', true);
       selectionmanager.restore();
-      editPreviewButton.setAttribute('label', 'preview');
-      editPreviewButton.setAttribute('iconname', 'preview');
-      editPreviewButton.setAttribute('tooltip', 'Change the editing area to a preview of the screen.\nOpt-click to open a new live preview.');
       preview.setAttribute('visible', false);
       preview.setAttribute('src', '/iframe_stub.html');
+    }
+  </method>
+
+  <method name="livePreview">
+    if (editor.editmode) {
+      var win = window.open(editormodel.getPreviewerUrl(), '_blank');
+      win.blur();
+      window.focus();
     }
   </method>
 
