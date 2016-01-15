@@ -1096,24 +1096,28 @@ either express or implied. See the License for the specific language governing p
   </view>
 
   <!--// Top Panel //-->
-  <view id="messages" with="button" ignoreplacement="true"
-    focusable="false" focusembellishment="false"
+  <view id="messages" ignoreplacement="true"
     x="center" width="550" height="12"
-    bgcolor="#bbbbbb" boxshadow="${config.boxshadow_large}"
+    bgcolor="#dddddd" boxshadow="${config.boxshadow_large}"
     bottomleftcornerradius="12" bottomrightcornerradius="12"
   >
     <attribute name="selected" type="boolean" value="false"/>
-    <attribute name="user_opened" type="boolean" value="false"/>
     <handler event="onselected" args="selected">
       this.stopActiveAnimators('height');
+      this.stopActiveAnimators('y');
       this.animate({
         attribute:'height',
         to: 12 + (selected ? this.container.content.height : 0),
-        duration:selected || this.user_opened ? 400 : 1000
+        duration:selected ? 400 : 1000
+      });
+      this.animate({
+        attribute:'y', 
+        to:selected ? editormenubar.height : 0, 
+        duration:selected ? 400 : 1000
       });
       
       // Animate closed after a delay
-      if (selected && !this.user_opened) {
+      if (selected) {
         var self = this;
         if (this._timerId) clearTimeout(this._timerId);
         this._timerId = setTimeout(function() {
@@ -1121,29 +1125,12 @@ either express or implied. See the License for the specific language governing p
         }, 3000);
       }
     </handler>
-    <method name="doActivated">
-      this.setActualAttribute('user_opened', true);
-      this.setActualAttribute('selected', !this.selected);
-    </method>
-    <method name="drawDisabledState">
-      this.setActualAttribute('bgcolor', '#bbbbbb');
-    </method>
-    <method name="drawHoverState">
-      this.setActualAttribute('bgcolor', '#cccccc');
-    </method>
-    <method name="drawActiveState">
-      this.setActualAttribute('bgcolor', '#aaaaaa');
-    </method>
-    <method name="drawReadyState">
-      this.setActualAttribute('bgcolor', '#bbbbbb');
-    </method>
     <method name="addMessage" args="msg, noopen, notime">
       if (msg) {
         var content = this.container.content;
         
         // Remove any existing children that have the exact same message.
-        var svs = content.getSubviews(), i = svs.length, sv,
-          isFirstMessage = i === 0;
+        var svs = content.getSubviews(), i = svs.length, sv;
         while (i) {
           sv = svs[--i];
           if (sv.msg === msg) sv.destroy();
@@ -1166,28 +1153,19 @@ either express or implied. See the License for the specific language governing p
         // Dim out all but the most recent message
         while (svs.length - 1 > i) svs[i++].setActualAttribute('color', '#aaaaaa');
         
-        // Move down now that we have at least one message
-        if (isFirstMessage) {
-          this.animate({attribute:'y', to:editormenubar.height, duration:400});
-          this.setAttribute('focusable', true);
-        }
-        
         // Open
         if (!noopen) {
           if (this.selected) {
             this.setActualAttribute('selected', false); // Force reanimation
             this.setActualAttribute('selected', true);
           } else {
-            this.setActualAttribute('user_opened', false);
             this.setActualAttribute('selected', true);
           }
         }
       }
     </method>
     
-    <view name="container" width="550" height="${this.parent.innerheight - 12}"
-      bgcolor="#cccccc" scrollable="true"
-    >
+    <view name="container" width="550" height="${this.parent.innerheight - 12}" scrollable="true">
       <view name="content" x="2" width="546" padding="4" bgcolor="white"
         bottomleftcornerradius="4" bottomrightcornerradius="4" color="#666666"
       >
@@ -1209,7 +1187,7 @@ either express or implied. See the License for the specific language governing p
 
   <!--// The menu bar at the top of the editor. //-->
   <view id="editormenubar" ignoreplacement="true"
-    width="100%" height="${config.topbar_height}" bgcolor="#eeeeee" boxshadow="${config.boxshadow_large}"
+    width="100%" height="${config.topbar_height}" bgcolor="#eeeeee" boxshadow="${config.boxshadow_normal}"
     oktosave="${undo.isundoable && editor.editmode}"
   >
     <attribute name="oktosave" type="boolean" value="false"/>

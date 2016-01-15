@@ -84,9 +84,10 @@ either express or implied. See the License for the specific language governing p
   </method>
 </class>
 
-<class name="basefloatingpanelbutton" with="button"
+<class name="listviewbutton" with="listviewanchor, button"
   width="auto" height="auto" focusembellishment="false"
   floatingalign="insideright" floatingvalign="outsidebottom"
+  floatingvalignoffset="2"
 >
   <attribute name="fontsize" type="number" value="14"/>
   <attribute name="selected" type="boolean" value="false"/>
@@ -113,104 +114,15 @@ either express or implied. See the License for the specific language governing p
     this.setActualAttribute('color', '#000000');
   </method>
   
+  <method name="notifyPanelHidden" args="panel">
+    this.setActualAttribute('selected', false);
+  </method>
+  <method name="notifyPanelShown" args="panel">
+    this.setActualAttribute('selected', true);
+  </method>
+  
   <text name="arrow" text="${this.parent.selected ? '▼' : '▶'}" fontsize="${this.parent.fontsize - 2}" y="2"/>
   <text text="${this.parent.label}" x="${this.parent.fontsize}" fontsize="${this.parent.fontsize}"/>
-</class>
-
-<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor"
-  floatingvalignoffset="2" 
->
-  <method name="notifyPanelHidden" args="panel">
-    this.setActualAttribute('selected', false);
-  </method>
-  
-  <method name="notifyPanelShown" args="panel">
-    this.setActualAttribute('selected', true);
-  </method>
-</class>
-
-<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor"
-  floatingvalignoffset="2" 
->
-  <method name="notifyPanelHidden" args="panel">
-    this.setActualAttribute('selected', false);
-  </method>
-  
-  <method name="notifyPanelShown" args="panel">
-    this.setActualAttribute('selected', true);
-  </method>
-</class>
-
-<class name="toolbariconbutton" with="button"
-  width="auto" height="54" focusembellishment="false"
-  cornerradius="4" toppadding="8" leftpadding="8" rightpadding="8"
->
-  <attribute name="label" type="string" value=""/>
-  <attribute name="iconname" type="string" value=""/>
-  <setter name="iconname" args="iconname">
-    if (this.inited) this.icon.setActualAttribute('src', config.img_root + iconname + '.png');
-    return iconname;
-  </setter>
-  
-  <attribute name="action" type="string" value=""/>
-  <method name="doActivated">
-    if (!this.disabled && !dr.global.dragManager.dragview) actions[this.action]();
-  </method>
-  
-  <method name="initNode" args="parent, attrs">
-    this.super();
-    
-    this.icon.setActualAttribute('src', config.img_root + this.iconname + '.png');
-  </method>
-
-  <method name="drawDisabledState">
-    this.setActualAttribute('opacity', 0.5).setActualAttribute('bgcolor', 'transparent').setActualAttribute('boxshadow', null);
-    this.labelView.setActualAttribute('color', 'transparent');
-  </method>
-  <method name="drawFocusedState">
-    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', [0, 0, 3, 0, '#666666']);
-    this.labelView.setActualAttribute('color', '#000000');
-  </method>
-  <method name="drawHoverState">
-    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', null);
-    this.labelView.setActualAttribute('color', '#000000');
-  </method>
-  <method name="drawActiveState">
-    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#aaaaaa').setActualAttribute('boxshadow', null);
-    this.labelView.setActualAttribute('color', '#000000');
-  </method>
-  <method name="drawReadyState">
-    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', 'transparent').setActualAttribute('boxshadow', null);
-    this.labelView.setActualAttribute('color', 'transparent');
-  </method>
-  
-  <bitmap name="icon" width="32" height="32"/>
-  <text name="labelView" y="32" text="${this.parent.label}" fontsize="10" color="transparent"/>
-  
-  <alignlayout align="center"/>
-</class>
-
-<class name="basefloatingpaneliconbutton" extends="toolbariconbutton"
-  floatingalign="insideright" floatingvalign="outsidebottom"
->
-  <attribute name="selected" type="boolean" value="false"/>
-  <handler event="onselected" args="selected" method="updateUI"/>
-  
-  <method name="doActivated">
-    if (!this.disabled && !dr.global.dragManager.dragview) {
-      var fp = this.getFloatingPanel();
-      if (fp) this.toggleFloatingPanel();
-    }
-  </method>
-  
-  <method name="drawReadyState">
-    if (this.selected) {
-      this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', null);
-      this.labelView.setActualAttribute('color', '#000000');
-    } else {
-      this.super();
-    }
-  </method>
 </class>
 
 <class name="menubutton" with="listviewanchor, button"
