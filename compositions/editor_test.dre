@@ -5,10 +5,9 @@
 <composition>
   <screens>
     <screen type='browser' name='default' title='Editor Test File'>
-      <view width='100%' height='100%' bgcolor='#666666' id='lzeditor_3'>
-        <include href='/editor/editor_include.dre'/>
-        <view y='21' x='30' bgcolor='#cccccc' height='255' width='409' id='lzeditor_4' placement='editor' with='editable'>
-          <view x='${this.boundsxdiff}' y='${this.boundsydiff}' width='${this.parent.innerwidth * 0.5}' height='${this.parent.innerheight * 0.5}' bgcolor='red' id='lzeditor_5' with='editable'/>
+      <view width='100%' height='100%' bgcolor='#666666'>
+        <view y='21' x='30' bgcolor='#cccccc' height='255' width='409'>
+          <view x='${this.boundsxdiff}' y='${this.boundsydiff}' width='${this.parent.innerwidth * 0.5}' height='${this.parent.innerheight * 0.5}' bgcolor='red'/>
         </view>
       </view>
     </screen>

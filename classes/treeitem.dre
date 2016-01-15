@@ -122,6 +122,7 @@
     focusable="false" focusembellishment="false"
     width="15" height="15" y="middle"
     text="${this.parent.collapsed ? '▶' : '▼'}" fontsize="13"
+    disabled="${this.parent.disabled}"
   >
     <method name="doActivated">
       var parent = this.parent;

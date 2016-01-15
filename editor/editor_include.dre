@@ -826,6 +826,7 @@ either express or implied. See the License for the specific language governing p
     <view width="${treemodel.width}" height="28" bgcolor="#eeeeee">
       <listviewbutton with="tooltip" id="screennamechooser" floatingpanelid="screenlist" y="6" x="5"
         tooltip="Select a different screen to edit."
+        disabled="${!editor.editmode}"
       >
         <method name="doItemActivated" args="itemview">
           this.super();
@@ -1207,17 +1208,20 @@ either express or implied. See the License for the specific language governing p
       </method>
 
       <method name="prepareConfig" args="cfg">
-        var i = cfg.length, attrs, name;
+        var i = cfg.length, attrs;
         while (i) {
           attrs = cfg[--i].attrs;
           if (attrs) {
-            name = attrs.name;
-            if (name === 'save') {
-              attrs.disabled = !this.parent.oktosave;
-            } else if (name === 'editPreview') {
-              attrs.text = editor.editmode ? 'preview' : 'resume editing';
-            } else if (name === 'livePreview') {
-              attrs.disabled = !editor.editmode;
+            switch(attrs.name) {
+              case 'save':
+                attrs.disabled = !this.parent.oktosave;
+                break;
+              case 'editPreview':
+                attrs.text = editor.editmode ? 'preview' : 'resume editing';
+                break;
+              case 'livePreview':
+                attrs.disabled = !editor.editmode;
+                break;
             }
           }
         }
@@ -1245,17 +1249,23 @@ either express or implied. See the License for the specific language governing p
       </method>
       
       <method name="prepareConfig" args="cfg">
-        var i = cfg.length, attrs, name;
+        var i = cfg.length, attrs;
         while (i) {
           attrs = cfg[--i].attrs;
           if (attrs) {
-            name = attrs.name;
-            if (name === 'undo') {
-              attrs.disabled = !undo.isundoable || !editor.editmode;
-            } else if (name === 'redo') {
-              attrs.disabled = !undo.isredoable || !editor.editmode;
-            } else if (name === 'deleteSelected') {
-              attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+            switch(attrs.name) {
+              case 'undo':
+                attrs.disabled = !undo.isundoable || !editor.editmode;
+                break;
+              case 'redo':
+                attrs.disabled = !undo.isredoable || !editor.editmode;
+                break;
+              case 'deleteSelected':
+              case 'cut':
+              case 'copy':
+              case 'paste':
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                break;
             }
           }
         }
@@ -1277,13 +1287,17 @@ either express or implied. See the License for the specific language governing p
       </method>
 
       <method name="prepareConfig" args="cfg">
-        var i = cfg.length, attrs, name;
+        var i = cfg.length, attrs;
         while (i) {
           attrs = cfg[--i].attrs;
           if (attrs) {
-            name = attrs.name;
-            if (name === 'bringToFront' || name === 'bringForward' || name === 'sendToBack' || name === 'sendBackward') {
-              attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+            switch(attrs.name) {
+              case 'bringToFront':
+              case 'bringForward':
+              case 'sendToBack':
+              case 'sendBackward':
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                break;
             }
           }
         }

@@ -177,6 +177,24 @@ either express or implied. See the License for the specific language governing p
     }
   </method>
 
+  <method name="cut">
+    if (this._isEditableSelection()) {
+      console.log('FIXME: implement cut');
+    }
+  </method>
+
+  <method name="copy">
+    if (this._isEditableSelection()) {
+      console.log('FIXME: implement copy');
+    }
+  </method>
+
+  <method name="paste">
+    if (this._isEditableSelection()) {
+      console.log('FIXME: implement paste');
+    }
+  </method>
+
   <method name="_isEditableSelection">
     var selected = selectionmanager.selected;
     return editor.editmode && selected && !selected.isInlineEdit() && !selectionmanager.isrootselection;
