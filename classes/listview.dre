@@ -9,7 +9,7 @@
    * A floating panel that contains a list of items.
    */-->
 <class name="listview" extends="floatingpanel" requires="listviewitem, listviewseparator"
-  bgcolor="#cccccc" boxshadow="[0,3,6,0,'#999999']" scrollable="true"
+  bgcolor="#cccccc" boxshadow="[0,3,3,0,'#999999']" scrollable="true"
 >
   <!--// Attributes /////////////////////////////////////////////////////////-->
   <!--/**
@@ -169,6 +169,18 @@
     // Resize items and contentView
     for (i = 0; cfgLen > i; ++i) items[i].setAttribute('width', minWidth);
     contentView.setAttribute('width', minWidth);
+    
+    // Round last item
+    itemsLen = items.length;
+    if (itemsLen) {
+      var brcr = this.bottomrightcornerradius,
+        blcr = this.bottomleftcornerradius;
+      if (brcr > 0 || blcr > 0) {
+        var lastItem = items[itemsLen - 1];
+        lastItem.setAttribute('bottomrightcornerradius', brcr);
+        lastItem.setAttribute('bottomleftcornerradius', blcr);
+      }
+    }
     
     // Unlock layouts and update
     i = layoutLen;

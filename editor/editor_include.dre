@@ -1105,7 +1105,7 @@ either express or implied. See the License for the specific language governing p
   <view id="messages" ignoreplacement="true"
     x="center" width="550" height="12"
     bgcolor="#dddddd" boxshadow="${config.boxshadow_large}"
-    bottomleftcornerradius="12" bottomrightcornerradius="12"
+    bottomleftcornerradius="6" bottomrightcornerradius="6" opacity="0.85"
   >
     <attribute name="selected" type="boolean" value="false"/>
     <handler event="onselected" args="selected">
@@ -1113,7 +1113,7 @@ either express or implied. See the License for the specific language governing p
       this.stopActiveAnimators('y');
       this.animate({
         attribute:'height',
-        to: 12 + (selected ? this.container.content.height : 0),
+        to: 2 + (selected ? this.container.content.height : 0),
         duration:selected ? 400 : 1000
       });
       this.animate({
@@ -1171,8 +1171,10 @@ either express or implied. See the License for the specific language governing p
       }
     </method>
     
-    <view name="container" width="550" height="${this.parent.innerheight - 12}" scrollable="true">
-      <view name="content" x="2" width="546" padding="4" bgcolor="white"
+    <view name="container" width="550" height="${this.parent.innerheight - 2}" scrollable="true">
+      <view name="content" x="2" width="546"
+        leftpadding="4" rightpadding="4" toppadding="4" bottompadding="2"
+        bgcolor="white"
         bottomleftcornerradius="4" bottomrightcornerradius="4" color="#666666"
       >
         <spacedlayout axis="y" spacing="4" updateparent="true" reverse="true" speed="400">
@@ -1193,7 +1195,7 @@ either express or implied. See the License for the specific language governing p
 
   <!--// The menu bar at the top of the editor. //-->
   <view id="editormenubar" ignoreplacement="true"
-    width="100%" height="${config.topbar_height}" bgcolor="#eeeeee" boxshadow="${config.boxshadow_normal}"
+    width="100%" height="${config.topbar_height}" bgcolor="#eeeeee" boxshadow="[0,0,3,0,'#999999']"
     oktosave="${undo.isundoable && editor.editmode}"
   >
     <attribute name="oktosave" type="boolean" value="false"/>
@@ -1341,7 +1343,11 @@ either express or implied. See the License for the specific language governing p
 
 
 <!--// FLOATING PANEL VIEWS //-->
-<basefloatingpanel panelid="settings" width="auto" height="auto" padding="8" clickable="true" cornerradius="4">
+<basefloatingpanel panelid="settings"
+  width="auto" height="auto" padding="8" clickable="true"
+  bottomleftcornerradius="4" bottomrightcornerradius="4"
+  boxshadow="[0,3,3,0,'#999999']" border="0" bgcolor="#eeeeee"
+>
   <method name="getFirstFocusableDescendant">
     return gridsizex;
   </method>

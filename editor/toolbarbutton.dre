@@ -128,10 +128,10 @@ either express or implied. See the License for the specific language governing p
 <class name="menubutton" with="listviewanchor, button"
   width="${this.labelview.width + 2*this.labelview.x}" height="21" y="2"
   floatingvalignoffset="2"
-  listviewattrs="{maxheight:640, defaultitemclass:dr.menuitem}"
+  listviewattrs="{maxheight:640, defaultitemclass:dr.menuitem, bottomrightcornerradius:4, bottomleftcornerradius:4}"
   focusembellishment="false"
   floatingalign="insideleft" floatingvalign="outsidebottom"
-  cornerradius="2" bgcolor="#cccccc"
+  cornerradius="2" bgcolor="#dddddd"
 >
   <attribute name="selected" type="boolean" value="false"/>
   <attribute name="label" type="string" value=""/>
@@ -165,16 +165,16 @@ either express or implied. See the License for the specific language governing p
   </method>
   
   <method name="drawDisabledState">
-    this.setActualAttribute('bgcolor', this.selected ? '#dddddd' : '#aaaaaa');
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#bbbbbb');
   </method>
   <method name="drawHoverState">
-    this.setActualAttribute('bgcolor', '#dddddd');
+    this.setActualAttribute('bgcolor', '#eeeeee');
   </method>
   <method name="drawActiveState">
-    this.setActualAttribute('bgcolor', this.selected ? '#dddddd' : '#bbbbbb');
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#cccccc');
   </method>
   <method name="drawReadyState">
-    this.setActualAttribute('bgcolor', this.selected ? '#dddddd' : '#cccccc');
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#dddddd');
   </method>
   
   <method name="notifyPanelHidden" args="panel">
@@ -184,7 +184,7 @@ either express or implied. See the License for the specific language governing p
     this.setActualAttribute('selected', true);
   </method>
   
-  <text name="labelview" text="${this.parent.label}" x="12" y="middle" fontsize="14" color="#333333"/>
+  <text name="labelview" text="${this.parent.label}" x="8" y="middle" fontsize="14" color="#333333"/>
 </class>
 
 <class name="menuitem" extends="listviewitem">
@@ -205,7 +205,7 @@ either express or implied. See the License for the specific language governing p
   floatingvalignoffset="2"
   focusembellishment="false"
   floatingalign="insideleft" floatingvalign="outsidebottom"
-  cornerradius="2" bgcolor="#cccccc"
+  cornerradius="2" bgcolor="#dddddd"
 >
   <attribute name="selected" type="boolean" value="false"/>
   <attribute name="label" type="string" value=""/>
@@ -219,16 +219,16 @@ either express or implied. See the License for the specific language governing p
   </method>
   
   <method name="drawDisabledState">
-    this.setActualAttribute('bgcolor', this.selected ? '#dddddd' : '#aaaaaa');
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#bbbbbb');
   </method>
   <method name="drawHoverState">
-    this.setActualAttribute('bgcolor', '#dddddd');
+    this.setActualAttribute('bgcolor', '#eeeeee');
   </method>
   <method name="drawActiveState">
-    this.setActualAttribute('bgcolor', this.selected ? '#dddddd' : '#bbbbbb');
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#cccccc');
   </method>
   <method name="drawReadyState">
-    this.setActualAttribute('bgcolor', this.selected ? '#dddddd' : '#cccccc');
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#dddddd');
   </method>
   
   <method name="notifyPanelHidden" args="panel">
@@ -238,5 +238,5 @@ either express or implied. See the License for the specific language governing p
     this.setActualAttribute('selected', true);
   </method>
   
-  <text name="labelview" text="${this.parent.label}" x="12" y="middle" fontsize="14" color="#333333"/>
+  <text name="labelview" text="${this.parent.label}" x="8" y="middle" fontsize="14" color="#333333"/>
 </class>
