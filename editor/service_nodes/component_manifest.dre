@@ -134,7 +134,7 @@ either express or implied. See the License for the specific language governing p
     
     this._addComponent(attrs, isNewLine);
   </method>
-  
+
   <!-- @private -->
   <method name="_addComponent" args="attrs, isNewLine">
     attrs.class = 'componentsource';
@@ -142,11 +142,12 @@ either express or implied. See the License for the specific language governing p
     this.parent.createChild(attrs);
   </method>
 
+  <!-- @private -->
   <method name="_addSectionBreak" args="title">
     attrs = {
       class: 'text',
       text: title,
-      width:'100%',
+      width:'${this.parent.innerwidth - 2*this.x}',
       fontsize:12,
       toppadding:5,
       leftpadding:3,
@@ -158,5 +159,4 @@ either express or implied. See the License for the specific language governing p
     };
     this.parent.createChild(attrs);
   </method>
-
 </node>
