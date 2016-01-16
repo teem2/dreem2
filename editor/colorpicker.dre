@@ -13,42 +13,200 @@ either express or implied. See the License for the specific language governing p
     this.super();
   </method>
 
-  <method name="setOwnerColor" args="color,colora">
-    var colorTable = this.colorTable;
-    if (color in colorTable) color = colorTable[color];
-    if (this.colorpicker) this.colorpicker.setHex(color);
+  <attribute name="redcolor" type="Number" value="-1"/>
+  <setter name="redcolor" args="red">
+    if (red > -1) {
+      return red
+    }
+  </setter>
+  <handler event="onredcolor" method="setControlsToColorValues"/>
+
+  <attribute name="greencolor" type="Number" value="-1"/>
+  <setter name="greencolor" args="green">
+    if (green > -1) {
+      return green
+    }
+  </setter>
+  <handler event="ongreencolor" method="setControlsToColorValues"/>
+
+  <attribute name="bluecolor" type="Number" value="-1"/>
+  <setter name="bluecolor" args="blue">
+    if (blue > -1) {
+      return blue
+    }
+  </setter>
+  <handler event="onbluecolor" method="setControlsToColorValues"/>
+
+  <attribute name="alphacolor" type="Number" value="-1"/>
+  <setter name="alphacolor" args="alpha">
+    var a = parseFloat(alpha)
+    if (a > -1) {
+      return parseFloat(a.toFixed(2))
+    }
+  </setter>
+  <handler event="onalphacolor" method="setControlsToColorValues"/>
+
+  <method name="hexColor">
+    var r = this.redcolor.toString(16);
+    if (r.length == 1) {
+      r = '0' + r;
+    }
+    var g = this.greencolor.toString(16);
+    if (g.length == 1) {
+      g = '0' + g;
+    }
+    var b = this.bluecolor.toString(16);
+    if (b.length == 1) {
+      b = '0' + b;
+    }
+
+    return '#' + r + g + b;
+  </method>
+
+  <method name="rgbaColor">
+    var r = this.redcolor;
+    if (isNaN(r)) {
+      r = 0
+    }
+    var g = this.greencolor;
+    if (isNaN(g)) {
+      g = 0
+    }
+    var b = this.bluecolor;
+    if (isNaN(b)) {
+      b = 0
+    }
+    var a = this.alphacolor;
+    if (isNaN(a)) {
+      a = 1.0
+    }
+    a = a.toFixed(2)
+
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  </method>
+
+  <method name="resetColor">
+    this.setAttribute('color', this.rgbaColor())
+  </method>
+
+  <method name="setControlsToColorValues">
+    if (!this.owner) {
+      return;
+    }
+    var rgba = this.rgbaColor();
+    var rgbhex = this.hexColor();
+
+    var r = this.redcolor;
+    if (isNaN(r)) {
+      r = 0
+    }
+    var g = this.greencolor;
+    if (isNaN(g)) {
+      g = 0
+    }
+    var b = this.bluecolor;
+    if (isNaN(b)) {
+      b = 0
+    }
+    var a = this.alphacolor;
+    if (isNaN(a)) {
+      a = 1.0
+    }
+
+    if (this.colorpicker) {
+      this.colorpicker.setHex(rgbhex);
+    }
+
+    if (this.alphapicker) {
+      this.alphapicker.setAttribute('value', a * this.alphapicker.maxvalue);
+      this.alphapicker.setAttribute('progresscolor', rgba);
+    }
+
+    this.colorvalues.red.setAttribute('value',r);
+    this.colorvalues.green.setAttribute('value', g);
+    this.colorvalues.blue.setAttribute('value', b);
+    this.colorvalues.alpha.setAttribute('value', a.toFixed(2));
 
     if (this.owner) {
-      if (typeof(colora) == 'number' && colora < 100) {
-        this.owner.setAttribute('value', this.toRGBA(color, colora));
+      if (a >= 1) {
+        this.owner.setAttribute('value', rgbhex)
       } else {
-        this.owner.setAttribute('value', color);
+        this.owner.setAttribute('value', rgba)
       }
     }
 
-    return color;
   </method>
 
-  <method name="toRGBA" args="color,colora">
-    var hex = color.replace('#','');
-    var r = parseInt(hex.substring(0,2), 16);
-    var g = parseInt(hex.substring(2,4), 16);
-    var b = parseInt(hex.substring(4,6), 16);
-    var a = (colora/100).toFixed(2);
-    if (a == 0.00) { a = 0; }
-    var rgba = 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
-    return rgba;
-  </method>
-  
   <attribute name="color" type="color" value="red"/>
   <setter name="color" args="color">
-    return this.setOwnerColor(color, this.alphacolor);
-  </setter>
+    if (color == this.color) {
+      return;
+    }
 
-  <attribute name="alphacolor" type="Number" value="${this.alphapicker.value}"/>
-  <setter name="alphacolor" args="colora">
-    this.setOwnerColor(this.color, colora)
-    return colora;
+    var lookup = this.colorTable[color]
+    if (lookup) {
+      color = lookup
+    }
+
+    //parses #RRGGBB, #RRGGBBAA, rgb(R,G,B), and rgba(R,G,B,A)
+    var regex = /(?:\#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})?|rgba?\(\s*([\d\.]+)\s*,\s*([\d\.]+)\s*,\s*([\d\.]+)\s*(?:,\s*([\d\.]+)\s*)?\))/i
+    var match = regex.exec(color)
+
+    if (match) {
+      var red, green, blue, alpha;
+
+      if (match[1]) {
+        red = parseInt(match[1], 16)
+      } else if (match[5]) {
+        red = parseFloat(match[5])
+      }
+
+      if (match[2]) {
+        green = parseInt(match[2], 16)
+      } else if (match[6]) {
+        green = parseFloat(match[6])
+      }
+
+      if (match[3]) {
+        blue = parseInt(match[3], 16)
+      } else if (match[7]) {
+        blue = parseFloat(match[7])
+      }
+
+      if (match[4]) {
+        alpha = parseInt(match[4], 16)
+      } else if (match[8]) {
+        alpha = parseFloat(match[8])
+      }
+
+      if (isNaN(alpha)) {
+        alpha = this.alphacolor;
+      }
+      if (isNaN(alpha)) {
+        alpha = 1.0;
+      }
+
+      // this probably color using values between 0 ~ 1.0, need to convert to 0-255
+      if (1.0 >= red && 1.0 >= blue && 1.0 >= green) {
+        red   = red * 255
+        green = green * 255
+        blue  = blue * 255
+      }
+
+      if (alpha > 1.0) {
+        alpha = alpha / 255
+      }
+
+      red = Math.floor(red)
+      green = Math.floor(green)
+      blue = Math.floor(blue)
+      alpha = parseFloat(alpha.toFixed(2))
+
+      this.setAttribute('redcolor', red)
+      this.setAttribute('greencolor', green)
+      this.setAttribute('bluecolor', blue)
+      this.setAttribute('alphacolor', alpha)
+    }
   </setter>
 
   <handler event="onvisible" args="visible">
@@ -56,30 +214,99 @@ either express or implied. See the License for the specific language governing p
       if (!this.colorpicker) {
         var _this = this;
         this.colorpicker = ColorPicker(
-          this.panel.slider.sprite.platformObject,
-          this.panel.colors.sprite.platformObject,
+          this.colorpanel.slider.sprite.platformObject,
+          this.colorpanel.colors.sprite.platformObject,
           function(hex, hsv, rgb) {
-            if (hex !== _this.color) _this.setAttribute('color', hex);
+            if (hex !== _this.color) {
+              _this.setAttribute('color', hex);
+            }
         });
+        this.colorpanel.colors.sprite.platformObject.$view = this.colorpanel.slider.sprite.platformObject.$view = this;
       }
-      this.panel.colors.sprite.platformObject.$view = this.panel.slider.sprite.platformObject.$view = this;
-      this.colorpicker.setHex(this.color);
     }
   </handler>
 
   <spacedlayout axis="y" updateparent="true"/>
-  <view name="panel" height="auto" width="auto">
-    <spacedlayout updateparent="true"/>
+  <view name="colorpanel" height="auto" width="auto">
+    <spacedlayout axis="x" updateparent="true"/>
     <view width="200" height="200" name="colors" clickable="true"/>
-    <view width="20" height="200" name="slider" clickable="true"/>
+    <view width="30" height="200" name="slider" clickable="true"/>
   </view>
   <slider name="alphapicker"
     bgcolor="#999999"
     bordercolor="transparent"
     selectcolor="transparent"
-    progresscolor="${this.parent.toRGBA(this.parent.color, this.parent.alphacolor)}"
-    width="${this.parent.panel.width}"
-    value="${this.maxvalue}"
-    height="30">
+    progresscolor="${this.parent.color}"
+    width="${this.parent.colorpanel.width}"
+    maxvalue="100"
+    height="20">
+    <setter name="value" args="v">
+      v = Math.round(v);
+      if (v > this.maxvalue) {
+        v = this.maxvalue;
+      }
+      if (v < 0) {
+        v = 0;
+      }
+
+      var av = v / this.maxvalue;
+      av = parseFloat(av.toFixed(2))
+
+      if (this.classroot.alphacolor != av) {
+        this.classroot.setAttribute('alphacolor', av);
+      }
+
+      return v;
+    </setter>
   </slider>
+  <view name="colorvalues" height="auto" width="auto">
+    <spacedlayout axis="x" updateparent="true"/>
+    <text text="R" fontsize="14"></text>
+    <inputtext name="red" width="40" fontsize="14">
+      <setter name="value" args="v">
+        var r = parseInt(v);
+        if (!isNaN(r) && this.classroot.redcolor != r) {
+          this.classroot.setAttribute('redcolor', r)
+        }
+        return v;
+      </setter>
+    </inputtext>
+    <text text="G" fontsize="14"></text>
+    <inputtext name="green" width="40" fontsize="14">
+      <setter name="value" args="v">
+        var g = parseInt(v);
+        if (!isNaN(g) && this.classroot.greencolor != g) {
+          this.classroot.setAttribute('greencolor', g)
+        }
+        return v;
+      </setter>
+    </inputtext>
+    <text text="B" fontsize="14"></text>
+    <inputtext name="blue" width="40" fontsize="14">
+      <setter name="value" args="v">
+        var b = parseInt(v);
+        if (!isNaN(b) && this.classroot.bluecolor != b) {
+          this.classroot.setAttribute('bluecolor', b)
+        }
+        return v;
+      </setter>
+    </inputtext>
+    <text text="A" fontsize="14"></text>
+    <inputtext name="alpha" width="40" fontsize="14">
+      <setter name="value" args="v">
+        var a = parseFloat(v);
+        if (!isNaN(a)) {
+          a = parseFloat(a.toFixed(2));
+          if (a != this.classroot.alphacolor) {
+            this.classroot.setAttribute('alphacolor', a)
+          }
+        }
+        return v;
+      </setter>
+
+    </inputtext>
+  </view>
+  <view name="pots" height="auto" width="auto">
+    <spacedlayout axis="x" updateparent="true"/>
+  </view>
 </class>
