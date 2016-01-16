@@ -155,14 +155,7 @@ either express or implied. See the License for the specific language governing p
     this.colorvalues.alpha.setAttribute('value', a.toFixed(2));
 
     if (this.owner) {
-      var newvalue = rgba;
-      if (a >= 1) {
-        newvalue = rgbhex
-      }
-
-      actions.do(new dr.editor.editorattrundoable({
-        target:this.owner, attribute:'value', newvalue:newvalue
-      }));
+      this.owner.setAttribute('value', rgba)
     }
 
   </method>
@@ -371,7 +364,7 @@ either express or implied. See the License for the specific language governing p
   <view name="pots" height="15" width="100%">
     <spacedlayout axis="x" inset="5" outset="5" spacing="5" updateparent="true"/>
     <replicator name="colorpots" data="${this.classroot.colorpots}">
-      <view width="20" height="10" marginright="2" border="1" bordercolor="black" with="button" bgcolor="${this.data}">
+      <view width="20" height="10" focusembellishment="false" marginright="2" border="1" cornerradius="5" bordercolor="black" with="button" bgcolor="${this.data}">
         <method name="doActivated">
           this.classroot.setAttribute('color', this.bgcolor)
         </method>
