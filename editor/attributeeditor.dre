@@ -194,7 +194,7 @@ either express or implied. See the License for the specific language governing p
       // FIXME: this needs to deal with 'transparent' and 'inherit' correctly.
       if (!value) value = '#000000'; // Default to black if no actual value exists.
       fp.setAttribute('color', value);
-      this.oldvalue = fp.color;
+      this.oldvalue = fp.rgbaColor();
     }
   </method>
 
