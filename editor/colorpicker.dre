@@ -145,11 +145,15 @@ either express or implied. See the License for the specific language governing p
     this.colorvalues.alpha.setAttribute('value', a.toFixed(2));
 
     if (this.owner) {
+      var newvalue = rgba;
       if (a >= 1) {
-        this.owner.setAttribute('value', rgbhex)
-      } else {
-        this.owner.setAttribute('value', rgba)
+        newvalue = rgbhex
       }
+
+      actions.do(new dr.editor.editorattrundoable({
+        target:this.owner, attribute:'value', newvalue:newvalue
+      }));
+
     }
 
   </method>
