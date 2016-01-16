@@ -86,7 +86,7 @@ either express or implied. See the License for the specific language governing p
 
 <class name="listviewbutton" with="listviewanchor, button"
   width="auto" height="auto" focusembellishment="false"
-  floatingalign="insideright" floatingvalign="outsidebottom"
+  floatingalign="insideleft" floatingvalign="outsidebottom"
   floatingvalignoffset="2"
 >
   <attribute name="fontsize" type="number" value="14"/>
@@ -184,6 +184,44 @@ either express or implied. See the License for the specific language governing p
     this.setActualAttribute('selected', true);
   </method>
   
+  <method name="handleLeftArrow">
+    this.prevMenu();
+  </method>
+
+  <method name="handleRightArrow">
+    this.nextMenu();
+  </method>
+  
+  <method name="prevMenu">
+    this.hideFloatingPanel();
+    var menu = this.getPrevMenu();
+    if (menu) {
+      menu.focus();
+      menu.doActivated();
+    } else {
+      this.focus();
+    }
+  </method>
+  
+  <method name="getPrevMenu">
+    // Instances to implement
+  </method>
+  
+  <method name="nextMenu">
+    this.hideFloatingPanel();
+    var menu = this.getNextMenu();
+    if (menu) {
+      menu.focus();
+      menu.doActivated();
+    } else {
+      this.focus();
+    }
+  </method>
+  
+  <method name="getNextMenu">
+    // Instances to implement
+  </method>
+  
   <text name="labelview" text="${this.parent.label}" x="8" y="middle" fontsize="14" color="#333333"/>
 </class>
 
@@ -192,6 +230,14 @@ either express or implied. See the License for the specific language governing p
 
   <method name="getMinimumWidth">
     return this.inset + this.label.width + 16 + this.shortcutView.width + this.outset;
+  </method>
+
+  <method name="handleLeftArrow">
+    this.listview.owner.prevMenu();
+  </method>
+
+  <method name="handleRightArrow">
+    this.listview.owner.nextMenu();
   </method>
 
   <text name="shortcutView"
@@ -206,6 +252,7 @@ either express or implied. See the License for the specific language governing p
   focusembellishment="false"
   floatingalign="insideleft" floatingvalign="outsidebottom"
   cornerradius="2" bgcolor="#dddddd"
+  activationkeys="[13,27,32,37,39]"
 >
   <attribute name="selected" type="boolean" value="false"/>
   <attribute name="label" type="string" value=""/>
@@ -236,6 +283,79 @@ either express or implied. See the License for the specific language governing p
   </method>
   <method name="notifyPanelShown" args="panel">
     this.setActualAttribute('selected', true);
+  </method>
+  
+  <!--/** @overrides */-->
+  <method name="doActivationKeyDown" args="key, isRepeat">
+    // Close for escape key.
+    if (key === dr.sprite.GlobalKeys.KEYCODE_ESC) {
+      this.hideFloatingPanel();
+      return;
+    }
+    
+    this._handleKeys(key);
+    
+    this.super();
+  </method>
+
+  <!--/** @overrides */-->
+  <method name="doActivationKeyUp" args="key">
+    // Abort for escape key.
+    if (key === dr.sprite.GlobalKeys.KEYCODE_ESC) return;
+    
+    this.super();
+    
+    this._handleKeys(key);
+  </method>
+
+  <method name="_handleKeys" args="key">
+    // Select first/last if the list view is already open
+    switch (key) {
+      case 37: // Left
+        this.handleLeftArrow();
+        break;
+      case 39: // Right
+        this.handleRightArrow();
+        break;
+    }
+  </method>
+
+  <method name="handleLeftArrow">
+    this.prevMenu();
+  </method>
+
+  <method name="handleRightArrow">
+    this.nextMenu();
+  </method>
+  
+  <method name="prevMenu">
+    this.hideFloatingPanel();
+    var menu = this.getPrevMenu();
+    if (menu) {
+      menu.focus();
+      menu.doActivated();
+    } else {
+      this.focus();
+    }
+  </method>
+  
+  <method name="getPrevMenu">
+    // Instances to implement
+  </method>
+  
+  <method name="nextMenu">
+    this.hideFloatingPanel();
+    var menu = this.getNextMenu();
+    if (menu) {
+      menu.focus();
+      menu.doActivated();
+    } else {
+      this.focus();
+    }
+  </method>
+  
+  <method name="getNextMenu">
+    // Instances to implement
   </method>
   
   <text name="labelview" text="${this.parent.label}" x="8" y="middle" fontsize="14" color="#333333"/>

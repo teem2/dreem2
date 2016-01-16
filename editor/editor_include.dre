@@ -88,8 +88,11 @@ either express or implied. See the License for the specific language governing p
           sprite.preventDefault(platformEvent); // Prevent browser find functionality
           if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
           break;
+        case 77: // M: Messages Panel
+          sprite.preventDefault(platformEvent);
+          actions.showMessagePanel();
+          break;
         case 83: // S: Save document
-          console.log('save');
           sprite.preventDefault(platformEvent); // Prevent browser save functionality
           if (this._actionsPermitted()) actions.save();
           break;
@@ -1131,6 +1134,14 @@ either express or implied. See the License for the specific language governing p
         }, 3000);
       }
     </handler>
+    <method name="open">
+      if (this.selected) {
+        this.setActualAttribute('selected', false); // Force reanimation
+        this.setActualAttribute('selected', true);
+      } else {
+        this.setActualAttribute('selected', true);
+      }
+    </method>
     <method name="addMessage" args="msg, noopen, notime">
       if (msg) {
         var content = this.container.content;
@@ -1159,15 +1170,7 @@ either express or implied. See the License for the specific language governing p
         // Dim out all but the most recent message
         while (svs.length - 1 > i) svs[i++].setActualAttribute('color', '#aaaaaa');
         
-        // Open
-        if (!noopen) {
-          if (this.selected) {
-            this.setActualAttribute('selected', false); // Force reanimation
-            this.setActualAttribute('selected', true);
-          } else {
-            this.setActualAttribute('selected', true);
-          }
-        }
+        if (!noopen) this.open();
       }
     </method>
     
@@ -1200,7 +1203,7 @@ either express or implied. See the License for the specific language governing p
   >
     <attribute name="oktosave" type="boolean" value="false"/>
     
-    <menubutton floatingpanelid="filemenu" label="File">
+    <menubutton name="fileMenu" floatingpanelid="filemenu" label="File">
       <handler event="onoktosave" reference="parent" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
@@ -1238,9 +1241,16 @@ either express or implied. See the License for the specific language governing p
         }
         return this.super();
       </method>
+      
+      <method name="getPrevMenu">
+        return this.parent.settingsMenu;
+      </method>
+      <method name="getNextMenu">
+        return this.parent.editMenu;
+      </method>
     </menubutton>
     
-    <menubutton floatingpanelid="editmenu" label="Edit" disabled="${!editor.editmode}">
+    <menubutton name="editMenu" floatingpanelid="editmenu" label="Edit" disabled="${!editor.editmode}">
       <handler event="oneditmode" reference="editor" method="updateConfig"/>
       <handler event="onisundoable onisredoable" reference="undo" method="updateConfig"/>
       <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
@@ -1255,7 +1265,9 @@ either express or implied. See the License for the specific language governing p
           {attrs:{name:'copy', text:'copy', shortcut:accChar + 'C'}},
           {attrs:{name:'paste', text:'paste', shortcut:accChar + 'V'}},
           {klass:dr.listviewseparator},
-          {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}}
+          {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'showMessagePanel', text:'show messages panel', shortcut:accChar + 'M'}},
         ];
         this.super();
       </method>
@@ -1283,9 +1295,16 @@ either express or implied. See the License for the specific language governing p
         }
         return this.super();
       </method>
+      
+      <method name="getPrevMenu">
+        return this.parent.fileMenu;
+      </method>
+      <method name="getNextMenu">
+        return this.parent.layerMenu;
+      </method>
     </menubutton>
     
-    <menubutton floatingpanelid="layermenu" label="Layer" disabled="${!editor.editmode}">
+    <menubutton name="layerMenu" floatingpanelid="layermenu" label="Layer" disabled="${!editor.editmode}">
       <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
@@ -1333,9 +1352,23 @@ either express or implied. See the License for the specific language governing p
         }
         return this.super();
       </method>
+      
+      <method name="getPrevMenu">
+        return this.parent.editMenu;
+      </method>
+      <method name="getNextMenu">
+        return this.parent.settingsMenu;
+      </method>
     </menubutton>
     
-    <menufloatingpanelbutton floatingpanelid="settings" label="Settings" disabled="${!editor.editmode}"/>
+    <menufloatingpanelbutton name="settingsMenu" floatingpanelid="settings" label="Settings" disabled="${!editor.editmode}">
+      <method name="getPrevMenu">
+        return this.parent.layerMenu;
+      </method>
+      <method name="getNextMenu">
+        return this.parent.fileMenu;
+      </method>
+    </menufloatingpanelbutton>
     
     <spacedlayout inset="2" spacing="1"/>
   </view>

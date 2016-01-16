@@ -178,6 +178,11 @@ either express or implied. See the License for the specific language governing p
       selectionmanager.clear();
     }
   </method>
+ 
+  <method name="showMessagePanel">
+    messages.open();
+  </method>
+  
 
   <method name="cut">
     if (this._isEditableSelection()) {
