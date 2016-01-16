@@ -4,41 +4,349 @@ You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2
 software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
-
 <class name="colorpicker" extends="basefloatingpanel" scriptincludes="/lib/colorpicker.min.js"
-  height="auto"
+  width="auto" bgcolor="#eee"
 >
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
-    this.colorTable = {"aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff", "beige":"#f5f5dc","bisque":"#ffe4c4","black":"#000000","blanchedalmond":"#ffebcd","blue":"#0000ff","blueviolet":"#8a2be2","brown":"#a52a2a","burlywood":"#deb887", "cadetblue":"#5f9ea0","chartreuse":"#7fff00","chocolate":"#d2691e","coral":"#ff7f50","cornflowerblue":"#6495ed","cornsilk":"#fff8dc","crimson":"#dc143c","cyan":"#00ffff", "darkblue":"#00008b","darkcyan":"#008b8b","darkgoldenrod":"#b8860b","darkgray":"#a9a9a9","darkgreen":"#006400","darkkhaki":"#bdb76b","darkmagenta":"#8b008b","darkolivegreen":"#556b2f", "darkorange":"#ff8c00","darkorchid":"#9932cc","darkred":"#8b0000","darksalmon":"#e9967a","darkseagreen":"#8fbc8f","darkslateblue":"#483d8b","darkslategray":"#2f4f4f","darkturquoise":"#00ced1", "darkviolet":"#9400d3","deeppink":"#ff1493","deepskyblue":"#00bfff","dimgray":"#696969","dodgerblue":"#1e90ff", "firebrick":"#b22222","floralwhite":"#fffaf0","forestgreen":"#228b22","fuchsia":"#ff00ff", "gainsboro":"#dcdcdc","ghostwhite":"#f8f8ff","gold":"#ffd700","goldenrod":"#daa520","gray":"#808080","green":"#008000","greenyellow":"#adff2f", "honeydew":"#f0fff0","hotpink":"#ff69b4", "indianred ":"#cd5c5c","indigo":"#4b0082","ivory":"#fffff0","khaki":"#f0e68c", "lavender":"#e6e6fa","lavenderblush":"#fff0f5","lawngreen":"#7cfc00","lemonchiffon":"#fffacd","lightblue":"#add8e6","lightcoral":"#f08080","lightcyan":"#e0ffff","lightgoldenrodyellow":"#fafad2", "lightgrey":"#d3d3d3","lightgreen":"#90ee90","lightpink":"#ffb6c1","lightsalmon":"#ffa07a","lightseagreen":"#20b2aa","lightskyblue":"#87cefa","lightslategray":"#778899","lightsteelblue":"#b0c4de", "lightyellow":"#ffffe0","lime":"#00ff00","limegreen":"#32cd32","linen":"#faf0e6", "magenta":"#ff00ff","maroon":"#800000","mediumaquamarine":"#66cdaa","mediumblue":"#0000cd","mediumorchid":"#ba55d3","mediumpurple":"#9370d8","mediumseagreen":"#3cb371","mediumslateblue":"#7b68ee", "mediumspringgreen":"#00fa9a","mediumturquoise":"#48d1cc","mediumvioletred":"#c71585","midnightblue":"#191970","mintcream":"#f5fffa","mistyrose":"#ffe4e1","moccasin":"#ffe4b5", "navajowhite":"#ffdead","navy":"#000080", "oldlace":"#fdf5e6","olive":"#808000","olivedrab":"#6b8e23","orange":"#ffa500","orangered":"#ff4500","orchid":"#da70d6", "palegoldenrod":"#eee8aa","palegreen":"#98fb98","paleturquoise":"#afeeee","palevioletred":"#d87093","papayawhip":"#ffefd5","peachpuff":"#ffdab9","peru":"#cd853f","pink":"#ffc0cb","plum":"#dda0dd","powderblue":"#b0e0e6","purple":"#800080", "red":"#ff0000","rosybrown":"#bc8f8f","royalblue":"#4169e1", "saddlebrown":"#8b4513","salmon":"#fa8072","sandybrown":"#f4a460","seagreen":"#2e8b57","seashell":"#fff5ee","sienna":"#a0522d","silver":"#c0c0c0","skyblue":"#87ceeb","slateblue":"#6a5acd","slategray":"#708090","snow":"#fffafa","springgreen":"#00ff7f","steelblue":"#4682b4", "tan":"#d2b48c","teal":"#008080","thistle":"#d8bfd8","tomato":"#ff6347","turquoise":"#40e0d0", "violet":"#ee82ee", "wheat":"#f5deb3","white":"#ffffff","whitesmoke":"#f5f5f5", "yellow":"#ffff00","yellowgreen":"#9acd32"};
+    this.colorTable = {"transparent":"rgba(0,0,0,0)","aliceblue":"#f0f8ff","antiquewhite":"#faebd7","aqua":"#00ffff","aquamarine":"#7fffd4","azure":"#f0ffff", "beige":"#f5f5dc","bisque":"#ffe4c4","black":"#000000","blanchedalmond":"#ffebcd","blue":"#0000ff","blueviolet":"#8a2be2","brown":"#a52a2a","burlywood":"#deb887", "cadetblue":"#5f9ea0","chartreuse":"#7fff00","chocolate":"#d2691e","coral":"#ff7f50","cornflowerblue":"#6495ed","cornsilk":"#fff8dc","crimson":"#dc143c","cyan":"#00ffff", "darkblue":"#00008b","darkcyan":"#008b8b","darkgoldenrod":"#b8860b","darkgray":"#a9a9a9","darkgreen":"#006400","darkkhaki":"#bdb76b","darkmagenta":"#8b008b","darkolivegreen":"#556b2f", "darkorange":"#ff8c00","darkorchid":"#9932cc","darkred":"#8b0000","darksalmon":"#e9967a","darkseagreen":"#8fbc8f","darkslateblue":"#483d8b","darkslategray":"#2f4f4f","darkturquoise":"#00ced1", "darkviolet":"#9400d3","deeppink":"#ff1493","deepskyblue":"#00bfff","dimgray":"#696969","dodgerblue":"#1e90ff", "firebrick":"#b22222","floralwhite":"#fffaf0","forestgreen":"#228b22","fuchsia":"#ff00ff", "gainsboro":"#dcdcdc","ghostwhite":"#f8f8ff","gold":"#ffd700","goldenrod":"#daa520","gray":"#808080","green":"#008000","greenyellow":"#adff2f", "honeydew":"#f0fff0","hotpink":"#ff69b4", "indianred ":"#cd5c5c","indigo":"#4b0082","ivory":"#fffff0","khaki":"#f0e68c", "lavender":"#e6e6fa","lavenderblush":"#fff0f5","lawngreen":"#7cfc00","lemonchiffon":"#fffacd","lightblue":"#add8e6","lightcoral":"#f08080","lightcyan":"#e0ffff","lightgoldenrodyellow":"#fafad2", "lightgrey":"#d3d3d3","lightgreen":"#90ee90","lightpink":"#ffb6c1","lightsalmon":"#ffa07a","lightseagreen":"#20b2aa","lightskyblue":"#87cefa","lightslategray":"#778899","lightsteelblue":"#b0c4de", "lightyellow":"#ffffe0","lime":"#00ff00","limegreen":"#32cd32","linen":"#faf0e6", "magenta":"#ff00ff","maroon":"#800000","mediumaquamarine":"#66cdaa","mediumblue":"#0000cd","mediumorchid":"#ba55d3","mediumpurple":"#9370d8","mediumseagreen":"#3cb371","mediumslateblue":"#7b68ee", "mediumspringgreen":"#00fa9a","mediumturquoise":"#48d1cc","mediumvioletred":"#c71585","midnightblue":"#191970","mintcream":"#f5fffa","mistyrose":"#ffe4e1","moccasin":"#ffe4b5", "navajowhite":"#ffdead","navy":"#000080", "oldlace":"#fdf5e6","olive":"#808000","olivedrab":"#6b8e23","orange":"#ffa500","orangered":"#ff4500","orchid":"#da70d6", "palegoldenrod":"#eee8aa","palegreen":"#98fb98","paleturquoise":"#afeeee","palevioletred":"#d87093","papayawhip":"#ffefd5","peachpuff":"#ffdab9","peru":"#cd853f","pink":"#ffc0cb","plum":"#dda0dd","powderblue":"#b0e0e6","purple":"#800080", "red":"#ff0000","rosybrown":"#bc8f8f","royalblue":"#4169e1", "saddlebrown":"#8b4513","salmon":"#fa8072","sandybrown":"#f4a460","seagreen":"#2e8b57","seashell":"#fff5ee","sienna":"#a0522d","silver":"#c0c0c0","skyblue":"#87ceeb","slateblue":"#6a5acd","slategray":"#708090","snow":"#fffafa","springgreen":"#00ff7f","steelblue":"#4682b4", "tan":"#d2b48c","teal":"#008080","thistle":"#d8bfd8","tomato":"#ff6347","turquoise":"#40e0d0", "violet":"#ee82ee", "wheat":"#f5deb3","white":"#ffffff","whitesmoke":"#f5f5f5", "yellow":"#ffff00","yellowgreen":"#9acd32"};
+    
+    // Load Colors
+    var pots = dr.global.clientstorage.getItem('_editor_color_pots');
+    if (pots) pots = JSON.parse(pots);
+    if (!pots) pots = ['red', 'green', 'blue', 'yellow', 'pink', 'orange', 'brown', 'white', 'black'];
+    attrs.colorpots = pots;
+    
     this.super();
   </method>
-  
-  <attribute name="color" type="color" value="red"/>
-  <setter name="color" args="color">
-    var colorTable = this.colorTable;
-    if (color in colorTable) color = colorTable[color];
-    if (this.colorpicker) this.colorpicker.setHex(color);
-    if (this.owner) this.owner.setAttribute('value', color);
-    return color;
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="colorpots" type="expression" value="[]"/>
+
+  <attribute name="redcolor" type="number" value="0"/>
+  <setter name="redcolor" args="v">
+    return v;
   </setter>
-  
+
+  <attribute name="greencolor" type="number" value="-1"/>
+  <setter name="greencolor" args="v">
+    return v;
+  </setter>
+
+  <attribute name="bluecolor" type="number" value="-1"/>
+  <setter name="bluecolor" args="v">
+    return v;
+  </setter>
+
+  <attribute name="alphacolor" type="number" value="1"/>
+  <setter name="alphacolor" args="v">
+    var a = parseFloat(v)
+    return parseFloat(a.toFixed(2))
+  </setter>
+
+  <attribute name="color" type="color" value=""/>
+  <setter name="color" args="color">
+    if (color == this.color) return;
+
+    var lookup = this.colorTable[color]
+    if (lookup) {
+      color = lookup
+    }
+
+    //parses #RRGGBB, #RRGGBBAA, rgb(R,G,B), and rgba(R,G,B,A)
+    var regex = /(?:\#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})?|rgba?\(\s*([\d\.]+)\s*,\s*([\d\.]+)\s*,\s*([\d\.]+)\s*(?:,\s*([\d\.]+)\s*)?\))/i
+    var match = regex.exec(color)
+
+    if (match) {
+      var red, green, blue, alpha;
+
+      if (match[1]) {
+        red = parseInt(match[1], 16)
+      } else if (match[5]) {
+        red = parseFloat(match[5])
+      }
+
+      if (match[2]) {
+        green = parseInt(match[2], 16)
+      } else if (match[6]) {
+        green = parseFloat(match[6])
+      }
+
+      if (match[3]) {
+        blue = parseInt(match[3], 16)
+      } else if (match[7]) {
+        blue = parseFloat(match[7])
+      }
+
+      if (match[4]) {
+        alpha = parseInt(match[4], 16)
+      } else if (match[8]) {
+        alpha = parseFloat(match[8])
+      }
+
+      if (isNaN(alpha)) {
+        alpha = 1.0;
+      }
+
+      // this probably color using values between 0 ~ 1.0, need to convert to 0-255
+      if (1.0 >= red && 1.0 >= blue && 1.0 >= green) {
+        red = red * 255
+        green = green * 255
+        blue = blue * 255
+      }
+
+      if (alpha > 1.0) {
+        alpha = alpha / 255
+      }
+
+      red = Math.floor(red)
+      green = Math.floor(green)
+      blue = Math.floor(blue)
+      alpha = parseFloat(alpha.toFixed(2))
+
+      if (red != this.redcolor) {
+        this.setAttribute('redcolor', red)
+      }
+      if (green != this.greencolor) {
+        this.setAttribute('greencolor', green)
+      }
+      if (blue != this.bluecolor) {
+        this.setAttribute('bluecolor', blue)
+      }
+      if (alpha != this.alphacolor) {
+        this.setAttribute('alphacolor', alpha)
+      }
+    }
+  </setter>
+
+
+  <!--// Handlers ///////////////////////////////////////////////////////////-->
+  <handler event="onredcolor ongreencolor onbluecolor onalphacolor" method="setControlsToColorValues"/>
+
   <handler event="onvisible" args="visible">
     if (visible) {
       if (!this.colorpicker) {
         var _this = this;
         this.colorpicker = ColorPicker(
-          this.slider.sprite.platformObject,
-          this.colors.sprite.platformObject,
+          this.colorpanel.slider.sprite.platformObject,
+          this.colorpanel.colors.sprite.platformObject,
           function(hex, hsv, rgb) {
-            if (hex !== _this.color) _this.setAttribute('color', hex);
+            if (hex !== this.lasthexcolor) {
+              this.lasthexcolor = hex;
+              this.r = Math.round(rgb.r);
+              if (this.r != _this.redcolor) {
+                _this.setAttribute('redcolor', this.r)
+              }
+              this.g = Math.round(rgb.g);
+              if (this.g != _this.greencolor) {
+                _this.setAttribute('greencolor', this.g)
+              }
+              this.b = Math.round(rgb.b);
+              if (this.b != _this.bluecolor) {
+                _this.setAttribute('bluecolor', this.b)
+              }
+            }
         });
+        this.colorpanel.colors.sprite.platformObject.$view = this.colorpanel.slider.sprite.platformObject.$view = this;
       }
-      this.colors.sprite.platformObject.$view = this.slider.sprite.platformObject.$view = this;
-      this.colorpicker.setHex(this.color);
+    } else {
+      if (this.inited) this.storeColor(this.rgbaColor());
     }
   </handler>
 
-  <spacedlayout updateparent="true"/>
-  <view width="200" height="200" name="colors" clickable="true"/>
-  <view width="30" height="200" name="slider" clickable="true"/>
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
+  <method name="storeColor" args="color">
+    var pots = this.colorpots;
+    if (color) {
+      var existingIdx = pots.indexOf(color);
+      if (existingIdx > -1) pots.splice(existingIdx, 1);
+      pots.unshift(color);
+      pots = pots.slice(0,9);
+      dr.global.clientstorage.setItem('_editor_color_pots', JSON.stringify(pots));
+    }
+    this.setAttribute('colorpots', pots);
+  </method>
+
+  <method name="hexColor">
+    var r = this.redcolor.toString(16);
+    if (r.length == 1) {
+      r = '0' + r;
+    }
+    var g = this.greencolor.toString(16);
+    if (g.length == 1) {
+      g = '0' + g;
+    }
+    var b = this.bluecolor.toString(16);
+    if (b.length == 1) {
+      b = '0' + b;
+    }
+
+    return '#' + r + g + b;
+  </method>
+
+  <method name="rgbaColor">
+    var r = this.redcolor;
+    if (isNaN(r)) {
+      r = 0
+    }
+    var g = this.greencolor;
+    if (isNaN(g)) {
+      g = 0
+    }
+    var b = this.bluecolor;
+    if (isNaN(b)) {
+      b = 0
+    }
+    var a = this.alphacolor;
+    if (isNaN(a)) {
+      a = 1.0
+    }
+    a = a.toFixed(2)
+
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  </method>
+
+  <method name="setControlsToColorValues">
+    if (this.inited) {
+      var r = this.redcolor,
+        g = this.greencolor,
+        b = this.bluecolor,
+        a = this.alphacolor;
+      
+      var rgba = this.rgbaColor(),
+        rgbhex = this.hexColor();
+      
+      if (isNaN(r)) r = 0;
+      if (isNaN(g)) g = 0;
+      if (isNaN(b)) b = 0;
+      if (isNaN(a)) a = 1.0;
+      
+      if (this.colorpicker) this.colorpicker.setHex(rgbhex, false);
+      
+      var alphapicker = this.alphapanel.alphapicker;
+      if (alphapicker) {
+        alphapicker.setAttribute('value', a * alphapicker.maxvalue);
+        alphapicker.setAttribute('progresscolor', rgba);
+      }
+      
+      var cv = this.colorvalues;
+      cv.red.setAttribute('value',r);
+      cv.green.setAttribute('value', g);
+      cv.blue.setAttribute('value', b);
+      cv.alpha.setAttribute('value', a.toFixed(2));
+      
+      if (this.owner) this.owner.setAttribute('value', rgba);
+    }
+  </method>
+
+
+  <!--// Nodes/Views ////////////////////////////////////////////////////////-->
+  <view name="colorpanel" height="auto">
+    <view width="200" height="200" name="colors" clickable="true"/>
+    <view width="30" height="200" name="slider" clickable="true"/>
+    <spacedlayout axis="x" updateparent="true"/>
+  </view>
+  
+  <view name="alphapanel" width="${this.parent.colorpanel.width}" height="24">
+    <bitmap
+      width="100%" height="100%"
+      repeat="repeat" stretches="none" src="/editor/img/transparent_pattern.png"
+    />
+    
+    <slider name="alphapicker"
+      bgcolor="transparent"
+      bordercolor="transparent"
+      selectcolor="transparent"
+      maxvalue="100"
+      value="100"
+      margin="0"
+      padding="1"
+      width="100%" height="100%"
+    >
+      <setter name="value" args="v">
+        v = Math.round(v);
+        if (v > this.maxvalue) v = this.maxvalue;
+        if (0 > v) v = 0;
+
+        var av = v / this.maxvalue;
+        av = parseFloat(av.toFixed(2))
+
+        if (this.classroot.alphacolor != av) {
+          this.classroot.setAttribute('alphacolor', av);
+        }
+
+        return v;
+      </setter>
+    </slider>
+  </view>
+
+  <view name="colorvalues" height="auto" bgcolor="transparent">
+    <text y="1" text="R" fontsize="14" bold="true"/>
+    
+    <inputtext name="red" width="30" fontsize="14" focusembellishment="false">
+      <setter name="value" args="v">
+        var r = parseInt(v);
+        if (!isNaN(r) && this.classroot.redcolor != r) {
+          this.classroot.setAttribute('redcolor', r)
+        }
+        return v;
+      </setter>
+    </inputtext>
+    
+    <text y="1" text="G" fontsize="14" bold="true"/>
+    
+    <inputtext name="green" width="30" fontsize="14" focusembellishment="false">
+      <setter name="value" args="v">
+        var g = parseInt(v);
+        if (!isNaN(g) && this.classroot.greencolor != g) {
+          this.classroot.setAttribute('greencolor', g)
+        }
+        return v;
+      </setter>
+    </inputtext>
+    
+    <text y="1" text="B" fontsize="14" bold="true"/>
+    
+    <inputtext name="blue" width="30" fontsize="14" focusembellishment="false">
+      <setter name="value" args="v">
+        var b = parseInt(v);
+        if (!isNaN(b) && this.classroot.bluecolor != b) {
+          this.classroot.setAttribute('bluecolor', b)
+        }
+        return v;
+      </setter>
+    </inputtext>
+    
+    <text y="1" text="A" fontsize="14" bold="true"/>
+    
+    <inputtext name="alpha" width="30" fontsize="14" focusembellishment="false">
+      <setter name="value" args="v">
+        var a = parseFloat(v);
+        if (!isNaN(a)) {
+          a = parseFloat(a.toFixed(2));
+          if (a != this.classroot.alphacolor) {
+            this.classroot.setAttribute('alphacolor', a)
+          }
+        }
+        return v;
+      </setter>
+    </inputtext>
+    
+    <spacedlayout inset="5" axis="x" spacing="7" updateparent="true"/>
+  </view>
+
+  <view name="pots" height="15">
+    <spacedlayout axis="x" inset="5" outset="5" spacing="5" updateparent="true"/>
+    <replicator name="colorpots" data="${this.classroot.colorpots}">
+      <view width="20" height="10" focusembellishment="false" marginright="2" border="1" cornerradius="5" bordercolor="black" with="button" bgcolor="${this.data}">
+        <method name="doActivated">
+          this.classroot.setAttribute('color', this.bgcolor)
+        </method>
+      </view>
+    </replicator>
+  </view>
+
+  <spacedlayout axis="y" updateparent="true"/>
 </class>
