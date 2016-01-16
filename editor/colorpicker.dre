@@ -317,7 +317,7 @@ either express or implied. See the License for the specific language governing p
   <view name="colorvalues" height="auto" width="auto" bgcolor="transparent">
     <spacedlayout inset="5" axis="x" spacing="7" updateparent="true"/>
     <text y="1" text="R" fontsize="14" bold="true"></text>
-    <inputtext name="red" width="30" fontsize="14" border="1" align="center">
+    <inputtext name="red" width="30" fontsize="14" focusembellishment="false" align="center">
       <setter name="value" args="v">
         var r = parseInt(v);
         if (!isNaN(r) && this.classroot.redcolor != r) {
@@ -327,7 +327,7 @@ either express or implied. See the License for the specific language governing p
       </setter>
     </inputtext>
     <text y="1" text="G" fontsize="14" bold="true"></text>
-    <inputtext name="green" width="30" fontsize="14" align="center">
+    <inputtext name="green" width="30" fontsize="14" focusembellishment="false" align="center">
       <setter name="value" args="v">
         var g = parseInt(v);
         if (!isNaN(g) && this.classroot.greencolor != g) {
@@ -337,7 +337,7 @@ either express or implied. See the License for the specific language governing p
       </setter>
     </inputtext>
     <text y="1" text="B" fontsize="14" bold="true"></text>
-    <inputtext name="blue" width="30" fontsize="14" align="center">
+    <inputtext name="blue" width="30" fontsize="14" focusembellishment="false" align="center">
       <setter name="value" args="v">
         var b = parseInt(v);
         if (!isNaN(b) && this.classroot.bluecolor != b) {
@@ -347,7 +347,7 @@ either express or implied. See the License for the specific language governing p
       </setter>
     </inputtext>
     <text y="1" text="A" fontsize="14" bold="true"></text>
-    <inputtext name="alpha" width="30" fontsize="14" align="center">
+    <inputtext name="alpha" width="30" fontsize="14" focusembellishment="false" align="center">
       <setter name="value" args="v">
         var a = parseFloat(v);
         if (!isNaN(a)) {
