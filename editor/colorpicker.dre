@@ -266,7 +266,9 @@ either express or implied. See the License for the specific language governing p
     <view width="200" height="200" name="colors" clickable="true"/>
     <view width="30" height="200" name="slider" clickable="true"/>
   </view>
-  <view name="alphapanel" width="${this.parent.colorpanel.width}" height="20">
+  <view name="alphapanel" width="${this.parent.colorpanel.width}"
+    height="24"
+  >
     <bitmap
       width="100%"
       height="100%"
@@ -278,6 +280,8 @@ either express or implied. See the License for the specific language governing p
       selectcolor="transparent"
       progresscolor="${this.parent.color}"
       maxvalue="100"
+      margin="0"
+      padding="1"
       width="100%"
       height="100%">
 
@@ -352,7 +356,7 @@ either express or implied. See the License for the specific language governing p
   <view name="pots" height="auto" width="auto">
     <spacedlayout axis="x" updateparent="true"/>
     <replicator name="colorpots">
-
+      <view width="20" height="10"></view>
     </replicator>
 
   </view>
