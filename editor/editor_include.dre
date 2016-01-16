@@ -80,6 +80,13 @@ either express or implied. See the License for the specific language governing p
           sprite.preventDefault(platformEvent); // Prevent browser show bookmarks bar functionality
           if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
           break;
+        case 67: // C: Copy
+          var selected = selectionmanager.selected;
+          if (selected && !selected.isInlineEdit()) {
+            sprite.preventDefault(platformEvent); // Prevent browser copy functionality
+            if (this._actionsPermitted()) actions.copy();
+          }
+          break;
         case 69: // E: Exit Editor
           sprite.preventDefault(platformEvent);
           if (this._actionsPermitted()) actions.stop();
@@ -95,6 +102,20 @@ either express or implied. See the License for the specific language governing p
         case 83: // S: Save document
           sprite.preventDefault(platformEvent); // Prevent browser save functionality
           if (this._actionsPermitted()) actions.save();
+          break;
+        case 86: // V: Paste
+          var selected = selectionmanager.selected;
+          if (selected && !selected.isInlineEdit()) {
+            sprite.preventDefault(platformEvent); // Prevent browser paste functionality
+            if (this._actionsPermitted()) actions.paste();
+          }
+          break;
+        case 88: // X: Cut
+          var selected = selectionmanager.selected;
+          if (selected && !selected.isInlineEdit()) {
+            sprite.preventDefault(platformEvent); // Prevent browser cut functionality
+            if (this._actionsPermitted()) actions.cut();
+          }
           break;
         case 90: // Z: Undo/Redo
           sprite.preventDefault(platformEvent); // Prevent browser undo/redo functionality
