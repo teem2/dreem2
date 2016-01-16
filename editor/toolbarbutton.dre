@@ -84,9 +84,10 @@ either express or implied. See the License for the specific language governing p
   </method>
 </class>
 
-<class name="basefloatingpanelbutton" with="button"
+<class name="listviewbutton" with="listviewanchor, button"
   width="auto" height="auto" focusembellishment="false"
-  floatingalign="insideright" floatingvalign="outsidebottom"
+  floatingalign="insideleft" floatingvalign="outsidebottom"
+  floatingvalignoffset="2"
 >
   <attribute name="fontsize" type="number" value="14"/>
   <attribute name="selected" type="boolean" value="false"/>
@@ -113,87 +114,148 @@ either express or implied. See the License for the specific language governing p
     this.setActualAttribute('color', '#000000');
   </method>
   
+  <method name="notifyPanelHidden" args="panel">
+    this.setActualAttribute('selected', false);
+  </method>
+  <method name="notifyPanelShown" args="panel">
+    this.setActualAttribute('selected', true);
+  </method>
+  
   <text name="arrow" text="${this.parent.selected ? '▼' : '▶'}" fontsize="${this.parent.fontsize - 2}" y="2"/>
   <text text="${this.parent.label}" x="${this.parent.fontsize}" fontsize="${this.parent.fontsize}"/>
 </class>
 
-<class name="floatingpanelbutton" extends="basefloatingpanelbutton" with="floatingpanelanchor"
-  floatingvalignoffset="2" 
->
-  <method name="notifyPanelHidden" args="panel">
-    this.setActualAttribute('selected', false);
-  </method>
-  
-  <method name="notifyPanelShown" args="panel">
-    this.setActualAttribute('selected', true);
-  </method>
-</class>
-
-<class name="listviewbutton" extends="basefloatingpanelbutton" with="listviewanchor"
-  floatingvalignoffset="2" 
->
-  <method name="notifyPanelHidden" args="panel">
-    this.setActualAttribute('selected', false);
-  </method>
-  
-  <method name="notifyPanelShown" args="panel">
-    this.setActualAttribute('selected', true);
-  </method>
-</class>
-
-<class name="toolbariconbutton" with="button"
-  width="auto" height="54" focusembellishment="false"
-  cornerradius="4" toppadding="8" leftpadding="8" rightpadding="8"
->
-  <attribute name="label" type="string" value=""/>
-  <attribute name="iconname" type="string" value=""/>
-  <setter name="iconname" args="iconname">
-    if (this.inited) this.icon.setActualAttribute('src', config.img_root + iconname + '.png');
-    return iconname;
-  </setter>
-  
-  <attribute name="action" type="string" value=""/>
-  <method name="doActivated">
-    if (!this.disabled && !dr.global.dragManager.dragview) actions[this.action]();
-  </method>
-  
-  <method name="initNode" args="parent, attrs">
-    this.super();
-    
-    this.icon.setActualAttribute('src', config.img_root + this.iconname + '.png');
-  </method>
-
-  <method name="drawDisabledState">
-    this.setActualAttribute('opacity', 0.5).setActualAttribute('bgcolor', 'transparent').setActualAttribute('boxshadow', null);
-    this.labelView.setActualAttribute('color', 'transparent');
-  </method>
-  <method name="drawFocusedState">
-    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', [0, 0, 3, 0, '#666666']);
-    this.labelView.setActualAttribute('color', '#000000');
-  </method>
-  <method name="drawHoverState">
-    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', null);
-    this.labelView.setActualAttribute('color', '#000000');
-  </method>
-  <method name="drawActiveState">
-    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#aaaaaa').setActualAttribute('boxshadow', null);
-    this.labelView.setActualAttribute('color', '#000000');
-  </method>
-  <method name="drawReadyState">
-    this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', 'transparent').setActualAttribute('boxshadow', null);
-    this.labelView.setActualAttribute('color', 'transparent');
-  </method>
-  
-  <bitmap name="icon" width="32" height="32"/>
-  <text name="labelView" y="32" text="${this.parent.label}" fontsize="10" color="transparent"/>
-  
-  <alignlayout align="center"/>
-</class>
-
-<class name="basefloatingpaneliconbutton" extends="toolbariconbutton"
-  floatingalign="insideright" floatingvalign="outsidebottom"
+<class name="menubutton" with="listviewanchor, button"
+  width="${this.labelview.width + 2*this.labelview.x}" height="21" y="2"
+  floatingvalignoffset="2"
+  listviewattrs="{maxheight:640, defaultitemclass:dr.menuitem, bottomrightcornerradius:4, bottomleftcornerradius:4}"
+  focusembellishment="false"
+  floatingalign="insideleft" floatingvalign="outsidebottom"
+  cornerradius="2" bgcolor="#dddddd"
 >
   <attribute name="selected" type="boolean" value="false"/>
+  <attribute name="label" type="string" value=""/>
+  <handler event="onselected" args="selected" method="updateUI"/>
+  
+  <method name="doActivated">
+    if (!this.disabled && !dr.global.dragManager.dragview) {
+      this.setActualAttribute('itemconfig', this.prepareConfig(this.cfg.concat())); // Concat to work around equality test.
+      this.toggleFloatingPanel();
+    }
+  </method>
+  
+  <method name="doItemActivated" args="itemview">
+    if (!this.disabled && !dr.global.dragManager.dragview) actions[itemview.action || itemview.name]();
+    this.super();
+  </method>
+  
+  <method name="updateConfig">
+    if (this.inited) {
+      var panelId = this.floatingpanelid,
+        fp = this.getFloatingPanel(panelId);
+      if (fp && fp.isShown()) {
+        this.hideFloatingPanel(panelId);
+        this.doActivated();
+      }
+    }
+  </method>
+  
+  <method name="prepareConfig" args="cfg">
+    return cfg;
+  </method>
+  
+  <method name="drawDisabledState">
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#bbbbbb');
+  </method>
+  <method name="drawHoverState">
+    this.setActualAttribute('bgcolor', '#eeeeee');
+  </method>
+  <method name="drawActiveState">
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#cccccc');
+  </method>
+  <method name="drawReadyState">
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#dddddd');
+  </method>
+  
+  <method name="notifyPanelHidden" args="panel">
+    this.setActualAttribute('selected', false);
+  </method>
+  <method name="notifyPanelShown" args="panel">
+    this.setActualAttribute('selected', true);
+  </method>
+  
+  <method name="handleLeftArrow">
+    this.prevMenu();
+  </method>
+
+  <method name="handleRightArrow">
+    this.nextMenu();
+  </method>
+  
+  <method name="prevMenu">
+    this.hideFloatingPanel();
+    var menu = this.getPrevMenu();
+    if (menu) {
+      menu.focus();
+      menu.doActivated();
+    } else {
+      this.focus();
+    }
+  </method>
+  
+  <method name="getPrevMenu">
+    // Instances to implement
+  </method>
+  
+  <method name="nextMenu">
+    this.hideFloatingPanel();
+    var menu = this.getNextMenu();
+    if (menu) {
+      menu.focus();
+      menu.doActivated();
+    } else {
+      this.focus();
+    }
+  </method>
+  
+  <method name="getNextMenu">
+    // Instances to implement
+  </method>
+  
+  <text name="labelview" text="${this.parent.label}" x="8" y="middle" fontsize="14" color="#333333"/>
+</class>
+
+<class name="menuitem" extends="listviewitem">
+  <attribute name="shortcut" type="string" value=""/>
+
+  <method name="getMinimumWidth">
+    return this.inset + this.label.width + 16 + this.shortcutView.width + this.outset;
+  </method>
+
+  <method name="handleLeftArrow">
+    this.listview.owner.prevMenu();
+  </method>
+
+  <method name="handleRightArrow">
+    this.listview.owner.nextMenu();
+  </method>
+
+  <text name="shortcutView"
+    x="${this.parent.width - this.width - this.parent.outset}"
+    text="${this.parent.shortcut}" fontsize="${this.parent.fontsize}"
+  />
+</class>
+
+<class name="menufloatingpanelbutton" with="floatingpanelanchor, button"
+  width="${this.labelview.width + 2*this.labelview.x}" height="21" y="2"
+  floatingvalignoffset="2"
+  focusembellishment="false"
+  floatingalign="insideleft" floatingvalign="outsidebottom"
+  cornerradius="2" bgcolor="#dddddd"
+  activationkeys="[13,27,32,37,39]"
+>
+  <attribute name="selected" type="boolean" value="false"/>
+  <attribute name="label" type="string" value=""/>
   <handler event="onselected" args="selected" method="updateUI"/>
   
   <method name="doActivated">
@@ -203,36 +265,98 @@ either express or implied. See the License for the specific language governing p
     }
   </method>
   
+  <method name="drawDisabledState">
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#bbbbbb');
+  </method>
+  <method name="drawHoverState">
+    this.setActualAttribute('bgcolor', '#eeeeee');
+  </method>
+  <method name="drawActiveState">
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#cccccc');
+  </method>
   <method name="drawReadyState">
-    if (this.selected) {
-      this.setActualAttribute('opacity', 1).setActualAttribute('bgcolor', '#cccccc').setActualAttribute('boxshadow', null);
-      this.labelView.setActualAttribute('color', '#000000');
-    } else {
-      this.super();
+    this.setActualAttribute('bgcolor', this.selected ? '#eeeeee' : '#dddddd');
+  </method>
+  
+  <method name="notifyPanelHidden" args="panel">
+    this.setActualAttribute('selected', false);
+  </method>
+  <method name="notifyPanelShown" args="panel">
+    this.setActualAttribute('selected', true);
+  </method>
+  
+  <!--/** @overrides */-->
+  <method name="doActivationKeyDown" args="key, isRepeat">
+    // Close for escape key.
+    if (key === dr.sprite.GlobalKeys.KEYCODE_ESC) {
+      this.hideFloatingPanel();
+      return;
+    }
+    
+    this._handleKeys(key);
+    
+    this.super();
+  </method>
+
+  <!--/** @overrides */-->
+  <method name="doActivationKeyUp" args="key">
+    // Abort for escape key.
+    if (key === dr.sprite.GlobalKeys.KEYCODE_ESC) return;
+    
+    this.super();
+    
+    this._handleKeys(key);
+  </method>
+
+  <method name="_handleKeys" args="key">
+    // Select first/last if the list view is already open
+    switch (key) {
+      case 37: // Left
+        this.handleLeftArrow();
+        break;
+      case 39: // Right
+        this.handleRightArrow();
+        break;
     }
   </method>
-</class>
 
-<class name="floatingpaneliconbutton" extends="basefloatingpaneliconbutton" with="floatingpanelanchor"
-  floatingvalignoffset="2" activationkeys="[13,32,37,38,39,40]"
->
-  <method name="notifyPanelHidden" args="panel">
-    this.setActualAttribute('selected', false);
+  <method name="handleLeftArrow">
+    this.prevMenu();
+  </method>
+
+  <method name="handleRightArrow">
+    this.nextMenu();
   </method>
   
-  <method name="notifyPanelShown" args="panel">
-    this.setActualAttribute('selected', true);
-  </method>
-</class>
-
-<class name="listviewiconbutton" extends="basefloatingpaneliconbutton" with="listviewanchor"
-  floatingvalignoffset="2" 
->
-  <method name="notifyPanelHidden" args="panel">
-    this.setActualAttribute('selected', false);
+  <method name="prevMenu">
+    this.hideFloatingPanel();
+    var menu = this.getPrevMenu();
+    if (menu) {
+      menu.focus();
+      menu.doActivated();
+    } else {
+      this.focus();
+    }
   </method>
   
-  <method name="notifyPanelShown" args="panel">
-    this.setActualAttribute('selected', true);
+  <method name="getPrevMenu">
+    // Instances to implement
   </method>
+  
+  <method name="nextMenu">
+    this.hideFloatingPanel();
+    var menu = this.getNextMenu();
+    if (menu) {
+      menu.focus();
+      menu.doActivated();
+    } else {
+      this.focus();
+    }
+  </method>
+  
+  <method name="getNextMenu">
+    // Instances to implement
+  </method>
+  
+  <text name="labelview" text="${this.parent.label}" x="8" y="middle" fontsize="14" color="#333333"/>
 </class>

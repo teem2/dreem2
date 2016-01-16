@@ -67,16 +67,36 @@
         this.listview.owner.hideFloatingPanel();
         return;
       case 37: // Left
+        this.handleLeftArrow();
+        break;
       case 38: // Up
-        dr.global.focus.prev();
+        this.handleUpArrow();
         break;
       case 39: // Right
+        this.handleRightArrow();
+        break;
       case 40: // Down
-        dr.global.focus.next();
+        this.handleDownArrow();
         break;
     }
     
     this.super(key, isRepeat);
+  </method>
+
+  <method name="handleLeftArrow">
+    dr.global.focus.prev();
+  </method>
+
+  <method name="handleRightArrow">
+    dr.global.focus.next();
+  </method>
+
+  <method name="handleUpArrow">
+    dr.global.focus.prev();
+  </method>
+
+  <method name="handleDownArrow">
+    dr.global.focus.next();
   </method>
   
   <method name="getMinimumWidth">

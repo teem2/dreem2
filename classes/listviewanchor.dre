@@ -64,17 +64,7 @@
       return;
     }
     
-    // Select first/last if the list view is already open
-    switch (key) {
-      case 37: // Left
-      case 38: // Up
-        this.selectLastItem();
-        break;
-      case 39: // Right
-      case 40: // Down
-        this.selectFirstItem();
-        break;
-    }
+    this._handleKeys(key);
     
     this.super();
   </method>
@@ -86,17 +76,41 @@
     
     this.super();
     
-    // Select first/last after list view is open.
+    this._handleKeys(key);
+  </method>
+
+  <method name="_handleKeys" args="key">
+    // Select first/last if the list view is already open
     switch (key) {
       case 37: // Left
+        this.handleLeftArrow();
+        break;
       case 38: // Up
-        this.selectLastItem();
+        this.handleUpArrow();
         break;
       case 39: // Right
+        this.handleRightArrow();
+        break;
       case 40: // Down
-        this.selectFirstItem();
+        this.handleDownArrow();
         break;
     }
+  </method>
+
+  <method name="handleLeftArrow">
+    this.selectLastItem();
+  </method>
+
+  <method name="handleRightArrow">
+    this.selectFirstItem();
+  </method>
+
+  <method name="handleUpArrow">
+    this.selectLastItem();
+  </method>
+
+  <method name="handleDownArrow">
+    this.selectFirstItem();
   </method>
   
   <method name="selectLastItem">

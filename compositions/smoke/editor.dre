@@ -40,12 +40,6 @@
           var screennamechooser = S.retrieveGlobal('screennamechooser');
           assert.isDefined(screennamechooser, 'The screen name chooser should be stored under a global.');
           
-          // Verify editor preview button related things exist
-          var editPreviewButton = S.retrieveGlobal('editPreviewButton');
-          assert.isDefined(editPreviewButton, 'The edit preview button should be stored under a global.');
-          assert.isFalse(editPreviewButton.disabled, 'The edit preview button should not be disabled.');
-          assert.equal(editPreviewButton.iconname, 'preview', 'The edit preview button should be configured for preview.');
-          
           // Verify editor model related things exist
           var editormodel = S.retrieveGlobal('editormodel');
           assert.isDefined(editormodel, 'The editor model should exist.');

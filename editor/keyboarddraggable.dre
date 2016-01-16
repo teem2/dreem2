@@ -11,24 +11,24 @@ either express or implied. See the License for the specific language governing p
     if (!this.disabled) {
       switch (dr.sprite.KeyObservable.getKeyCodeFromEvent(platformEvent)) {
         case 37: // Left arrow
-          this._shiftPos(true, false);
+          this.shiftPos(true, false, dr.keyboard.isShiftKeyDown());
           break;
         case 38: // Up arrow
-          this._shiftPos(false, false);
+          this.shiftPos(false, false, dr.keyboard.isShiftKeyDown());
           break;
         case 39: // Right arrow
-          this._shiftPos(true, true);
+          this.shiftPos(true, true, dr.keyboard.isShiftKeyDown());
           break;
         case 40: // Down arrow
-          this._shiftPos(false, true);
+          this.shiftPos(false, true, dr.keyboard.isShiftKeyDown());
           break;
       }
     }
   </handler>
 
-  <method name="_shiftPos" args="isX, increase">
+  <method name="shiftPos" args="isX, increase, isBig">
     if (!dr.global.dragManager.dragview) {
-      var amount = dr.keyboard.isShiftKeyDown() ? 10 : 1,
+      var amount = isBig ? 10 : 1,
         gridAmt = Math.max(1, isX ? gridsizex.value : gridsizey.value),
         event = {x:this.x, y:this.y};
       

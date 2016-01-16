@@ -80,13 +80,21 @@ either express or implied. See the License for the specific language governing p
           sprite.preventDefault(platformEvent); // Prevent browser show bookmarks bar functionality
           if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
           break;
+        case 69: // E: Exit Editor
+          sprite.preventDefault(platformEvent);
+          if (this._actionsPermitted()) actions.stop();
+          break;
         case 70: // F: Reorder forward
           sprite.preventDefault(platformEvent); // Prevent browser find functionality
           if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'bringForward' : 'bringToFront')]();
           break;
+        case 77: // M: Messages Panel
+          sprite.preventDefault(platformEvent);
+          actions.showMessagePanel();
+          break;
         case 83: // S: Save document
           sprite.preventDefault(platformEvent); // Prevent browser save functionality
-          if (this._actionsPermitted()) saveButton.doActivated();
+          if (this._actionsPermitted()) actions.save();
           break;
         case 90: // Z: Undo/Redo
           sprite.preventDefault(platformEvent); // Prevent browser undo/redo functionality
@@ -815,58 +823,6 @@ either express or implied. See the License for the specific language governing p
   <!--// Selection Reticle //-->
   <reticle id="reticle" ignoreplacement="true"/>
 
-  <!--// Top Panel //-->
-  <view ignoreplacement="true" bgcolor="${config.primary_panel_color}"
-    width="100%" height="${config.topbar_height}"
-  >
-    <view name="left" padding="2" height="${config.topbar_height}">
-      <spacedlayout spacing="3" inset="9" outset="3" updateparent="true"/>
-      <constantlayout attribute="y" value="'middle'"/>
-      
-      <listviewiconbutton id="actionsButton" floatingpanelid="actions" label="actions" iconname="actions"
-        listviewattrs="{maxheight:300}"
-      >
-        <method name="doActivated">
-          if (!this.disabled && !dr.global.dragManager.dragview) {
-            var editorPlaying = !editor.editmode;
-            var noActionableSelection = !selectionmanager.selected || selectionmanager.isrootselection;
-            var cfg = [
-              {attrs:{name:'undo', text:'Undo', disabled:!undo.isundoable || editorPlaying}},
-              {attrs:{name:'redo', text:'Redo', disabled:!undo.isredoable || editorPlaying}},
-              {klass:dr.listviewseparator},
-              {attrs:{name:'bringToFront', text:'Bring to Front', disabled:noActionableSelection}},
-              {attrs:{name:'bringForward', text:'Bring Forward', disabled:noActionableSelection}},
-              {attrs:{name:'sendToBack', text:'Send to Back', disabled:noActionableSelection}},
-              {attrs:{name:'sendBackward', text:'Send Backward', disabled:noActionableSelection}},
-              {klass:dr.listviewseparator},
-              {attrs:{name:'deleteSelected', text:'Delete', disabled:noActionableSelection}}
-            ];
-            this.setActualAttribute('itemconfig', cfg);
-            
-            this.toggleFloatingPanel();
-          }
-        </method>
-        
-        <method name="doItemActivated" args="itemview">
-          actions[itemview.name]();
-          this.super();
-        </method>
-      </listviewiconbutton>
-      <floatingpaneliconbutton floatingpanelid="settings" label="settings" iconname="settings"/>
-    </view>
-    
-    <view name="right" padding="2" x="right" height="${config.topbar_height}">
-      <spacedlayout spacing="3" inset="3" outset="9" updateparent="true"/>
-      <constantlayout attribute="y" value="'middle'"/>
-      <toolbariconbutton with="tooltip" id="editPreviewButton" action="editPreview" label="preview" iconname="preview" width="54"
-        tooltip="${'Change the editing area to a preview of the screen.\nOpt-click to open a new live preview.'}" tipvalign="below"
-      />
-      <view width="1" height="100%" bgcolor="${config.secondary_panel_color}"/>
-      <toolbariconbutton id="saveButton" action="save" disabled="${!undo.isundoable || !editor.editmode}" label="save" iconname="save"/>
-      <toolbariconbutton id="stopButton" action="stop" disabled="${!editor.editmode}" label="exit" iconname="exit"/>
-    </view>
-  </view>
-
   <!--// Left Panel //-->
   <view name="leftbar" ignoreplacement="true" bgcolor="white"
     y="${config.topbar_height}"
@@ -878,6 +834,7 @@ either express or implied. See the License for the specific language governing p
     <view width="${treemodel.width}" height="28" bgcolor="#eeeeee">
       <listviewbutton with="tooltip" id="screennamechooser" floatingpanelid="screenlist" y="6" x="5"
         tooltip="Select a different screen to edit."
+        disabled="${!editor.editmode}"
       >
         <method name="doItemActivated" args="itemview">
           this.super();
@@ -1147,23 +1104,29 @@ either express or implied. See the License for the specific language governing p
     </method>
   </view>
 
-  <view id="messages" with="button" ignoreplacement="true" focusembellishment="false"
+  <!--// Top Panel //-->
+  <view id="messages" ignoreplacement="true"
     x="center" width="550" height="12"
-    bgcolor="#bbbbbb" boxshadow="${config.boxshadow_large}"
-    bottomleftcornerradius="12" bottomrightcornerradius="12"
+    bgcolor="#dddddd" boxshadow="${config.boxshadow_large}"
+    bottomleftcornerradius="6" bottomrightcornerradius="6" opacity="0.85"
   >
     <attribute name="selected" type="boolean" value="false"/>
-    <attribute name="useropened" type="boolean" value="false"/>
     <handler event="onselected" args="selected">
       this.stopActiveAnimators('height');
+      this.stopActiveAnimators('y');
       this.animate({
         attribute:'height',
-        to: 12 + (selected ? this.container.content.height : 0),
-        duration:selected || this.useropened ? 400 : 1000
+        to: 2 + (selected ? this.container.content.height : 0),
+        duration:selected ? 400 : 1000
+      });
+      this.animate({
+        attribute:'y', 
+        to:selected ? editormenubar.height : 0, 
+        duration:selected ? 400 : 1000
       });
       
       // Animate closed after a delay
-      if (selected && !this.useropened) {
+      if (selected) {
         var self = this;
         if (this._timerId) clearTimeout(this._timerId);
         this._timerId = setTimeout(function() {
@@ -1171,36 +1134,23 @@ either express or implied. See the License for the specific language governing p
         }, 3000);
       }
     </handler>
-    <method name="doActivated">
-      this.setActualAttribute('useropened', true);
-      this.setActualAttribute('selected', !this.selected);
+    <method name="open">
+      if (this.selected) {
+        this.setActualAttribute('selected', false); // Force reanimation
+        this.setActualAttribute('selected', true);
+      } else {
+        this.setActualAttribute('selected', true);
+      }
     </method>
-    <method name="initNode" args="parent, attrs">
-      this.super();
-      this.addMessage('No Messages.', true, true);
-    </method>
-    <method name="drawDisabledState">
-      this.setActualAttribute('bgcolor', '#bbbbbb');
-    </method>
-    <method name="drawHoverState">
-      this.setActualAttribute('bgcolor', '#cccccc');
-    </method>
-    <method name="drawActiveState">
-      this.setActualAttribute('bgcolor', '#aaaaaa');
-    </method>
-    <method name="drawReadyState">
-      this.setActualAttribute('bgcolor', '#bbbbbb');
-    </method>
-    
     <method name="addMessage" args="msg, noopen, notime">
       if (msg) {
         var content = this.container.content;
         
-        // Remove and existing children that have the exact same message.
+        // Remove any existing children that have the exact same message.
         var svs = content.getSubviews(), i = svs.length, sv;
         while (i) {
           sv = svs[--i];
-          if (sv.msg === msg || sv.msg === 'No Messages.') sv.destroy();
+          if (sv.msg === msg) sv.destroy();
         }
         
         // Create a new message.
@@ -1220,23 +1170,14 @@ either express or implied. See the License for the specific language governing p
         // Dim out all but the most recent message
         while (svs.length - 1 > i) svs[i++].setActualAttribute('color', '#aaaaaa');
         
-        // Open
-        if (!noopen) {
-          if (this.selected) {
-            this.setActualAttribute('selected', false); // Force reanimation
-            this.setActualAttribute('selected', true);
-          } else {
-            this.setActualAttribute('useropened', false);
-            this.setActualAttribute('selected', true);
-          }
-        }
+        if (!noopen) this.open();
       }
     </method>
     
-    <view name="container" width="550" height="${this.parent.innerheight - 12}"
-      bgcolor="#cccccc" scrollable="true"
-    >
-      <view name="content" x="2" width="546" padding="4" bgcolor="white"
+    <view name="container" width="550" height="${this.parent.innerheight - 2}" scrollable="true">
+      <view name="content" x="2" width="546"
+        leftpadding="4" rightpadding="4" toppadding="4" bottompadding="2"
+        bgcolor="white"
         bottomleftcornerradius="4" bottomrightcornerradius="4" color="#666666"
       >
         <spacedlayout axis="y" spacing="4" updateparent="true" reverse="true" speed="400">
@@ -1254,10 +1195,192 @@ either express or implied. See the License for the specific language governing p
       </view>
     </view>
   </view>
+
+  <!--// The menu bar at the top of the editor. //-->
+  <view id="editormenubar" ignoreplacement="true"
+    width="100%" height="${config.topbar_height}" bgcolor="#eeeeee" boxshadow="[0,0,3,0,'#999999']"
+    oktosave="${undo.isundoable && editor.editmode}"
+  >
+    <attribute name="oktosave" type="boolean" value="false"/>
+    
+    <menubutton name="fileMenu" floatingpanelid="filemenu" label="File">
+      <handler event="onoktosave" reference="parent" method="updateConfig"/>
+      
+      <method name="initNode" args="parent, attrs">
+        var accChar = dr.global.keys.getAcceleratorChar();
+        this.cfg = [
+          {attrs:{name:'stop', text:'exit', shortcut:accChar + 'E'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'save', text:'save', shortcut:accChar + 'S'}},
+          {attrs:{name:'editPreview', text:'preview'}},
+          {attrs:{name:'livePreview', text:'open a live preview'}}
+        ];
+        this.super();
+      </method>
+
+      <method name="prepareConfig" args="cfg">
+        var i = cfg.length, attrs;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs) {
+            switch(attrs.name) {
+              case 'stop':
+                attrs.disabled = !editor.editmode;
+                break;
+              case 'save':
+                attrs.disabled = !this.parent.oktosave;
+                break;
+              case 'editPreview':
+                attrs.text = editor.editmode ? 'preview' : 'resume editing';
+                break;
+              case 'livePreview':
+                attrs.disabled = !editor.editmode;
+                break;
+            }
+          }
+        }
+        return this.super();
+      </method>
+      
+      <method name="getPrevMenu">
+        return this.parent.settingsMenu;
+      </method>
+      <method name="getNextMenu">
+        return this.parent.editMenu;
+      </method>
+    </menubutton>
+    
+    <menubutton name="editMenu" floatingpanelid="editmenu" label="Edit" disabled="${!editor.editmode}">
+      <handler event="oneditmode" reference="editor" method="updateConfig"/>
+      <handler event="onisundoable onisredoable" reference="undo" method="updateConfig"/>
+      <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
+      
+      <method name="initNode" args="parent, attrs">
+        var accChar = dr.global.keys.getAcceleratorChar();
+        this.cfg = [
+          {attrs:{name:'undo', text:'undo', shortcut:accChar + 'Z'}},
+          {attrs:{name:'redo', text:'redo', shortcut:accChar + '⇧Z'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'cut', text:'cut', shortcut:accChar + 'X'}},
+          {attrs:{name:'copy', text:'copy', shortcut:accChar + 'C'}},
+          {attrs:{name:'paste', text:'paste', shortcut:accChar + 'V'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'showMessagePanel', text:'show messages panel', shortcut:accChar + 'M'}},
+        ];
+        this.super();
+      </method>
+      
+      <method name="prepareConfig" args="cfg">
+        var i = cfg.length, attrs;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs) {
+            switch(attrs.name) {
+              case 'undo':
+                attrs.disabled = !undo.isundoable || !editor.editmode;
+                break;
+              case 'redo':
+                attrs.disabled = !undo.isredoable || !editor.editmode;
+                break;
+              case 'deleteSelected':
+              case 'cut':
+              case 'copy':
+              case 'paste':
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                break;
+            }
+          }
+        }
+        return this.super();
+      </method>
+      
+      <method name="getPrevMenu">
+        return this.parent.fileMenu;
+      </method>
+      <method name="getNextMenu">
+        return this.parent.layerMenu;
+      </method>
+    </menubutton>
+    
+    <menubutton name="layerMenu" floatingpanelid="layermenu" label="Layer" disabled="${!editor.editmode}">
+      <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
+      
+      <method name="initNode" args="parent, attrs">
+        var accChar = dr.global.keys.getAcceleratorChar();
+        this.cfg = [
+          {attrs:{name:'bringToFront', text:'bring to front', shortcut:accChar + 'F'}},
+          {attrs:{name:'bringForward', text:'bring forward',  shortcut:accChar + '⇧F'}},
+          {attrs:{name:'sendToBack',   text:'send to back',   shortcut:accChar + 'B'}},
+          {attrs:{name:'sendBackward', text:'send backward',  shortcut:accChar + '⇧B'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'shiftUp',       text:'move up x1',     shortcut:'↑'}},
+          {attrs:{name:'shiftUpBig',    text:'move up x10',    shortcut:'⇧↑'}},
+          {attrs:{name:'shiftDown',     text:'move down x1',   shortcut:'↓'}},
+          {attrs:{name:'shiftDownBig',  text:'move down x10',  shortcut:'⇧↓'}},
+          {attrs:{name:'shiftLeft',     text:'move left x1',   shortcut:'←'}},
+          {attrs:{name:'shiftLeftBig',  text:'move left x10',  shortcut:'⇧←'}},
+          {attrs:{name:'shiftRight',    text:'move right x1',  shortcut:'→'}},
+          {attrs:{name:'shiftRightBig', text:'move right x10', shortcut:'⇧→'}},
+        ];
+        this.super();
+      </method>
+      
+      <method name="prepareConfig" args="cfg">
+        var i = cfg.length, attrs;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs) {
+            switch(attrs.name) {
+              case 'bringToFront':
+              case 'bringForward':
+              case 'sendToBack':
+              case 'sendBackward':
+              case 'shiftUp':
+              case 'shiftUpBig':
+              case 'shiftDown':
+              case 'shiftDownBig':
+              case 'shiftLeft':
+              case 'shiftLeftBig':
+              case 'shiftRight':
+              case 'shiftRightBig':
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                break;
+            }
+          }
+        }
+        return this.super();
+      </method>
+      
+      <method name="getPrevMenu">
+        return this.parent.editMenu;
+      </method>
+      <method name="getNextMenu">
+        return this.parent.settingsMenu;
+      </method>
+    </menubutton>
+    
+    <menufloatingpanelbutton name="settingsMenu" floatingpanelid="settings" label="Settings" disabled="${!editor.editmode}">
+      <method name="getPrevMenu">
+        return this.parent.layerMenu;
+      </method>
+      <method name="getNextMenu">
+        return this.parent.fileMenu;
+      </method>
+    </menufloatingpanelbutton>
+    
+    <spacedlayout inset="2" spacing="1"/>
+  </view>
 </view>
 
+
 <!--// FLOATING PANEL VIEWS //-->
-<basefloatingpanel panelid="settings" width="auto" height="auto" padding="8" clickable="true" cornerradius="4">
+<basefloatingpanel panelid="settings"
+  width="auto" height="auto" padding="8" clickable="true"
+  bottomleftcornerradius="4" bottomrightcornerradius="4"
+  boxshadow="[0,3,3,0,'#999999']" border="0" bgcolor="#eeeeee"
+>
   <method name="getFirstFocusableDescendant">
     return gridsizex;
   </method>

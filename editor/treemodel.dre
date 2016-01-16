@@ -7,11 +7,12 @@ either express or implied. See the License for the specific language governing p
 <class name="editortreeitem" extends="treeitem" with="dropable, droptarget"
   draggroups="{editable:true}"
   allowabort="true" distancebeforedrag="1"
+  disabled="${!editor.editmode}"
 >
   <!--// Life Cycle /////////////////////////////////////////////////////////-->
   <method name="initNode" args="parent, attrs">
     this.super();
-
+    
     // Don't allow dragging of root view
     var targetComponent = this._getTargetComponent();
     if (targetComponent) {
@@ -25,6 +26,8 @@ either express or implied. See the License for the specific language governing p
     }
   </method>
 
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="handleSelection" args="selected">
     // Sync tree selection back to the selection manager
     var viewId = this.data.id;
@@ -39,7 +42,6 @@ either express or implied. See the License for the specific language governing p
     }
   </method>
 
-  <!--// Methods ////////////////////////////////////////////////////////////-->
   <!--// Drag and Drop Support //-->
   <method name="startDrag" args="event">
     this.super();
@@ -218,7 +220,6 @@ either express or implied. See the License for the specific language governing p
   treeitemclass="editortreeitem"
   rootvisible="false"
   selectcolor="${config.selection_color}"
-  disabled="${!editor.editmode}"
 >
   <handler event="oninnerwidth" reference="parent" method="updateWidth"/>
   <method name="updateWidth" args="value">

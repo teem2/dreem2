@@ -9,7 +9,7 @@ either express or implied. See the License for the specific language governing p
 <node id="config">
   <attribute name="img_root" type="string" value="/editor/img/"/>
   
-  <attribute name="topbar_height" type="number" value="75"/>
+  <attribute name="topbar_height" type="number" value="25"/>
   
   <attribute name="leftbar_minwidth" type="number" value="180"/>
   <attribute name="leftbar_maxwidth" type="number" value="500"/>
