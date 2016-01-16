@@ -9,6 +9,8 @@ either express or implied. See the License for the specific language governing p
        previewer clients will also need access to the components. -->
   <method name="initNode" args="parent, attrs">
     this.super();
+
+    this._addSectionBreak('Views');
     
     // Views
     this._addComponent({
@@ -45,7 +47,9 @@ either express or implied. See the License for the specific language governing p
       dropclass:'view',
       dropclassattrs:{width:'50', height:1, bgcolor:'#000000', instanceattrs:{class:'view', width:'100%', x:'left', height:1, bgcolor:'#000000'}}
     });
-    
+
+    this._addSectionBreak('Layouts');
+
     // Layouts
     this._addLayout('spacedlayout_x', {label:'x layout'}, {class:'spacedlayout', axis:'x'}, true);
     this._addLayout('spacedlayout_y', {label:'y layout'}, {class:'spacedlayout', axis:'y'});
@@ -57,7 +61,9 @@ either express or implied. See the License for the specific language governing p
     this._addLayout('alignlayout_y', {label:'align-y layout'}, {class:'alignlayout', align:'middle', axis:'y'});
     //this._addLayout('variablelayout', {label:'variable layout'}, {class:'variablelayout'});
     //this._addLayout('constantlayout', {label:'constant layout'}, {class:'constantlayout'});
-    
+
+    this._addSectionBreak('Animation');
+
     // Animators
     this._addComponent({
       label:'animator',
@@ -72,12 +78,16 @@ either express or implied. See the License for the specific language governing p
       dropclass:'bitmap',
       dropclassattrs:{width:'30', height:30, isanimation:true, src:config.img_root + 'animgroup.png', instanceattrs:{class:'animgroup'}}
     });
-    
+
+    this._addSectionBreak('Behaviors');
+
     // Behaviors
     this._addBehavior('scale', true);
     this._addBehavior('shift');
     this._addBehavior('overborder');
-    
+
+    this._addSectionBreak('Data');
+
     // Misc
     this._addComponent({
       isrootonly:true,
@@ -124,11 +134,29 @@ either express or implied. See the License for the specific language governing p
     
     this._addComponent(attrs, isNewLine);
   </method>
-  
+
   <!-- @private -->
   <method name="_addComponent" args="attrs, isNewLine">
     attrs.class = 'componentsource';
     if (isNewLine) attrs.layouthint = '{"break":true}';
+    this.parent.createChild(attrs);
+  </method>
+
+  <!-- @private -->
+  <method name="_addSectionBreak" args="title">
+    attrs = {
+      class: 'text',
+      text: title,
+      width:'${this.parent.innerwidth - 2*this.x}',
+      fontsize:12,
+      toppadding:5,
+      leftpadding:3,
+      bottomborder:1,
+      bottompadding:3,
+      bordercolor:'#eee',
+      color:'#999',
+      layouthint: '{"break":true}'
+    };
     this.parent.createChild(attrs);
   </method>
 </node>
