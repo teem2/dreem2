@@ -225,15 +225,8 @@ either express or implied. See the License for the specific language governing p
 <class name="fonteditor" with="floatingpanelanchor, button"
   floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
   border="1" bordercolor="#eeeeee" height="20" cornerradius="3"
-  floatingpanelid="fontpicker"
+  floatingpanelid="fontpicker" focusembellishment="false"
 >
-  <method name="showFocusEmbellishment">
-    this.sprite.hideFocusEmbellishment();
-    this.setActualAttribute('boxshadow', config.boxshadow_normal);
-  </method>
-  <method name="hideFocusEmbellishment">
-    this.setActualAttribute('boxshadow', null);
-  </method>
   <method name="destroy">
     this.hideFloatingPanel();
     this.super();
@@ -263,7 +256,7 @@ either express or implied. See the License for the specific language governing p
     var nsv = this.parent.getNextSiblingView();
     return nsv && nsv.field ? nsv.field : this;
   </method>
-  <text y="2" text="${this.parent.value}" fontsize="14" fontfamily="${this.parent.value}"></text>
+  <text y="2" x="2" text="${this.parent.value}" fontsize="14" fontfamily="${this.parent.value}"></text>
 </class>
 
 <class name="attributeeditor" height="auto" width="100%">
