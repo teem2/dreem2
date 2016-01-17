@@ -1277,6 +1277,7 @@ either express or implied. See the License for the specific language governing p
       <handler event="oneditmode" reference="editor" method="updateConfig"/>
       <handler event="onisundoable onisredoable" reference="undo" method="updateConfig"/>
       <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
+      <handler event="onclipboard" reference="actions" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
         var accChar = dr.global.keys.getAcceleratorChar();
@@ -1310,8 +1311,10 @@ either express or implied. See the License for the specific language governing p
               case 'deleteSelected':
               case 'cut':
               case 'copy':
-              case 'paste':
                 attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                break;
+              case 'paste':
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection || actions.clipboard == null;
                 break;
             }
           }

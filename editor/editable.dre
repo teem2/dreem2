@@ -431,4 +431,30 @@ either express or implied. See the License for the specific language governing p
     }
     return retval;
   </method>
+  
+  <!--// Serialization for Copy and Paste //-->
+  <method name="serialize">
+    var objChildren = [],
+      obj = {
+        __classname:this.__proto__.klass.__displayName,
+        __children:objChildren,
+      };
+    
+    // Serialize Attrs
+    var attrs = this._getAttrsListForDetails(), i = attrs.length, attr;
+    while (i) {
+      attr = attrs[--i];
+      obj[attr.name] = attr.value;
+    }
+    
+    // Serialize Editable Children
+    var children = this.getSubnodes(), child;
+    i = children.length;
+    while (i) {
+      child = children[--i];
+      if (child.isA(dr.editable)) objChildren.unshift(child.serialize());
+    }
+    
+    return obj;
+  </method>
 </mixin>

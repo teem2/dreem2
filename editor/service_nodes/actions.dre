@@ -5,6 +5,21 @@ software distributed under the License is distributed on an "AS IS" BASIS, WITHO
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
 <node id="actions">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    // Initialize clipboard
+    var clipboard = dr.global.clientstorage.getItem('_editor_clipboard');
+    if (clipboard) this.setAttribute('clipboard', JSON.parse(clipboard));
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="clipboard" type="expression" value="null"/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="_undoRedoCallback" args="undoable">
     // Prevents the callback from executing multiple times, once for each 
     // subundoable of a compound undoable.
@@ -178,21 +193,22 @@ either express or implied. See the License for the specific language governing p
       selectionmanager.clear();
     }
   </method>
- 
+
   <method name="showMessagePanel">
     messages.open();
   </method>
-  
 
   <method name="cut">
     if (this._isEditableSelection()) {
-      console.log('FIXME: implement cut');
+      this.copy();
+      this.deleteSelected();
     }
   </method>
 
   <method name="copy">
     if (this._isEditableSelection()) {
-      console.log('FIXME: implement copy');
+      this.setAttribute('clipboard', selectionmanager.selected.serialize());
+      dr.global.clientstorage.setItem('_editor_clipboard', JSON.stringify(this.clipboard));
     }
   </method>
 
