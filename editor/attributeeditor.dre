@@ -222,6 +222,49 @@ either express or implied. See the License for the specific language governing p
 
 </class>
 
+<class name="fonteditor" with="floatingpanelanchor, button"
+  floatingalign="insideright" floatingvalign="outsidebottom" floatingvalignoffset="2"
+  border="1" bordercolor="#eeeeee" height="20" cornerradius="3"
+  floatingpanelid="fontpicker"
+>
+  <method name="showFocusEmbellishment">
+    this.sprite.hideFocusEmbellishment();
+    this.setActualAttribute('boxshadow', config.boxshadow_normal);
+  </method>
+  <method name="hideFocusEmbellishment">
+    this.setActualAttribute('boxshadow', null);
+  </method>
+  <method name="destroy">
+    this.hideFloatingPanel();
+    this.super();
+  </method>
+
+  <method name="doActivated">
+    this.oldvalue = this.target[this.targetattr];
+    var fp = this.getFloatingPanel();
+    if (fp) {
+      this.toggleFloatingPanel();
+    }
+  </method>
+
+  <handler event="onvalue" args="value">
+    if (this.target && !this._isSync) this.target.setAttribute(this.targetattr, value); // No need to update model since notifyPanelHidden does that
+  </handler>
+
+  <method name="notifyPanelHidden" args="panel">
+    if (this.oldvalue !== this.value) {
+      actions.do(new dr.editor.editorattrundoable({
+        target:this.target, attribute:this.targetattr, oldvalue:this.oldvalue, newvalue:this.value
+      }));
+    }
+  </method>
+
+  <method name="getNextFocusAfterPanel" args="panelId">
+    var nsv = this.parent.getNextSiblingView();
+    return nsv && nsv.field ? nsv.field : this;
+  </method>
+  <text y="2" text="${this.parent.value}" fontsize="14" fontfamily="${this.parent.value}"></text>
+</class>
 
 <class name="attributeeditor" height="auto" width="100%">
   <method name="initNode" args="parent, attrs">
@@ -240,7 +283,7 @@ either express or implied. See the License for the specific language governing p
         targetattr:targetAttrName,
         disabled:readonly
       };
-    
+
     switch (type) {
       case 'color':
         attrs.class = 'coloreditor'
@@ -300,6 +343,9 @@ either express or implied. See the License for the specific language governing p
           attrs.multiline = true;
           attrs.wrap = false;
           attrs.height = 'auto';
+        } else if (targetAttrName === 'fontfamily') {
+          attrs.class = 'fonteditor'
+          break;
         }
         // Fall through to default
       default:
@@ -312,7 +358,7 @@ either express or implied. See the License for the specific language governing p
     }
     
     var child = this.createChild(attrs);
-    
+
     // Text may look like a constraint so call setActualAttribute rather than
     // setAttribute to work around constraint binding.
     child.setActualAttribute('value', target.getAttribute(targetAttrName));

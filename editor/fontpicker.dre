@@ -5,19 +5,34 @@ software distributed under the License is distributed on an "AS IS" BASIS, WITHO
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
 
-<class name="fontpicker" extends="basefloatingpanel" bgcolor="#eee">
+<class name="fontpicker" extends="basefloatingpanel" bgcolor="#fff" width="auto" paddingleft="2" paddingright="2">
   <method name="initNode" args="parent, attrs">
     this.super();
   </method>
 
-  <handler event="onvisible" args="visible">
-    if (visible) {
-    }
+  <fontdetect name="fontengine"></fontdetect>
+  <attribute name="fonts" type="expression" value="[]"></attribute>
+  <handler event="oninit">
+    this.setAttribute('fonts', this.fontengine.fonts)
   </handler>
 
-  <spacedlayout axis="y" updateparent="true"/>
+  <spacedlayout axis="y" spacing="2" updateparent="true"/>
+  <replicator data="${this.parent.fonts}">
+    <text fontfamily="${this.text}" with="button" fontsize="14" focusembellishment="false" color="#333"
+          leftpadding="5" rightpadding="5">
+      <method name="doActivated">
+        if (this.classroot.owner) {
+          this.classroot.owner.setAttribute('value', this.text);
+          this.classroot.hide()
+        }
+      </method>
+      <method name="drawHoverState">
+        this.setAttribute('color', 'blue');
+      </method>
+      <method name="drawReadyState">
+        this.setAttribute('color', '#333');
+      </method>
+    </text>
+  </replicator>
 
-  <view>
-
-  </view>
 </class>
