@@ -11,12 +11,12 @@ either express or implied. See the License for the specific language governing p
     
     // Initialize clipboard
     var clipboard = dr.global.clientstorage.getItem('_editor_clipboard');
-    if (clipboard) this.setAttribute('clipboard', JSON.parse(clipboard));
+    if (clipboard) this.setAttribute('clipboard', clipboard);
   </method>
 
 
   <!--// Attributes /////////////////////////////////////////////////////////-->
-  <attribute name="clipboard" type="expression" value="null"/>
+  <attribute name="clipboard" type="string" value=""/>
 
 
   <!--// Methods ////////////////////////////////////////////////////////////-->
@@ -207,14 +207,63 @@ either express or implied. See the License for the specific language governing p
 
   <method name="copy">
     if (this._isEditableSelection()) {
-      this.setAttribute('clipboard', selectionmanager.selected.serialize());
-      dr.global.clientstorage.setItem('_editor_clipboard', JSON.stringify(this.clipboard));
+      var clipboard = JSON.stringify(selectionmanager.selected.serialize());
+      this.setAttribute('clipboard', clipboard);
+      dr.global.clientstorage.setItem('_editor_clipboard', clipboard);
     }
   </method>
 
   <method name="paste">
-    if (this._isEditableSelection()) {
-      console.log('FIXME: implement paste');
+    var selected = selectionmanager.selected,
+      clipboard = this.clipboard;
+    if (clipboard && editor.editmode && selected && !selected.isInlineEdit()) {
+      var parent;
+      if (selectionmanager.isrootselection) {
+        // Always paste as child for root selection.
+        parent = selected;
+      } else {
+        // Paste as sibling
+        parent = selected.parent;
+      }
+      
+      // Inject unique IDs into the clipboard
+      var clipboardObj = JSON.parse(clipboard);
+      (function injectId(obj) {
+        obj.id = editormodel.generateModelId();
+        var children = obj.children, i = children.length;
+        while (i) injectId(children[--i]);
+      })(clipboardObj);
+      
+      // Make a copy of the clipboardObj now that it has IDs
+      var previewerAttrs = JSON.parse(JSON.stringify(clipboardObj));
+      
+      var instance = parent.createChild(clipboardObj, [dr.editable]);
+      
+      // Undoablity (DRY: See componentdropable.notifyDropped line 133)
+      // Mark an instance as "new" so we know it needs serialization.
+      instance.__NEW = true;
+      
+      // Make a copy of the attrs needed to instantiate this view in a previewer
+      (function cleanPreviewerAttrs(obj) {
+        delete obj.__objectify_attrs_list;
+        
+        // Push on previewable since all nodes/views in a previewer must be previewable.
+        if (obj.with) {
+          obj.with += ' previewable';
+        } else {
+          obj.with = 'previewable';
+        }
+        
+        var children = obj.children, i = children.length;
+        while (i) cleanPreviewerAttrs(children[--i]);
+      })(previewerAttrs);
+      
+      // Create undoable and "do" it. The previewinfo is also provided so
+      // previewers receiving messages can instantiate the new node/view.
+      var E = dr.editor,
+        undoableAttrs = {target:instance, previewinfo:previewerAttrs};
+      this.do(new E.createundoable(undoableAttrs));
+      selectionmanager.select(instance);
     }
   </method>
 

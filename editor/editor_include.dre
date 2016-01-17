@@ -1314,7 +1314,7 @@ either express or implied. See the License for the specific language governing p
                 attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
                 break;
               case 'paste':
-                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection || actions.clipboard == null;
+                attrs.disabled = !selectionmanager.selected || actions.clipboard === '';
                 break;
             }
           }
