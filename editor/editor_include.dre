@@ -1380,7 +1380,7 @@ either express or implied. See the License for the specific language governing p
               case 'shiftLeftBig':
               case 'shiftRight':
               case 'shiftRightBig':
-                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection || !selectionmanager.selected.isA(dr.View);
                 break;
             }
           }
