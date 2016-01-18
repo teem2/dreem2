@@ -107,7 +107,7 @@ either express or implied. See the License for the specific language governing p
           var selected = selectionmanager.selected;
           if (selected && !selected.isInlineEdit()) {
             sprite.preventDefault(platformEvent); // Prevent browser paste functionality
-            if (this._actionsPermitted()) actions.paste();
+            if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'pasteInside' : 'paste')]();
           }
           break;
         case 88: // X: Cut
@@ -854,7 +854,7 @@ either express or implied. See the License for the specific language governing p
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     
-    <view width="${treemodel.width}" height="28" bgcolor="#eeeeee">
+    <view width="100%" height="28" bgcolor="#eeeeee">
       <listviewbutton with="tooltip" id="screennamechooser" floatingpanelid="screenlist" y="6" x="5"
         tooltip="Select a different screen to edit."
         disabled="${!editor.editmode}"
@@ -1150,11 +1150,12 @@ either express or implied. See the License for the specific language governing p
       
       // Animate closed after a delay
       if (selected) {
-        var self = this;
+        var self = this,
+          delay = 1000 + 50 * (this._lastMsgLen || 0);
         if (this._timerId) clearTimeout(this._timerId);
         this._timerId = setTimeout(function() {
           self.setActualAttribute('selected', false);
-        }, 3000);
+        }, delay);
       }
     </handler>
     <method name="open">
@@ -1186,6 +1187,7 @@ either express or implied. See the License for the specific language governing p
           time:notime ? '' : ((new Date()).toLocaleTimeString() + ' - ')
         });
         child.animate({attribute:'opacity', to:1, duration:600});
+        this._lastMsgLen = msg.length;
         
         // Only retain 5 most recent messages
         while (svs.length > 5) svs[0].destroy();
@@ -1288,6 +1290,7 @@ either express or implied. See the License for the specific language governing p
           {attrs:{name:'cut', text:'cut', shortcut:accChar + 'X'}},
           {attrs:{name:'copy', text:'copy', shortcut:accChar + 'C'}},
           {attrs:{name:'paste', text:'paste', shortcut:accChar + 'V'}},
+          {attrs:{name:'pasteInside', text:'paste inside', shortcut:accChar + '⇧V'}},
           {klass:dr.listviewseparator},
           {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}},
           {klass:dr.listviewseparator},
@@ -1309,12 +1312,17 @@ either express or implied. See the License for the specific language governing p
                 attrs.disabled = !undo.isredoable || !editor.editmode;
                 break;
               case 'deleteSelected':
-              case 'cut':
-              case 'copy':
                 attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
                 break;
+              case 'cut':
+              case 'copy':
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection || selectionmanager.selected.isA(dr.dataset);
+                break;
               case 'paste':
-                attrs.disabled = !selectionmanager.selected || actions.clipboard === '';
+                attrs.disabled = !selectionmanager.selected || actions.clipboard === '' || selectionmanager.selected.isA(dr.dataset);
+                break;
+              case 'pasteInside':
+                attrs.disabled = !selectionmanager.selected || actions.clipboard === '' || selectionmanager.selected.isA(dr.dataset);
                 break;
             }
           }

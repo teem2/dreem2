@@ -158,6 +158,11 @@
       @sendEvent('data', @data)
   </method>
 
+  <method name="isLeaf" args="subnode">
+    # Datasets do not support child nodes.
+    return true
+  </method>
+
   <!--// Editor //-->
   <attribute name="hiddenattrs" type="expression" value="{data:true}" allocation="class"/>
 </class>

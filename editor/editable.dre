@@ -442,28 +442,14 @@ either express or implied. See the License for the specific language governing p
       };
     
     // Serialize Attrs
-    var attrs = model.attr, key;
+    var attrs = model.attr, key, i;
     if (attrs) {
       for (key in attrs) obj[key] = attrs[key];
-      obj.__objectify_attrs_list = Object.keys(attrs);
+      var oal = obj.__objectify_attrs_list = Object.keys(attrs);
+      i = oal.length;
+      while (i) if (oal[--i] === 'with') oal.splice(i, 1);
     } else {
       obj.__objectify_attrs_list = [];
-    }
-    
-    // Remove editable mixin
-    var mixin = obj.with, i;
-    if (mixin) {
-      var parts = mixin.split(' '), part;
-      i = parts.length;
-      while (i) {
-        part = parts[--i];
-        if (part === 'editable') parts.splice(i, 1);
-      }
-      if (parts.length > 0) {
-        obj.with = parts.join(' ');
-      } else {
-        delete obj.with;
-      }
     }
     
     // Serialize Editable Children
