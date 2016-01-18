@@ -5,33 +5,32 @@
 <composition>
   <screens>
     <screen type='browser' name='default' title='Editor Test File'>
-      <view width='100%' height='100%' bgcolor='#666666' id='lzeditor_0'>
-        <include href='/editor/editor_include.dre'/>
-        <view y='31' x='30' bgcolor='rgba(165,172,169,1.00)' height='255' width='409' id='lzeditor_1' placement='editor' with='editable'>
-          <view x='${this.boundsxdiff}' y='${this.boundsydiff}' width='${this.parent.innerwidth * 0.5}' height='${this.parent.innerheight * 0.5}' bgcolor='red' id='lzeditor_2' with='editable'>
-            <view y='12' x='23' id='lzeditor_client_26' bgcolor='#cccccc' height='50' width='50' with='editable'/>
-            <view x='153.5' id='lzeditor_client_4' bgcolor='#000000' y='${this.boundsydiff}' height='${this.parent.innerheight * 1}' width='1' with='editable'>
-              <animator id='lzeditor_client_5' with='editable'/>
+      <view width='100%' height='100%' bgcolor='#666666'>
+        <view y='31' x='30' bgcolor='rgba(165,172,169,1.00)' height='255' width='409'>
+          <view x='${this.boundsxdiff}' y='${this.boundsydiff}' width='${this.parent.innerwidth * 0.5}' height='${this.parent.innerheight * 0.5}' bgcolor='red'>
+            <view y='12' x='23' bgcolor='#cccccc' height='50' width='50'/>
+            <view x='153.5' bgcolor='#000000' y='${this.boundsydiff}' height='${this.parent.innerheight * 1}' width='1'>
+              <animator/>
             </view>
-            <text y='20' x='20' id='lzeditor_client_3' multiline='true' text='text' with='editable' width='auto' height='auto'/>
-            <animgroup id='lzeditor_client_6' with='editable' repeat='10' bounce='true'>
-              <animator id='lzeditor_client_7' with='editable' from='0' to='100' attribute='x' relative='true'/>
-              <animator attribute='y' to='100' from='0' with='editable' id='lzeditor_client_11' relative='true'/>
+            <text y='20' x='20' multiline='true' text='text' width='auto' height='auto'/>
+            <animgroup repeat='10' bounce='true'>
+              <animator from='0' to='100' attribute='x' relative='true'/>
+              <animator attribute='y' to='100' from='0' relative='true'/>
             </animgroup>
           </view>
-          <bitmap y='43' x='273' id='lzeditor_client_2' height='50' width='50' with='editable' bgcolor='rgba(63,255,0,1.00)'>
-            <animgroup id='lzeditor_client_8' with='editable'/>
+          <bitmap y='43' x='273' height='50' width='50' bgcolor='rgba(63,255,0,1.00)'>
+            <animgroup/>
           </bitmap>
-          <view y='144' x='32' id='lzeditor_client_10' bgcolor='#cccccc' height='84' width='172.5' with='editable'>
-            <text height='auto' width='auto' with='editable' text='text' multiline='true' id='lzeditor_client_27' x='20' y='20'/>
-            <animgroup bounce='true' repeat='10' with='editable' id='lzeditor_client_12'>
-              <animator relative='true' attribute='x' to='100' from='0' with='editable' id='lzeditor_client_14'/>
-              <animator relative='true' id='lzeditor_client_13' with='editable' from='0' to='100' attribute='y'/>
+          <view y='144' x='32' bgcolor='#cccccc' height='84' width='172.5'>
+            <text height='auto' width='auto' text='text' multiline='true' x='20' y='20'/>
+            <animgroup bounce='true' repeat='10'>
+              <animator relative='true' attribute='x' to='100' from='0'/>
+              <animator relative='true' from='0' to='100' attribute='y'/>
             </animgroup>
           </view>
         </view>
       </view>
-      <dataset id='lzeditor_client_9' with='editable'/>
+      <dataset/>
     </screen>
   </screens>
 </composition>
