@@ -88,6 +88,13 @@ either express or implied. See the License for the specific language governing p
             if (this._actionsPermitted()) actions.copy();
           }
           break;
+        case 68: // D: Duplicate
+          sprite.preventDefault(platformEvent); // Prevent browser bookmarking functionality
+          var selected = selectionmanager.selected;
+          if (selected && !selected.isInlineEdit()) {
+            if (this._actionsPermitted()) actions.duplicate();
+          }
+          break;
         case 69: // E: Exit Editor
           sprite.preventDefault(platformEvent);
           if (this._actionsPermitted()) actions.stop();
@@ -108,7 +115,7 @@ either express or implied. See the License for the specific language governing p
           var selected = selectionmanager.selected;
           if (selected && !selected.isInlineEdit()) {
             sprite.preventDefault(platformEvent); // Prevent browser paste functionality
-            if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'pasteInside' : 'paste')]();
+            if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'pasteAsSibling' : 'pasteInside')]();
           }
           break;
         case 88: // X: Cut
@@ -1282,8 +1289,9 @@ either express or implied. See the License for the specific language governing p
           {klass:dr.listviewseparator},
           {attrs:{name:'cut', text:'cut', shortcut:accChar + 'X'}},
           {attrs:{name:'copy', text:'copy', shortcut:accChar + 'C'}},
-          {attrs:{name:'paste', text:'paste', shortcut:accChar + 'V'}},
-          {attrs:{name:'pasteInside', text:'paste inside', shortcut:accChar + '⇧V'}},
+          {attrs:{name:'pasteInside', text:'paste inside', shortcut:accChar + 'V'}},
+          {attrs:{name:'pasteAsSibling', text:'paste as sibling', shortcut:accChar + '⇧V'}},
+          {attrs:{name:'duplicate', text:'duplicate', shortcut:accChar + 'D'}},
           {klass:dr.listviewseparator},
           {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}}
         ];
@@ -1305,11 +1313,12 @@ either express or implied. See the License for the specific language governing p
               case 'deleteSelected':
                 attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
                 break;
+              case 'duplicate':
               case 'cut':
               case 'copy':
                 attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection || selectionmanager.selected.isA(dr.dataset);
                 break;
-              case 'paste':
+              case 'pasteAsSibling':
                 attrs.disabled = !selectionmanager.selected || actions.clipboard === '' || selectionmanager.selected.isA(dr.dataset);
                 break;
               case 'pasteInside':

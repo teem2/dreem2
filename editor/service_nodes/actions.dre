@@ -227,6 +227,14 @@ either express or implied. See the License for the specific language governing p
     }
   </method>
 
+  <method name="duplicate">
+    var selected = selectionmanager.selected;
+    if (this._isEditableSelection() && !selected.isA(dr.dataset)) {
+      var duplicate = JSON.stringify(selected.serialize());
+      this._paste(selected.parent, duplicate);
+    }
+  </method>
+
   <method name="pasteInside">
     if (!this.clipboard) {
       messages.addMessage('Nothing to paste.');
@@ -257,7 +265,7 @@ either express or implied. See the License for the specific language governing p
     this._paste(selected, this.clipboard);
   </method>
 
-  <method name="paste">
+  <method name="pasteAsSibling">
     if (!this.clipboard) {
       messages.addMessage('Nothing to paste.');
       return;
@@ -309,7 +317,7 @@ either express or implied. See the License for the specific language governing p
     
     var instance = parent.createChild(
       clipboardObj, 
-      null, //[dr.editable], 
+      null,
       function(newInstance) {newInstance.__NEW = true;} // Mark an instance as "new" so we know it needs serialization.
     );
     

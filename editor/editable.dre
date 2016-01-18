@@ -311,6 +311,10 @@ either express or implied. See the License for the specific language governing p
       attrName = objectifyAttrsList[--i];
       attrs[attrName] = '' + this['__cfg_' + attrName];
     }
+    
+    // Always mark as "editable"
+    attrs.with = "editable";
+    
     modelObj.attr = attrs;
     
     // Store "new" children
@@ -447,9 +451,7 @@ either express or implied. See the License for the specific language governing p
     var attrs = model.attr, key, i;
     if (attrs) {
       for (key in attrs) obj[key] = attrs[key];
-      var oal = obj.__objectify_attrs_list = Object.keys(attrs);
-      i = oal.length;
-      while (i) if (oal[--i] === 'with') oal.splice(i, 1);
+      obj.__objectify_attrs_list = Object.keys(attrs);
     } else {
       obj.__objectify_attrs_list = [];
     }
