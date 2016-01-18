@@ -230,7 +230,10 @@ either express or implied. See the License for the specific language governing p
     
     var retval = this.super(parent);
     
-    if (editor.editmode && !this.isBeingDestroyed && !this.__replicator) {
+    if (editor.editmode && !this.__replicator) {
+      // Note: No need to check !this.isBeingDestroyed since that would 
+      // interfere with layouts getting auto destroyed when they conflict.
+      // See componentdropable.notifyDropped approx line 102
       var inited = this.inited,
         hasOld = existingParent && inited,
         hasNew = this.parent && this.parent.inited;
