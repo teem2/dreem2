@@ -13,6 +13,7 @@ either express or implied. See the License for the specific language governing p
 <include href='./attributeeditor.dre'/>
 <include href='./subnodeeditor.dre'/>
 <include href='./colorpicker.dre'/>
+<include href='./fontpicker.dre'/>
 <include href='./componentdropable.dre'/>
 <include href='./componentsource.dre'/>
 
@@ -1432,3 +1433,5 @@ either express or implied. See the License for the specific language governing p
 </basefloatingpanel>
 
 <colorpicker panelid="colorpicker"/>
+
+<fontpicker panelid="fontpicker"/>

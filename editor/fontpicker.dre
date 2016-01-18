@@ -1,0 +1,38 @@
+<!--
+Copyright 2015 Teem2 LLC. Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+either express or implied. See the License for the specific language governing permissions and limitations under the License.
+-->
+
+<class name="fontpicker" extends="basefloatingpanel" bgcolor="#fff" width="auto" paddingleft="2" paddingright="2">
+  <method name="initNode" args="parent, attrs">
+    this.super();
+  </method>
+
+  <fontdetect name="fontengine"></fontdetect>
+  <attribute name="fonts" type="expression" value="[]"></attribute>
+  <handler event="oninit">
+    this.setAttribute('fonts', this.fontengine.fonts)
+  </handler>
+
+  <spacedlayout axis="y" spacing="2" updateparent="true"/>
+  <replicator data="${this.parent.fonts}">
+    <text fontfamily="${this.text}" with="button" fontsize="14" focusembellishment="false" color="#333"
+          leftpadding="5" rightpadding="5">
+      <method name="doActivated">
+        if (this.classroot.owner) {
+          this.classroot.owner.setAttribute('value', this.text);
+          this.classroot.hide()
+        }
+      </method>
+      <method name="drawHoverState">
+        this.setAttribute('color', 'blue');
+      </method>
+      <method name="drawReadyState">
+        this.setAttribute('color', '#333');
+      </method>
+    </text>
+  </replicator>
+
+</class>
