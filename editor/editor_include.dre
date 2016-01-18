@@ -1229,7 +1229,7 @@ either express or implied. See the License for the specific language governing p
   >
     <attribute name="oktosave" type="boolean" value="false"/>
     
-    <menubutton name="fileMenu" floatingpanelid="filemenu" label="File">
+    <menubutton name="fileMenu" floatingpanelid="filemenu" label="File" disabled="${!editor.editmode}">
       <handler event="onoktosave" reference="parent" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
@@ -1237,9 +1237,7 @@ either express or implied. See the License for the specific language governing p
         this.cfg = [
           {attrs:{name:'stop', text:'exit', shortcut:accChar + 'E'}},
           {klass:dr.listviewseparator},
-          {attrs:{name:'save', text:'save', shortcut:accChar + 'S'}},
-          {attrs:{name:'editPreview', text:'preview'}},
-          {attrs:{name:'livePreview', text:'open a live preview'}}
+          {attrs:{name:'save', text:'save', shortcut:accChar + 'S'}}
         ];
         this.super();
       </method>
@@ -1255,12 +1253,6 @@ either express or implied. See the License for the specific language governing p
                 break;
               case 'save':
                 attrs.disabled = !this.parent.oktosave;
-                break;
-              case 'editPreview':
-                attrs.text = editor.editmode ? 'preview' : 'resume editing';
-                break;
-              case 'livePreview':
-                attrs.disabled = !editor.editmode;
                 break;
             }
           }
@@ -1293,9 +1285,7 @@ either express or implied. See the License for the specific language governing p
           {attrs:{name:'paste', text:'paste', shortcut:accChar + 'V'}},
           {attrs:{name:'pasteInside', text:'paste inside', shortcut:accChar + '⇧V'}},
           {klass:dr.listviewseparator},
-          {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}},
-          {klass:dr.listviewseparator},
-          {attrs:{name:'showMessagePanel', text:'show messages panel', shortcut:accChar + 'M'}},
+          {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}}
         ];
         this.super();
       </method>
@@ -1392,13 +1382,51 @@ either express or implied. See the License for the specific language governing p
         return this.parent.editMenu;
       </method>
       <method name="getNextMenu">
+        return this.parent.viewMenu;
+      </method>
+    </menubutton>
+    
+    <menubutton name="viewMenu" floatingpanelid="viewmenu" label="View">
+      <method name="initNode" args="parent, attrs">
+        var accChar = dr.global.keys.getAcceleratorChar();
+        this.cfg = [
+          {attrs:{name:'editPreview', text:'preview'}},
+          {attrs:{name:'livePreview', text:'open a live preview'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'showMessagePanel', text:'show messages panel', shortcut:accChar + 'M'}}
+        ];
+        this.super();
+      </method>
+
+      <method name="prepareConfig" args="cfg">
+        var i = cfg.length, attrs;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs) {
+            switch(attrs.name) {
+              case 'editPreview':
+                attrs.text = editor.editmode ? 'preview' : 'resume editing';
+                break;
+              case 'livePreview':
+                attrs.disabled = !editor.editmode;
+                break;
+            }
+          }
+        }
+        return this.super();
+      </method>
+      
+      <method name="getPrevMenu">
+        return this.parent.layerMenu;
+      </method>
+      <method name="getNextMenu">
         return this.parent.settingsMenu;
       </method>
     </menubutton>
     
     <menufloatingpanelbutton name="settingsMenu" floatingpanelid="settings" label="Settings" disabled="${!editor.editmode}">
       <method name="getPrevMenu">
-        return this.parent.layerMenu;
+        return this.parent.viewMenu;
       </method>
       <method name="getNextMenu">
         return this.parent.fileMenu;

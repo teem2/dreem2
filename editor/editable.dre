@@ -173,7 +173,7 @@ either express or implied. See the License for the specific language governing p
       this.setAttribute('focusable', true);
       this.sprite.selectAll();
       
-      if (this.focused) this.focused = false; // WORKAROUND: For some reason focusable gets stuck on so unset it before setting focus.
+      if (this.focused) this.blur(); // WORKAROUND: For some reason focusable gets stuck on so unset it before setting focus.
       this.focus();
     }
   </method>
@@ -186,6 +186,8 @@ either express or implied. See the License for the specific language governing p
   <method name="endEditing">
     if (this.inlineedit && this.__isText) {
       reticle.resizer.setActualAttribute('visible', true);
+      
+      this.blur();
       
       this.setAttribute('cursor', 'move');
       this.setAttribute('editable', false);
