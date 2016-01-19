@@ -6,7 +6,7 @@ either express or implied. See the License for the specific language governing p
 -->
 
 
-<class name="subnodeeditor" width="100%">
+<class name="subnodeeditor" width="100%" leftpadding="15" rightpadding="15">
   <method name="initNode" args="parent, attrs">
     this.super();
     this.label.setActualAttribute('text', this.data.klass.__displayName);
@@ -14,12 +14,12 @@ either express or implied. See the License for the specific language governing p
 
   <spacedlayout axis="y" spacing="5" outset="5" updateparent="true"/>
   
-  <text name="label" leftpadding="10" toppadding="6" bottompadding="6"
+  <text name="label" x="${-this.parent.leftpadding}" leftpadding="10" toppadding="6" bottompadding="6"
     topborder="1" bottomborder="1" bordercolor="${config.secondary_panel_color}"
-    bgcolor="#f8f8f8" color="${config.label_text_color}" fontsize="10" width="100%"
+    bgcolor="#f8f8f8" color="${config.label_text_color}" fontsize="10" width="${this.parent.width}"
   />
   
-  <smallbutton x="${this.parent.innerwidth - this.width - 2}" y="3" ignorelayout="true" text="delete">
+  <smallbutton x="right" y="3" ignorelayout="true" text="delete">
     <method name="doActivated">
       if (!this.disabled) {
         var target = this.classroot.data, E = dr.editor, undoClass;

@@ -399,6 +399,6 @@ either express or implied. See the License for the specific language governing p
     actual.setActualAttribute('visible', '' + this.field.value !== actual.text);
   </method>
 
-  <editor_text name="label" width="${config.attribute_label_width}" y="3" textalign="right"/>
+  <editor_text name="label" width="${config.attribute_label_width}" y="3" textalign="right" color="#999"/>
   <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="3" width="60"/><!-- 4 pixel spacing -->
 </class>

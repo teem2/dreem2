@@ -892,7 +892,7 @@ either express or implied. See the License for the specific language governing p
         <spacedlayout axis="y" updateparent="true"/>
         
         <view width="100%" clip="true">
-          <spacedlayout axis="y" spacing="5" inset="5" outset="5" updateparent="true">
+          <spacedlayout axis="y" spacing="0" outset="5" updateparent="true">
             <method name="__positionView" args="view, attrName, value">
               // Only animate the parent updates so that the panel appears to
               // slide open/closed
@@ -953,9 +953,8 @@ either express or implied. See the License for the specific language governing p
             this.attributespanel.setAttribute('data', orderedcategories)
           </handler>
 
-
           <replicator name="attributespanel">
-            <view leftpadding="10" toppadding="10" width="100%" height="auto">
+            <view leftpadding="15" rightpadding="15" toppadding="5" width="100%">
               <spacedlayout axis="y" updateparent="true" spacing="3"/>
               <text text="$datapath{/name}"
                 fontsize="12"
@@ -965,10 +964,10 @@ either express or implied. See the License for the specific language governing p
                 bottompadding="3"
                 bordercolor="#eee"
                 color="#999"
-                layouthint='{"break":true}'></text>
-              <replicator classname="attributeeditor" data="$datapath{/items}"></replicator>
+                width="100%"
+              />
+              <replicator classname="attributeeditor" data="$datapath{/items}"/>
             </view>
-
           </replicator>
         </view>
       </view>
