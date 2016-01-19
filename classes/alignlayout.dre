@@ -30,7 +30,7 @@
     * A value of 'y' will restrict align values to 'top', 'middle' and 'bottom'.
     * An empty/null value will not restrict the align values.
     */-->
-  <attribute name="axis" type="string" value=""></attribute>
+  <attribute name="axis" type="string" value="" category="layout"></attribute>
   <setter name="axis" args="axis">
     @setActual('axis', axis, 'string', '')
     @setAttribute('align', @align)
@@ -42,7 +42,7 @@
     * 'left', 'center', 'right' for horizontal alignment and 'top', 'middle' 
     * and 'bottom' for vertical alignment.
     */-->
-  <attribute name="align" type="string" value="middle"></attribute>
+  <attribute name="align" type="string" value="middle" category="layout"></attribute>
   <setter name="align" args="align">
     if @align isnt align
       # Stop monitoring since we may end up changing the axis. This needs to
@@ -229,7 +229,4 @@
   
   <attribute name="hiddenattrs" type="expression" value="{attribute:true, value:true, reverse:true}" allocation="class"/>
   <attribute name="readonlyattrs" type="expression" value="{axis:true}" allocation="class"/>
-  <attribute name="attrimportance" type="expression" allocation="class"
-    value="{axis:-2, name:-1, align:1, updateparent:2, speed:3}"
-  />
 </class>

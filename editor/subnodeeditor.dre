@@ -35,5 +35,5 @@ either express or implied. See the License for the specific language governing p
     </method>
   </smallbutton>
   
-  <replicator classname="attributeeditor" data="${this.parent.data.getAllAttrsListForDetails()}"/>
+  <replicator classname="attributeeditor" data="${this.parent.data.getAttrsListForDetails()}"/>
 </class>

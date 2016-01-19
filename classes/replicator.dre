@@ -164,13 +164,13 @@
     * @attribute {String} [path=]
     * If set, a {@link #datapath datapath} will be used to look up the value.
     */-->
-  <attribute name="datapath" value="" type="string"/>
+  <attribute name="datapath" value="" type="string" editorname="Data Path"/>
 
   <!--/**
     * @attribute {String} classname (required)
     * The name of the class to be replicated.
     */-->
-  <attribute name="classname" value="" type="string"/>
+  <attribute name="classname" value="" type="string" editorname="Class Name"/>
 
   <handler event="ondestroy" method="clear"/>
 

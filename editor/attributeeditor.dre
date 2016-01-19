@@ -378,8 +378,14 @@ either express or implied. See the License for the specific language governing p
         self._checkActualIsDifferent();
       });
     }
-    
-    this.label.setActualAttribute('text', targetAttrName);
+
+    var labelText = targetAttrName;
+    if (this.data && this.data.editorname) {
+      labelText = this.data.editorname;
+    }
+    labelText = labelText.charAt(0).toUpperCase() + labelText.slice(1)
+
+    this.label.setActualAttribute('text', labelText);
   </method>
   
   <method name="_checkActualIsDifferent">

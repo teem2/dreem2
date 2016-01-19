@@ -100,7 +100,7 @@
     * implementation is to resize the parent to fit the newly layed out child 
     * views.
     */-->
-  <attribute name="updateparent" type="boolean" value="false"></attribute>
+  <attribute name="updateparent" type="boolean" value="false" category="layout"></attribute>
   <handler event="onupdateparent" method="update"></handler>
 
   <!--/**
@@ -111,7 +111,7 @@
     * right to left instead of left to right, bottom to top instead of top to
     * bottom, etc.
     */-->
-  <attribute name="reverse" type="boolean" value="false"></attribute>
+  <attribute name="reverse" type="boolean" value="false" category="layout"></attribute>
   <handler event="onreverse" method="update"></handler>
 
   <!--/**

@@ -85,13 +85,13 @@
     * @attribute {String} url
     * The url to load JSON data from.
     */-->
-  <attribute name="url" type="string" value=""></attribute>
+  <attribute name="url" type="string" value="" editorname="URL"></attribute>
 
   <!--/**
     * @attribute {Boolean} [async=true]
     * If true, parse json in a worker thread
     */-->
-  <attribute name="async" value="true" type="boolean"></attribute>
+  <attribute name="async" value="true" type="boolean" editorname="Asynchronous"></attribute>
 
   <setter name="$textcontent" args="textcontent">
     textcontent = textcontent?.trim()

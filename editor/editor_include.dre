@@ -902,73 +902,87 @@ either express or implied. See the License for the specific language governing p
               if (isParent) this.speed = 0;
             </method>
           </spacedlayout>
-          <replicator classname="attributeeditor">
-            <handler event="ondelayedselected" args="selected" reference="selectionmanager">
-              this.setAttribute('data', selected ? selected.getAttrsListForDetails() : []);
-            </handler>
-          </replicator>
-        </view>
-        
-        <!-- More attrs subpanel. -->
-        <view width="100%">
-          <attribute name="selected" type="boolean" value="false"/>
-          <handler event="onselected" args="selected">
-            var header = this.header;
-            header.updateUI();
-            header.setActualAttribute('text', (selected ? '▼' : '▶') + " more");
-            
-            this.updateHeight();
-          </handler>
-          
-          <handler name="updateHeight" event="ondelayedselected" reference="selectionmanager">
-            var animAttrs = {attribute:'height', to:0, duration:500};
-            if (selectionmanager.selected) {
-              var svs = this.content.getSubviews();
-              if (this.selected) {
-                var lastChild = svs[svs.length - 1];
-                animAttrs.to = lastChild ? lastChild.y + lastChild.height + this.header.height + 5 : 0;
-              } else {
-                animAttrs.to = svs.length > 0 ? this.header.height : 0;
+          <handler event="ondelayedselected" args="selected" reference="selectionmanager">
+            var attrs = selected ? selected.getAttrsListForDetails() : [];
+            var categories = {};
+            var orderedcategories = [];
+            if (attrs && attrs.length) {
+              var i;
+              for (i = 0; i < attrs.length; i++) {
+                var attr = attrs[i];
+                var category = attr.category;
+                if (!category) {
+                  if (attr.target) {
+                    if (attr.target.$tagname && attr.target.$tagname != 'editable') {
+                      category = attr.target.$tagname;
+                    } else {
+                      category = attr.target.klass.__displayName;
+                    }
+                  } else {
+                    category = 'properties';
+                  }
+                }
+
+                var cats = categories[category];
+                if (!Array.isArray(cats)) {
+                  cats = []
+                  categories[category] = cats
+                }
+                cats.push(attr);
+              }
+
+              var ordered = ['node', 'layout', 'text', 'view', 'border'];
+              for (var key in categories) {
+                if (ordered.indexOf(key) < 0) {
+                  ordered.splice(1, 0, key);
+                }
+              }
+
+              for (i=0;i < ordered.length;i++) {
+                var catname = ordered[i];
+                var catitems = categories[catname];
+                if (catitems) {
+                  var categoryName = catname.charAt(0).toUpperCase() + catname.slice(1);
+                  orderedcategories.push({
+                    name:categoryName,
+                    items:catitems.sort(function(a,b){
+                      var aweight = parseInt(a.weight || 0);
+                      var bweight = parseInt(b.weight || 0);
+                      if (aweight > bweight) {
+                        return 1;
+                      } else if (bweight > aweight) {
+                        return -1;
+                      } else if (b.name > a.name) {
+                        return -1;
+                      } else if (a.name > b.name) {
+                        return 1;
+                      }
+                      return 0;
+                    })
+                  })
+                }
               }
             }
-            this.stopActiveAnimators('height');
-            this.animate(animAttrs);
+            this.attributespanel.setAttribute('data', orderedcategories)
           </handler>
-          
-          <text with="button" name="header" width="60" textalign="right"
-            toppadding="4" bottompadding="4" fontsize="14" focusembellishment="false"
-            disabled="${!selectionmanager.selected || this.parent.height === 0}"
-          >
-            <method name="doActivated">
-              if (!this.disabled) this.parent.setActualAttribute('selected', !this.parent.selected);
-            </method>
-            <method name="drawDisabledState">
-              this.setActualAttribute('color', '#999999');
-            </method>
-            <method name="drawHoverState">
-              this.setActualAttribute('color', '#666666');
-            </method>
-            <method name="drawActiveState">
-              this.setActualAttribute('color', '#333333');
-            </method>
-            <method name="drawReadyState">
-              this.setActualAttribute('color', '#000000');
-            </method>
-          </text>
-          
-          <view name="content" width="100%" y="${this.parent.header.height}" maskfocus="${!this.parent.selected}">
-            <spacedlayout axis="y" spacing="5" inset="5">
-              <method name="update">
-                this.super();
-                if (this.canUpdate()) this.parent.parent.updateHeight();
-              </method>
-            </spacedlayout>
-            <replicator classname="attributeeditor">
-              <handler event="ondelayedselected" args="selected" reference="selectionmanager">
-                this.setAttribute('data', selected ? selected.getMoreAttrsListForDetails() : []);
-              </handler>
-            </replicator>
-          </view>
+
+
+          <replicator name="attributespanel">
+            <view leftpadding="10" toppadding="10" width="100%" height="auto">
+              <spacedlayout axis="y" updateparent="true" spacing="3"/>
+              <text text="$datapath{/name}"
+                fontsize="12"
+                toppadding="5"
+                leftpadding="3"
+                bottomborder="1"
+                bottompadding="3"
+                bordercolor="#eee"
+                color="#999"
+                layouthint='{"break":true}'></text>
+              <replicator classname="attributeeditor" data="$datapath{/items}"></replicator>
+            </view>
+
+          </replicator>
         </view>
       </view>
       
