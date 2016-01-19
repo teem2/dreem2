@@ -336,6 +336,7 @@ either express or implied. See the License for the specific language governing p
           attrs.multiline = true;
           attrs.wrap = false;
           attrs.height = 'auto';
+
         } else if (targetAttrName === 'fontfamily') {
           attrs.class = 'fonteditor'
           break;
@@ -347,6 +348,11 @@ either express or implied. See the License for the specific language governing p
           attrs.bgcolor = 'transparent';
           attrs.bordercolor = 'transparent';
         }
+        var aval = target.getAttribute(targetAttrName);
+        if (typeof(aval) === 'string' && /^\$\{.*\}$/.test(aval)) {
+          attrs.color = 'green'
+        }
+
         break;
     }
     
