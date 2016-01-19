@@ -441,7 +441,7 @@ either express or implied. See the License for the specific language governing p
     return retval;
   </method>
   
-  <!--// Serialization for Copy and Paste //-->
+  <!--// Copy and Paste //-->
   <method name="serialize">
     var model = editormodel.getModelNode(this),
       objChildren = [],
@@ -468,5 +468,20 @@ either express or implied. See the License for the specific language governing p
     }
     
     return obj;
+  </method>
+  
+  <!--/**
+    * @method isSimilarTo
+    * Checks if the provided sibling view is similar enough to this view such
+    * that this view should be shifted during paste.
+    * @return {boolean}
+    */-->
+  <method name="isSimilarTo" args="sibling">
+    return sibling &&
+      sibling.x === this.x &&
+      sibling.y === this.y &&
+      sibling.width === this.width &&
+      sibling.height === this.height &&
+      sibling.klass === this.klass;
   </method>
 </mixin>

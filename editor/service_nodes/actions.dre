@@ -328,6 +328,32 @@ either express or implied. See the License for the specific language governing p
       return;
     }
     
+    // Shift position by 10 and 10 if it is similar to a sibling
+    if (instance.isA(dr.View)) {
+      var siblings = instance.getSiblingViews();
+      function similarityCheck() {
+        var i = siblings.length, adjX, adjY;
+        while (i) {
+          if (instance.isSimilarTo(siblings[--i])) {
+            adjX = adjY = false;
+            if (!instance.isConstraintExpression(instance.__cfg_x)) {
+              instance.setAttribute('x', instance.x + 10);
+              previewerAttrs.x = instance.x;
+              adjX = true;
+            }
+            if (!instance.isConstraintExpression(instance.__cfg_y)) {
+              instance.setAttribute('y', instance.y + 10);
+              previewerAttrs.y = instance.y;
+              adjY = true;
+            }
+            return adjX || adjY;
+          }
+        }
+        return false;
+      }
+      while (similarityCheck());
+    }
+    
     // Undoablity (DRY: See componentdropable.notifyDropped line 133)
     
     // Make a copy of the attrs needed to instantiate this view in a previewer

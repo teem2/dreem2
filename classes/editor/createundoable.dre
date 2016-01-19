@@ -140,7 +140,7 @@
     
     // Create new instance on the parent using the previeinfo which was 
     // stored on data.target.
-    var instance = dr.Node.createChild(parent, data.target);
+    var instance = parent.createChild(data.target);
     if (!instance) {
       dr.global.error.notifyWarn('deserialization', "Instance could not be found for createundoable: " + data.target);
       return null;
