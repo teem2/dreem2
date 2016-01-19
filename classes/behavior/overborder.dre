@@ -5,11 +5,11 @@
 
 
 <class name="behavior-overborder" extends="node" with="behavior-behavior">
-  <attribute name="thickness" type="number" value="5"/>
-  <attribute name="opacity" type="number" value="1"/>
-  <attribute name="color" type="color" value="#f8f8f8"/>
-  <attribute name="overspeed" type="number" value="400"/>
-  <attribute name="outspeed" type="number" value="400"/>
+  <attribute name="color" type="color" value="#f8f8f8" weight="1"/>
+  <attribute name="thickness" type="number" value="5" editorname="Width"  weight="1"/>
+  <attribute name="opacity" type="number" value="1"  weight="2"/>
+  <attribute name="overspeed" type="number" value="400" editorname="IN Duration" weight="3"/>
+  <attribute name="outspeed" type="number" value="400" editorname="OUT Duration" weight="4"/>
 
   <handler name="show" event="onmouseover" reference="this.parent">
     // Check for parent since over/out events will still occur when this

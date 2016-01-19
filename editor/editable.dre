@@ -14,7 +14,13 @@ either express or implied. See the License for the specific language governing p
 >
   <!--// Class Methods //////////////////////////////////////////////////////-->
   <method name="comparator" args="a, b" allocation="class">
-    if (b.name > a.name) {
+    var aweight = parseInt(a.weight || 0);
+    var bweight = parseInt(b.weight || 0);
+    if (aweight > bweight) {
+      return 1;
+    } else if (bweight > aweight) {
+      return -1;
+    } else if (b.name > a.name) {
       return -1;
     } else if (a.name > b.name) {
       return 1;

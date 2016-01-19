@@ -42,7 +42,7 @@
     * 'left', 'center', 'right' for horizontal alignment and 'top', 'middle' 
     * and 'bottom' for vertical alignment.
     */-->
-  <attribute name="align" type="string" value="middle" category="layout"></attribute>
+  <attribute name="align" type="string" value="middle" category="layout" weight="1"></attribute>
   <setter name="align" args="align">
     if @align isnt align
       # Stop monitoring since we may end up changing the axis. This needs to
