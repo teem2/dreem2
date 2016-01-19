@@ -46,7 +46,7 @@
       * "none" will display the image at its natural size but without resizing 
       * the view as the naturalsize attribute does.
       */-->
-  <attribute name="stretches" type="string" value="false"/>
+  <attribute name="stretches" type="string" value="false" editorname="Content Stretch"/>
 
   <!--/**
       * @attribute {Boolean} [naturalsize=false]
