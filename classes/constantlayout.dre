@@ -54,7 +54,7 @@
     * The speed of an animated update of the managed views. If 0 no animation
     * will be performed
     */-->
-  <attribute name="speed" type="positivenumber" value="0"></attribute>
+  <attribute name="speed" type="positivenumber" value="0" weight="200" editorname="Anim. Duration"></attribute>
 
   <!--/**
     * @method update

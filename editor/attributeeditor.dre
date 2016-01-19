@@ -336,6 +336,7 @@ either express or implied. See the License for the specific language governing p
           attrs.multiline = true;
           attrs.wrap = false;
           attrs.height = 'auto';
+
         } else if (targetAttrName === 'fontfamily') {
           attrs.class = 'fonteditor'
           break;
@@ -347,6 +348,11 @@ either express or implied. See the License for the specific language governing p
           attrs.bgcolor = 'transparent';
           attrs.bordercolor = 'transparent';
         }
+        var aval = target.getAttribute(targetAttrName);
+        if (typeof(aval) === 'string' && /^\$\{.*\}$/.test(aval)) {
+          attrs.color = 'green'
+        }
+
         break;
     }
     
@@ -378,8 +384,14 @@ either express or implied. See the License for the specific language governing p
         self._checkActualIsDifferent();
       });
     }
-    
-    this.label.setActualAttribute('text', targetAttrName);
+
+    var labelText = targetAttrName;
+    if (this.data && this.data.editorname) {
+      labelText = this.data.editorname;
+    }
+    labelText = labelText.charAt(0).toUpperCase() + labelText.slice(1)
+
+    this.label.setActualAttribute('text', labelText);
   </method>
   
   <method name="_checkActualIsDifferent">
@@ -387,6 +399,6 @@ either express or implied. See the License for the specific language governing p
     actual.setActualAttribute('visible', '' + this.field.value !== actual.text);
   </method>
 
-  <editor_text name="label" width="${config.attribute_label_width}" y="3" textalign="right"/>
+  <editor_text name="label" width="${config.attribute_label_width}" y="3" textalign="right" color="#999"/>
   <editor_text name="actual" x="${this.parent.innerwidth - this.width - 4}" y="3" width="60"/><!-- 4 pixel spacing -->
 </class>

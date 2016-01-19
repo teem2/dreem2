@@ -5,8 +5,8 @@
 
 
 <class name="behavior-shift" extends="node" with="behavior-behavior">
-  <attribute name="xshift" type="number" value="0"/>
-  <attribute name="yshift" type="number" value="20"/>
+  <attribute name="xshift" type="number" value="0" editorname="Shift by X"/>
+  <attribute name="yshift" type="number" value="20" editorname="Shift by Y"/>
 
   <method name="initNode" args="parent, attrs">
     this.__shifted = false;

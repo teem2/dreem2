@@ -14,21 +14,18 @@ either express or implied. See the License for the specific language governing p
 >
   <!--// Class Methods //////////////////////////////////////////////////////-->
   <method name="comparator" args="a, b" allocation="class">
-    var aimport = a.importance || 99999,
-      bimport = b.importance || 99999;
-    if (bimport === aimport) {
-      if (b.name > a.name) {
-        return -1;
-      } else if (a.name > b.name) {
-        return 1;
-      }
-    } else if (bimport > aimport) {
-      return -1;
-    } else if (aimport > bimport) {
+    var aweight = parseInt(a.weight || 0);
+    var bweight = parseInt(b.weight || 0);
+    if (aweight > bweight) {
       return 1;
-    } else {
-      return 0;
+    } else if (bweight > aweight) {
+      return -1;
+    } else if (b.name > a.name) {
+      return -1;
+    } else if (a.name > b.name) {
+      return 1;
     }
+    return 0;
   </method>
 
 
@@ -334,22 +331,10 @@ either express or implied. See the License for the specific language governing p
 
   <!--// Details Panel Support //-->
   <method name="getAttrsListForDetails">
-    return this._getAttrsListForDetails(null, config.more_threshold);
-  </method>
-  
-  <method name="getMoreAttrsListForDetails">
-    return this._getAttrsListForDetails(config.more_threshold, null);
-  </method>
-  
-  <method name="getAllAttrsListForDetails">
-    return this._getAttrsListForDetails(null, null);
-  </method>
-  
-  <method name="_getAttrsListForDetails" args="lowerLimit, upperLimit">
     // Get Attributes. Pull from ancestors and build list of all attributes.
     var klass = this.klass, ancestors = klass.ancestors(),
       attrMap = {}, attrs = [],
-      key, value, attr, importance,
+      key, value, attr,
       i = 6, // 6 skips over some of the base classes and the editor mixin.
       len = ancestors.length;
     
@@ -380,8 +365,7 @@ either express or implied. See the License for the specific language governing p
     } else {
       // Filter attrs for class
       var hiddenattrs = klass.hiddenattrs,
-        readonlyattrs = klass.readonlyattrs,
-        attrimportance = klass.attrimportance;
+        readonlyattrs = klass.readonlyattrs;
       
       if (hiddenattrs) {
         i = attrs.length;
@@ -398,31 +382,6 @@ either express or implied. See the License for the specific language governing p
           if (readonlyattrs[attr.name]) attr.readonly = true;
         }
       }
-      
-      if (attrimportance) {
-        i = attrs.length;
-        while (i) {
-          attr = attrs[--i];
-          if (attrimportance[attr.name] != null) attr.importance = attrimportance[attr.name];
-        }
-      }
-    }
-    
-    //// Filter By Importance ////
-    lowerLimit = lowerLimit == null ? -99999999 : lowerLimit;
-    upperLimit = upperLimit == null ? 99999999 : upperLimit;
-    
-    // Unspecified importances will be at the end of the non-more section.
-    var unspecifiedImportance = config.more_threshold - 1;
-    
-    i = attrs.length;
-    while (i) {
-      attr = attrs[--i];
-      
-      importance = attr.importance;
-      if (importance == null) importance = unspecifiedImportance;
-      
-      if (lowerLimit > importance || importance >= upperLimit) attrs.splice(i, 1);
     }
     
     //// Sort Attributes ////
