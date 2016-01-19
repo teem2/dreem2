@@ -5,6 +5,21 @@ software distributed under the License is distributed on an "AS IS" BASIS, WITHO
 either express or implied. See the License for the specific language governing permissions and limitations under the License.
 -->
 <node id="actions">
+  <!--// Life Cycle /////////////////////////////////////////////////////////-->
+  <method name="initNode" args="parent, attrs">
+    this.super();
+    
+    // Initialize clipboard
+    var clipboard = dr.global.clientstorage.getItem('_editor_clipboard');
+    if (clipboard) this.setAttribute('clipboard', clipboard);
+  </method>
+
+
+  <!--// Attributes /////////////////////////////////////////////////////////-->
+  <attribute name="clipboard" type="string" value=""/>
+
+
+  <!--// Methods ////////////////////////////////////////////////////////////-->
   <method name="_undoRedoCallback" args="undoable">
     // Prevents the callback from executing multiple times, once for each 
     // subundoable of a compound undoable.
@@ -51,15 +66,23 @@ either express or implied. See the License for the specific language governing p
 
   <method name="undo">
     if (editor.editmode) {
-      this._callbackAlreadyCalled = false;
-      undo.undo(this._undoRedoCallback.bind(this), this._undoRedoErrorHandler);
+      if (undo.isundoable) {
+        this._callbackAlreadyCalled = false;
+        undo.undo(this._undoRedoCallback.bind(this), this._undoRedoErrorHandler);
+      } else {
+        messages.addMessage('Nothing more to undo.');
+      }
     }
   </method>
   
   <method name="redo">
     if (editor.editmode) {
-      this._callbackAlreadyCalled = false;
-      undo.redo(this._undoRedoCallback.bind(this), this._undoRedoErrorHandler);
+      if (undo.isredoable) {
+        this._callbackAlreadyCalled = false;
+        undo.redo(this._undoRedoCallback.bind(this), this._undoRedoErrorHandler);
+      } else {
+        messages.addMessage('Nothing more to redo.');
+      }
     }
   </method>
 
@@ -145,8 +168,8 @@ either express or implied. See the License for the specific language governing p
 
   <method name="editPreview">
     if (editor.editmode) {
-      editor.setAttribute('editmode', false);
       selectionmanager.clear(true);
+      editor.setAttribute('editmode', false);
       preview.setAttribute('visible', true);
       preview.setAttribute('src', '/editor/preview.dre?spinner=false');
     } else {
@@ -176,30 +199,192 @@ either express or implied. See the License for the specific language governing p
       }
       actions.do(new undoClass({target:target}));
       selectionmanager.clear();
+    } else {
+      messages.addMessage('Nothing selected to delete.');
     }
   </method>
- 
+
   <method name="showMessagePanel">
     messages.open();
   </method>
-  
 
   <method name="cut">
-    if (this._isEditableSelection()) {
-      console.log('FIXME: implement cut');
+    var selected = selectionmanager.selected;
+    if (this._isEditableSelection() && !selected.isA(dr.dataset)) {
+      this.copy();
+      var selectedParent = selected.parent;
+      this.deleteSelected();
+      selectionmanager.select(selectedParent);
     }
   </method>
 
   <method name="copy">
-    if (this._isEditableSelection()) {
-      console.log('FIXME: implement copy');
+    var selected = selectionmanager.selected;
+    if (this._isEditableSelection() && !selected.isA(dr.dataset)) {
+      var clipboard = JSON.stringify(selected.serialize());
+      this.setAttribute('clipboard', clipboard);
+      dr.global.clientstorage.setItem('_editor_clipboard', clipboard);
     }
   </method>
 
-  <method name="paste">
-    if (this._isEditableSelection()) {
-      console.log('FIXME: implement paste');
+  <method name="duplicate">
+    var selected = selectionmanager.selected;
+    if (this._isEditableSelection() && !selected.isA(dr.dataset)) {
+      var duplicate = JSON.stringify(selected.serialize());
+      this._paste(selected.parent, duplicate);
     }
+  </method>
+
+  <method name="pasteInside">
+    if (!this.clipboard) {
+      messages.addMessage('Nothing to paste.');
+      return;
+    }
+    
+    if (!editor.editmode) {
+      messages.addMessage('No pasting during preview.');
+      return;
+    }
+    
+    var selected = selectionmanager.selected;
+    if (!selected) {
+      messages.addMessage('You must select a node to paste into.');
+      return;
+    }
+    
+    if (selected.isA(dr.dataset)) {
+      messages.addMessage('Pasting into datasets is not allowed.');
+      return;
+    }
+    
+    if (selected.isInlineEdit()) {
+      messages.addMessage('Pasting nodes not supported during inline editing.');
+      return;
+    }
+    
+    this._paste(selected, this.clipboard);
+  </method>
+
+  <method name="pasteAsSibling">
+    if (!this.clipboard) {
+      messages.addMessage('Nothing to paste.');
+      return;
+    }
+    
+    if (!editor.editmode) {
+      messages.addMessage('No pasting during preview.');
+      return;
+    }
+    
+    var selected = selectionmanager.selected;
+    if (!selected) {
+      messages.addMessage('You must select a node to paste a new sibling after.');
+      return;
+    }
+    
+    if (selected.isA(dr.dataset)) {
+      messages.addMessage('Pasting into datasets is not allowed.');
+      return;
+    }
+    
+    if (selected.isInlineEdit()) {
+      messages.addMessage('Pasting nodes not supported during inline editing.');
+      return;
+    }
+    
+    var parent;
+    if (selectionmanager.isrootselection) {
+      // Always paste as child for root selection.
+      parent = selected;
+    } else {
+      // Paste as sibling
+      parent = selected.parent;
+    }
+    this._paste(parent, this.clipboard);
+  </method>
+
+  <method name="_paste" args="parent, clipboard">
+    // Inject unique IDs into the clipboard
+    var clipboardObj = JSON.parse(clipboard);
+    (function injectId(obj) {
+      obj.id = editormodel.generateModelId();
+      var children = obj.children, i = children.length;
+      while (i) injectId(children[--i]);
+    })(clipboardObj);
+    
+    // Make a copy of the clipboardObj now that it has IDs
+    var previewerAttrs = JSON.parse(JSON.stringify(clipboardObj));
+    
+    var instance = parent.createChild(
+      clipboardObj, 
+      null,
+      function(newInstance) {newInstance.__NEW = true;} // Mark an instance as "new" so we know it needs serialization.
+    );
+    
+    // Abort if the child is not actually allowed
+    if (parent.isLeaf(instance)) {
+      instance.destroy();
+      messages.addMessage('The node you are trying to paste into does not support children, or the type of child you are trying to paste is not supported.');
+      return;
+    }
+    
+    // Shift position by 10 and 10 if it is similar to a sibling
+    if (instance.isA(dr.View)) {
+      var siblings = instance.getSiblingViews();
+      function similarityCheck() {
+        var i = siblings.length, adjX, adjY;
+        while (i) {
+          if (instance.isSimilarTo(siblings[--i])) {
+            adjX = adjY = false;
+            if (!instance.isConstraintExpression(instance.__cfg_x)) {
+              instance.setAttribute('x', instance.x + 10);
+              previewerAttrs.x = instance.x;
+              adjX = true;
+            }
+            if (!instance.isConstraintExpression(instance.__cfg_y)) {
+              instance.setAttribute('y', instance.y + 10);
+              previewerAttrs.y = instance.y;
+              adjY = true;
+            }
+            return adjX || adjY;
+          }
+        }
+        return false;
+      }
+      while (similarityCheck());
+    }
+    
+    // Undoablity (DRY: See componentdropable.notifyDropped line 133)
+    
+    // Make a copy of the attrs needed to instantiate this view in a previewer
+    (function cleanPreviewerAttrs(obj) {
+      delete obj.__objectify_attrs_list;
+      
+      // Remove editable and push on previewable since all nodes/views in a 
+      // previewer must be previewable.
+      var mixin = obj.with, i;
+      if (mixin) {
+        var parts = mixin.split(' '), part;
+        i = parts.length;
+        while (i) {
+          part = parts[--i];
+          if (part === 'editable') parts.splice(i, 1);
+        }
+        parts.push('previewable');
+        obj.with = parts.join(' ');
+      }
+      
+      var children = obj.children;
+      i = children.length;
+      while (i) cleanPreviewerAttrs(children[--i]);
+    })(previewerAttrs);
+    
+    // Create undoable and "do" it. The previewinfo is also provided so
+    // previewers receiving messages can instantiate the new node/view.
+    var E = dr.editor,
+      undoableAttrs = {target:instance, previewinfo:previewerAttrs};
+    this.do(new E.createundoable(undoableAttrs));
+    selectionmanager.select(instance);
   </method>
 
   <method name="shiftUp">

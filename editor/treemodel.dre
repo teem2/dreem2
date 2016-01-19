@@ -184,6 +184,9 @@ either express or implied. See the License for the specific language governing p
     var targetComponent = this._getTargetComponent();
     if (!targetComponent) return false;
 
+    var target = dropable.target;
+    if (!target && dropable.data) target = dropable.data.__ref;
+
     // Determine Leaf Combinations
     if (targetComponent.isA(dr.Animator)) {
       // Animators are always leaves
@@ -195,15 +198,13 @@ either express or implied. See the License for the specific language governing p
       if (!dropable.isxpath) return false;
     } else if (targetComponent.isA(dr.View)) {
       if (dropable.isxpath) return false;
-      if (!dropable.isbehavior && !dropable.isanimation && targetComponent.isLeaf(dropable)) return false;
+      if (!dropable.isbehavior && !dropable.isanimation && targetComponent.isLeaf(target)) return false;
     } else {
       // Don't allow dropping on unexpected tree items.
       return false;
     }
     
     // No dropping on descendants of self or our parent
-    var target = dropable.target;
-    if (!target && dropable.data) target = dropable.data.__ref;
     if (target && (targetComponent.isDescendantOf(target) || target.parent === targetComponent)) return false;
     
     return this.super();

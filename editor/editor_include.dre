@@ -81,6 +81,20 @@ either express or implied. See the License for the specific language governing p
           sprite.preventDefault(platformEvent); // Prevent browser show bookmarks bar functionality
           if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'sendBackward' : 'sendToBack')]();
           break;
+        case 67: // C: Copy
+          var selected = selectionmanager.selected;
+          if (selected && !selected.isInlineEdit()) {
+            sprite.preventDefault(platformEvent); // Prevent browser copy functionality
+            if (this._actionsPermitted()) actions.copy();
+          }
+          break;
+        case 68: // D: Duplicate
+          sprite.preventDefault(platformEvent); // Prevent browser bookmarking functionality
+          var selected = selectionmanager.selected;
+          if (selected && !selected.isInlineEdit()) {
+            if (this._actionsPermitted()) actions.duplicate();
+          }
+          break;
         case 69: // E: Exit Editor
           sprite.preventDefault(platformEvent);
           if (this._actionsPermitted()) actions.stop();
@@ -96,6 +110,20 @@ either express or implied. See the License for the specific language governing p
         case 83: // S: Save document
           sprite.preventDefault(platformEvent); // Prevent browser save functionality
           if (this._actionsPermitted()) actions.save();
+          break;
+        case 86: // V: Paste
+          var selected = selectionmanager.selected;
+          if (selected && !selected.isInlineEdit()) {
+            sprite.preventDefault(platformEvent); // Prevent browser paste functionality
+            if (this._actionsPermitted()) actions[(isShiftKeyDown ? 'pasteAsSibling' : 'pasteInside')]();
+          }
+          break;
+        case 88: // X: Cut
+          var selected = selectionmanager.selected;
+          if (selected && !selected.isInlineEdit()) {
+            sprite.preventDefault(platformEvent); // Prevent browser cut functionality
+            if (this._actionsPermitted()) actions.cut();
+          }
           break;
         case 90: // Z: Undo/Redo
           sprite.preventDefault(platformEvent); // Prevent browser undo/redo functionality
@@ -834,7 +862,7 @@ either express or implied. See the License for the specific language governing p
   >
     <handler event="onmousedown" args="event">selectionmanager.clear();</handler>
     
-    <view width="${treemodel.width}" height="28" bgcolor="#eeeeee">
+    <view width="100%" height="28" bgcolor="#eeeeee">
       <listviewbutton with="tooltip" id="screennamechooser" floatingpanelid="screenlist" y="6" x="5"
         tooltip="Select a different screen to edit."
         disabled="${!editor.editmode}"
@@ -1130,11 +1158,12 @@ either express or implied. See the License for the specific language governing p
       
       // Animate closed after a delay
       if (selected) {
-        var self = this;
+        var self = this,
+          delay = 1000 + 50 * (this._lastMsgLen || 0);
         if (this._timerId) clearTimeout(this._timerId);
         this._timerId = setTimeout(function() {
           self.setActualAttribute('selected', false);
-        }, 3000);
+        }, delay);
       }
     </handler>
     <method name="open">
@@ -1166,6 +1195,7 @@ either express or implied. See the License for the specific language governing p
           time:notime ? '' : ((new Date()).toLocaleTimeString() + ' - ')
         });
         child.animate({attribute:'opacity', to:1, duration:600});
+        this._lastMsgLen = msg.length;
         
         // Only retain 5 most recent messages
         while (svs.length > 5) svs[0].destroy();
@@ -1206,7 +1236,7 @@ either express or implied. See the License for the specific language governing p
   >
     <attribute name="oktosave" type="boolean" value="false"/>
     
-    <menubutton name="fileMenu" floatingpanelid="filemenu" label="File">
+    <menubutton name="fileMenu" floatingpanelid="filemenu" label="File" disabled="${!editor.editmode}">
       <handler event="onoktosave" reference="parent" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
@@ -1214,9 +1244,7 @@ either express or implied. See the License for the specific language governing p
         this.cfg = [
           {attrs:{name:'stop', text:'exit', shortcut:accChar + 'E'}},
           {klass:dr.listviewseparator},
-          {attrs:{name:'save', text:'save', shortcut:accChar + 'S'}},
-          {attrs:{name:'editPreview', text:'preview'}},
-          {attrs:{name:'livePreview', text:'open a live preview'}}
+          {attrs:{name:'save', text:'save', shortcut:accChar + 'S'}}
         ];
         this.super();
       </method>
@@ -1232,12 +1260,6 @@ either express or implied. See the License for the specific language governing p
                 break;
               case 'save':
                 attrs.disabled = !this.parent.oktosave;
-                break;
-              case 'editPreview':
-                attrs.text = editor.editmode ? 'preview' : 'resume editing';
-                break;
-              case 'livePreview':
-                attrs.disabled = !editor.editmode;
                 break;
             }
           }
@@ -1257,6 +1279,7 @@ either express or implied. See the License for the specific language governing p
       <handler event="oneditmode" reference="editor" method="updateConfig"/>
       <handler event="onisundoable onisredoable" reference="undo" method="updateConfig"/>
       <handler event="onselected onisrootselection" reference="selectionmanager" method="updateConfig"/>
+      <handler event="onclipboard" reference="actions" method="updateConfig"/>
       
       <method name="initNode" args="parent, attrs">
         var accChar = dr.global.keys.getAcceleratorChar();
@@ -1266,11 +1289,11 @@ either express or implied. See the License for the specific language governing p
           {klass:dr.listviewseparator},
           {attrs:{name:'cut', text:'cut', shortcut:accChar + 'X'}},
           {attrs:{name:'copy', text:'copy', shortcut:accChar + 'C'}},
-          {attrs:{name:'paste', text:'paste', shortcut:accChar + 'V'}},
+          {attrs:{name:'pasteInside', text:'paste inside', shortcut:accChar + 'V'}},
+          {attrs:{name:'pasteAsSibling', text:'paste as sibling', shortcut:accChar + '⇧V'}},
+          {attrs:{name:'duplicate', text:'duplicate', shortcut:accChar + 'D'}},
           {klass:dr.listviewseparator},
-          {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}},
-          {klass:dr.listviewseparator},
-          {attrs:{name:'showMessagePanel', text:'show messages panel', shortcut:accChar + 'M'}},
+          {attrs:{name:'deleteSelected', text:'delete', shortcut:'⌫'}}
         ];
         this.super();
       </method>
@@ -1288,10 +1311,18 @@ either express or implied. See the License for the specific language governing p
                 attrs.disabled = !undo.isredoable || !editor.editmode;
                 break;
               case 'deleteSelected':
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                break;
+              case 'duplicate':
               case 'cut':
               case 'copy':
-              case 'paste':
-                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection || selectionmanager.selected.isA(dr.dataset);
+                break;
+              case 'pasteAsSibling':
+                attrs.disabled = !selectionmanager.selected || actions.clipboard === '' || selectionmanager.selected.isA(dr.dataset);
+                break;
+              case 'pasteInside':
+                attrs.disabled = !selectionmanager.selected || actions.clipboard === '' || selectionmanager.selected.isA(dr.dataset);
                 break;
             }
           }
@@ -1348,7 +1379,7 @@ either express or implied. See the License for the specific language governing p
               case 'shiftLeftBig':
               case 'shiftRight':
               case 'shiftRightBig':
-                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection;
+                attrs.disabled = !selectionmanager.selected || selectionmanager.isrootselection || !selectionmanager.selected.isA(dr.View);
                 break;
             }
           }
@@ -1360,13 +1391,51 @@ either express or implied. See the License for the specific language governing p
         return this.parent.editMenu;
       </method>
       <method name="getNextMenu">
+        return this.parent.viewMenu;
+      </method>
+    </menubutton>
+    
+    <menubutton name="viewMenu" floatingpanelid="viewmenu" label="View">
+      <method name="initNode" args="parent, attrs">
+        var accChar = dr.global.keys.getAcceleratorChar();
+        this.cfg = [
+          {attrs:{name:'editPreview', text:'preview'}},
+          {attrs:{name:'livePreview', text:'open a live preview'}},
+          {klass:dr.listviewseparator},
+          {attrs:{name:'showMessagePanel', text:'show messages panel', shortcut:accChar + 'M'}}
+        ];
+        this.super();
+      </method>
+
+      <method name="prepareConfig" args="cfg">
+        var i = cfg.length, attrs;
+        while (i) {
+          attrs = cfg[--i].attrs;
+          if (attrs) {
+            switch(attrs.name) {
+              case 'editPreview':
+                attrs.text = editor.editmode ? 'preview' : 'resume editing';
+                break;
+              case 'livePreview':
+                attrs.disabled = !editor.editmode;
+                break;
+            }
+          }
+        }
+        return this.super();
+      </method>
+      
+      <method name="getPrevMenu">
+        return this.parent.layerMenu;
+      </method>
+      <method name="getNextMenu">
         return this.parent.settingsMenu;
       </method>
     </menubutton>
     
     <menufloatingpanelbutton name="settingsMenu" floatingpanelid="settings" label="Settings" disabled="${!editor.editmode}">
       <method name="getPrevMenu">
-        return this.parent.layerMenu;
+        return this.parent.viewMenu;
       </method>
       <method name="getNextMenu">
         return this.parent.fileMenu;
@@ -1433,5 +1502,4 @@ either express or implied. See the License for the specific language governing p
 </basefloatingpanel>
 
 <colorpicker panelid="colorpicker"/>
-
 <fontpicker panelid="fontpicker"/>

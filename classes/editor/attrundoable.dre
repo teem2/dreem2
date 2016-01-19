@@ -150,8 +150,8 @@
     // The parent attr is a special case where the old and new values are
     // node/view references.
     if (this.attribute === 'parent') {
-      obj.oldvalue = this.oldvalue.id;
-      obj.newvalue = this.newvalue.id;
+      obj.oldvalue = this.oldvalue.id || null;
+      obj.newvalue = this.newvalue.id || null;
     } else {
       obj.oldvalue = this.oldvalue;
       obj.newvalue = this.newvalue;

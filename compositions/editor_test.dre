@@ -6,10 +6,36 @@
   <screens>
     <screen type='browser' name='default' title='Editor Test File'>
       <view width='100%' height='100%' bgcolor='#666666'>
-        <view y='21' x='30' bgcolor='#cccccc' height='255' width='409'>
-          <view x='${this.boundsxdiff}' y='${this.boundsydiff}' width='${this.parent.innerwidth * 0.5}' height='${this.parent.innerheight * 0.5}' bgcolor='red'/>
+        <view y='31' x='30' bgcolor='rgba(165,172,169,1.00)' height='255' width='409'>
+          <view x='${this.boundsxdiff}' y='${this.boundsydiff}' width='${this.parent.innerwidth * 0.5}' height='${this.parent.innerheight * 0.5}' bgcolor='red'>
+            <view y='0' x='0' bgcolor='#cccccc' height='50' width='70'>
+              <text y='${((this.parent.innerheight - this.boundsheight) / 2) + this.boundsydiff}' x='${((this.parent.innerwidth - this.boundswidth) / 2) + this.boundsxdiff}' multiline='true' text='text' width='auto' height='auto'/>
+            </view>
+            <view x='153.5' bgcolor='#000000' y='${this.boundsydiff}' height='${this.parent.innerheight * 1}' width='1'>
+              <animator/>
+            </view>
+            <animgroup repeat='10' bounce='true'>
+              <animator from='0' to='100' attribute='x' relative='true'/>
+              <animator attribute='y' to='100' from='0' relative='true'/>
+            </animgroup>
+            <spacedlayout axis='x'/>
+          </view>
+          <bitmap y='24' x='273' height='50' width='50' bgcolor='rgba(63,255,0,0.50)'>
+            <animgroup/>
+          </bitmap>
+          <view y='144' x='32' bgcolor='rgba(204,204,204,0.50)' height='84' width='172.5'>
+            <text height='auto' width='auto' text='text' multiline='true' x='20' y='20' fontfamily='Lucida Console'/>
+            <animgroup bounce='true' repeat='10'>
+              <animator relative='true' attribute='x' to='100' from='0'/>
+              <animator relative='true' from='0' to='100' attribute='y'/>
+            </animgroup>
+          </view>
+          <bitmap bgcolor='rgba(255,0,226,0.50)' width='50' height='50' x='${this.parent.innerwidth - this.boundswidth + this.boundsxdiff}' y='${this.parent.innerheight - this.boundsheight + this.boundsydiff}'>
+            <animgroup/>
+          </bitmap>
         </view>
       </view>
+      <dataset/>
     </screen>
   </screens>
 </composition>

@@ -170,7 +170,7 @@ either express or implied. See the License for the specific language governing p
       this.setAttribute('focusable', true);
       this.sprite.selectAll();
       
-      if (this.focused) this.focused = false; // WORKAROUND: For some reason focusable gets stuck on so unset it before setting focus.
+      if (this.focused) this.blur(); // WORKAROUND: For some reason focusable gets stuck on so unset it before setting focus.
       this.focus();
     }
   </method>
@@ -183,6 +183,8 @@ either express or implied. See the License for the specific language governing p
   <method name="endEditing">
     if (this.inlineedit && this.__isText) {
       reticle.resizer.setActualAttribute('visible', true);
+      
+      this.blur();
       
       this.setAttribute('cursor', 'move');
       this.setAttribute('editable', false);
@@ -225,7 +227,10 @@ either express or implied. See the License for the specific language governing p
     
     var retval = this.super(parent);
     
-    if (editor.editmode && !this.isBeingDestroyed && !this.__replicator) {
+    if (editor.editmode && !this.__replicator) {
+      // Note: No need to check !this.isBeingDestroyed since that would 
+      // interfere with layouts getting auto destroyed when they conflict.
+      // See componentdropable.notifyDropped approx line 102
       var inited = this.inited,
         hasOld = existingParent && inited,
         hasNew = this.parent && this.parent.inited;
@@ -306,6 +311,10 @@ either express or implied. See the License for the specific language governing p
       attrName = objectifyAttrsList[--i];
       attrs[attrName] = '' + this['__cfg_' + attrName];
     }
+    
+    // Always mark as "editable"
+    attrs.with = "editable";
+    
     modelObj.attr = attrs;
     
     // Store "new" children
@@ -389,5 +398,49 @@ either express or implied. See the License for the specific language governing p
       if (child.isA(dr.behavior.behavior)) retval.push(child);
     }
     return retval;
+  </method>
+  
+  <!--// Copy and Paste //-->
+  <method name="serialize">
+    var model = editormodel.getModelNode(this),
+      objChildren = [],
+      obj = {
+        class:model.tag,
+        children:objChildren,
+      };
+    
+    // Serialize Attrs
+    var attrs = model.attr, key, i;
+    if (attrs) {
+      for (key in attrs) obj[key] = attrs[key];
+      obj.__objectify_attrs_list = Object.keys(attrs);
+    } else {
+      obj.__objectify_attrs_list = [];
+    }
+    
+    // Serialize Editable Children
+    var children = this.getSubnodes(), child;
+    i = children.length;
+    while (i) {
+      child = children[--i];
+      if (child.isA(dr.editable)) objChildren.unshift(child.serialize());
+    }
+    
+    return obj;
+  </method>
+  
+  <!--/**
+    * @method isSimilarTo
+    * Checks if the provided sibling view is similar enough to this view such
+    * that this view should be shifted during paste.
+    * @return {boolean}
+    */-->
+  <method name="isSimilarTo" args="sibling">
+    return sibling &&
+      sibling.x === this.x &&
+      sibling.y === this.y &&
+      sibling.width === this.width &&
+      sibling.height === this.height &&
+      sibling.klass === this.klass;
   </method>
 </mixin>
