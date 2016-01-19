@@ -5,10 +5,10 @@
 
 
 <class name="behavior-scale" extends="node" with="behavior-behavior">
-  <attribute name="magnitude" type="number" value="2"/>
-  <attribute name="scaleinduration" type="number" value="800"/>
-  <attribute name="scaleoutduration" type="number" value="400"/>
-  <attribute name="bringtofront" type="boolean" value="true"/>
+  <attribute name="magnitude" type="number" value="2" weight="1"/>
+  <attribute name="scaleinduration" type="number" value="800" editorname="IN Duration" weight="2"/>
+  <attribute name="scaleoutduration" type="number" value="400" editorname="OUT Duration" weight="3"/>
+  <attribute name="bringtofront" type="boolean" value="true" editorname="Bring to Front" weight="1"/>
 
   <handler name="show" event="onmouseover" reference="this.parent">
     var parent = this.parent,

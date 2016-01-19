@@ -32,7 +32,7 @@
       * @event onerror 
       * Fired when there is an error loading the bitmap
       */-->
-  <attribute name="src" type="string" value=""/>
+  <attribute name="src" type="string" value="" editorname="URL",/>
 
   <!--/**
       * @attribute {String} [stretches=false]
@@ -46,7 +46,7 @@
       * "none" will display the image at its natural size but without resizing 
       * the view as the naturalsize attribute does.
       */-->
-  <attribute name="stretches" type="string" value="false"/>
+  <attribute name="stretches" type="string" value="false" editorname="Content Stretch"/>
 
   <!--/**
       * @attribute {Boolean} [naturalsize=false]
@@ -110,7 +110,4 @@
   
   <!--// Editor //-->
   <attribute name="hiddenattrs" type="expression" value="{naturalsize:true, window:true}" allocation="class"/>
-  <attribute name="attrimportance" type="expression" allocation="class"
-    value="{src:1, stretches:2, repeat:100}"
-  />
 </class>
