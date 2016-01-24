@@ -182,10 +182,11 @@
   <!--/** @private */-->
   <method name="__doMouseDown" args="event">
     var absPosition = this.getAbsolutePosition();
-    this.__initAbsLocX = absPosition.x;
-    this.__initAbsLocY = absPosition.y;
-    this.__initMouseX = event.x;
-    this.__initMouseY = event.y;
+    this.__initAbsLocX = absPosition.x; // Used by slider components
+    this.__initAbsLocY = absPosition.y; // Used by slider components
+    this.__initMouseX = event.x; // Used by slider components
+    this.__initMouseY = event.y; // Used by slider components
+    
     this.__initLocX = this.x;
     this.__initLocY = this.y;
     this.draginitx = event.x - this.x;
@@ -332,7 +333,7 @@
     if (axis === 'x') {
       return this.x - this.__initLocX;
     } else if (axis === 'y') {
-        return this.y - this.__initLocY;
+      return this.y - this.__initLocY;
     }
     return dr.measureDistance(this.x, this.y, this.__initLocX, this.__initLocY);
   </method>
